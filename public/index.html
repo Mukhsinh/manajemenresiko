@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Manajemen Risiko</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome harus dimuat SEBELUM CSS custom - MULTIPLE CDN FALLBACK -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style-new.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <style>
+        /* Fallback untuk Font Awesome jika CDN lambat */
+        @font-face {
+            font-family: 'Font Awesome 6 Free';
+            font-style: normal;
+            font-weight: 900;
+            font-display: swap;
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Font Awesome 6 Brands';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2') format('woff2');
+        }
+        
+        /* CRITICAL: Force Font Awesome icons to display immediately - HIGHEST PRIORITY */
+        i.fas, i.fab, i.far, i.fal, i.fad,
+        .fas, .fab, .far, .fal, .fad,
+        [class*="fa-"],
+        i[class*="fa-"],
+        i[class^="fa-"],
+        .sidebar i,
+        .menu-item i,
+        .brand-icon i,
+        .header-icon i,
+        .notification-icon i,
+        .btn i,
+        button i,
+        a i,
+        .sidebar-section-label i {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome", "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+            font-style: normal !important;
+            font-weight: 900 !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            line-height: 1 !important;
+            text-rendering: auto !important;
+            speak: none;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        
+        i.fab, .fab {
+            font-family: "Font Awesome 6 Brands", "Font Awesome 5 Brands", "FontAwesome" !important;
+            font-weight: 400 !important;
+        }
+        
+        /* Ensure icons have content and proper rendering - CRITICAL: Use Font Awesome font, NOT inherit */
+        i.fas::before, 
+        i.fab::before, 
+        i.far::before,
+        i[class*="fa-"]::before,
+        [class*="fa-"]::before,
+        .sidebar i::before,
+        .menu-item i::before,
+        .sidebar-section-label i::before,
+        .dropdown-icon::before {
+            display: inline-block !important;
+            text-rendering: auto !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            line-height: 1 !important;
+        }
+        
+        i.fab::before,
+        [class*="fa-"].fab::before {
+            font-family: "Font Awesome 6 Brands" !important;
+            font-weight: 400 !important;
+        }
+        
+        /* Prevent body font-family from affecting icons */
+        body i,
+        body [class*="fa-"] {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen">
+        <div class="login-container">
+            <h1>Aplikasi Manajemen Risiko</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p class="switch-form">Belum punya akun? <a href="#" id="show-register">Daftar</a></p>
+            </form>
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="register-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Daftar</button>
+                <p class="switch-form">Sudah punya akun? <a href="#" id="show-login">Login</a></p>
+            </form>
+            <div id="auth-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-screen" class="screen" style="display: none;">
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-brand">
+                        <span class="brand-icon">
+                            <i class="fas fa-shield"></i>
+                        </span>
+                        <div>
+                            <p class="brand-label">PINTAR MR</p>
+                            <p class="brand-subtitle">Manajemen Risiko Terpadu</p>
+                        </div>
+                    </div>
+                </div>
+                <nav class="sidebar-menu">
+                    <div class="sidebar-section">
+                        <a href="#" class="menu-item menu-item-top active" data-page="dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-section">
+                        <button class="sidebar-section-label dropdown-toggle" data-section="analisis-bsc">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Analisis BSC</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="sidebar-submenu" data-submenu="analisis-bsc">
+                            <a href="#" class="menu-item" data-page="visi-misi">
+                                <i class="fas fa-bullseye"></i>
+                                <span>Visi dan Misi</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="rencana-strategis">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Rencana Strategis</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="inventarisasi-swot">
+                                <i class="fas fa-list-check"></i>
+                                <span>Inventarisasi SWOT</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="analisis-swot">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Analisis SWOT</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="diagram-kartesius">
+                                <i class="fas fa-chart-scatter"></i>
+                                <span>Diagram Kartesius</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="matriks-tows">
+                                <i class="fas fa-table-cells"></i>
+                                <span>Matriks TOWS</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="sasaran-strategi">
+                                <i class="fas fa-bullseye"></i>
+                                <span>Sasaran Strategi</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="strategic-map">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>Strategic Map</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="indikator-kinerja-utama">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Indikator Kinerja Utama</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <button class="sidebar-section-label dropdown-toggle" data-section="identifikasi-risiko">
+                            <i class="fas fa-search"></i>
+                            <span>Identifikasi Risiko</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="sidebar-submenu" data-submenu="identifikasi-risiko">
+                            <a href="#" class="menu-item" data-page="risk-input">
+                                <i class="fas fa-pen-to-square"></i>
+                                <span>Input Data Risiko</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="monitoring-evaluasi">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Monitoring & Evaluasi</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="peluang">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Peluang</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <button class="sidebar-section-label dropdown-toggle" data-section="analisis-risiko">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Analisis Risiko</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="sidebar-submenu" data-submenu="analisis-risiko">
+                            <a href="#" class="menu-item" data-page="risk-profile">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Risk Profile</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="residual-risk">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>Residual Risk</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="kri">
+                                <i class="fas fa-gauge-high"></i>
+                                <span>Key Risk Indicator</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="loss-event">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Loss Event</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="ews">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span>Early Warning System</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="risk-register">
+                                <i class="fas fa-table-list"></i>
+                                <span>Risk Register</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <a href="#" class="menu-item menu-item-top" data-page="laporan">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Laporan</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-section">
+                        <a href="#" class="menu-item menu-item-top" data-page="master-data">
+                            <i class="fas fa-database"></i>
+                            <span>Master Data</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-section">
+                        <a href="#" class="menu-item menu-item-top" data-page="pengaturan">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                    </div>
+                </nav>
+                <div style="padding: 1rem; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <p style="font-size: 0.7rem; font-style: italic; color: white; margin: 0;">Copyright © 2025 Mukhsin Hadi. Hak Cipta Dilindungi Undang-Undang</p>
+                </div>
+                <div class="sidebar-footer">
+                    <button id="chat-toggle-sidebar" class="chat-toggle-sidebar" type="button" aria-expanded="false" aria-controls="chat-panel" aria-label="Diskusi Internal">
+                        <i class="fab fa-whatsapp"></i>
+                        <span class="chat-unread" id="chat-unread-sidebar" hidden>0</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Top Header -->
+                <header class="top-header">
+                    <div class="header-left">
+                        <button class="btn-icon" id="sidebar-toggle">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h2 id="page-title" class="header-page-title">
+                            <i id="page-title-icon" class="fas fa-home"></i>
+                            <span id="page-title-text">Dashboard</span>
+                        </h2>
+                    </div>
+                    <div class="header-right">
+                        <div class="header-alerts">
+                            <button class="notification-icon alert" id="notif-alert-pill" type="button" data-tooltip="Peringatan Aktif" aria-label="Peringatan Risiko">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span class="notification-count" id="notif-alert-count">1</span>
+                            </button>
+                            <button class="notification-icon info" id="notif-info-pill" type="button" data-tooltip="Pesan Masuk" aria-label="Pesan Masuk">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-count" id="notif-message-count">6</span>
+                            </button>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-avatar" id="user-avatar">A</div>
+                            <div>
+                                <div id="user-name" style="font-weight: 600; font-size: 0.875rem; color: var(--white);"></div>
+                                <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.8);">Administrator</div>
+                            </div>
+                        </div>
+                        <button id="logout-btn" class="header-icon logout" type="button" aria-label="Keluar">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                    <!-- Chat Panel (positioned relative to sidebar footer) -->
+                    <div id="chat-panel" class="chat-panel" aria-hidden="true">
+                        <div class="chat-panel-header">
+                            <div>
+                                <p>Diskusi Internal</p>
+                                <span id="chat-active-org">Organisasi</span>
+                            </div>
+                            <button class="chat-close" type="button" aria-label="Tutup panel chat">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="chat-panel-controls">
+                            <label for="chat-org-select">Organisasi</label>
+                            <select id="chat-org-select"></select>
+                        </div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-empty-state">
+                                <i class="fas fa-comments"></i>
+                                <p>Mulai percakapan dengan tim Anda.</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea id="chat-input" rows="2" placeholder="Tulis pesan dan tekan Enter"></textarea>
+                            <button id="chat-send-btn" type="button" aria-label="Kirim pesan">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="chat-status" id="chat-status" role="status"></div>
+                    </div>
+                </header>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <div id="kop-header" class="kop-header hidden">
+                        <div class="kop-body">
+                            <div class="kop-logo">
+                                <img id="kop-logo" alt="Logo Instansi">
+                            </div>
+                            <div class="kop-info">
+                                <h2 id="kop-instansi">Instansi</h2>
+                                <p id="kop-alamat">Alamat Instansi</p>
+                                <p id="kop-kontak">Kontak Instansi</p>
+                            </div>
+                            <div class="kop-divider"></div>
+                            <div class="kop-reporter">
+                                <p class="kop-section-label">Identitas Pelapor</p>
+                                <h3 id="kop-reporter-name">Administrator</h3>
+                                <p id="kop-reporter-role">Kasubag Pengelola Risiko</p>
+                            </div>
+                            <div class="kop-pill">
+                                <span class="kop-app">PINTAR MR</span>
+                                <span class="kop-date" id="kop-date">Selasa, 18 November 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Dashboard Page -->
+                    <div id="dashboard" class="page-content active">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-home"></i> Dashboard</h1>
+                            <p class="page-subtitle">Ringkasan Manajemen Risiko</p>
+                        </div>
+                        <div id="dashboard-content"></div>
+                    </div>
+
+                    <!-- Visi Misi Page -->
+                    <div id="visi-misi" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-bullseye"></i> Visi dan Misi</h1>
+                            <p class="page-subtitle">Visi dan Misi Organisasi</p>
+                        </div>
+                        <div id="visi-misi-content"></div>
+                    </div>
+
+                    <!-- Rencana Strategis Page -->
+                    <div id="rencana-strategis" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Rencana Strategis</h1>
+                            <p class="page-subtitle">Perencanaan Strategis Organisasi</p>
+                        </div>
+                        <div id="rencana-strategis-content"></div>
+                    </div>
+
+                    <!-- Inventarisasi SWOT Page -->
+                    <div id="inventarisasi-swot" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-list-check"></i> Inventarisasi SWOT</h1>
+                            <p class="page-subtitle">Inventarisasi Data per Kelompok (Kekuatan, Kelemahan, Peluang, Tantangan) per Unit Kerja</p>
+                        </div>
+                        <div id="inventarisasi-swot-content"></div>
+                    </div>
+
+                    <!-- Analisis SWOT Page -->
+                    <div id="analisis-swot" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-chart-bar"></i> Analisis SWOT</h1>
+                            <p class="page-subtitle">Analisis SWOT dengan Skoring dan Pembobotan</p>
+                        </div>
+                        <div id="analisis-swot-content"></div>
+                    </div>
+
+                    <!-- Diagram Kartesius Page -->
+                    <div id="diagram-kartesius" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-chart-scatter"></i> Diagram Kartesius</h1>
+                            <p class="page-subtitle">Diagram Kartesius SWOT (Auto-generate dari Analisis SWOT)</p>
+                        </div>
+                        <div id="diagram-kartesius-content"></div>
+                    </div>
+
+                    <!-- Matriks TOWS Page -->
+                    <div id="matriks-tows" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-table-cells"></i> Matriks TOWS</h1>
+                            <p class="page-subtitle">Strategi Matriks TOWS (SO, WO, ST, WT)</p>
+                        </div>
+                        <div id="matriks-tows-content"></div>
+                    </div>
+
+                    <!-- Sasaran Strategi Page -->
+                    <div id="sasaran-strategi" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-bullseye"></i> Sasaran Strategi</h1>
+                            <p class="page-subtitle">Sasaran Strategi Organisasi</p>
+                        </div>
+                        <div id="sasaran-strategi-content"></div>
+                    </div>
+
+                    <!-- Strategic Map Page -->
+                    <div id="strategic-map" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-project-diagram"></i> Strategic Map</h1>
+                            <p class="page-subtitle">Strategic Map (Balanced Scorecard)</p>
+                        </div>
+                        <div id="strategic-map-content"></div>
+                    </div>
+
+                    <!-- Indikator Kinerja Utama Page -->
+                    <div id="indikator-kinerja-utama" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-tachometer-alt"></i> Indikator Kinerja Utama</h1>
+                            <p class="page-subtitle">Key Performance Indicators (KPI)</p>
+                        </div>
+                        <div id="indikator-kinerja-utama-content"></div>
+                    </div>
+
+                    <!-- Monitoring Evaluasi Page -->
+                    <div id="monitoring-evaluasi" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-clipboard-check"></i> Monitoring & Evaluasi Risiko</h1>
+                            <p class="page-subtitle">Pemantauan dan Evaluasi Risiko</p>
+                        </div>
+                        <div id="monitoring-evaluasi-content"></div>
+                    </div>
+
+                    <!-- Peluang Page -->
+                    <div id="peluang" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-lightbulb"></i> Peluang</h1>
+                            <p class="page-subtitle">Manajemen Peluang Organisasi</p>
+                        </div>
+                        <div id="peluang-content"></div>
+                    </div>
+
+                    <!-- KRI Page -->
+                    <div id="kri" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-gauge-high"></i> Key Risk Indicator</h1>
+                            <p class="page-subtitle">Indikator Risiko Utama</p>
+                        </div>
+                        <div id="kri-content"></div>
+                    </div>
+
+                    <!-- Loss Event Page -->
+                    <div id="loss-event" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-exclamation-triangle"></i> Loss Event</h1>
+                            <p class="page-subtitle">Kejadian Kerugian</p>
+                        </div>
+                        <div id="loss-event-content"></div>
+                    </div>
+
+                    <!-- EWS Page -->
+                    <div id="ews" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-triangle-exclamation"></i> Early Warning System</h1>
+                            <p class="page-subtitle">Sistem Peringatan Dini</p>
+                        </div>
+                        <div id="ews-content"></div>
+                    </div>
+
+                    <!-- Laporan Page -->
+                    <div id="laporan" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-file-pdf"></i> Laporan</h1>
+                            <p class="page-subtitle">Laporan Manajemen Risiko</p>
+                        </div>
+                        <div id="laporan-content"></div>
+                    </div>
+
+                    <!-- Pengaturan Page -->
+                    <div id="pengaturan" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-cog"></i> Pengaturan Aplikasi</h1>
+                            <p class="page-subtitle">Konfigurasi Aplikasi</p>
+                        </div>
+                        <div id="pengaturan-content"></div>
+                    </div>
+
+                    <!-- Risk Input Page -->
+                    <div id="risk-input" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-pen-to-square"></i> Input Data Risiko</h1>
+                            <p class="page-subtitle">Kelola identifikasi risiko hingga analisis residual secara terpadu</p>
+                        </div>
+
+                        <div class="action-toolbar">
+                            <div class="action-group">
+                                <button class="btn btn-primary" id="btn-new-risk">
+                                    <i class="fas fa-plus-circle"></i> Tambah Risiko
+                                </button>
+                                <button class="btn btn-warning" id="btn-download-template">
+                                    <i class="fas fa-download"></i> Unduh Template
+                                </button>
+                                <button class="btn btn-success" id="btn-import-risk">
+                                    <i class="fas fa-upload"></i> Import Data
+                                </button>
+                                <button class="btn btn-info" id="btn-download-report">
+                                    <i class="fas fa-file-alt"></i> Unduh Laporan
+                                </button>
+                            </div>
+                        </div>
+                        <input type="file" id="risk-import-input" accept=".xlsx,.xls" hidden>
+
+                        <form id="risk-input-form" class="card-grid">
+                            <section class="section-card">
+                                <div class="section-header">
+                                    <h3>Informasi Risiko</h3>
+                                </div>
+                                <div class="form-grid two-column">
+                                    <div class="form-group">
+                                        <label>Unit Kerja *</label>
+                                        <select id="nama-unit-kerja" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Kategori Risiko *</label>
+                                        <select id="kategori-risiko" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Rencana Strategis</label>
+                                        <select id="rencana-strategis"></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tanggal Registrasi *</label>
+                                        <input type="date" id="tanggal-registrasi" required>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Sasaran Risiko *</label>
+                                        <textarea id="sasaran" rows="2" required></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Penyebab Risiko *</label>
+                                        <textarea id="penyebab-risiko" rows="2" required></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Dampak Risiko *</label>
+                                        <textarea id="dampak-risiko" rows="2" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Pihak Terkait</label>
+                                        <input type="text" id="pihak-terkait">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Status Risiko</label>
+                                        <select id="status-risiko">
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Jenis Risiko</label>
+                                        <select id="jenis-risiko">
+                                            <option value="Threat">Threat</option>
+                                            <option value="Opportunity">Opportunity</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>No.</label>
+                                        <input type="text" id="no-risiko" readonly>
+                                        <small class="comment">Auto generate</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Kode Risiko</label>
+                                        <input type="text" id="kode-risiko" readonly>
+                                        <small class="comment">Auto generate</small>
+                                    </div>
+                                </div>
+                                <div class="chip-section">
+                                    <div>
+                                        <h4>Keterkaitan Sasaran Strategis</h4>
+                                        <div id="sasaran-strategis-container" class="chip-group"></div>
+                                    </div>
+                                    <div>
+                                        <h4>Indikator Kinerja Utama</h4>
+                                        <div id="indikator-kinerja-container" class="chip-group"></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="section-card">
+                                <div class="section-header">
+                                    <h3>Identifikasi Risiko</h3>
+                                </div>
+                                <div class="form-grid two-column">
+                                    <div class="form-group">
+                                        <label>Tanggal Identifikasi</label>
+                                        <input type="date" id="identifikasi-tanggal">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Indikator Risiko</label>
+                                        <input type="text" id="identifikasi-indikator">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Deskripsi Risiko</label>
+                                        <textarea id="identifikasi-deskripsi" rows="2"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Akar Penyebab</label>
+                                        <textarea id="identifikasi-akar" rows="2"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Faktor Positif / Kontrol</label>
+                                        <textarea id="identifikasi-faktor" rows="2"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Deskripsi Dampak</label>
+                                        <textarea id="identifikasi-dampak" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="section-card">
+                                <div class="section-header">
+                                    <h3>Pemilik Risiko</h3>
+                                </div>
+                                <div class="form-grid two-column">
+                                    <div class="form-group">
+                                        <label>Nama Pemilik Risiko</label>
+                                        <input type="text" id="pemilik-nama">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Jabatan Pemilik Risiko</label>
+                                        <input type="text" id="pemilik-jabatan">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>No. HP</label>
+                                        <input type="text" id="pemilik-nohp">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="email" id="pemilik-email">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Strategi Mitigasi</label>
+                                        <textarea id="pemilik-strategi" rows="2"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Rencana Penanganan</label>
+                                        <textarea id="pemilik-penanganan" rows="2"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Estimasi Biaya (Rp)</label>
+                                        <input type="number" id="pemilik-biaya" min="0" step="1000">
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Simpan Risiko</button>
+                                    <button type="button" id="reset-form-btn" class="btn btn-secondary">Reset</button>
+                                </div>
+                            </section>
+                        </form>
+
+                        <div class="analysis-grid">
+                            <section class="section-card">
+                                <div class="section-header">
+                                    <h3>Analisis Risiko Inheren</h3>
+                                </div>
+                                <div class="form-grid two-column">
+                                    <div class="form-group">
+                                        <label>Probabilitas (1-5)</label>
+                                        <input type="number" id="inherent-probability" min="1" max="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Dampak (1-5)</label>
+                                        <input type="number" id="inherent-impact" min="1" max="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Dampak Finansial (Rp)</label>
+                                        <input type="number" id="inherent-financial" min="0" step="1000">
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-primary" id="btn-save-inherent">
+                                        Simpan Analisis Inheren
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section class="section-card">
+                                <div class="section-header">
+                                    <h3>Analisis Risiko Residual</h3>
+                                </div>
+                                <div class="form-grid two-column">
+                                    <div class="form-group">
+                                        <label>Probabilitas Residual</label>
+                                        <input type="number" id="residual-probability" min="1" max="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Dampak Residual</label>
+                                        <input type="number" id="residual-impact" min="1" max="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Persentase Probabilitas</label>
+                                        <input type="text" id="residual-probability-percent" placeholder="contoh: 40%">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nilai Risiko Residual</label>
+                                        <input type="number" id="residual-risk-value">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Dampak Finansial Residual (Rp)</label>
+                                        <input type="number" id="residual-financial" min="0" step="1000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nilai Risiko Bersih</label>
+                                        <input type="number" id="residual-net">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Departemen Penanggung</label>
+                                        <input type="text" id="residual-department">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Status Review</label>
+                                        <input type="text" id="residual-review-status">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Jadwal Review Berikutnya</label>
+                                        <input type="date" id="residual-next-review">
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-primary" id="btn-save-residual">
+                                        Simpan Analisis Residual
+                                    </button>
+                                </div>
+                            </section>
+                        </div>
+
+                        <section class="section-card">
+                            <div class="section-header">
+                                <h3>Daftar Risiko</h3>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>No.</th>
+                                            <th>Kode Risiko</th>
+                                            <th>Unit Kerja</th>
+                                            <th>Rencana Strategis</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="risk-input-tbody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Risk Profile Page (Legacy) -->
+                    <div id="risk-profile" class="page-content">
+                <div class="sheet-header">
+                    <h2>Risk Profile - Inherent Risk Rating</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="inherent-risk-matrix"></canvas>
+                </div>
+                <div id="inherent-risk-table" class="data-table-container"></div>
+            </div>
+
+                    <!-- Residual Risk Page (Legacy) -->
+                    <div id="residual-risk" class="page-content">
+                <div class="sheet-header">
+                    <h2>Residual Risk Rating</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="residual-risk-matrix"></canvas>
+                </div>
+                <div id="residual-risk-table" class="data-table-container"></div>
+            </div>
+
+                    <!-- Risk Register Page (Legacy) -->
+                    <div id="risk-register" class="page-content">
+                <div class="sheet-header">
+                    <h2>Risk Register</h2>
+                    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print</button>
+                </div>
+                <div id="risk-register-table" class="data-table-container print-friendly"></div>
+            </div>
+
+                    <!-- Risk Appetite Page (Legacy) -->
+                    <div id="risk-appetite" class="page-content">
+                <div class="sheet-header">
+                    <h2>Risk Appetite</h2>
+                    <button id="insert-risk-appetite-btn" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Insert Risk Appetite</button>
+                </div>
+                <form id="risk-appetite-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Pilih Risiko *</label>
+                            <select id="risk-appetite-risk-id" required>
+                                <option value="">Pilih Risiko</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Risk Appetite Level *</label>
+                            <select id="risk-appetite-level" required>
+                                <option value="LOW RISK">LOW RISK</option>
+                                <option value="MEDIUM RISK">MEDIUM RISK</option>
+                                <option value="HIGH RISK">HIGH RISK</option>
+                                <option value="EXTREME HIGH">EXTREME HIGH</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+                <div id="risk-appetite-list" class="data-table-container">
+                    <h3>Risk Appetite Dashboard</h3>
+                    <div id="risk-appetite-dashboard"></div>
+                </div>
+            </div>
+
+                    <!-- Risk Register Graph Page (Legacy) -->
+                    <div id="risk-register-graph" class="page-content">
+                <div class="sheet-header">
+                    <h2>Risk Register Graph</h2>
+                    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print</button>
+                </div>
+                <div class="print-friendly">
+                    <div class="chart-container">
+                        <h3>Inherent Risk Matrix</h3>
+                        <canvas id="print-inherent-matrix"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Residual Risk Matrix</h3>
+                        <canvas id="print-residual-matrix"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Risk Appetite Dashboard</h3>
+                        <canvas id="print-appetite-dashboard"></canvas>
+                    </div>
+                </div>
+            </div>
+
+                    <!-- Master Data Page (Legacy) -->
+                    <div id="master-data" class="page-content">
+                <div class="sheet-header">
+                    <h2>Master Data Management</h2>
+                </div>
+                <div class="master-data-tabs">
+                    <button class="master-tab-btn active" data-master="probability">Kriteria Probabilitas</button>
+                    <button class="master-tab-btn" data-master="impact">Kriteria Dampak</button>
+                    <button class="master-tab-btn" data-master="categories">Kategori Risiko</button>
+                    <button class="master-tab-btn" data-master="work-units">Unit Kerja</button>
+                </div>
+                <div id="master-data-content"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/services/authService.js"></script>
+    <script>
+        // CRITICAL: Test if Font Awesome is loaded
+        (function() {
+            function testFontAwesome() {
+                const testEl = document.createElement('i');
+                testEl.className = 'fas fa-check';
+                testEl.style.position = 'absolute';
+                testEl.style.visibility = 'hidden';
+                testEl.style.fontSize = '1px';
+                document.body.appendChild(testEl);
+                
+                const computed = window.getComputedStyle(testEl, ':before');
+                const fontFamily = computed.getPropertyValue('font-family');
+                const content = computed.getPropertyValue('content');
+                
+                document.body.removeChild(testEl);
+                
+                if (!fontFamily.includes('Font Awesome') && !fontFamily.includes('FontAwesome')) {
+                    console.error('Font Awesome CSS not loaded! Font family:', fontFamily);
+                    // Try to load Font Awesome again
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+                    link.crossOrigin = 'anonymous';
+                    document.head.appendChild(link);
+                } else {
+                    console.log('Font Awesome CSS loaded successfully');
+                }
+            }
+            
+            // Test after a delay to ensure CSS is loaded
+            setTimeout(testFontAwesome, 500);
+        })();
+        
+        // CRITICAL: Ensure Font Awesome icons display correctly - AGGRESSIVE FIX
+        (function() {
+            function forceIconDisplay() {
+                // Force all icons to use Font Awesome font-family with setProperty for !important
+                const allIcons = document.querySelectorAll('i[class*="fa-"], [class*="fa-"], i.fas, i.fab, i.far, .fas, .fab, .far');
+                let fixedCount = 0;
+                
+                allIcons.forEach(function(icon) {
+                    // Skip if already processed
+                    if (icon.dataset.faFixed === 'true') return;
+                    
+                    if (icon.classList.contains('fab')) {
+                        icon.style.setProperty('font-family', '"Font Awesome 6 Brands", "Font Awesome 5 Brands", "FontAwesome"', 'important');
+                        icon.style.setProperty('font-weight', '400', 'important');
+                    } else {
+                        icon.style.setProperty('font-family', '"Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome"', 'important');
+                        icon.style.setProperty('font-weight', '900', 'important');
+                    }
+                    icon.style.setProperty('font-style', 'normal', 'important');
+                    icon.style.setProperty('display', 'inline-flex', 'important');
+                    icon.style.setProperty('align-items', 'center', 'important');
+                    icon.style.setProperty('justify-content', 'center', 'important');
+                    icon.style.setProperty('visibility', 'visible', 'important');
+                    icon.style.setProperty('opacity', '1', 'important');
+                    icon.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
+                    icon.style.setProperty('-moz-osx-font-smoothing', 'grayscale', 'important');
+                    icon.style.setProperty('text-rendering', 'auto', 'important');
+                    icon.style.setProperty('line-height', '1', 'important');
+                    icon.dataset.faFixed = 'true';
+                    fixedCount++;
+                });
+                
+                // Force dropdown icons specifically
+                const dropdownIcons = document.querySelectorAll('.dropdown-icon, i.dropdown-icon, .sidebar-section-label i.fa-chevron-down, .sidebar-section-label i.fa-chevron-up');
+                dropdownIcons.forEach(function(icon) {
+                    icon.style.setProperty('font-family', '"Font Awesome 6 Free", "FontAwesome"', 'important');
+                    icon.style.setProperty('font-weight', '900', 'important');
+                    icon.style.setProperty('display', 'inline-flex', 'important');
+                    icon.style.setProperty('align-items', 'center', 'important');
+                    icon.style.setProperty('justify-content', 'center', 'important');
+                    icon.style.setProperty('visibility', 'visible', 'important');
+                    icon.style.setProperty('opacity', '1', 'important');
+                    icon.style.setProperty('color', '#ffffff', 'important');
+                    
+                    // Force ::before pseudo-element to use Font Awesome
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .dropdown-icon::before,
+                        i.dropdown-icon::before,
+                        .sidebar-section-label i.fa-chevron-down::before,
+                        .sidebar-section-label i.fa-chevron-up::before {
+                            font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+                            font-weight: 900 !important;
+                            font-style: normal !important;
+                        }
+                    `;
+                    if (!document.getElementById('fa-dropdown-fix')) {
+                        style.id = 'fa-dropdown-fix';
+                        document.head.appendChild(style);
+                    }
+                });
+                
+                // Force menu item icons to have proper spacing
+                const menuItemIcons = document.querySelectorAll('.menu-item i');
+                menuItemIcons.forEach(function(icon) {
+                    if (!icon.classList.contains('dropdown-icon')) {
+                        icon.style.setProperty('margin-right', '0.75rem', 'important');
+                        icon.style.setProperty('width', '20px', 'important');
+                        icon.style.setProperty('min-width', '20px', 'important');
+                        icon.style.setProperty('font-size', '1.1rem', 'important');
+                        icon.style.setProperty('color', '#ffffff', 'important');
+                    }
+                });
+                
+                // Force sidebar section label icons (first icon) to be visible
+                const sectionLabelIcons = document.querySelectorAll('.sidebar-section-label > i:first-child');
+                sectionLabelIcons.forEach(function(icon) {
+                    icon.style.setProperty('width', '20px', 'important');
+                    icon.style.setProperty('min-width', '20px', 'important');
+                    icon.style.setProperty('font-size', '1rem', 'important');
+                    icon.style.setProperty('color', '#ffffff', 'important');
+                    icon.style.setProperty('margin-right', '0.75rem', 'important');
+                    icon.style.setProperty('display', 'inline-flex', 'important');
+                    icon.style.setProperty('visibility', 'visible', 'important');
+                    icon.style.setProperty('opacity', '1', 'important');
+                    icon.style.setProperty('font-family', '"Font Awesome 6 Free", "FontAwesome"', 'important');
+                    icon.style.setProperty('font-weight', '900', 'important');
+                });
+                
+                // Add style for ::before pseudo-element of all icons
+                if (!document.getElementById('fa-before-fix')) {
+                    const style = document.createElement('style');
+                    style.id = 'fa-before-fix';
+                    style.textContent = `
+                        .sidebar i::before,
+                        .menu-item i::before,
+                        .sidebar-section-label i::before,
+                        .brand-icon i::before,
+                        .header-icon i::before,
+                        .notification-icon i::before,
+                        i[class*="fa-"]::before,
+                        [class*="fa-"]::before {
+                            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+                            font-weight: 900 !important;
+                            font-style: normal !important;
+                            display: inline-block !important;
+                            -webkit-font-smoothing: antialiased !important;
+                            -moz-osx-font-smoothing: grayscale !important;
+                        }
+                        i.fab::before,
+                        [class*="fa-"].fab::before {
+                            font-family: "Font Awesome 6 Brands" !important;
+                            font-weight: 400 !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // Force notification icons to be clearly visible
+                const notificationIcons = document.querySelectorAll('.notification-icon i');
+                notificationIcons.forEach(function(icon) {
+                    icon.style.setProperty('font-size', '1.3rem', 'important');
+                    icon.style.setProperty('width', '100%', 'important');
+                    icon.style.setProperty('height', '100%', 'important');
+                });
+                
+                // Force header icons to be clearly visible
+                const headerIcons = document.querySelectorAll('.header-icon i, .btn-icon i');
+                headerIcons.forEach(function(icon) {
+                    icon.style.setProperty('font-size', '1.2rem', 'important');
+                    icon.style.setProperty('width', '100%', 'important');
+                    icon.style.setProperty('height', '100%', 'important');
+                });
+                
+                if (fixedCount > 0) {
+                    console.log('Applied Font Awesome styles to', fixedCount, 'icons');
+                }
+            }
+            
+            // Run immediately and on various events
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', forceIconDisplay);
+            } else {
+                forceIconDisplay();
+            }
+            
+            window.addEventListener('load', function() {
+                setTimeout(forceIconDisplay, 100);
+                setTimeout(forceIconDisplay, 300);
+                setTimeout(forceIconDisplay, 500);
+            });
+            
+            // Also run after delays to catch dynamically added icons
+            setTimeout(forceIconDisplay, 500);
+            setTimeout(forceIconDisplay, 1000);
+            setTimeout(forceIconDisplay, 2000);
+            
+            // Use MutationObserver to catch dynamically added icons
+            if (window.MutationObserver) {
+                const observer = new MutationObserver(function(mutations) {
+                    let shouldFix = false;
+                    mutations.forEach(function(mutation) {
+                        if (mutation.addedNodes.length > 0) {
+                            mutation.addedNodes.forEach(function(node) {
+                                if (node.nodeType === 1) {
+                                    if (node.matches && (node.matches('i[class*="fa-"]') || node.querySelector('i[class*="fa-"]'))) {
+                                        shouldFix = true;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    if (shouldFix) {
+                        setTimeout(forceIconDisplay, 100);
+                    }
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        })();
+    </script>
+    <script src="/js/app.js"></script>
+    <script src="/js/chat.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/visi-misi.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+    <script src="/js/inventarisasi-swot.js"></script>
+    <script src="/js/analisis-swot.js"></script>
+    <script src="/js/diagram-kartesius.js"></script>
+    <script src="/js/matriks-tows.js"></script>
+    <script src="/js/sasaran-strategi.js"></script>
+    <script src="/js/strategic-map.js"></script>
+    <script src="/js/indikator-kinerja-utama.js"></script>
+    <script src="/js/monitoring-evaluasi.js"></script>
+    <script src="/js/peluang.js"></script>
+    <script src="/js/kri.js"></script>
+    <script src="/js/loss-event.js"></script>
+    <script src="/js/ews.js"></script>
+    <script src="/js/laporan.js"></script>
+    <script src="/js/pengaturan.js"></script>
+    <script src="/js/risk-input.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    <script src="/js/residual-risk.js"></script>
+    <script src="/js/risk-register.js"></script>
+    <script src="/js/risk-appetite.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/master-data.js"></script>
+</body>
+</html>
+
