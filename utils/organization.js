@@ -53,10 +53,6 @@ async function isSuperAdmin(user) {
   try {
     if (!user) return false;
 
-    // Check email directly
-    if (user.email === 'mukhsin9@gmail.com') return true;
-
-    // Check role from user_profiles
     const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('user_profiles')
@@ -69,7 +65,8 @@ async function isSuperAdmin(user) {
       return false;
     }
 
-    return data?.role === 'superadmin';
+    const role = data?.role || user.app_metadata?.role || user.user_metadata?.role;
+    return role === 'superadmin';
   } catch (error) {
     logger.error('Error in isSuperAdmin:', error);
     return false;
@@ -85,10 +82,6 @@ async function getUserRole(user) {
   try {
     if (!user) return null;
 
-    // Check if superadmin by email
-    if (user.email === 'mukhsin9@gmail.com') return 'superadmin';
-
-    // Get role from user_profiles
     const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('user_profiles')
@@ -98,10 +91,10 @@ async function getUserRole(user) {
 
     if (error) {
       logger.warn('Error getting user role:', error);
-      return null;
+      return user.app_metadata?.role || user.user_metadata?.role || null;
     }
 
-    return data?.role || null;
+    return data?.role || user.app_metadata?.role || user.user_metadata?.role || null;
   } catch (error) {
     logger.error('Error in getUserRole:', error);
     return null;

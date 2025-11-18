@@ -84,6 +84,37 @@ function getSupabaseClientForRequest(req) {
   }
 }
 
+function createQueryBuilderMock() {
+  const buildResponse = async () => ({ data: null, error: null });
+  const builder = {
+    eq: () => builder,
+    neq: () => builder,
+    gt: () => builder,
+    gte: () => builder,
+    lt: () => builder,
+    lte: () => builder,
+    like: () => builder,
+    ilike: () => builder,
+    in: () => builder,
+    order: () => builder,
+    limit: () => builder,
+    range: () => builder,
+    select: () => builder,
+    insert: () => builder,
+    update: () => builder,
+    delete: () => builder,
+    upsert: () => builder,
+    single: buildResponse,
+    maybeSingle: buildResponse,
+    is: () => builder,
+    not: () => builder,
+    contains: () => builder,
+    count: () => ({ data: null, error: null }),
+    then: (resolve) => resolve({ data: null, error: null })
+  };
+  return builder;
+}
+
 module.exports = {
   supabase: supabase || {
     auth: {
@@ -91,18 +122,10 @@ module.exports = {
       signInWithPassword: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
       signOut: async () => ({ error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
-      getUser: async () => ({ data: { user: null }, error: null }),
+      getUser: async (_token) => ({ data: { user: null }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: null }, error: null })
     },
-    from: () => ({
-      select: () => ({
-        eq: () => ({ data: [], error: null }),
-        insert: () => ({ data: null, error: { message: 'Supabase not configured' } }),
-        update: () => ({ data: null, error: { message: 'Supabase not configured' } }),
-        delete: () => ({ data: null, error: { message: 'Supabase not configured' } }),
-        upsert: () => ({ data: null, error: { message: 'Supabase not configured' } })
-      })
-    })
+    from: () => createQueryBuilderMock()
   },
   supabaseAdmin,
   getSupabaseClientForRequest
