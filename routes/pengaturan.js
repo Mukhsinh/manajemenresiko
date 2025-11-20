@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
-const { supabase, supabaseAdmin } = require('../config/supabase');
+const { supabase, supabaseAdmin, getSupabaseClientForRequest } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 
 const upload = multer({
@@ -9,20 +9,19 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-const readClient = supabaseAdmin || supabase;
-const writeClient = supabaseAdmin || supabase;
-
-const ensureClient = () => {
-  if (!readClient || !writeClient) {
+const ensureClient = (req) => {
+  const client = supabaseAdmin || getSupabaseClientForRequest(req) || supabase;
+  if (!client) {
     throw new Error('Supabase client belum dikonfigurasi. Pastikan variabel lingkungan Supabase terisi.');
   }
+  return client;
 };
 
 // Get all pengaturan
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    ensureClient();
-    const { data, error } = await readClient
+    const client = ensureClient(req);
+    const { data, error } = await client
       .from('pengaturan_aplikasi')
       .select('*')
       .order('kategori', { ascending: true });
@@ -38,8 +37,8 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by key
 router.get('/:kunci', authenticateUser, async (req, res) => {
   try {
-    ensureClient();
-    const { data, error } = await readClient
+    const client = ensureClient(req);
+    const { data, error } = await client
       .from('pengaturan_aplikasi')
       .select('*')
       .eq('kunci_pengaturan', req.params.kunci)
@@ -57,7 +56,7 @@ router.get('/:kunci', authenticateUser, async (req, res) => {
 // Update
 router.put('/:kunci', authenticateUser, async (req, res) => {
   try {
-    ensureClient();
+    const client = ensureClient(req);
 
     const { nilai_pengaturan } = req.body;
 
@@ -68,7 +67,7 @@ router.put('/:kunci', authenticateUser, async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await writeClient
+    const { data, error } = await client
       .from('pengaturan_aplikasi')
       .upsert(payload, {
         onConflict: 'kunci_pengaturan'
@@ -87,7 +86,7 @@ router.put('/:kunci', authenticateUser, async (req, res) => {
 // Bulk update
 router.put('/', authenticateUser, async (req, res) => {
   try {
-    ensureClient();
+    const client = ensureClient(req);
 
     const { pengaturan } = req.body; // Array of {kunci_pengaturan, nilai_pengaturan}
 
@@ -104,7 +103,7 @@ router.put('/', authenticateUser, async (req, res) => {
       updated_at: timestamp
     }));
 
-    const { error } = await writeClient
+    const { error } = await client
       .from('pengaturan_aplikasi')
       .upsert(upsertPayload, {
         onConflict: 'kunci_pengaturan'
@@ -122,7 +121,7 @@ router.put('/', authenticateUser, async (req, res) => {
 // Upload logo instansi
 router.post('/logo', authenticateUser, upload.single('logo'), async (req, res) => {
   try {
-    ensureClient();
+    const client = ensureClient(req);
 
     if (!req.file) {
       return res.status(400).json({ error: 'File logo tidak ditemukan' });
@@ -130,7 +129,7 @@ router.post('/logo', authenticateUser, upload.single('logo'), async (req, res) =
     const base64 = req.file.buffer.toString('base64');
     const dataUri = `data:${req.file.mimetype};base64,${base64}`;
 
-    const { error } = await writeClient
+    const { error } = await client
       .from('pengaturan_aplikasi')
       .update({
         nilai_pengaturan: dataUri,
