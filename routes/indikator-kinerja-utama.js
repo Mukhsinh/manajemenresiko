@@ -11,7 +11,7 @@ router.get('/', authenticateUser, async (req, res) => {
     let query = supabase
       .from('indikator_kinerja_utama')
       .select('*, rencana_strategis(nama_rencana), sasaran_strategi(sasaran, perspektif)')
-      .eq('user_id', req.user.id)
+      .eq('indikator_kinerja_utama.user_id', req.user.id)
       .order('created_at', { ascending: false });
 
     if (rencana_strategis_id) {
@@ -37,8 +37,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('indikator_kinerja_utama')
       .select('*, rencana_strategis(nama_rencana), sasaran_strategi(sasaran, perspektif)')
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('indikator_kinerja_utama.id', req.params.id)
+      .eq('indikator_kinerja_utama.user_id', req.user.id)
       .single();
 
     if (error) throw error;
@@ -126,8 +126,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('indikator_kinerja_utama')
       .update(updateData)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('indikator_kinerja_utama.id', req.params.id)
+      .eq('indikator_kinerja_utama.user_id', req.user.id)
       .select()
       .single();
 
@@ -146,8 +146,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     const { error } = await supabase
       .from('indikator_kinerja_utama')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('indikator_kinerja_utama.id', req.params.id)
+      .eq('indikator_kinerja_utama.user_id', req.user.id);
 
     if (error) throw error;
     res.json({ message: 'Indikator kinerja utama berhasil dihapus' });

@@ -39,21 +39,28 @@ function sendExcelResponse(res, buffer, filename) {
 // Probability Criteria
 router.get('/probability-criteria', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_probability_criteria')
       .select('*')
-      .order('index', { ascending: false });
+      .order('index', { ascending: true });
 
     if (error) throw error;
-    res.json(data);
+    res.json(data || []);
   } catch (error) {
+    console.error('Get probability criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.post('/probability-criteria', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_probability_criteria')
       .insert(req.body)
       .select()
@@ -62,13 +69,17 @@ router.post('/probability-criteria', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Create probability criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.put('/probability-criteria/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_probability_criteria')
       .update(req.body)
       .eq('id', req.params.id)
@@ -78,13 +89,17 @@ router.put('/probability-criteria/:id', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Update probability criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.delete('/probability-criteria/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { error } = await clientToUse
       .from('master_probability_criteria')
       .delete()
       .eq('id', req.params.id);
@@ -92,6 +107,7 @@ router.delete('/probability-criteria/:id', authenticateUser, async (req, res) =>
     if (error) throw error;
     res.json({ message: 'Deleted successfully' });
   } catch (error) {
+    console.error('Delete probability criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -99,21 +115,28 @@ router.delete('/probability-criteria/:id', authenticateUser, async (req, res) =>
 // Impact Criteria
 router.get('/impact-criteria', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_impact_criteria')
       .select('*')
-      .order('index', { ascending: false });
+      .order('index', { ascending: true });
 
     if (error) throw error;
-    res.json(data);
+    res.json(data || []);
   } catch (error) {
+    console.error('Get impact criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.post('/impact-criteria', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_impact_criteria')
       .insert(req.body)
       .select()
@@ -122,13 +145,17 @@ router.post('/impact-criteria', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Create impact criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.put('/impact-criteria/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_impact_criteria')
       .update(req.body)
       .eq('id', req.params.id)
@@ -138,13 +165,17 @@ router.put('/impact-criteria/:id', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Update impact criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.delete('/impact-criteria/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { error } = await clientToUse
       .from('master_impact_criteria')
       .delete()
       .eq('id', req.params.id);
@@ -152,6 +183,7 @@ router.delete('/impact-criteria/:id', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Deleted successfully' });
   } catch (error) {
+    console.error('Delete impact criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -159,21 +191,28 @@ router.delete('/impact-criteria/:id', authenticateUser, async (req, res) => {
 // Risk Categories
 router.get('/risk-categories', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_risk_categories')
       .select('*')
-      .order('id');
+      .order('name');
 
     if (error) throw error;
-    res.json(data);
+    res.json(data || []);
   } catch (error) {
+    console.error('Get risk categories error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.post('/risk-categories', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_risk_categories')
       .insert(req.body)
       .select()
@@ -182,13 +221,17 @@ router.post('/risk-categories', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Create risk category error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.put('/risk-categories/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_risk_categories')
       .update(req.body)
       .eq('id', req.params.id)
@@ -198,13 +241,17 @@ router.put('/risk-categories/:id', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Update risk category error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.delete('/risk-categories/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { error } = await clientToUse
       .from('master_risk_categories')
       .delete()
       .eq('id', req.params.id);
@@ -212,6 +259,7 @@ router.delete('/risk-categories/:id', authenticateUser, async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Deleted successfully' });
   } catch (error) {
+    console.error('Delete risk category error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -219,7 +267,10 @@ router.delete('/risk-categories/:id', authenticateUser, async (req, res) => {
 // Work Units
 router.get('/work-units', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    // Use admin client to bypass RLS for master data
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('master_work_units')
       .select('*, organizations(name, code)')
       .order('name');
@@ -233,11 +284,15 @@ router.get('/work-units', authenticateUser, async (req, res) => {
 
 router.post('/work-units', authenticateUser, async (req, res) => {
   try {
+    const { supabaseAdmin } = require('../config/supabase');
     const payload = { ...req.body };
     if (!payload.code) {
       payload.code = await generateWorkUnitCode();
     }
-    const { data, error } = await supabase
+    
+    // Use admin client to bypass RLS for master data
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('master_work_units')
       .insert(payload)
       .select()
@@ -252,7 +307,10 @@ router.post('/work-units', authenticateUser, async (req, res) => {
 
 router.put('/work-units/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    // Use admin client to bypass RLS for master data
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('master_work_units')
       .update(req.body)
       .eq('id', req.params.id)
@@ -268,7 +326,10 @@ router.put('/work-units/:id', authenticateUser, async (req, res) => {
 
 router.delete('/work-units/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    // Use admin client to bypass RLS for master data
+    const clientToUse = supabaseAdmin || supabase;
+    const { error } = await clientToUse
       .from('master_work_units')
       .delete()
       .eq('id', req.params.id);
@@ -347,13 +408,19 @@ async function handleTemplateResponse(res, headers, sheetName, filename) {
 }
 
 async function handleExportResponse(res, table, sheetName, filename, select = '*') {
-  const { data, error } = await supabase.from(table).select(select);
+  const { supabaseAdmin } = require('../config/supabase');
+  const clientToUse = supabaseAdmin || supabase;
+  
+  const { data, error } = await clientToUse.from(table).select(select);
   if (error) throw error;
   const buffer = exportToExcel(data || [], sheetName);
   sendExcelResponse(res, buffer, filename);
 }
 
 async function handleImport(table, items) {
+  const { supabaseAdmin } = require('../config/supabase');
+  const clientToUse = supabaseAdmin || supabase;
+  
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error('Data import tidak valid');
   }
@@ -361,7 +428,7 @@ async function handleImport(table, items) {
   if (sanitized.length === 0) {
     throw new Error('Data import tidak valid');
   }
-  const { data, error } = await supabase.from(table).upsert(sanitized);
+  const { data, error } = await clientToUse.from(table).upsert(sanitized);
   if (error) throw error;
   return data;
 }
@@ -395,17 +462,40 @@ router.get('/probability-criteria/export', authenticateUser, async (req, res) =>
 
 router.post('/probability-criteria/import', authenticateUser, async (req, res) => {
   try {
-    const items = (req.body.items || []).map(item =>
-      normalizeItem(item, {
-        index: ['index', 'Index'],
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const items = (req.body.items || []).map(item => {
+      const normalized = normalizeItem(item, {
+        index: ['index', 'Index', 'Indeks'],
         probability: ['probability', 'Probabilitas'],
         description: ['description', 'Deskripsi'],
         percentage: ['percentage', 'Persentase']
-      })
-    );
-    await handleImport('master_probability_criteria', items);
-    res.json({ message: 'Import berhasil' });
+      });
+      // Ensure index is a number
+      if (normalized.index !== undefined && normalized.index !== '') {
+        normalized.index = Number(normalized.index);
+      }
+      return normalized;
+    });
+    
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new Error('Data import tidak valid');
+    }
+    const sanitized = items.filter(item => Object.keys(item).length > 0 && item.index !== undefined);
+    if (sanitized.length === 0) {
+      throw new Error('Data import tidak valid atau tidak ada index');
+    }
+    
+    // Use upsert with onConflict to handle duplicate index
+    const { data, error } = await clientToUse
+      .from('master_probability_criteria')
+      .upsert(sanitized, { onConflict: 'index' });
+    
+    if (error) throw error;
+    res.json({ message: 'Import berhasil', count: sanitized.length });
   } catch (error) {
+    console.error('Import probability criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -439,16 +529,39 @@ router.get('/impact-criteria/export', authenticateUser, async (req, res) => {
 
 router.post('/impact-criteria/import', authenticateUser, async (req, res) => {
   try {
-    const items = (req.body.items || []).map(item =>
-      normalizeItem(item, {
-        index: ['index', 'Index'],
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const items = (req.body.items || []).map(item => {
+      const normalized = normalizeItem(item, {
+        index: ['index', 'Index', 'Indeks'],
         impact: ['impact', 'Dampak'],
         description: ['description', 'Deskripsi']
-      })
-    );
-    await handleImport('master_impact_criteria', items);
-    res.json({ message: 'Import berhasil' });
+      });
+      // Ensure index is a number
+      if (normalized.index !== undefined && normalized.index !== '') {
+        normalized.index = Number(normalized.index);
+      }
+      return normalized;
+    });
+    
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new Error('Data import tidak valid');
+    }
+    const sanitized = items.filter(item => Object.keys(item).length > 0 && item.index !== undefined);
+    if (sanitized.length === 0) {
+      throw new Error('Data import tidak valid atau tidak ada index');
+    }
+    
+    // Use upsert with onConflict to handle duplicate index
+    const { data, error } = await clientToUse
+      .from('master_impact_criteria')
+      .upsert(sanitized, { onConflict: 'index' });
+    
+    if (error) throw error;
+    res.json({ message: 'Import berhasil', count: sanitized.length });
   } catch (error) {
+    console.error('Import impact criteria error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -482,15 +595,33 @@ router.get('/risk-categories/export', authenticateUser, async (req, res) => {
 
 router.post('/risk-categories/import', authenticateUser, async (req, res) => {
   try {
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
     const items = (req.body.items || []).map(item =>
       normalizeItem(item, {
-        name: ['name', 'Nama'],
+        name: ['name', 'Nama', 'Nama Kategori'],
         definition: ['definition', 'Definisi']
       })
     );
-    await handleImport('master_risk_categories', items);
-    res.json({ message: 'Import berhasil' });
+    
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new Error('Data import tidak valid');
+    }
+    const sanitized = items.filter(item => Object.keys(item).length > 0 && item.name);
+    if (sanitized.length === 0) {
+      throw new Error('Data import tidak valid atau tidak ada nama kategori');
+    }
+    
+    // Use upsert with onConflict on name (unique constraint)
+    const { data, error } = await clientToUse
+      .from('master_risk_categories')
+      .upsert(sanitized, { onConflict: 'name' });
+    
+    if (error) throw error;
+    res.json({ message: 'Import berhasil', count: sanitized.length });
   } catch (error) {
+    console.error('Import risk categories error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -511,7 +642,10 @@ router.get('/work-units/template', authenticateUser, async (req, res) => {
 
 router.get('/work-units/export', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
       .from('master_work_units')
       .select('*, organizations(name, code)')
       .order('name');
@@ -536,7 +670,10 @@ router.get('/work-units/export', authenticateUser, async (req, res) => {
 
 router.post('/work-units/import', authenticateUser, async (req, res) => {
   try {
-    const { data: orgs } = await supabase
+    const { supabaseAdmin } = require('../config/supabase');
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data: orgs } = await clientToUse
       .from('organizations')
       .select('id, name, code');
 
@@ -572,8 +709,18 @@ router.post('/work-units/import', authenticateUser, async (req, res) => {
       payload.push(normalized);
     }
 
-    await handleImport('master_work_units', payload);
-    res.json({ message: 'Import berhasil' });
+    // Use admin client for import
+    if (!Array.isArray(payload) || payload.length === 0) {
+      throw new Error('Data import tidak valid');
+    }
+    const sanitized = payload.filter(item => Object.keys(item).length > 0);
+    if (sanitized.length === 0) {
+      throw new Error('Data import tidak valid');
+    }
+    const { data, error } = await clientToUse.from('master_work_units').upsert(sanitized);
+    if (error) throw error;
+    
+    res.json({ message: 'Import berhasil', count: sanitized.length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -719,17 +719,15 @@ const PengaturanAplikasi = {
       // Small delay to ensure database is updated
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Reload organizations to get updated user list
-      console.log('Reloading organizations after adding user...');
-      await this.loadOrganizations();
-      console.log('Organizations after reload:', this.organizations);
+      // Force reload users for the selected organization
+      console.log('Reloading users for organization after adding user...');
+      await this.ensureOrganizationUsersLoaded(currentSelectedOrgId, { force: true });
       
       // Restore selectedOrgId and activeTab
       this.selectedOrgId = currentSelectedOrgId;
       this.activeTab = currentActiveTab;
-      await this.ensureOrganizationUsersLoaded(this.selectedOrgId, { force: true });
       
-      // Find the selected organization in the reloaded data
+      // Find the selected organization in the data
       const selectedOrg = this.organizations.find(org => org.id === currentSelectedOrgId);
       if (selectedOrg) {
         console.log('Selected org after reload:', selectedOrg);
@@ -749,6 +747,7 @@ const PengaturanAplikasi = {
         alert('User berhasil ditambahkan ke organisasi');
       }, 100);
     } catch (error) {
+      console.error('Error adding user:', error);
       alert('Error: ' + error.message);
     }
   },
@@ -1053,20 +1052,27 @@ const PengaturanAplikasi = {
 
   async updateUserRole(recordId, role) {
     try {
+      const currentSelectedOrg = this.selectedOrgId;
+      const currentActiveTab = this.activeTab;
+      
       await apiCall(`/api/organizations/users/${recordId}`, {
         method: 'PUT',
         body: { role }
       });
-      await this.loadOrganizations();
-      // Preserve selected org when updating role
-      const currentSelectedOrg = this.selectedOrgId;
-      this.render();
+      
+      // Force reload users for the selected organization
       if (currentSelectedOrg) {
-        this.selectedOrgId = currentSelectedOrg;
-        // Re-render to show updated data
-        this.render();
+        await this.ensureOrganizationUsersLoaded(currentSelectedOrg, { force: true });
       }
+      
+      // Restore state and re-render
+      this.selectedOrgId = currentSelectedOrg;
+      this.activeTab = currentActiveTab;
+      this.render();
+      
+      alert('Role berhasil diupdate');
     } catch (error) {
+      console.error('Error updating user role:', error);
       alert('Error: ' + error.message);
     }
   },
@@ -1074,17 +1080,24 @@ const PengaturanAplikasi = {
   async removeOrgUser(recordId) {
     if (!confirm('Hapus user dari organisasi?')) return;
     try {
-      await apiCall(`/api/organizations/users/${recordId}`, { method: 'DELETE' });
-      await this.loadOrganizations();
-      // Preserve selected org when removing user
       const currentSelectedOrg = this.selectedOrgId;
-      this.render();
+      const currentActiveTab = this.activeTab;
+      
+      await apiCall(`/api/organizations/users/${recordId}`, { method: 'DELETE' });
+      
+      // Force reload users for the selected organization
       if (currentSelectedOrg) {
-        this.selectedOrgId = currentSelectedOrg;
-        // Re-render to show updated data
-        this.render();
+        await this.ensureOrganizationUsersLoaded(currentSelectedOrg, { force: true });
       }
+      
+      // Restore state and re-render
+      this.selectedOrgId = currentSelectedOrg;
+      this.activeTab = currentActiveTab;
+      this.render();
+      
+      alert('User berhasil dihapus dari organisasi');
     } catch (error) {
+      console.error('Error removing user:', error);
       alert('Error: ' + error.message);
     }
   },

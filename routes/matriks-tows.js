@@ -11,7 +11,7 @@ router.get('/', authenticateUser, async (req, res) => {
     let query = supabase
       .from('swot_tows_strategi')
       .select('*, rencana_strategis(nama_rencana)')
-      .eq('user_id', req.user.id)
+      .eq('swot_tows_strategi.user_id', req.user.id)
       .order('tahun', { ascending: false })
       .order('tipe_strategi', { ascending: true })
       .order('created_at', { ascending: false });
@@ -42,8 +42,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('swot_tows_strategi')
       .select('*, rencana_strategis(nama_rencana)')
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('swot_tows_strategi.id', req.params.id)
+      .eq('swot_tows_strategi.user_id', req.user.id)
       .single();
 
     if (error) throw error;
@@ -119,8 +119,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('swot_tows_strategi')
       .update(updateData)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('swot_tows_strategi.id', req.params.id)
+      .eq('swot_tows_strategi.user_id', req.user.id)
       .select()
       .single();
 
@@ -139,8 +139,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     const { error } = await supabase
       .from('swot_tows_strategi')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('swot_tows_strategi.id', req.params.id)
+      .eq('swot_tows_strategi.user_id', req.user.id);
 
     if (error) throw error;
     res.json({ message: 'Strategi berhasil dihapus' });

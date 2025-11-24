@@ -94,7 +94,7 @@ router.get('/', authenticateUser, async (req, res) => {
     let query = supabase
       .from('swot_diagram_kartesius')
       .select('*, rencana_strategis(nama_rencana)')
-      .eq('user_id', req.user.id)
+      .eq('swot_diagram_kartesius.user_id', req.user.id)
       .order('tahun', { ascending: false });
 
     if (rencana_strategis_id) {
@@ -120,8 +120,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('swot_diagram_kartesius')
       .select('*, rencana_strategis(nama_rencana)')
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('swot_diagram_kartesius.id', req.params.id)
+      .eq('swot_diagram_kartesius.user_id', req.user.id)
       .single();
 
     if (error) throw error;
@@ -150,8 +150,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('swot_diagram_kartesius')
       .update(updateData)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('swot_diagram_kartesius.id', req.params.id)
+      .eq('swot_diagram_kartesius.user_id', req.user.id)
       .select()
       .single();
 
@@ -170,8 +170,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     const { error } = await supabase
       .from('swot_diagram_kartesius')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('swot_diagram_kartesius.id', req.params.id)
+      .eq('swot_diagram_kartesius.user_id', req.user.id);
 
     if (error) throw error;
     res.json({ message: 'Data berhasil dihapus' });

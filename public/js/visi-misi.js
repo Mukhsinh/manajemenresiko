@@ -13,6 +13,17 @@ async function loadVisiMisi() {
 function renderVisiMisi(data) {
     const content = document.getElementById('visi-misi-content');
     
+    // Helper function to format misi as numbered list
+    const formatMisi = (misi) => {
+        if (!misi) return '-';
+        const lines = misi.split('\n').filter(line => line.trim().length > 0);
+        if (lines.length === 0) return '-';
+        if (lines.length === 1) return lines[0];
+        return '<ol style="margin: 0; padding-left: 1.5rem;">' + 
+               lines.map(line => `<li>${line}</li>`).join('') + 
+               '</ol>';
+    };
+    
     content.innerHTML = `
         <div class="card">
             <div class="card-header">
@@ -25,11 +36,11 @@ function renderVisiMisi(data) {
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Tahun</th>
-                            <th>Visi</th>
-                            <th>Misi</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
+                            <th style="width: 80px;">Tahun</th>
+                            <th style="width: 30%;">Visi</th>
+                            <th style="width: 40%;">Misi</th>
+                            <th style="width: 100px;">Status</th>
+                            <th style="width: 150px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="visi-misi-tbody">
@@ -37,8 +48,8 @@ function renderVisiMisi(data) {
                         ${data.map(item => `
                             <tr>
                                 <td>${item.tahun}</td>
-                                <td>${item.visi}</td>
-                                <td>${item.misi}</td>
+                                <td style="white-space: pre-wrap;">${item.visi || '-'}</td>
+                                <td>${formatMisi(item.misi)}</td>
                                 <td><span class="badge-status badge-${item.status === 'Aktif' ? 'aman' : 'secondary'}">${item.status}</span></td>
                                 <td>
                                     <button class="btn btn-edit btn-sm" onclick="editVisiMisi('${item.id}')">
@@ -62,7 +73,7 @@ function showVisiMisiModal(id = null) {
     const modal = document.createElement('div');
     modal.className = 'modal active';
     modal.innerHTML = `
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
                 <h3 class="modal-title">${id ? 'Edit' : 'Tambah'} Visi dan Misi</h3>
                 <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
@@ -74,11 +85,22 @@ function showVisiMisiModal(id = null) {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Visi *</label>
-                    <textarea class="form-control" id="vm-visi" required rows="4"></textarea>
+                    <textarea class="form-control" id="vm-visi" required rows="3" placeholder="Menjadi rumah sakit umum daerah yang mandiri, inovatif, berkualitas dalam pelayanan, pendidikan dan penelitian"></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Misi *</label>
-                    <textarea class="form-control" id="vm-misi" required rows="6"></textarea>
+                    <small class="form-hint" style="display: block; margin-bottom: 0.5rem;">Tambahkan misi satu per satu. Klik tombol + untuk menambah misi baru.</small>
+                    <div id="misi-container">
+                        <div class="misi-item" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="text" class="form-control misi-input" placeholder="Misi 1" required>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeMisiField(this)" style="min-width: 40px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addMisiField()" style="margin-top: 0.5rem;">
+                        <i class="fas fa-plus"></i> Tambah Misi
+                    </button>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Status</label>
@@ -102,13 +124,56 @@ function showVisiMisiModal(id = null) {
     }
 }
 
+function addMisiField() {
+    const container = document.getElementById('misi-container');
+    const count = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'misi-item';
+    div.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
+    div.innerHTML = `
+        <input type="text" class="form-control misi-input" placeholder="Misi ${count}" required>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeMisiField(this)" style="min-width: 40px;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function removeMisiField(button) {
+    const container = document.getElementById('misi-container');
+    if (container.children.length > 1) {
+        button.closest('.misi-item').remove();
+        // Update placeholders
+        const inputs = container.querySelectorAll('.misi-input');
+        inputs.forEach((input, index) => {
+            input.placeholder = `Misi ${index + 1}`;
+        });
+    } else {
+        alert('Minimal harus ada 1 misi');
+    }
+}
+
 async function saveVisiMisi(e, id) {
     e.preventDefault();
     try {
+        // Collect all misi inputs
+        const misiInputs = document.querySelectorAll('.misi-input');
+        const misiArray = Array.from(misiInputs)
+            .map(input => input.value.trim())
+            .filter(value => value.length > 0);
+        
+        if (misiArray.length === 0) {
+            alert('Minimal harus ada 1 misi');
+            return;
+        }
+        
+        // Join with newline for storage
+        const misiFormatted = misiArray.join('\n');
+        
         const data = {
             tahun: parseInt(document.getElementById('vm-tahun').value),
             visi: document.getElementById('vm-visi').value,
-            misi: document.getElementById('vm-misi').value,
+            misi: misiFormatted,
             status: document.getElementById('vm-status').value
         };
         
@@ -146,8 +211,27 @@ async function loadVisiMisiForEdit(id) {
         const data = await apiCall(`/api/visi-misi/${id}`);
         document.getElementById('vm-tahun').value = data.tahun;
         document.getElementById('vm-visi').value = data.visi;
-        document.getElementById('vm-misi').value = data.misi;
         document.getElementById('vm-status').value = data.status;
+        
+        // Load misi fields
+        const container = document.getElementById('misi-container');
+        container.innerHTML = ''; // Clear existing
+        
+        const misiArray = data.misi ? data.misi.split('\n').filter(line => line.trim()) : [''];
+        if (misiArray.length === 0) misiArray.push('');
+        
+        misiArray.forEach((misi, index) => {
+            const div = document.createElement('div');
+            div.className = 'misi-item';
+            div.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
+            div.innerHTML = `
+                <input type="text" class="form-control misi-input" placeholder="Misi ${index + 1}" value="${misi}" required>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeMisiField(this)" style="min-width: 40px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        });
     } catch (error) {
         alert('Error loading data: ' + error.message);
     }
@@ -155,4 +239,6 @@ async function loadVisiMisiForEdit(id) {
 
 // Export
 window.visiMisiModule = { loadVisiMisi };
+window.addMisiField = addMisiField;
+window.removeMisiField = removeMisiField;
 

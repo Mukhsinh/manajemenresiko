@@ -85,7 +85,7 @@ router.get('/', authenticateUser, async (req, res) => {
     let query = supabase
       .from('strategic_map')
       .select('*, rencana_strategis(nama_rencana), sasaran_strategi(sasaran, perspektif)')
-      .eq('user_id', req.user.id)
+      .eq('strategic_map.user_id', req.user.id)
       .order('perspektif', { ascending: true })
       .order('posisi_x', { ascending: true });
 
@@ -109,8 +109,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('strategic_map')
       .select('*, rencana_strategis(nama_rencana), sasaran_strategi(sasaran, perspektif)')
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('strategic_map.id', req.params.id)
+      .eq('strategic_map.user_id', req.user.id)
       .single();
 
     if (error) throw error;
@@ -138,8 +138,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
     const { data, error } = await supabase
       .from('strategic_map')
       .update(updateData)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('strategic_map.id', req.params.id)
+      .eq('strategic_map.user_id', req.user.id)
       .select()
       .single();
 
@@ -158,8 +158,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     const { error } = await supabase
       .from('strategic_map')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('strategic_map.id', req.params.id)
+      .eq('strategic_map.user_id', req.user.id);
 
     if (error) throw error;
     res.json({ message: 'Data berhasil dihapus' });

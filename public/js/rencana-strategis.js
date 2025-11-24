@@ -155,15 +155,43 @@ const RencanaStrategisModule = (() => {
   }
 
   function renderSelect(label, id, options = [], selected = '') {
-    const opts = [
-      '<option value="">Pilih salah satu</option>',
-      ...options.map((opt) => `<option value="${opt.id}" ${opt.id === selected ? 'selected' : ''}>${opt.misi || opt.nama_misi || 'Tanpa Judul'}</option>`)
-    ].join('');
+    const opts = ['<option value="">Pilih salah satu</option>'];
+    
+    // For each visi_misi, split misi into separate options
+    options.forEach((opt) => {
+      if (opt.misi) {
+        // Split misi by newline to get individual misi items
+        const misiArray = opt.misi.split('\n').filter(m => m.trim());
+        misiArray.forEach((misi, index) => {
+          // Clean up misi text (remove numbering if exists)
+          let cleanMisi = misi.trim();
+          // Remove leading numbers like "1.", "2.", etc.
+          cleanMisi = cleanMisi.replace(/^\d+\.\s*/, '');
+          
+          // Create unique value: visi_misi_id|misi_index|misi_text
+          const value = `${opt.id}|${index}|${encodeURIComponent(cleanMisi)}`;
+          
+          // Check if this option is selected
+          let isSelected = false;
+          if (selected) {
+            if (selected.includes('|')) {
+              const [selId, selIndex] = selected.split('|');
+              isSelected = (selId === opt.id && parseInt(selIndex) === index);
+            } else {
+              isSelected = (opt.id === selected && index === 0);
+            }
+          }
+          
+          opts.push(`<option value="${value}" ${isSelected ? 'selected' : ''}>${cleanMisi}</option>`);
+        });
+      }
+    });
+    
     return `
       <div class="form-group">
         <label>${label}</label>
         <select id="${id}" class="form-control">
-          ${opts}
+          ${opts.join('')}
         </select>
       </div>
     `;
@@ -194,17 +222,21 @@ const RencanaStrategisModule = (() => {
       .map((item) => {
         const sasaran = safeArray(item.sasaran_strategis).slice(0, 3).join(', ');
         const indikator = safeArray(item.indikator_kinerja_utama).slice(0, 3).join(', ');
+        
+        // Display the nama_rencana as the selected misi
+        const displayMisi = item.nama_rencana || '-';
+        
         return `
         <tr>
           <td>${item.kode}</td>
-          <td>${item.nama_rencana}</td>
-          <td>${item.visi_misi?.misi || '-'}</td>
+          <td>${item.nama_rencana || '-'}</td>
+          <td>${displayMisi}</td>
           <td>${sasaran || '-'}</td>
           <td>${indikator || '-'}</td>
-          <td>${item.status || 'Draft'}</td>
+          <td><span class="badge badge-${item.status === 'Aktif' ? 'success' : 'warning'}">${item.status || 'Draft'}</span></td>
           <td class="table-actions">
-            <button class="btn btn-edit btn-sm rs-edit-btn" data-id="${item.id}"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-delete btn-sm rs-delete-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+            <button class="btn btn-edit btn-sm rs-edit-btn" data-id="${item.id}" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-delete btn-sm rs-delete-btn" data-id="${item.id}" title="Hapus"><i class="fas fa-trash"></i></button>
           </td>
         </tr>`;
       })
@@ -283,10 +315,35 @@ const RencanaStrategisModule = (() => {
   async function handleSubmit(event) {
     event.preventDefault();
     captureFormValues();
+    
+    // Extract visi_misi_id and misi text from format "visi_misi_id|misi_index|misi_text"
+    let visiMisiId = state.formValues.visi_misi_id;
+    let selectedMisiText = '';
+    
+    if (visiMisiId && visiMisiId.includes('|')) {
+      const parts = visiMisiId.split('|');
+      visiMisiId = parts[0];
+      
+      // Get the misi text from the encoded value
+      if (parts.length >= 3) {
+        selectedMisiText = decodeURIComponent(parts[2]);
+      } else {
+        // Fallback: get from visi_misi data
+        const visiMisi = state.missions.find(m => m.id === visiMisiId);
+        if (visiMisi && visiMisi.misi) {
+          const misiArray = visiMisi.misi.split('\n').filter(m => m.trim());
+          const index = parseInt(parts[1]) || 0;
+          let misiText = misiArray[index] || '';
+          // Remove numbering
+          selectedMisiText = misiText.replace(/^\d+\.\s*/, '').trim();
+        }
+      }
+    }
+    
     const payload = {
       kode: state.formValues.kode,
-      visi_misi_id: state.formValues.visi_misi_id || null,
-      nama_rencana: state.formValues.nama_rencana,
+      visi_misi_id: visiMisiId || null,
+      nama_rencana: state.formValues.nama_rencana || selectedMisiText,
       deskripsi: state.formValues.deskripsi,
       periode_mulai: state.formValues.periode_mulai || null,
       periode_selesai: state.formValues.periode_selesai || null,
@@ -298,19 +355,24 @@ const RencanaStrategisModule = (() => {
     };
 
     if (!payload.nama_rencana) {
-      alert('Nama rencana wajib diisi');
+      alert('Nama rencana wajib diisi atau pilih misi strategis');
       return;
     }
 
-    if (state.currentId) {
-      await api()(`/api/rencana-strategis/${state.currentId}`, { method: 'PUT', body: payload });
-    } else {
-      await api()('/api/rencana-strategis', { method: 'POST', body: payload });
-    }
+    try {
+      if (state.currentId) {
+        await api()(`/api/rencana-strategis/${state.currentId}`, { method: 'PUT', body: payload });
+      } else {
+        await api()('/api/rencana-strategis', { method: 'POST', body: payload });
+      }
 
-    alert('Rencana strategis berhasil disimpan');
-    await fetchInitialData();
-    resetForm();
+      alert('Rencana strategis berhasil disimpan');
+      await fetchInitialData();
+      resetForm();
+    } catch (error) {
+      console.error('Error saving rencana strategis:', error);
+      alert('Gagal menyimpan rencana strategis: ' + (error.message || 'Unknown error'));
+    }
   }
 
   function resetForm() {
@@ -325,9 +387,29 @@ const RencanaStrategisModule = (() => {
     const record = state.data.find((item) => item.id === id);
     if (!record) return;
     state.currentId = id;
+    
+    // Find the matching misi option value
+    let misiValue = record.visi_misi_id || '';
+    if (record.visi_misi_id && record.nama_rencana) {
+      const visiMisi = state.missions.find(m => m.id === record.visi_misi_id);
+      if (visiMisi && visiMisi.misi) {
+        const misiArray = visiMisi.misi.split('\n').filter(m => m.trim());
+        // Try to find matching misi by comparing nama_rencana
+        const matchIndex = misiArray.findIndex(m => {
+          const cleanMisi = m.replace(/^\d+\.\s*/, '').trim();
+          return cleanMisi === record.nama_rencana || m.trim() === record.nama_rencana;
+        });
+        
+        if (matchIndex >= 0) {
+          const cleanMisi = misiArray[matchIndex].replace(/^\d+\.\s*/, '').trim();
+          misiValue = `${record.visi_misi_id}|${matchIndex}|${encodeURIComponent(cleanMisi)}`;
+        }
+      }
+    }
+    
     state.formValues = {
       kode: record.kode,
-      visi_misi_id: record.visi_misi_id || '',
+      visi_misi_id: misiValue,
       nama_rencana: record.nama_rencana,
       deskripsi: record.deskripsi || '',
       periode_mulai: record.periode_mulai ? record.periode_mulai.substring(0, 10) : '',
@@ -339,6 +421,9 @@ const RencanaStrategisModule = (() => {
     state.sasaranList = safeArray(record.sasaran_strategis);
     state.indikatorList = safeArray(record.indikator_kinerja_utama);
     render();
+    
+    // Scroll to form
+    document.getElementById('rs-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async function deleteRencana(id) {

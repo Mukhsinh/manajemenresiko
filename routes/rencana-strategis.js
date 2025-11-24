@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodeRencanaStrategis } = require('../utils/codeGenerator');
 const { exportToExcel, generateTemplate } = require('../utils/exportHelper');
-const { buildOrganizationFilter } = require('../utils/organization');
 
 function sendExcel(res, buffer, filename) {
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -18,10 +17,17 @@ function sendExcel(res, buffer, filename) {
 // Get all rencana strategis
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    let query = supabase
+    const clientToUse = supabaseAdmin || supabase;
+    
+    let query = clientToUse
       .from('rencana_strategis')
-      .select('*, visi_misi(visi, misi, tahun)');
-    query = buildOrganizationFilter(query, req.user);
+      .select('*, visi_misi(id, visi, misi, tahun)');
+    
+    // Filter by organization if not superadmin
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      query = query.in('organization_id', req.user.organizations);
+    }
+    
     query = query.order('created_at', { ascending: false });
 
     const { data, error } = await query;
@@ -37,11 +43,18 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    let query = supabase
+    const clientToUse = supabaseAdmin || supabase;
+    
+    let query = clientToUse
       .from('rencana_strategis')
       .select('*')
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user);
+    
+    // Filter by organization if not superadmin
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      query = query.in('organization_id', req.user.organizations);
+    }
+    
     const { data, error } = await query.single();
 
     if (error) throw error;
@@ -67,6 +80,8 @@ router.get('/generate/kode', authenticateUser, async (req, res) => {
 // Create
 router.post('/', authenticateUser, async (req, res) => {
   try {
+    const clientToUse = supabaseAdmin || supabase;
+    
     const {
       kode,
       nama_rencana,
@@ -87,7 +102,7 @@ router.post('/', authenticateUser, async (req, res) => {
     // Get organization_id from visi_misi if not provided
     let organization_id = req.body.organization_id;
     if (!organization_id && visi_misi_id) {
-      const { data: visiMisi } = await supabase
+      const { data: visiMisi } = await clientToUse
         .from('visi_misi')
         .select('organization_id')
         .eq('id', visi_misi_id)
@@ -107,10 +122,9 @@ router.post('/', authenticateUser, async (req, res) => {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await clientToUse
       .from('rencana_strategis')
       .insert({
-        user_id: req.user.id,
         kode: finalKode,
         nama_rencana,
         deskripsi,
@@ -120,11 +134,12 @@ router.post('/', authenticateUser, async (req, res) => {
         indikator_kinerja,
         status: status || 'Draft',
         visi_misi_id,
+        user_id: req.user.id,
         organization_id,
         sasaran_strategis: JSON.stringify(sasaran_strategis || []),
         indikator_kinerja_utama: JSON.stringify(indikator_kinerja_utama || [])
       })
-      .select()
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -138,8 +153,10 @@ router.post('/', authenticateUser, async (req, res) => {
 // Update
 router.put('/:id', authenticateUser, async (req, res) => {
   try {
+    const clientToUse = supabaseAdmin || supabase;
+    
     // First check if user has access
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await clientToUse
       .from('rencana_strategis')
       .select('organization_id')
       .eq('id', req.params.id)
@@ -169,7 +186,7 @@ router.put('/:id', authenticateUser, async (req, res) => {
       indikator_kinerja_utama
     } = req.body;
 
-    let query = supabase
+    const { data, error } = await clientToUse
       .from('rencana_strategis')
       .update({
         nama_rencana,
@@ -184,9 +201,9 @@ router.put('/:id', authenticateUser, async (req, res) => {
         indikator_kinerja_utama: JSON.stringify(indikator_kinerja_utama || []),
         updated_at: new Date().toISOString()
       })
-      .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user);
-    const { data, error } = await query.select().single();
+      .eq('id', req.params.id)
+      .select('*')
+      .single();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Rencana Strategis tidak ditemukan' });
@@ -200,11 +217,30 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    
+    // First check if user has access
+    const { data: existing, error: checkError } = await clientToUse
+      .from('rencana_strategis')
+      .select('organization_id')
+      .eq('id', req.params.id)
+      .single();
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Rencana Strategis tidak ditemukan' });
+    }
+
+    // Check organization access if not superadmin
+    if (!req.user.isSuperAdmin && existing.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(existing.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
+
+    const { error } = await clientToUse
       .from('rencana_strategis')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('id', req.params.id);
 
     if (error) throw error;
     res.json({ message: 'Rencana Strategis berhasil dihapus' });
@@ -231,10 +267,18 @@ router.get('/actions/template', authenticateUser, async (req, res) => {
 // Export
 router.get('/actions/export', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    
+    let query = clientToUse
       .from('rencana_strategis')
-      .select('*, visi_misi(misi)')
-      .eq('user_id', req.user.id);
+      .select('*, visi_misi(misi)');
+    
+    // Filter by organization if not superadmin
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      query = query.in('organization_id', req.user.organizations);
+    }
+    
+    const { data, error } = await query;
 
     if (error) throw error;
 
@@ -261,15 +305,23 @@ router.get('/actions/export', authenticateUser, async (req, res) => {
 // Import
 router.post('/actions/import', authenticateUser, async (req, res) => {
   try {
+    const clientToUse = supabaseAdmin || supabase;
+    
     const { items } = req.body;
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Data import tidak valid' });
     }
 
-    const { data: visiMisiList, error: visiError } = await supabase
+    // Get visi_misi based on organization
+    let visiMisiQuery = clientToUse
       .from('visi_misi')
-      .select('id, misi')
-      .eq('user_id', req.user.id);
+      .select('id, misi, organization_id');
+    
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      visiMisiQuery = visiMisiQuery.in('organization_id', req.user.organizations);
+    }
+    
+    const { data: visiMisiList, error: visiError } = await visiMisiQuery;
 
     if (visiError) throw visiError;
     const missions = visiMisiList || [];
@@ -289,8 +341,23 @@ router.post('/actions/import', authenticateUser, async (req, res) => {
         .map(s => s.trim())
         .filter(Boolean);
 
+      // Get organization_id from mission if available
+      let org_id = null;
+      if (mission?.id) {
+        const { data: visiMisiData } = await clientToUse
+          .from('visi_misi')
+          .select('organization_id')
+          .eq('id', mission.id)
+          .single();
+        org_id = visiMisiData?.organization_id;
+      }
+      
+      // Use first organization if not found
+      if (!org_id && req.user.organizations && req.user.organizations.length > 0) {
+        org_id = req.user.organizations[0];
+      }
+      
       payload.push({
-        user_id: req.user.id,
         kode: item.kode || await generateKodeRencanaStrategis(req.user.id),
         nama_rencana: item.nama_rencana || item['Nama Rencana'] || '',
         deskripsi: item.deskripsi || '',
@@ -300,12 +367,14 @@ router.post('/actions/import', authenticateUser, async (req, res) => {
         indikator_kinerja: item.indikator_kinerja || '',
         status: item.status || 'Draft',
         visi_misi_id: mission?.id || null,
+        user_id: req.user.id,
+        organization_id: org_id,
         sasaran_strategis: JSON.stringify(sasaran),
         indikator_kinerja_utama: JSON.stringify(indikator)
       });
     }
 
-    const { error } = await supabase
+    const { error } = await clientToUse
       .from('rencana_strategis')
       .upsert(payload, { onConflict: 'kode' });
 
