@@ -21,14 +21,33 @@ const AnalisisSwotModule = (() => {
 
   async function fetchInitialData() {
     try {
-      const [analisis, rencana] = await Promise.all([
-        api()('/api/analisis-swot?' + new URLSearchParams(state.filters)),
-        api()('/api/rencana-strategis')
-      ]);
+      // Fetch data separately to better handle errors
+      let analisis = [];
+      let rencana = [];
+      
+      try {
+        analisis = await api()('/api/analisis-swot?' + new URLSearchParams(state.filters));
+      } catch (error) {
+        console.error('Error fetching analisis data:', error);
+        alert('Error loading analisis data: ' + error.message);
+      }
+      
+      try {
+        rencana = await api()('/api/rencana-strategis');
+      } catch (error) {
+        console.error('Error fetching rencana strategis data:', error);
+        alert('Error loading rencana strategis data: ' + error.message);
+      }
+      
       state.data = analisis || [];
       state.rencanaStrategis = rencana || [];
+      
+      // Log for debugging
+      console.log('SWOT Analysis data loaded:', { analisis: state.data.length, rencana: state.rencanaStrategis.length });
     } catch (error) {
       console.error('Error fetching data:', error);
+      // Show error to user
+      alert('Error loading data: ' + error.message);
       state.data = [];
       state.rencanaStrategis = [];
     }
@@ -40,6 +59,8 @@ const AnalisisSwotModule = (() => {
       state.summary = summary;
     } catch (error) {
       console.error('Error fetching summary:', error);
+      // Show error to user
+      alert('Error loading summary: ' + error.message);
       state.summary = null;
     }
   }
@@ -255,6 +276,7 @@ const AnalisisSwotModule = (() => {
       document.getElementById('as-rank').value = data.rank || '';
       calculateScore();
     } catch (error) {
+      console.error('Load for edit error:', error);
       alert('Error loading data: ' + error.message);
     }
   }
@@ -281,7 +303,8 @@ const AnalisisSwotModule = (() => {
       await load();
       alert('Data berhasil disimpan');
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('Save error:', error);
+      alert('Error saving data: ' + error.message);
     }
   }
 
@@ -296,7 +319,8 @@ const AnalisisSwotModule = (() => {
       await load();
       alert('Data berhasil dihapus');
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('Delete error:', error);
+      alert('Error deleting data: ' + error.message);
     }
   }
 

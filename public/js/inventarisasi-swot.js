@@ -154,7 +154,7 @@ const InventarisasiSwotModule = (() => {
       : '<option value="" disabled>Tidak ada data unit kerja</option>';
     
     modal.innerHTML = `
-      <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-content" style="max-width: 700px;">
         <div class="modal-header">
           <h3 class="modal-title">${id ? 'Edit' : 'Tambah'} Inventarisasi SWOT</h3>
           <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
@@ -162,7 +162,7 @@ const InventarisasiSwotModule = (() => {
         <form id="inventarisasi-swot-form" onsubmit="InventarisasiSwotModule.save(event, '${id || ''}')">
           <div class="form-group">
             <label class="form-label">Rencana Strategis</label>
-            <select class="form-control" id="is-rencana-strategis">
+            <select class="form-control" id="is-rencana-strategis" onchange="InventarisasiSwotModule.updatePreview()">
               <option value="">Pilih Rencana Strategis (Opsional)</option>
               ${rencanaOptions}
             </select>
@@ -170,14 +170,14 @@ const InventarisasiSwotModule = (() => {
           </div>
           <div class="form-group">
             <label class="form-label">Unit Kerja *</label>
-            <select class="form-control" id="is-unit-kerja" required>
+            <select class="form-control" id="is-unit-kerja" required onchange="InventarisasiSwotModule.updatePreview()">
               <option value="">Pilih Unit Kerja</option>
               ${unitOptions}
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Kategori *</label>
-            <select class="form-control" id="is-kategori" required>
+            <select class="form-control" id="is-kategori" required onchange="InventarisasiSwotModule.updatePreview()">
               <option value="">Pilih Kategori</option>
               <option value="Kekuatan">Kekuatan</option>
               <option value="Kelemahan">Kelemahan</option>
@@ -187,12 +187,43 @@ const InventarisasiSwotModule = (() => {
           </div>
           <div class="form-group">
             <label class="form-label">Tahun *</label>
-            <input type="number" class="form-control" id="is-tahun" required value="${new Date().getFullYear()}">
+            <input type="number" class="form-control" id="is-tahun" required value="${new Date().getFullYear()}" onchange="InventarisasiSwotModule.updatePreview()">
           </div>
           <div class="form-group">
             <label class="form-label">Deskripsi *</label>
-            <textarea class="form-control" id="is-deskripsi" required rows="4"></textarea>
+            <textarea class="form-control" id="is-deskripsi" required rows="4" oninput="InventarisasiSwotModule.updatePreview()"></textarea>
           </div>
+          
+          <!-- Collapsible Preview Section -->
+          <div class="preview-section" style="margin: 1.5rem 0; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
+            <div class="preview-header" onclick="InventarisasiSwotModule.togglePreview()" style="background: #f8f9fa; padding: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+              <h4 style="margin: 0; font-size: 1rem; font-weight: 600;">📋 Preview Data</h4>
+              <i class="fas fa-chevron-down" id="preview-toggle-icon" style="transition: transform 0.3s;"></i>
+            </div>
+            <div id="preview-content" class="preview-content" style="padding: 1rem; background: #fff; display: none;">
+              <div class="preview-item" style="margin-bottom: 0.75rem;">
+                <strong style="color: #6c757d; font-size: 0.875rem;">Rencana Strategis:</strong>
+                <div id="preview-rencana" style="margin-top: 0.25rem; color: #495057;">-</div>
+              </div>
+              <div class="preview-item" style="margin-bottom: 0.75rem;">
+                <strong style="color: #6c757d; font-size: 0.875rem;">Unit Kerja:</strong>
+                <div id="preview-unit" style="margin-top: 0.25rem; color: #495057;">-</div>
+              </div>
+              <div class="preview-item" style="margin-bottom: 0.75rem;">
+                <strong style="color: #6c757d; font-size: 0.875rem;">Kategori:</strong>
+                <div id="preview-kategori" style="margin-top: 0.25rem;">-</div>
+              </div>
+              <div class="preview-item" style="margin-bottom: 0.75rem;">
+                <strong style="color: #6c757d; font-size: 0.875rem;">Tahun:</strong>
+                <div id="preview-tahun" style="margin-top: 0.25rem; color: #495057;">-</div>
+              </div>
+              <div class="preview-item">
+                <strong style="color: #6c757d; font-size: 0.875rem;">Deskripsi:</strong>
+                <div id="preview-deskripsi" style="margin-top: 0.25rem; color: #495057; white-space: pre-wrap;">-</div>
+              </div>
+            </div>
+          </div>
+          
           <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
             <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
             <button type="submit" class="btn btn-primary">Simpan</button>
@@ -204,6 +235,9 @@ const InventarisasiSwotModule = (() => {
 
     if (id) {
       loadForEdit(id);
+    } else {
+      // Initialize preview for new entry
+      updatePreview();
     }
   }
 
@@ -215,8 +249,69 @@ const InventarisasiSwotModule = (() => {
       document.getElementById('is-kategori').value = data.kategori || '';
       document.getElementById('is-tahun').value = data.tahun || '';
       document.getElementById('is-deskripsi').value = data.deskripsi || '';
+      updatePreview();
     } catch (error) {
       alert('Error loading data: ' + error.message);
+    }
+  }
+
+  function togglePreview() {
+    const content = document.getElementById('preview-content');
+    const icon = document.getElementById('preview-toggle-icon');
+    
+    if (content && icon) {
+      const isVisible = content.style.display !== 'none';
+      content.style.display = isVisible ? 'none' : 'block';
+      icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+  }
+
+  function updatePreview() {
+    // Get form values
+    const rencanaId = document.getElementById('is-rencana-strategis')?.value;
+    const unitId = document.getElementById('is-unit-kerja')?.value;
+    const kategori = document.getElementById('is-kategori')?.value;
+    const tahun = document.getElementById('is-tahun')?.value;
+    const deskripsi = document.getElementById('is-deskripsi')?.value;
+
+    // Find selected options
+    const rencana = state.rencanaStrategis.find(r => r.id === rencanaId);
+    const unit = state.unitKerja.find(u => u.id === unitId);
+
+    // Update preview elements
+    const previewRencana = document.getElementById('preview-rencana');
+    const previewUnit = document.getElementById('preview-unit');
+    const previewKategori = document.getElementById('preview-kategori');
+    const previewTahun = document.getElementById('preview-tahun');
+    const previewDeskripsi = document.getElementById('preview-deskripsi');
+
+    if (previewRencana) {
+      previewRencana.textContent = rencana ? `${rencana.kode || ''} - ${rencana.nama_rencana}` : '-';
+    }
+    
+    if (previewUnit) {
+      previewUnit.textContent = unit ? unit.name : '-';
+    }
+    
+    if (previewKategori) {
+      const badgeColor = {
+        'Kekuatan': 'aman',
+        'Kelemahan': 'hati-hati',
+        'Peluang': 'normal',
+        'Tantangan': 'kritis'
+      }[kategori] || 'secondary';
+      
+      previewKategori.innerHTML = kategori 
+        ? `<span class="badge-status badge-${badgeColor}">${kategori}</span>` 
+        : '-';
+    }
+    
+    if (previewTahun) {
+      previewTahun.textContent = tahun || '-';
+    }
+    
+    if (previewDeskripsi) {
+      previewDeskripsi.textContent = deskripsi || '-';
     }
   }
 
@@ -273,7 +368,9 @@ const InventarisasiSwotModule = (() => {
     applyFilter,
     save,
     edit,
-    delete: deleteItem
+    delete: deleteItem,
+    togglePreview,
+    updatePreview
   };
 })();
 

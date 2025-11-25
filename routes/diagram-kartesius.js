@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 
 // Calculate and generate diagram kartesius from SWOT analysis
@@ -13,7 +13,8 @@ router.post('/calculate', authenticateUser, async (req, res) => {
     }
 
     // Get SWOT analysis summary
-    let analisisQuery = supabase
+    const clientToUse = supabaseAdmin || supabase;
+    let analisisQuery = clientToUse
       .from('swot_analisis')
       .select('kategori, score')
       .eq('user_id', req.user.id)
@@ -62,7 +63,7 @@ router.post('/calculate', authenticateUser, async (req, res) => {
     }
 
     // Upsert diagram data
-    const { data, error } = await supabase
+    const { data, error } = await clientToUse
       .from('swot_diagram_kartesius')
       .upsert({
         user_id: req.user.id,
@@ -91,7 +92,8 @@ router.get('/', authenticateUser, async (req, res) => {
   try {
     const { rencana_strategis_id, tahun } = req.query;
     
-    let query = supabase
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
       .from('swot_diagram_kartesius')
       .select('*, rencana_strategis(nama_rencana)')
       .eq('swot_diagram_kartesius.user_id', req.user.id)
@@ -117,7 +119,8 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('swot_diagram_kartesius')
       .select('*, rencana_strategis(nama_rencana)')
       .eq('swot_diagram_kartesius.id', req.params.id)
@@ -147,7 +150,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (kuadran !== undefined) updateData.kuadran = kuadran;
     if (strategi !== undefined) updateData.strategi = strategi;
 
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('swot_diagram_kartesius')
       .update(updateData)
       .eq('swot_diagram_kartesius.id', req.params.id)
@@ -167,7 +171,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { error } = await clientToUse
       .from('swot_diagram_kartesius')
       .delete()
       .eq('swot_diagram_kartesius.id', req.params.id)

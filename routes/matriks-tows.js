@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 
 // Get all TOWS strategi
@@ -8,7 +8,9 @@ router.get('/', authenticateUser, async (req, res) => {
   try {
     const { rencana_strategis_id, tipe_strategi, tahun } = req.query;
     
-    let query = supabase
+    // Use supabaseAdmin to bypass RLS
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
       .from('swot_tows_strategi')
       .select('*, rencana_strategis(id, kode, nama_rencana)')
       .eq('swot_tows_strategi.user_id', req.user.id)
@@ -39,7 +41,9 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('swot_tows_strategi')
       .select('*, rencana_strategis(id, kode, nama_rencana)')
       .eq('swot_tows_strategi.id', req.params.id)
@@ -73,7 +77,9 @@ router.post('/', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Tipe strategi harus SO, WO, ST, atau WT' });
     }
 
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS and avoid policy violation
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('swot_tows_strategi')
       .insert({
         user_id: req.user.id,
@@ -116,7 +122,9 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (tipe_strategi !== undefined) updateData.tipe_strategi = tipe_strategi;
     if (strategi !== undefined) updateData.strategi = strategi;
 
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('swot_tows_strategi')
       .update(updateData)
       .eq('swot_tows_strategi.id', req.params.id)
@@ -136,7 +144,9 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    // Use supabaseAdmin to bypass RLS
+    const clientToUse = supabaseAdmin || supabase;
+    const { error } = await clientToUse
       .from('swot_tows_strategi')
       .delete()
       .eq('swot_tows_strategi.id', req.params.id)

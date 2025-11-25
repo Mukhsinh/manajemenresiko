@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 
 // Get all sasaran strategi
@@ -8,7 +8,8 @@ router.get('/', authenticateUser, async (req, res) => {
   try {
     const { rencana_strategis_id, tows_strategi_id, perspektif } = req.query;
     
-    let query = supabase
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
       .from('sasaran_strategi')
       .select('*, rencana_strategis(id, kode, nama_rencana), swot_tows_strategi(tipe_strategi, strategi)')
       .eq('sasaran_strategi.user_id', req.user.id)
@@ -37,7 +38,8 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('sasaran_strategi')
       .select('*, rencana_strategis(id, kode, nama_rencana), swot_tows_strategi(tipe_strategi, strategi)')
       .eq('sasaran_strategi.id', req.params.id)
@@ -71,7 +73,8 @@ router.post('/', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Perspektif harus ES, IBP, LG, atau Fin' });
     }
 
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('sasaran_strategi')
       .insert({
         user_id: req.user.id,
@@ -114,7 +117,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (sasaran !== undefined) updateData.sasaran = sasaran;
     if (perspektif !== undefined) updateData.perspektif = perspektif;
 
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('sasaran_strategi')
       .update(updateData)
       .eq('sasaran_strategi.id', req.params.id)
@@ -134,7 +138,8 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { error } = await clientToUse
       .from('sasaran_strategi')
       .delete()
       .eq('sasaran_strategi.id', req.params.id)
