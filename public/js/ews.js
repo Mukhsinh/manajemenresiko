@@ -257,13 +257,14 @@ const EWS = {
             
             if (id) {
                 await apiCall(`/api/ews/${id}`, { method: 'PUT', body: data });
+                alert('EWS berhasil diupdate');
             } else {
                 await apiCall('/api/ews', { method: 'POST', body: data });
+                alert('EWS berhasil disimpan');
             }
             
             document.querySelector('.modal').remove();
             await this.load();
-            alert('EWS berhasil disimpan');
         } catch (error) {
             alert('Error: ' + error.message);
         }

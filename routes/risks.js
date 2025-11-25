@@ -92,8 +92,8 @@ router.get('/', authenticateUser, async (req, res) => {
         risk_monitoring(*)
       `);
 
-    // Apply organization filter
-    query = buildOrganizationFilter(query, req.user);
+    // Apply organization filter with qualified column name
+    query = buildOrganizationFilter(query, req.user, 'risk_inputs.organization_id');
     query = query.order('created_at', { ascending: false });
 
     const { data, error } = await query;
@@ -125,8 +125,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
       `)
       .eq('id', req.params.id);
 
-    // Apply organization filter
-    query = buildOrganizationFilter(query, req.user);
+    // Apply organization filter with qualified column name
+    query = buildOrganizationFilter(query, req.user, 'risk_inputs.organization_id');
     const { data, error } = await query.single();
 
     if (error) throw error;
@@ -276,8 +276,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
       .delete()
       .eq('id', req.params.id);
 
-    // Apply organization filter
-    query = buildOrganizationFilter(query, req.user);
+    // Apply organization filter with qualified column name
+    query = buildOrganizationFilter(query, req.user, 'risk_inputs.organization_id');
     const { error } = await query;
 
     if (error) throw error;

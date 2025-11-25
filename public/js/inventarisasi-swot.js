@@ -29,6 +29,9 @@ const InventarisasiSwotModule = (() => {
       state.data = inventarisasi || [];
       state.rencanaStrategis = rencana || [];
       state.unitKerja = unit || [];
+      
+      console.log('Rencana Strategis loaded:', state.rencanaStrategis.length, 'items');
+      console.log('Unit Kerja loaded:', state.unitKerja.length, 'items');
     } catch (error) {
       console.error('Error fetching data:', error);
       state.data = [];
@@ -55,7 +58,7 @@ const InventarisasiSwotModule = (() => {
               <label>Rencana Strategis</label>
               <select class="form-control" id="filter-rencana-strategis" onchange="InventarisasiSwotModule.applyFilter()">
                 <option value="">Semua</option>
-                ${state.rencanaStrategis.map(r => `<option value="${r.id}" ${state.filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.nama_rencana}</option>`).join('')}
+                ${state.rencanaStrategis.map(r => `<option value="${r.id}" ${state.filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.kode || ''} - ${r.nama_rencana}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
@@ -141,6 +144,15 @@ const InventarisasiSwotModule = (() => {
   function showModal(id = null) {
     const modal = document.createElement('div');
     modal.className = 'modal active';
+    
+    const rencanaOptions = state.rencanaStrategis.length > 0 
+      ? state.rencanaStrategis.map(r => `<option value="${r.id}">${r.kode || ''} - ${r.nama_rencana}</option>`).join('')
+      : '<option value="" disabled>Tidak ada data rencana strategis</option>';
+    
+    const unitOptions = state.unitKerja.length > 0
+      ? state.unitKerja.map(u => `<option value="${u.id}">${u.name}</option>`).join('')
+      : '<option value="" disabled>Tidak ada data unit kerja</option>';
+    
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
@@ -151,15 +163,16 @@ const InventarisasiSwotModule = (() => {
           <div class="form-group">
             <label class="form-label">Rencana Strategis</label>
             <select class="form-control" id="is-rencana-strategis">
-              <option value="">Pilih Rencana Strategis</option>
-              ${state.rencanaStrategis.map(r => `<option value="${r.id}">${r.nama_rencana}</option>`).join('')}
+              <option value="">Pilih Rencana Strategis (Opsional)</option>
+              ${rencanaOptions}
             </select>
+            ${state.rencanaStrategis.length === 0 ? '<small style="color: var(--danger);">Silakan tambahkan Rencana Strategis terlebih dahulu di menu Rencana Strategis</small>' : ''}
           </div>
           <div class="form-group">
             <label class="form-label">Unit Kerja *</label>
             <select class="form-control" id="is-unit-kerja" required>
               <option value="">Pilih Unit Kerja</option>
-              ${state.unitKerja.map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+              ${unitOptions}
             </select>
           </div>
           <div class="form-group">
@@ -210,9 +223,12 @@ const InventarisasiSwotModule = (() => {
   async function save(e, id) {
     e.preventDefault();
     try {
+      const rencanaStrategisValue = document.getElementById('is-rencana-strategis').value;
+      const unitKerjaValue = document.getElementById('is-unit-kerja').value;
+      
       const data = {
-        rencana_strategis_id: document.getElementById('is-rencana-strategis').value || null,
-        unit_kerja_id: document.getElementById('is-unit-kerja').value,
+        rencana_strategis_id: rencanaStrategisValue && rencanaStrategisValue.trim() !== '' ? rencanaStrategisValue : null,
+        unit_kerja_id: unitKerjaValue && unitKerjaValue.trim() !== '' ? unitKerjaValue : null,
         kategori: document.getElementById('is-kategori').value,
         tahun: parseInt(document.getElementById('is-tahun').value),
         deskripsi: document.getElementById('is-deskripsi').value

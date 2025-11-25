@@ -341,7 +341,6 @@ const RencanaStrategisModule = (() => {
     }
     
     const payload = {
-      kode: state.formValues.kode,
       visi_misi_id: visiMisiId || null,
       nama_rencana: state.formValues.nama_rencana || selectedMisiText,
       deskripsi: state.formValues.deskripsi,
@@ -354,6 +353,11 @@ const RencanaStrategisModule = (() => {
       indikator_kinerja_utama: state.indikatorList
     };
 
+    // Only include kode for new records (not updates)
+    if (!state.currentId) {
+      payload.kode = state.formValues.kode;
+    }
+
     if (!payload.nama_rencana) {
       alert('Nama rencana wajib diisi atau pilih misi strategis');
       return;
@@ -362,25 +366,27 @@ const RencanaStrategisModule = (() => {
     try {
       if (state.currentId) {
         await api()(`/api/rencana-strategis/${state.currentId}`, { method: 'PUT', body: payload });
+        alert('Rencana strategis berhasil diupdate');
       } else {
         await api()('/api/rencana-strategis', { method: 'POST', body: payload });
+        alert('Rencana strategis berhasil disimpan');
       }
 
-      alert('Rencana strategis berhasil disimpan');
       await fetchInitialData();
-      resetForm();
+      await resetForm();
     } catch (error) {
       console.error('Error saving rencana strategis:', error);
       alert('Gagal menyimpan rencana strategis: ' + (error.message || 'Unknown error'));
     }
   }
 
-  function resetForm() {
+  async function resetForm() {
     state.currentId = null;
     state.formValues = getDefaultForm();
     state.sasaranList = [];
     state.indikatorList = [];
-    generateKode(true).then(render);
+    await generateKode(true);
+    render();
   }
 
   function startEdit(id) {

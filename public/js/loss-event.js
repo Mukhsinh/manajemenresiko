@@ -207,13 +207,14 @@ const LossEvent = {
             
             if (id) {
                 await apiCall(`/api/loss-event/${id}`, { method: 'PUT', body: data });
+                alert('Loss Event berhasil diupdate');
             } else {
                 await apiCall('/api/loss-event', { method: 'POST', body: data });
+                alert('Loss Event berhasil disimpan');
             }
             
             document.querySelector('.modal').remove();
             await this.load();
-            alert('Loss Event berhasil disimpan');
         } catch (error) {
             alert('Error: ' + error.message);
         }

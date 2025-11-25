@@ -12,7 +12,7 @@ router.get('/', authenticateUser, async (req, res) => {
     let query = supabase
       .from('swot_inventarisasi')
       .select('*, master_work_units(name, code), rencana_strategis(nama_rencana)');
-    query = buildOrganizationFilter(query, req.user);
+    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
     query = query.order('tahun', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -46,7 +46,7 @@ router.get('/:id', authenticateUser, async (req, res) => {
       .from('swot_inventarisasi')
       .select('*, master_work_units(name, code), rencana_strategis(nama_rencana)')
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user);
+    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
     const { data, error } = await query.single();
 
     if (error) throw error;
@@ -73,21 +73,25 @@ router.post('/', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Kategori, deskripsi, dan tahun wajib diisi' });
     }
 
+    // Normalize empty strings to null for foreign keys
+    const normalizedRencanaStrategisId = rencana_strategis_id && rencana_strategis_id.trim() !== '' ? rencana_strategis_id : null;
+    const normalizedUnitKerjaId = unit_kerja_id && unit_kerja_id.trim() !== '' ? unit_kerja_id : null;
+
     // Get organization_id from rencana_strategis or unit_kerja if not provided
     let organization_id = req.body.organization_id;
-    if (!organization_id && rencana_strategis_id) {
+    if (!organization_id && normalizedRencanaStrategisId) {
       const { data: rencana } = await supabase
         .from('rencana_strategis')
         .select('organization_id')
-        .eq('id', rencana_strategis_id)
+        .eq('id', normalizedRencanaStrategisId)
         .single();
       organization_id = rencana?.organization_id;
     }
-    if (!organization_id && unit_kerja_id) {
+    if (!organization_id && normalizedUnitKerjaId) {
       const { data: unit } = await supabase
         .from('master_work_units')
         .select('organization_id')
-        .eq('id', unit_kerja_id)
+        .eq('id', normalizedUnitKerjaId)
         .single();
       organization_id = unit?.organization_id;
     }
@@ -108,8 +112,8 @@ router.post('/', authenticateUser, async (req, res) => {
       .from('swot_inventarisasi')
       .insert({
         user_id: req.user.id,
-        rencana_strategis_id: rencana_strategis_id || null,
-        unit_kerja_id: unit_kerja_id || null,
+        rencana_strategis_id: normalizedRencanaStrategisId,
+        unit_kerja_id: normalizedUnitKerjaId,
         kategori,
         deskripsi,
         tahun: parseInt(tahun),
@@ -155,18 +159,22 @@ router.put('/:id', authenticateUser, async (req, res) => {
       tahun
     } = req.body;
 
+    // Normalize empty strings to null for foreign keys
+    const normalizedRencanaStrategisId = rencana_strategis_id && rencana_strategis_id.trim() !== '' ? rencana_strategis_id : null;
+    const normalizedUnitKerjaId = unit_kerja_id && unit_kerja_id.trim() !== '' ? unit_kerja_id : null;
+
     let query = supabase
       .from('swot_inventarisasi')
       .update({
-        rencana_strategis_id: rencana_strategis_id || null,
-        unit_kerja_id: unit_kerja_id || null,
+        rencana_strategis_id: normalizedRencanaStrategisId,
+        unit_kerja_id: normalizedUnitKerjaId,
         kategori,
         deskripsi,
         tahun: tahun ? parseInt(tahun) : undefined,
         updated_at: new Date().toISOString()
       })
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user);
+    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
     const { data, error } = await query.select().single();
 
     if (error) throw error;
@@ -203,7 +211,7 @@ router.delete('/:id', authenticateUser, async (req, res) => {
       .from('swot_inventarisasi')
       .delete()
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user);
+    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
     const { error } = await query;
 
     if (error) throw error;

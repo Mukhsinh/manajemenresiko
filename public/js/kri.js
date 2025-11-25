@@ -239,13 +239,14 @@ const KRI = {
             
             if (id) {
                 await apiCall(`/api/kri/${id}`, { method: 'PUT', body: data });
+                alert('KRI berhasil diupdate');
             } else {
                 await apiCall('/api/kri', { method: 'POST', body: data });
+                alert('KRI berhasil disimpan');
             }
             
             document.querySelector('.modal').remove();
             await this.load();
-            alert('KRI berhasil disimpan');
         } catch (error) {
             alert('Error: ' + error.message);
         }

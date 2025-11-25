@@ -21,7 +21,7 @@ router.get('/', authenticateUser, async (req, res) => {
     
     let query = clientToUse
       .from('rencana_strategis')
-      .select('*, visi_misi(id, visi, misi, tahun)');
+      .select('id, kode, nama_rencana, deskripsi, periode_mulai, periode_selesai, target, indikator_kinerja, status, visi_misi_id, user_id, organization_id, sasaran_strategis, indikator_kinerja_utama, created_at, updated_at, visi_misi(id, visi, misi, tahun)');
     
     // Filter by organization if not superadmin
     if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
@@ -33,6 +33,8 @@ router.get('/', authenticateUser, async (req, res) => {
     const { data, error } = await query;
 
     if (error) throw error;
+    
+    console.log(`Rencana Strategis: Returning ${(data || []).length} records`);
     res.json(data || []);
   } catch (error) {
     console.error('Rencana Strategis error:', error);
@@ -97,7 +99,7 @@ router.post('/', authenticateUser, async (req, res) => {
     } = req.body;
 
     // Generate kode jika tidak ada
-    const finalKode = kode || await generateKodeRencanaStrategis(req.user.id);
+    let finalKode = kode || await generateKodeRencanaStrategis(req.user.id);
 
     // Get organization_id from visi_misi if not provided
     let organization_id = req.body.organization_id;
@@ -122,9 +124,13 @@ router.post('/', authenticateUser, async (req, res) => {
       }
     }
 
-    const { data, error } = await clientToUse
-      .from('rencana_strategis')
-      .insert({
+    // Retry logic for duplicate key errors
+    let attempts = 0;
+    let data = null;
+    let insertError = null;
+
+    while (attempts < 3) {
+      const insertData = {
         kode: finalKode,
         nama_rencana,
         deskripsi,
@@ -138,11 +144,37 @@ router.post('/', authenticateUser, async (req, res) => {
         organization_id,
         sasaran_strategis: JSON.stringify(sasaran_strategis || []),
         indikator_kinerja_utama: JSON.stringify(indikator_kinerja_utama || [])
-      })
-      .select('*')
-      .single();
+      };
 
-    if (error) throw error;
+      const result = await clientToUse
+        .from('rencana_strategis')
+        .insert(insertData)
+        .select('*')
+        .single();
+
+      if (!result.error) {
+        data = result.data;
+        break;
+      }
+
+      insertError = result.error;
+
+      // Check if it's a duplicate key error
+      if (result.error.message && result.error.message.includes('duplicate key')) {
+        console.log(`Duplicate key detected on attempt ${attempts + 1}, regenerating code...`);
+        // Generate a new code and retry
+        finalKode = await generateKodeRencanaStrategis(req.user.id);
+        attempts++;
+      } else {
+        // Different error, throw it
+        throw result.error;
+      }
+    }
+
+    if (insertError && !data) {
+      throw insertError;
+    }
+
     res.json({ message: 'Rencana Strategis berhasil dibuat', data });
   } catch (error) {
     console.error('Rencana Strategis error:', error);

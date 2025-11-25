@@ -170,13 +170,14 @@ const Peluang = {
             
             if (id) {
                 await apiCall(`/api/peluang/${id}`, { method: 'PUT', body: data });
+                alert('Peluang berhasil diupdate');
             } else {
                 await apiCall('/api/peluang', { method: 'POST', body: data });
+                alert('Peluang berhasil disimpan');
             }
             
             document.querySelector('.modal').remove();
             await this.load();
-            alert('Peluang berhasil disimpan');
         } catch (error) {
             alert('Error: ' + error.message);
         }

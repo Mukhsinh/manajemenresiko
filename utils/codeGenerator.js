@@ -1,5 +1,5 @@
 // Utility untuk generate kode otomatis
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 
 /**
  * Generate kode otomatis berdasarkan format
@@ -11,18 +11,20 @@ async function generateKode(tableName, prefix, userId) {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     
-    // Cari kode terakhir di bulan ini
-    const { data: lastRecord, error } = await supabase
+    // Use admin client to bypass RLS and get accurate count globally
+    const clientToUse = supabaseAdmin || supabase;
+    
+    // Cari kode terakhir di bulan ini (global, tidak hanya per user)
+    const { data: lastRecords, error } = await clientToUse
       .from(tableName)
       .select('kode')
-      .eq('user_id', userId)
       .like('kode', `${prefix}-${year}-${month}-%`)
       .order('kode', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
 
     let nextNo = 1;
-    if (!error && lastRecord && lastRecord.kode) {
+    if (!error && lastRecords && lastRecords.length > 0) {
+      const lastRecord = lastRecords[0];
       const parts = lastRecord.kode.split('-');
       if (parts.length === 4) {
         const lastNo = parseInt(parts[3]) || 0;
@@ -30,11 +32,31 @@ async function generateKode(tableName, prefix, userId) {
       }
     }
 
-    const kode = `${prefix}-${year}-${month}-${String(nextNo).padStart(4, '0')}`;
+    // Check if code already exists and retry with incremented number
+    let attempts = 0;
+    let kode = '';
+    while (attempts < 10) {
+      kode = `${prefix}-${year}-${month}-${String(nextNo + attempts).padStart(4, '0')}`;
+      
+      // Check if this code already exists
+      const { data: existing } = await clientToUse
+        .from(tableName)
+        .select('kode')
+        .eq('kode', kode)
+        .maybeSingle();
+      
+      if (!existing) {
+        // Code is unique, break the loop
+        break;
+      }
+      
+      attempts++;
+    }
+
     return kode;
   } catch (error) {
     console.error('Error generating code:', error);
-    // Fallback jika error
+    // Fallback jika error - use timestamp for uniqueness
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
