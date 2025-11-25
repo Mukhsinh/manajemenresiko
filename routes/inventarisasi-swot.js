@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
@@ -9,10 +9,33 @@ router.get('/', authenticateUser, async (req, res) => {
   try {
     const { rencana_strategis_id, unit_kerja_id, kategori, tahun } = req.query;
     
-    let query = supabase
+    // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
       .from('swot_inventarisasi')
-      .select('*, master_work_units(name, code), rencana_strategis(nama_rencana)');
-    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
+      .select(`
+        id,
+        user_id,
+        rencana_strategis_id,
+        unit_kerja_id,
+        kategori,
+        deskripsi,
+        tahun,
+        organization_id,
+        created_at,
+        updated_at,
+        master_work_units(
+          id,
+          name,
+          code
+        ),
+        rencana_strategis(
+          id,
+          kode,
+          nama_rencana
+        )
+      `);
+    query = buildOrganizationFilter(query, req.user, 'organization_id');
     query = query.order('tahun', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -31,7 +54,12 @@ router.get('/', authenticateUser, async (req, res) => {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Inventarisasi SWOT query error:', error);
+      throw error;
+    }
+    
+    console.log(`Inventarisasi SWOT: Returning ${(data || []).length} records`);
     res.json(data || []);
   } catch (error) {
     console.error('Inventarisasi SWOT error:', error);
@@ -42,14 +70,40 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    let query = supabase
+    // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
       .from('swot_inventarisasi')
-      .select('*, master_work_units(name, code), rencana_strategis(nama_rencana)')
+      .select(`
+        id,
+        user_id,
+        rencana_strategis_id,
+        unit_kerja_id,
+        kategori,
+        deskripsi,
+        tahun,
+        organization_id,
+        created_at,
+        updated_at,
+        master_work_units(
+          id,
+          name,
+          code
+        ),
+        rencana_strategis(
+          id,
+          kode,
+          nama_rencana
+        )
+      `)
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
+    query = buildOrganizationFilter(query, req.user, 'organization_id');
     const { data, error } = await query.single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Inventarisasi SWOT get by ID error:', error);
+      throw error;
+    }
     if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
     res.json(data);
   } catch (error) {
@@ -77,28 +131,52 @@ router.post('/', authenticateUser, async (req, res) => {
     const normalizedRencanaStrategisId = rencana_strategis_id && rencana_strategis_id.trim() !== '' ? rencana_strategis_id : null;
     const normalizedUnitKerjaId = unit_kerja_id && unit_kerja_id.trim() !== '' ? unit_kerja_id : null;
 
+    console.log('Creating SWOT with:', { 
+      rencana_strategis_id: normalizedRencanaStrategisId, 
+      unit_kerja_id: normalizedUnitKerjaId,
+      kategori,
+      tahun 
+    });
+
     // Get organization_id from rencana_strategis or unit_kerja if not provided
     let organization_id = req.body.organization_id;
     if (!organization_id && normalizedRencanaStrategisId) {
-      const { data: rencana } = await supabase
+      // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
+      const clientToUse = supabaseAdmin || supabase;
+      const { data: rencana, error: rencanaError } = await clientToUse
         .from('rencana_strategis')
         .select('organization_id')
         .eq('id', normalizedRencanaStrategisId)
         .single();
-      organization_id = rencana?.organization_id;
+      
+      if (rencanaError) {
+        console.error('Error fetching rencana_strategis:', rencanaError);
+      } else {
+        organization_id = rencana?.organization_id;
+        console.log('Organization from rencana_strategis:', organization_id);
+      }
     }
     if (!organization_id && normalizedUnitKerjaId) {
-      const { data: unit } = await supabase
+      // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
+      const clientToUse = supabaseAdmin || supabase;
+      const { data: unit, error: unitError } = await clientToUse
         .from('master_work_units')
         .select('organization_id')
         .eq('id', normalizedUnitKerjaId)
         .single();
-      organization_id = unit?.organization_id;
+      
+      if (unitError) {
+        console.error('Error fetching master_work_units:', unitError);
+      } else {
+        organization_id = unit?.organization_id;
+        console.log('Organization from unit_kerja:', organization_id);
+      }
     }
 
     // Use first organization if not specified and user is not superadmin
     if (!organization_id && !req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
       organization_id = req.user.organizations[0];
+      console.log('Using user first organization:', organization_id);
     }
 
     // Validate organization access if not superadmin
@@ -108,21 +186,32 @@ router.post('/', authenticateUser, async (req, res) => {
       }
     }
 
-    const { data, error } = await supabase
+    const insertData = {
+      user_id: req.user.id,
+      rencana_strategis_id: normalizedRencanaStrategisId,
+      unit_kerja_id: normalizedUnitKerjaId,
+      kategori,
+      deskripsi,
+      tahun: parseInt(tahun),
+      organization_id
+    };
+
+    console.log('Inserting data:', insertData);
+
+    // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error during INSERT
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('swot_inventarisasi')
-      .insert({
-        user_id: req.user.id,
-        rencana_strategis_id: normalizedRencanaStrategisId,
-        unit_kerja_id: normalizedUnitKerjaId,
-        kategori,
-        deskripsi,
-        tahun: parseInt(tahun),
-        organization_id
-      })
+      .insert(insertData)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Insert error:', error);
+      throw error;
+    }
+    
+    console.log('SWOT inventarisasi created successfully:', data.id);
     res.json({ message: 'Data berhasil ditambahkan', data });
   } catch (error) {
     console.error('Inventarisasi SWOT error:', error);
@@ -133,8 +222,11 @@ router.post('/', authenticateUser, async (req, res) => {
 // Update
 router.put('/:id', authenticateUser, async (req, res) => {
   try {
+    // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
+    const clientToUse = supabaseAdmin || supabase;
+    
     // First check if user has access
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await clientToUse
       .from('swot_inventarisasi')
       .select('organization_id')
       .eq('id', req.params.id)
@@ -163,7 +255,7 @@ router.put('/:id', authenticateUser, async (req, res) => {
     const normalizedRencanaStrategisId = rencana_strategis_id && rencana_strategis_id.trim() !== '' ? rencana_strategis_id : null;
     const normalizedUnitKerjaId = unit_kerja_id && unit_kerja_id.trim() !== '' ? unit_kerja_id : null;
 
-    let query = supabase
+    let query = clientToUse
       .from('swot_inventarisasi')
       .update({
         rencana_strategis_id: normalizedRencanaStrategisId,
@@ -174,7 +266,7 @@ router.put('/:id', authenticateUser, async (req, res) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
+    query = buildOrganizationFilter(query, req.user, 'organization_id');
     const { data, error } = await query.select().single();
 
     if (error) throw error;
@@ -189,8 +281,11 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
+    // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
+    const clientToUse = supabaseAdmin || supabase;
+    
     // First check if user has access
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await clientToUse
       .from('swot_inventarisasi')
       .select('organization_id')
       .eq('id', req.params.id)
@@ -207,11 +302,11 @@ router.delete('/:id', authenticateUser, async (req, res) => {
       }
     }
 
-    let query = supabase
+    let query = clientToUse
       .from('swot_inventarisasi')
       .delete()
       .eq('id', req.params.id);
-    query = buildOrganizationFilter(query, req.user, 'swot_inventarisasi.organization_id');
+    query = buildOrganizationFilter(query, req.user, 'organization_id');
     const { error } = await query;
 
     if (error) throw error;

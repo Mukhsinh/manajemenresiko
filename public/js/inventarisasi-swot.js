@@ -234,16 +234,20 @@ const InventarisasiSwotModule = (() => {
         deskripsi: document.getElementById('is-deskripsi').value
       };
 
+      console.log('Saving SWOT inventarisasi:', data);
+
       if (id) {
         await api()(`/api/inventarisasi-swot/${id}`, { method: 'PUT', body: data });
+        alert('Data berhasil diupdate');
       } else {
         await api()('/api/inventarisasi-swot', { method: 'POST', body: data });
+        alert('Data berhasil disimpan');
       }
 
       document.querySelector('.modal').remove();
       await load();
-      alert('Data berhasil disimpan');
     } catch (error) {
+      console.error('Error saving SWOT:', error);
       alert('Error: ' + error.message);
     }
   }

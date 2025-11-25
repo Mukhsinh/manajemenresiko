@@ -10,7 +10,7 @@ router.get('/', authenticateUser, async (req, res) => {
     
     let query = supabase
       .from('swot_analisis')
-      .select('*, rencana_strategis(nama_rencana)')
+      .select('*, rencana_strategis(id, kode, nama_rencana)')
       .eq('user_id', req.user.id)
       .order('tahun', { ascending: false })
       .order('kategori', { ascending: true })
@@ -96,7 +96,7 @@ router.get('/:id', authenticateUser, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('swot_analisis')
-      .select('*, rencana_strategis(nama_rencana)')
+      .select('*, rencana_strategis(id, kode, nama_rencana)')
       .eq('id', req.params.id)
       .eq('user_id', req.user.id)
       .single();
