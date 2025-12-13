@@ -117,11 +117,18 @@ const Peluang = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Probabilitas (1-5)</label>
-                        <input type="number" class="form-control" id="peluang-probabilitas" min="1" max="5">
+                        <input type="number" class="form-control" id="peluang-probabilitas" min="1" max="5" oninput="Peluang.calculateNilai()">
+                        <small class="form-text text-muted">Kemungkinan peluang terjadi</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Dampak Positif (1-5)</label>
-                        <input type="number" class="form-control" id="peluang-dampak" min="1" max="5">
+                        <input type="number" class="form-control" id="peluang-dampak" min="1" max="5" oninput="Peluang.calculateNilai()">
+                        <small class="form-text text-muted">Dampak positif jika peluang direalisasikan</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nilai Peluang (Otomatis)</label>
+                        <input type="number" class="form-control" id="peluang-nilai-display" readonly style="font-weight: bold; background: #f0f0f0;">
+                        <small class="form-text text-muted">Nilai = Probabilitas × Dampak Positif</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Strategi Pemanfaatan</label>
@@ -153,8 +160,12 @@ const Peluang = {
     async save(e, id) {
         e.preventDefault();
         try {
-            const probabilitas = parseInt(document.getElementById('peluang-probabilitas').value);
-            const dampak = parseInt(document.getElementById('peluang-dampak').value);
+            const probabilitas = parseInt(document.getElementById('peluang-probabilitas').value) || 0;
+            const dampak = parseInt(document.getElementById('peluang-dampak').value) || 0;
+            
+            // Auto-calculate nilai peluang
+            const nilai_peluang = probabilitas && dampak ? probabilitas * dampak : null;
+            
             const data = {
                 kode: document.getElementById('peluang-kode').value,
                 nama_peluang: document.getElementById('peluang-nama').value,
@@ -162,23 +173,26 @@ const Peluang = {
                 deskripsi: document.getElementById('peluang-deskripsi').value,
                 probabilitas: probabilitas || null,
                 dampak_positif: dampak || null,
-                nilai_peluang: probabilitas && dampak ? probabilitas * dampak : null,
+                nilai_peluang: nilai_peluang,
                 strategi_pemanfaatan: document.getElementById('peluang-strategi').value,
                 pemilik_peluang: document.getElementById('peluang-pemilik').value,
                 status: document.getElementById('peluang-status').value
             };
             
+            console.log('Saving peluang with nilai:', nilai_peluang);
+            
             if (id) {
                 await apiCall(`/api/peluang/${id}`, { method: 'PUT', body: data });
-                alert('Peluang berhasil diupdate');
+                alert('Peluang berhasil diupdate dengan nilai: ' + nilai_peluang);
             } else {
                 await apiCall('/api/peluang', { method: 'POST', body: data });
-                alert('Peluang berhasil disimpan');
+                alert('Peluang berhasil disimpan dengan nilai: ' + nilai_peluang);
             }
             
             document.querySelector('.modal').remove();
             await this.load();
         } catch (error) {
+            console.error('Save error:', error);
             alert('Error: ' + error.message);
         }
     },
@@ -217,8 +231,19 @@ const Peluang = {
             document.getElementById('peluang-strategi').value = data.strategi_pemanfaatan || '';
             document.getElementById('peluang-pemilik').value = data.pemilik_peluang || '';
             document.getElementById('peluang-status').value = data.status || 'Draft';
+            this.calculateNilai();
         } catch (error) {
             alert('Error loading data: ' + error.message);
+        }
+    },
+
+    calculateNilai() {
+        const prob = parseInt(document.getElementById('peluang-probabilitas')?.value) || 0;
+        const dampak = parseInt(document.getElementById('peluang-dampak')?.value) || 0;
+        const nilai = prob * dampak;
+        const display = document.getElementById('peluang-nilai-display');
+        if (display) {
+            display.value = nilai;
         }
     },
 

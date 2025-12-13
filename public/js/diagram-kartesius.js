@@ -3,8 +3,10 @@ const DiagramKartesiusModule = (() => {
   const state = {
     data: [],
     rencanaStrategis: [],
+    unitKerja: [],
     filters: {
       rencana_strategis_id: '',
+      unit_kerja_id: '',
       tahun: new Date().getFullYear()
     },
     chart: null
@@ -19,16 +21,19 @@ const DiagramKartesiusModule = (() => {
 
   async function fetchInitialData() {
     try {
-      const [diagram, rencana] = await Promise.all([
+      const [diagram, rencana, unitKerja] = await Promise.all([
         api()('/api/diagram-kartesius?' + new URLSearchParams(state.filters)),
-        api()('/api/rencana-strategis')
+        api()('/api/rencana-strategis'),
+        api()('/api/master-data/work-units')
       ]);
       state.data = diagram || [];
       state.rencanaStrategis = rencana || [];
+      state.unitKerja = unitKerja || [];
     } catch (error) {
       console.error('Error fetching data:', error);
       state.data = [];
       state.rencanaStrategis = [];
+      state.unitKerja = [];
     }
   }
 
@@ -56,6 +61,15 @@ const DiagramKartesiusModule = (() => {
               </select>
             </div>
             <div class="form-group">
+              <label>Unit Kerja / Level</label>
+              <select class="form-control" id="filter-unit-kerja" onchange="DiagramKartesiusModule.applyFilter()">
+                <option value="">Pilih</option>
+                <option value="RUMAH_SAKIT" ${state.filters.unit_kerja_id === 'RUMAH_SAKIT' ? 'selected' : ''}>🏥 Rumah Sakit (Agregasi Auto)</option>
+                ${state.unitKerja.map(u => `<option value="${u.id}" ${state.filters.unit_kerja_id === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+              </select>
+              <small class="form-text text-muted">Pilih "Rumah Sakit" untuk agregasi otomatis nilai tertinggi dari semua unit</small>
+            </div>
+            <div class="form-group">
               <label>Tahun</label>
               <input type="number" class="form-control" id="filter-tahun" value="${state.filters.tahun}" onchange="DiagramKartesiusModule.applyFilter()">
             </div>
@@ -68,6 +82,7 @@ const DiagramKartesiusModule = (() => {
               <thead>
                 <tr>
                   <th>Tahun</th>
+                  <th>Unit Kerja</th>
                   <th>X-Axis (Strength - Weakness)</th>
                   <th>Y-Axis (Opportunity - Threat)</th>
                   <th>Kuadran</th>
@@ -76,12 +91,13 @@ const DiagramKartesiusModule = (() => {
                 </tr>
               </thead>
               <tbody>
-                ${state.data.length === 0 ? '<tr><td colspan="6" class="text-center">Tidak ada data. Klik "Hitung Diagram" untuk generate dari analisis SWOT.</td></tr>' : ''}
+                ${state.data.length === 0 ? '<tr><td colspan="7" class="text-center">Tidak ada data. Klik "Hitung Diagram" untuk generate dari analisis SWOT.</td></tr>' : ''}
                 ${state.data.map(item => `
                   <tr>
                     <td>${item.tahun}</td>
-                    <td>${item.x_axis}</td>
-                    <td>${item.y_axis}</td>
+                    <td>${item.unit_kerja_name || 'Rumah Sakit (Agregasi)'}</td>
+                    <td>${parseFloat(item.x_axis).toFixed(2)}</td>
+                    <td>${parseFloat(item.y_axis).toFixed(2)}</td>
                     <td><span class="badge-status badge-${getKuadranColor(item.kuadran)}">KUADRAN ${item.kuadran}</span></td>
                     <td><strong>${item.strategi}</strong></td>
                     <td>
@@ -187,6 +203,7 @@ const DiagramKartesiusModule = (() => {
 
   async function applyFilter() {
     state.filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
+    state.filters.unit_kerja_id = document.getElementById('filter-unit-kerja')?.value || '';
     state.filters.tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
     await fetchInitialData();
     render();
@@ -194,15 +211,20 @@ const DiagramKartesiusModule = (() => {
 
   async function calculate() {
     const rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
+    const unit_kerja_id = document.getElementById('filter-unit-kerja')?.value || '';
     const tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
 
-    if (!confirm(`Hitung diagram kartesius untuk tahun ${tahun}?`)) return;
+    const levelText = unit_kerja_id === 'RUMAH_SAKIT' ? 'level Rumah Sakit (agregasi otomatis)' : 
+                     unit_kerja_id ? 'unit kerja terpilih' : 'semua unit kerja';
+    
+    if (!confirm(`Hitung diagram kartesius untuk tahun ${tahun} pada ${levelText}?`)) return;
 
     try {
       await api()('/api/diagram-kartesius/calculate', {
         method: 'POST',
         body: {
           rencana_strategis_id: rencana_strategis_id || null,
+          unit_kerja_id: unit_kerja_id || null,
           tahun
         }
       });

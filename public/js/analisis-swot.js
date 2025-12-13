@@ -4,8 +4,10 @@ const AnalisisSwotModule = (() => {
     data: [],
     summary: null,
     rencanaStrategis: [],
+    unitKerja: [],
     filters: {
       rencana_strategis_id: '',
+      unit_kerja_id: '',
       kategori: '',
       tahun: new Date().getFullYear()
     }
@@ -24,6 +26,7 @@ const AnalisisSwotModule = (() => {
       // Fetch data separately to better handle errors
       let analisis = [];
       let rencana = [];
+      let unitKerja = [];
       
       try {
         analisis = await api()('/api/analisis-swot?' + new URLSearchParams(state.filters));
@@ -39,17 +42,29 @@ const AnalisisSwotModule = (() => {
         alert('Error loading rencana strategis data: ' + error.message);
       }
       
+      try {
+        unitKerja = await api()('/api/master-data/work-units');
+      } catch (error) {
+        console.error('Error fetching unit kerja data:', error);
+      }
+      
       state.data = analisis || [];
       state.rencanaStrategis = rencana || [];
+      state.unitKerja = unitKerja || [];
       
       // Log for debugging
-      console.log('SWOT Analysis data loaded:', { analisis: state.data.length, rencana: state.rencanaStrategis.length });
+      console.log('SWOT Analysis data loaded:', { 
+        analisis: state.data.length, 
+        rencana: state.rencanaStrategis.length,
+        unitKerja: state.unitKerja.length 
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
       // Show error to user
       alert('Error loading data: ' + error.message);
       state.data = [];
       state.rencanaStrategis = [];
+      state.unitKerja = [];
     }
   }
 
@@ -87,6 +102,14 @@ const AnalisisSwotModule = (() => {
               </select>
             </div>
             <div class="form-group">
+              <label>Unit Kerja</label>
+              <select class="form-control" id="filter-unit-kerja" onchange="AnalisisSwotModule.applyFilter()">
+                <option value="">Semua</option>
+                <option value="RUMAH_SAKIT">Rumah Sakit (Agregasi)</option>
+                ${state.unitKerja.map(u => `<option value="${u.id}" ${state.filters.unit_kerja_id === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
               <label>Kategori</label>
               <select class="form-control" id="filter-kategori" onchange="AnalisisSwotModule.applyFilter()">
                 <option value="">Semua</option>
@@ -107,22 +130,26 @@ const AnalisisSwotModule = (() => {
               <thead>
                 <tr>
                   <th>Tahun</th>
+                  <th>Unit Kerja</th>
                   <th>Kategori</th>
                   <th>Objek Analisis</th>
                   <th>Bobot</th>
+                  <th>Kuantitas</th>
                   <th>Rank</th>
                   <th>Score</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                ${state.data.length === 0 ? '<tr><td colspan="7" class="text-center">Tidak ada data</td></tr>' : ''}
+                ${state.data.length === 0 ? '<tr><td colspan="9" class="text-center">Tidak ada data</td></tr>' : ''}
                 ${state.data.map(item => `
                   <tr>
                     <td>${item.tahun}</td>
+                    <td>${item.master_work_units?.name || item.unit_kerja_name || '-'}</td>
                     <td><span class="badge-status badge-${getKategoriColor(item.kategori)}">${item.kategori}</span></td>
                     <td>${item.objek_analisis}</td>
                     <td>${item.bobot}</td>
+                    <td>${item.kuantitas || 1}</td>
                     <td>${item.rank}</td>
                     <td><strong>${item.score}</strong></td>
                     <td>
@@ -187,6 +214,7 @@ const AnalisisSwotModule = (() => {
 
   async function applyFilter() {
     state.filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
+    state.filters.unit_kerja_id = document.getElementById('filter-unit-kerja')?.value || '';
     state.filters.kategori = document.getElementById('filter-kategori')?.value || '';
     state.filters.tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
     await fetchInitialData();
@@ -212,6 +240,13 @@ const AnalisisSwotModule = (() => {
             </select>
           </div>
           <div class="form-group">
+            <label class="form-label">Unit Kerja *</label>
+            <select class="form-control" id="as-unit-kerja" required>
+              <option value="">Pilih Unit Kerja</option>
+              ${state.unitKerja.map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label">Tahun *</label>
             <input type="number" class="form-control" id="as-tahun" required value="${new Date().getFullYear()}">
           </div>
@@ -232,6 +267,11 @@ const AnalisisSwotModule = (() => {
           <div class="form-group">
             <label class="form-label">Bobot (0-100) *</label>
             <input type="number" class="form-control" id="as-bobot" required min="0" max="100" onchange="AnalisisSwotModule.calculateScore()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kuantitas *</label>
+            <input type="number" class="form-control" id="as-kuantitas" required min="1" value="1" onchange="AnalisisSwotModule.calculateScore()">
+            <small class="form-text text-muted">Jumlah item untuk kategori ini</small>
           </div>
           <div class="form-group">
             <label class="form-label">Rank (1-5) *</label>
@@ -269,10 +309,12 @@ const AnalisisSwotModule = (() => {
     try {
       const data = await api()(`/api/analisis-swot/${id}`);
       document.getElementById('as-rencana-strategis').value = data.rencana_strategis_id || '';
+      document.getElementById('as-unit-kerja').value = data.unit_kerja_id || '';
       document.getElementById('as-tahun').value = data.tahun || '';
       document.getElementById('as-kategori').value = data.kategori || '';
       document.getElementById('as-objek-analisis').value = data.objek_analisis || '';
       document.getElementById('as-bobot').value = data.bobot || '';
+      document.getElementById('as-kuantitas').value = data.kuantitas || 1;
       document.getElementById('as-rank').value = data.rank || '';
       calculateScore();
     } catch (error) {
@@ -286,10 +328,12 @@ const AnalisisSwotModule = (() => {
     try {
       const data = {
         rencana_strategis_id: document.getElementById('as-rencana-strategis').value || null,
+        unit_kerja_id: document.getElementById('as-unit-kerja').value || null,
         tahun: parseInt(document.getElementById('as-tahun').value),
         kategori: document.getElementById('as-kategori').value,
         objek_analisis: document.getElementById('as-objek-analisis').value,
         bobot: parseInt(document.getElementById('as-bobot').value),
+        kuantitas: parseInt(document.getElementById('as-kuantitas').value),
         rank: parseInt(document.getElementById('as-rank').value)
       };
 

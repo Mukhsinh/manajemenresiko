@@ -67,9 +67,9 @@ router.post('/generate', authenticateUser, async (req, res) => {
         .select();
 
       if (error) throw error;
-      res.json({ message: 'Strategic map berhasil digenerate', data });
+      res.json({ message: 'Strategic map berhasil digenerate', data, generated: strategicMapData.length });
     } else {
-      res.json({ message: 'Tidak ada sasaran strategi untuk digenerate', data: [] });
+      res.json({ message: 'Tidak ada sasaran strategi untuk digenerate', data: [], generated: 0 });
     }
   } catch (error) {
     console.error('Strategic map generate error:', error);

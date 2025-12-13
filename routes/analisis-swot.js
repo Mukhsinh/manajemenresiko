@@ -6,13 +6,16 @@ const { authenticateUser } = require('../middleware/auth');
 // Get all analisis SWOT
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const { rencana_strategis_id, kategori, tahun } = req.query;
+    const { rencana_strategis_id, unit_kerja_id, kategori, tahun } = req.query;
     
     // Use supabaseAdmin to bypass RLS and avoid ambiguous user_id error
     const clientToUse = supabaseAdmin || supabase;
     let query = clientToUse
       .from('swot_analisis')
-      .select('*')
+      .select(`
+        *,
+        master_work_units(id, name, code)
+      `)
       .eq('user_id', req.user.id)
       .order('tahun', { ascending: false })
       .order('kategori', { ascending: true })
@@ -20,6 +23,9 @@ router.get('/', authenticateUser, async (req, res) => {
 
     if (rencana_strategis_id) {
       query = query.eq('rencana_strategis_id', rencana_strategis_id);
+    }
+    if (unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT') {
+      query = query.eq('unit_kerja_id', unit_kerja_id);
     }
     if (kategori) {
       query = query.eq('kategori', kategori);
@@ -41,17 +47,20 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get summary (total score per kategori)
 router.get('/summary', authenticateUser, async (req, res) => {
   try {
-    const { rencana_strategis_id, tahun } = req.query;
+    const { rencana_strategis_id, unit_kerja_id, tahun } = req.query;
     
     // Use supabaseAdmin to bypass RLS
     const clientToUse = supabaseAdmin || supabase;
     let query = clientToUse
       .from('swot_analisis')
-      .select('kategori, score, bobot, rank')
+      .select('kategori, score, bobot, rank, kuantitas, unit_kerja_id')
       .eq('user_id', req.user.id);
 
     if (rencana_strategis_id) {
       query = query.eq('rencana_strategis_id', rencana_strategis_id);
+    }
+    if (unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT') {
+      query = query.eq('unit_kerja_id', unit_kerja_id);
     }
     if (tahun) {
       query = query.eq('tahun', parseInt(tahun));
@@ -69,13 +78,44 @@ router.get('/summary', authenticateUser, async (req, res) => {
       Threat: { totalScore: 0, totalBobot: 0, items: [] }
     };
 
-    (data || []).forEach(item => {
-      if (summary[item.kategori]) {
-        summary[item.kategori].totalScore += item.score || 0;
-        summary[item.kategori].totalBobot += item.bobot || 0;
-        summary[item.kategori].items.push(item);
-      }
-    });
+    // If RUMAH_SAKIT selected, aggregate with highest values
+    if (unit_kerja_id === 'RUMAH_SAKIT') {
+      // Group by category and get max score and bobot
+      const grouped = {};
+      (data || []).forEach(item => {
+        const key = item.kategori;
+        if (!grouped[key]) {
+          grouped[key] = [];
+        }
+        grouped[key].push(item);
+      });
+
+      // For each category, get items with highest score and bobot
+      Object.keys(grouped).forEach(kategori => {
+        const items = grouped[kategori];
+        // Sort by score desc, then bobot desc
+        items.sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          return b.bobot - a.bobot;
+        });
+        
+        // Take top items based on kuantitas
+        const totalKuantitas = items.reduce((sum, item) => sum + (item.kuantitas || 1), 0);
+        const topItems = items.slice(0, Math.min(5, totalKuantitas)); // Max 5 items or total kuantitas
+        
+        summary[kategori].items = topItems;
+        summary[kategori].totalScore = topItems.reduce((sum, item) => sum + (item.score || 0), 0);
+        summary[kategori].totalBobot = topItems.reduce((sum, item) => sum + (item.bobot || 0), 0);
+      });
+    } else {
+      (data || []).forEach(item => {
+        if (summary[item.kategori]) {
+          summary[item.kategori].totalScore += item.score || 0;
+          summary[item.kategori].totalBobot += item.bobot || 0;
+          summary[item.kategori].items.push(item);
+        }
+      });
+    }
 
     // Calculate differences
     const scoreOpportunity = summary.Opportunity.totalScore;
@@ -121,10 +161,12 @@ router.post('/', authenticateUser, async (req, res) => {
   try {
     const {
       rencana_strategis_id,
+      unit_kerja_id,
       tahun,
       kategori,
       objek_analisis,
       bobot,
+      kuantitas,
       rank
     } = req.body;
 
@@ -147,10 +189,12 @@ router.post('/', authenticateUser, async (req, res) => {
       .insert({
         user_id: req.user.id,
         rencana_strategis_id: rencana_strategis_id || null,
+        unit_kerja_id: unit_kerja_id || null,
         tahun: parseInt(tahun),
         kategori,
         objek_analisis,
         bobot: parseInt(bobot),
+        kuantitas: parseInt(kuantitas) || 1,
         rank: parseInt(rank)
       })
       .select()
@@ -169,10 +213,12 @@ router.put('/:id', authenticateUser, async (req, res) => {
   try {
     const {
       rencana_strategis_id,
+      unit_kerja_id,
       tahun,
       kategori,
       objek_analisis,
       bobot,
+      kuantitas,
       rank
     } = req.body;
 
@@ -189,10 +235,12 @@ router.put('/:id', authenticateUser, async (req, res) => {
     };
 
     if (rencana_strategis_id !== undefined) updateData.rencana_strategis_id = rencana_strategis_id || null;
+    if (unit_kerja_id !== undefined) updateData.unit_kerja_id = unit_kerja_id || null;
     if (tahun !== undefined) updateData.tahun = parseInt(tahun);
     if (kategori !== undefined) updateData.kategori = kategori;
     if (objek_analisis !== undefined) updateData.objek_analisis = objek_analisis;
     if (bobot !== undefined) updateData.bobot = parseInt(bobot);
+    if (kuantitas !== undefined) updateData.kuantitas = parseInt(kuantitas);
     if (rank !== undefined) updateData.rank = parseInt(rank);
 
     // Use supabaseAdmin to bypass RLS

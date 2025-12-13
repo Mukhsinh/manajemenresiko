@@ -95,25 +95,39 @@ const StrategicMapModule = (() => {
     }
 
     const grouped = groupByPerspektif(state.data);
-    const perspektifOrder = ['Eksternal Stakeholder', 'Internal Business Process', 'Learning & Growth', 'Financial'];
+    const perspektifLabels = {
+      'ES': 'Eksternal Stakeholder',
+      'IBP': 'Internal Business Process',
+      'LG': 'Learning & Growth',
+      'Fin': 'Financial'
+    };
+    const perspektifOrder = ['ES', 'IBP', 'LG', 'Fin'];
     
     return perspektifOrder.map((perspektif, idx) => {
       const items = grouped[perspektif] || [];
       if (items.length === 0) return '';
       
+      const label = perspektifLabels[perspektif] || perspektif;
+      
       return `
-        <div class="perspektif-group" style="margin-bottom: 2rem; padding: 1rem; background: white; border-radius: 8px; border-left: 4px solid ${getPerspektifColorHex(perspektif)};">
-          <h4 style="margin-bottom: 1rem; color: ${getPerspektifColorHex(perspektif)};">${perspektif}</h4>
-          <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <div class="perspektif-group" style="margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border-left: 4px solid ${getPerspektifColorHex(perspektif)}; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h4 style="margin-bottom: 1rem; color: ${getPerspektifColorHex(perspektif)}; font-weight: 600;">
+            <i class="fas fa-layer-group"></i> ${label}
+          </h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
             ${items.map(item => `
               <div class="sasaran-node" 
-                   style="padding: 1rem; background: ${item.warna || '#3498db'}; color: white; border-radius: 8px; min-width: 200px; cursor: move;"
+                   style="padding: 1rem; background: ${item.warna || getPerspektifColorHex(perspektif)}; color: white; border-radius: 8px; cursor: move; transition: transform 0.2s, box-shadow 0.2s;"
+                   onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'"
+                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'"
                    draggable="true"
                    data-id="${item.id}"
                    ondragstart="StrategicMapModule.handleDragStart(event)"
                    ondrop="StrategicMapModule.handleDrop(event)"
                    ondragover="event.preventDefault()">
-                <strong>${item.sasaran_strategi?.sasaran?.substring(0, 50) || 'Sasaran'}...</strong>
+                <div style="font-size: 0.9rem; line-height: 1.4;">
+                  ${item.sasaran_strategi?.sasaran || 'Sasaran Strategi'}
+                </div>
               </div>
             `).join('')}
           </div>
@@ -134,19 +148,23 @@ const StrategicMapModule = (() => {
   }
 
   function getPerspektifColor(perspektif) {
-    if (perspektif.includes('Eksternal')) return 'normal';
-    if (perspektif.includes('Internal')) return 'aman';
-    if (perspektif.includes('Learning')) return 'hati-hati';
-    if (perspektif.includes('Financial')) return 'kritis';
-    return 'secondary';
+    const colorMap = {
+      'ES': 'normal',
+      'IBP': 'aman',
+      'LG': 'hati-hati',
+      'Fin': 'kritis'
+    };
+    return colorMap[perspektif] || 'secondary';
   }
 
   function getPerspektifColorHex(perspektif) {
-    if (perspektif.includes('Eksternal')) return '#3498db';
-    if (perspektif.includes('Internal')) return '#27ae60';
-    if (perspektif.includes('Learning')) return '#f39c12';
-    if (perspektif.includes('Financial')) return '#e74c3c';
-    return '#95a5a6';
+    const colorMap = {
+      'ES': '#3498db',
+      'IBP': '#27ae60',
+      'LG': '#f39c12',
+      'Fin': '#e74c3c'
+    };
+    return colorMap[perspektif] || '#95a5a6';
   }
 
   async function applyFilter() {
@@ -163,16 +181,23 @@ const StrategicMapModule = (() => {
       return;
     }
 
-    if (!confirm('Generate strategic map dari sasaran strategi? Data yang sudah ada akan diganti.')) return;
+    if (!confirm('Generate strategic map dari sasaran strategi?\nData yang sudah ada akan diganti dengan data terbaru.')) return;
 
     try {
-      await api()('/api/strategic-map/generate', {
+      const result = await api()('/api/strategic-map/generate', {
         method: 'POST',
         body: { rencana_strategis_id }
       });
+      
       await load();
-      alert('Strategic map berhasil digenerate');
+      
+      if (result.generated > 0) {
+        alert(`Strategic map berhasil digenerate!\nTotal: ${result.generated} sasaran strategi`);
+      } else {
+        alert('Tidak ada sasaran strategi untuk digenerate.\nSilakan tambahkan sasaran strategi terlebih dahulu.');
+      }
     } catch (error) {
+      console.error('Generate error:', error);
       alert('Error: ' + error.message);
     }
   }

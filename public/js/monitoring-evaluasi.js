@@ -13,10 +13,20 @@ const MonitoringEvaluasi = {
 
     render(data) {
         const content = document.getElementById('monitoring-evaluasi-content');
+        
+        // Calculate statistics
+        const stats = {
+            total: data.length,
+            completed: data.filter(d => d.progress_mitigasi >= 100).length,
+            inProgress: data.filter(d => d.progress_mitigasi > 0 && d.progress_mitigasi < 100).length,
+            notStarted: data.filter(d => !d.progress_mitigasi || d.progress_mitigasi === 0).length,
+            avgProgress: data.length > 0 ? (data.reduce((sum, d) => sum + (d.progress_mitigasi || 0), 0) / data.length).toFixed(1) : 0
+        };
+        
         content.innerHTML = `
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Monitoring & Evaluasi Risiko</h3>
+                    <h3 class="card-title"><i class="fas fa-tasks"></i> Monitoring & Evaluasi Risiko</h3>
                     <div class="action-buttons">
                         <button class="btn btn-warning" onclick="MonitoringEvaluasi.downloadTemplate()">
                             <i class="fas fa-download"></i> Unduh Template
@@ -32,49 +42,149 @@ const MonitoringEvaluasi = {
                         </button>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Kode Risiko</th>
-                                <th>Status Risiko</th>
-                                <th>Nilai Risiko</th>
-                                <th>Progress Mitigasi</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.length === 0 ? '<tr><td colspan="6" class="text-center">Tidak ada data</td></tr>' : ''}
-                            ${data.map(item => `
+                <div class="card-body">
+                    <!-- Statistics -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+                            <div style="font-size: 2rem; font-weight: bold;">${stats.total}</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Total Monitoring</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+                            <div style="font-size: 2rem; font-weight: bold;">${stats.completed}</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Completed (100%)</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+                            <div style="font-size: 2rem; font-weight: bold;">${stats.inProgress}</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">In Progress</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+                            <div style="font-size: 2rem; font-weight: bold;">${stats.avgProgress}%</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Avg Progress</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Chart -->
+                    ${data.length > 0 ? `
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;"><i class="fas fa-chart-line"></i> Progress Mitigasi Risiko</h4>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="monitoring-progress-chart"></canvas>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Table -->
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>${item.tanggal_monitoring}</td>
-                                    <td>${item.risk_inputs?.kode_risiko || '-'}</td>
-                                    <td>${item.status_risiko || '-'}</td>
-                                    <td>${item.nilai_risiko || '-'}</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:0.5rem;">
-                                            <div style="flex:1;height:8px;background:#e5e7eb;border-radius:9999px;">
-                                                <div style="width:${item.progress_mitigasi || 0}%;height:100%;background:var(--primary-blue);border-radius:9999px;"></div>
-                                            </div>
-                                            <span>${item.progress_mitigasi || 0}%</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-edit btn-sm" onclick="MonitoringEvaluasi.edit('${item.id}')">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-delete btn-sm" onclick="MonitoringEvaluasi.delete('${item.id}')">
-                                            <i class="fas fa-trash"></i> Hapus
-                                        </button>
-                                    </td>
+                                    <th>Tanggal</th>
+                                    <th>Kode Risiko</th>
+                                    <th>Status Risiko</th>
+                                    <th>Nilai Risiko</th>
+                                    <th>Progress Mitigasi</th>
+                                    <th>Evaluasi</th>
+                                    <th>Aksi</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${data.length === 0 ? '<tr><td colspan="7" class="text-center">Tidak ada data</td></tr>' : ''}
+                                ${data.map(item => {
+                                    const progressColor = item.progress_mitigasi >= 75 ? '#27ae60' : 
+                                                        item.progress_mitigasi >= 50 ? '#3498db' :
+                                                        item.progress_mitigasi >= 25 ? '#f39c12' : '#e74c3c';
+                                    return `
+                                    <tr>
+                                        <td>${item.tanggal_monitoring || '-'}</td>
+                                        <td><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
+                                        <td><span class="badge-status badge-${getStatusColor(item.status_risiko)}">${item.status_risiko || '-'}</span></td>
+                                        <td>${item.nilai_risiko || '-'}</td>
+                                        <td>
+                                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                                <div style="flex:1;height:10px;background:#e5e7eb;border-radius:9999px;overflow:hidden;">
+                                                    <div style="width:${item.progress_mitigasi || 0}%;height:100%;background:${progressColor};border-radius:9999px;transition:width 0.3s;"></div>
+                                                </div>
+                                                <span style="font-weight:bold;color:${progressColor};">${item.progress_mitigasi || 0}%</span>
+                                            </div>
+                                        </td>
+                                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.evaluasi || '-'}">${item.evaluasi || '-'}</td>
+                                        <td>
+                                            <button class="btn btn-edit btn-sm" onclick="MonitoringEvaluasi.edit('${item.id}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-delete btn-sm" onclick="MonitoringEvaluasi.delete('${item.id}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;
+        
+        // Render progress chart
+        if (data.length > 0) {
+            this.renderProgressChart(data);
+        }
+    },
+    
+    renderProgressChart(data) {
+        const ctx = document.getElementById('monitoring-progress-chart');
+        if (!ctx) return;
+        
+        const sortedData = [...data].sort((a, b) => new Date(a.tanggal_monitoring) - new Date(b.tanggal_monitoring));
+        const labels = sortedData.map(d => d.risk_inputs?.kode_risiko || 'N/A');
+        const progressData = sortedData.map(d => d.progress_mitigasi || 0);
+        const colors = progressData.map(p => 
+            p >= 75 ? 'rgba(39, 174, 96, 0.7)' :
+            p >= 50 ? 'rgba(52, 152, 219, 0.7)' :
+            p >= 25 ? 'rgba(243, 156, 18, 0.7)' : 'rgba(231, 76, 60, 0.7)'
+        );
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Progress Mitigasi (%)',
+                    data: progressData,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c.replace('0.7', '1')),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Progress (%)',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Kode Risiko',
+                            font: { weight: 'bold' }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
     },
 
     async showAddModal() {
@@ -220,5 +330,15 @@ const MonitoringEvaluasi = {
     showImportModal() { alert('Fitur import akan diimplementasikan'); },
     downloadReport() { alert('Fitur unduh laporan akan diimplementasikan'); }
 };
+
+function getStatusColor(status) {
+    const colorMap = {
+        'Stabil': 'aman',
+        'Meningkat': 'hati-hati',
+        'Menurun': 'normal',
+        'Kritis': 'kritis'
+    };
+    return colorMap[status] || 'secondary';
+}
 
 window.monitoringEvaluasiModule = MonitoringEvaluasi;
