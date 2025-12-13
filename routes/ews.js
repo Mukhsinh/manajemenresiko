@@ -3,11 +3,12 @@ const router = express.Router();
 const { supabase } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodeEWS } = require('../utils/codeGenerator');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Get all EWS
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('early_warning_system')
       .select(`
         *,
@@ -15,8 +16,11 @@ router.get('/', authenticateUser, async (req, res) => {
           name
         )
       `)
-      .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
+    
+    query = buildOrganizationFilter(query, req.user);
+
+    const { data, error } = await query;
 
     if (error) throw error;
     res.json(data || []);

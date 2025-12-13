@@ -3,11 +3,12 @@ const router = express.Router();
 const { supabase } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodeLossEvent } = require('../utils/codeGenerator');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Get all loss events
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('loss_event')
       .select(`
         *,
@@ -22,8 +23,11 @@ router.get('/', authenticateUser, async (req, res) => {
           kode_risiko
         )
       `)
-      .eq('user_id', req.user.id)
       .order('tanggal_kejadian', { ascending: false });
+    
+    query = buildOrganizationFilter(query, req.user);
+
+    const { data, error } = await query;
 
     if (error) throw error;
     res.json(data || []);

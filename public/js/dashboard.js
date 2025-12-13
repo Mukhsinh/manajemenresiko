@@ -1,19 +1,51 @@
 // Dashboard Module
 let dashboardCharts = {};
 
+// Check if Chart.js is loaded
+function isChartJsReady() {
+    return typeof Chart !== 'undefined' && Chart !== null;
+}
+
+// Wait for Chart.js to be ready
+function waitForChartJs(callback, maxAttempts = 50) {
+    if (isChartJsReady()) {
+        callback();
+        return;
+    }
+    
+    let attempts = 0;
+    const checkInterval = setInterval(() => {
+        attempts++;
+        if (isChartJsReady()) {
+            clearInterval(checkInterval);
+            callback();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            console.error('Chart.js failed to load after', maxAttempts, 'attempts');
+        }
+    }, 100);
+}
+
 async function loadDashboard() {
     try {
         const stats = await apiCall('/api/dashboard');
         renderDashboard(stats);
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        document.getElementById('dashboard-content').innerHTML = 
-            '<div class="card"><p>Error memuat dashboard: ' + error.message + '</p></div>';
+        const content = document.getElementById('dashboard-content');
+        if (content) {
+            content.innerHTML = 
+                '<div class="card"><p>Error memuat dashboard: ' + error.message + '</p></div>';
+        }
     }
 }
 
 function renderDashboard(stats) {
     const content = document.getElementById('dashboard-content');
+    if (!content) {
+        console.error('Dashboard content element not found');
+        return;
+    }
     
     content.innerHTML = `
         <div class="charts-grid">
@@ -52,21 +84,34 @@ function renderDashboard(stats) {
         </div>
     `;
     
-    // Render charts
-    renderInherentRiskChart(stats.inherent_risks);
-    renderResidualRiskChart(stats.residual_risks);
-    renderKRIChart(stats.kri);
+    // Wait for Chart.js and DOM to be ready before rendering charts
+    waitForChartJs(() => {
+        // Use setTimeout to ensure DOM is fully rendered
+        setTimeout(() => {
+            try {
+                renderInherentRiskChart(stats.inherent_risks || {});
+                renderResidualRiskChart(stats.residual_risks || {});
+                renderKRIChart(stats.kri || {});
+            } catch (error) {
+                console.error('Error rendering dashboard charts:', error);
+            }
+        }, 100);
+    });
 }
 
 function renderInherentRiskChart(data) {
     const ctx = document.getElementById('inherent-risk-chart');
-    if (!ctx) return;
+    if (!ctx || !isChartJsReady()) {
+        console.warn('Chart context not available or Chart.js not ready');
+        return;
+    }
     
     if (dashboardCharts.inherent) {
         dashboardCharts.inherent.destroy();
     }
     
-    dashboardCharts.inherent = new Chart(ctx, {
+    try {
+        dashboardCharts.inherent = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Extreme High', 'High', 'Medium', 'Low'],
@@ -94,13 +139,17 @@ function renderInherentRiskChart(data) {
 
 function renderResidualRiskChart(data) {
     const ctx = document.getElementById('residual-risk-chart');
-    if (!ctx) return;
+    if (!ctx || !isChartJsReady()) {
+        console.warn('Chart context not available or Chart.js not ready');
+        return;
+    }
     
     if (dashboardCharts.residual) {
         dashboardCharts.residual.destroy();
     }
     
-    dashboardCharts.residual = new Chart(ctx, {
+    try {
+        dashboardCharts.residual = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Extreme High', 'High', 'Medium', 'Low'],
@@ -124,17 +173,24 @@ function renderResidualRiskChart(data) {
             maintainAspectRatio: true
         }
     });
+    } catch (error) {
+        console.error('Error creating residual risk chart:', error);
+    }
 }
 
 function renderKRIChart(data) {
     const ctx = document.getElementById('kri-chart');
-    if (!ctx) return;
+    if (!ctx || !isChartJsReady()) {
+        console.warn('Chart context not available or Chart.js not ready');
+        return;
+    }
     
     if (dashboardCharts.kri) {
         dashboardCharts.kri.destroy();
     }
     
-    dashboardCharts.kri = new Chart(ctx, {
+    try {
+        dashboardCharts.kri = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Aman', 'Hati-hati', 'Kritis'],
@@ -156,6 +212,9 @@ function renderKRIChart(data) {
             maintainAspectRatio: true
         }
     });
+    } catch (error) {
+        console.error('Error creating KRI chart:', error);
+    }
 }
 
 // Export for use in app.js

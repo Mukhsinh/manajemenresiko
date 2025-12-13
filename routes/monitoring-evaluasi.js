@@ -2,10 +2,24 @@ const express = require('express');
 const router = express.Router();
 const { supabase } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Get all monitoring evaluasi
 router.get('/', authenticateUser, async (req, res) => {
   try {
+    // First get accessible risk IDs
+    let risksQuery = supabase
+      .from('risk_inputs')
+      .select('id');
+    risksQuery = buildOrganizationFilter(risksQuery, req.user);
+    const { data: accessibleRisks } = await risksQuery;
+    const accessibleRiskIds = (accessibleRisks || []).map(r => r.id);
+
+    if (accessibleRiskIds.length === 0) {
+      return res.json([]);
+    }
+
+    // Get monitoring data for accessible risks
     const { data, error } = await supabase
       .from('monitoring_evaluasi_risiko')
       .select(`
@@ -15,7 +29,7 @@ router.get('/', authenticateUser, async (req, res) => {
           sasaran
         )
       `)
-      .eq('user_id', req.user.id)
+      .in('risk_input_id', accessibleRiskIds)
       .order('tanggal_monitoring', { ascending: false });
 
     if (error) throw error;

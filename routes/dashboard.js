@@ -17,17 +17,34 @@ router.get('/', authenticateUser, async (req, res) => {
     const { count: totalRisks } = await risksQuery;
 
     // Get risks by level with organization filter
-    let inherentQuery = supabase
-      .from('risk_inherent_analysis')
-      .select('risk_level, risk_inputs!inner(organization_id)');
-    inherentQuery = buildOrganizationFilter(inherentQuery, req.user, 'risk_inputs.organization_id');
-    const { data: inherentRisks } = await inherentQuery;
+    // First get risk IDs that user has access to
+    let accessibleRisksQuery = supabase
+      .from('risk_inputs')
+      .select('id');
+    accessibleRisksQuery = buildOrganizationFilter(accessibleRisksQuery, req.user);
+    const { data: accessibleRisks } = await accessibleRisksQuery;
+    
+    const accessibleRiskIds = (accessibleRisks || []).map(r => r.id);
+    
+    // Get inherent risks for accessible risk IDs
+    let inherentRisksData = [];
+    if (accessibleRiskIds.length > 0) {
+      const { data: inherentData } = await supabase
+        .from('risk_inherent_analysis')
+        .select('risk_level')
+        .in('risk_input_id', accessibleRiskIds);
+      inherentRisksData = inherentData || [];
+    }
 
-    let residualQuery = supabase
-      .from('risk_residual_analysis')
-      .select('risk_level, risk_inputs!inner(organization_id)');
-    residualQuery = buildOrganizationFilter(residualQuery, req.user, 'risk_inputs.organization_id');
-    const { data: residualRisks } = await residualQuery;
+    // Get residual risks for accessible risk IDs
+    let residualRisksData = [];
+    if (accessibleRiskIds.length > 0) {
+      const { data: residualData } = await supabase
+        .from('risk_residual_analysis')
+        .select('risk_level')
+        .in('risk_input_id', accessibleRiskIds);
+      residualRisksData = residualData || [];
+    }
 
     // Get KRI statistics with organization filter
     let kriQuery = supabase
@@ -59,20 +76,20 @@ router.get('/', authenticateUser, async (req, res) => {
     const stats = {
       total_risks: totalRisks || 0,
       inherent_risks: {
-        extreme_high: countByLevel(inherentRisks, 'EXTREME HIGH'),
-        high: countByLevel(inherentRisks, 'HIGH RISK'),
-        medium: countByLevel(inherentRisks, 'MEDIUM RISK'),
-        low: countByLevel(inherentRisks, 'LOW RISK')
+        extreme_high: countByLevel(inherentRisksData, 'EXTREME HIGH'),
+        high: countByLevel(inherentRisksData, 'HIGH RISK'),
+        medium: countByLevel(inherentRisksData, 'MEDIUM RISK'),
+        low: countByLevel(inherentRisksData, 'LOW RISK')
       },
       residual_risks: {
-        extreme_high: countByLevel(residualRisks, 'EXTREME HIGH'),
-        high: countByLevel(residualRisks, 'HIGH RISK'),
-        medium: countByLevel(residualRisks, 'MEDIUM RISK'),
-        low: countByLevel(residualRisks, 'LOW RISK')
+        extreme_high: countByLevel(residualRisksData, 'EXTREME HIGH'),
+        high: countByLevel(residualRisksData, 'HIGH RISK'),
+        medium: countByLevel(residualRisksData, 'MEDIUM RISK'),
+        low: countByLevel(residualRisksData, 'LOW RISK')
       },
       kri: {
         aman: kriData?.filter(k => k.status_indikator === 'Aman').length || 0,
-        hati_hati: kriData?.filter(k => k.status_indikator === 'Hati-hati').length || 0,
+        hati_hati: kriData?.filter(k => k.status_indikator === 'Hati-hati' || k.status_indikator === 'Peringatan').length || 0,
         kritis: kriData?.filter(k => k.status_indikator === 'Kritis').length || 0
       },
       loss_events: lossEvents || 0,

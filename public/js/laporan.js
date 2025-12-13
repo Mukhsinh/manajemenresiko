@@ -92,7 +92,7 @@ const LaporanModule = (() => {
         description: 'Laporan lengkap register risiko mencakup inherent risk, residual risk, dan treatment plan',
         color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         endpoints: {
-          excel: '/api/reports/risk-register',
+          excel: '/api/reports/risk-register/excel',
           pdf: '/api/reports/risk-register/pdf'
         }
       },
@@ -103,7 +103,7 @@ const LaporanModule = (() => {
         description: 'Profil risiko inherent dengan matrix 5×5 dan analisis detail per kategori risiko',
         color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
         endpoints: {
-          excel: '/api/reports/risk-profile',
+          excel: '/api/reports/risk-profile/excel',
           pdf: '/api/reports/risk-profile/pdf'
         }
       },
@@ -114,7 +114,7 @@ const LaporanModule = (() => {
         description: 'Analisis residual risk setelah mitigasi, perbandingan dengan inherent risk',
         color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
         endpoints: {
-          excel: '/api/reports/residual-risk',
+          excel: '/api/reports/residual-risk/excel',
           pdf: '/api/reports/residual-risk/pdf'
         }
       },
@@ -125,7 +125,7 @@ const LaporanModule = (() => {
         description: 'Dashboard risk appetite, threshold monitoring, dan compliance terhadap batas risiko',
         color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
         endpoints: {
-          excel: '/api/reports/risk-appetite',
+          excel: '/api/reports/risk-appetite/excel',
           pdf: '/api/reports/risk-appetite/pdf'
         }
       },
@@ -136,7 +136,7 @@ const LaporanModule = (() => {
         description: 'Laporan Key Risk Indicator dengan trend analysis dan threshold monitoring',
         color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
         endpoints: {
-          excel: '/api/reports/kri',
+          excel: '/api/reports/kri/excel',
           pdf: '/api/reports/kri/pdf'
         }
       },
@@ -147,7 +147,7 @@ const LaporanModule = (() => {
         description: 'Progress monitoring mitigasi risiko dengan timeline dan achievement tracking',
         color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
         endpoints: {
-          excel: '/api/reports/monitoring',
+          excel: '/api/reports/monitoring/excel',
           pdf: '/api/reports/monitoring/pdf'
         }
       },
@@ -158,7 +158,7 @@ const LaporanModule = (() => {
         description: 'Laporan kejadian loss event dengan analisis root cause dan lessons learned',
         color: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
         endpoints: {
-          excel: '/api/reports/loss-event',
+          excel: '/api/reports/loss-event/excel',
           pdf: '/api/reports/loss-event/pdf'
         }
       },
@@ -169,7 +169,7 @@ const LaporanModule = (() => {
         description: 'Peta strategi organisasi dengan balanced scorecard perspectives',
         color: 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
         endpoints: {
-          excel: '/api/reports/strategic-map',
+          excel: '/api/reports/strategic-map/excel',
           pdf: '/api/reports/strategic-map/pdf'
         }
       }
@@ -256,10 +256,21 @@ ${JSON.stringify(state.previewData.data, null, 2)}
       const queryParams = buildQueryParams();
       const url = queryParams ? `${endpoint}?${queryParams}` : endpoint;
       
+      // Get auth token for the request
+      const token = await (window.apiService?.getAuthToken?.() || 
+        (window.supabaseClient ? (await window.supabaseClient.auth.getSession()).data.session?.access_token : null));
+      
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      };
+      
       alert('Mengunduh laporan Excel...\nHarap tunggu sebentar.');
       
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Gagal mengunduh laporan');
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gagal mengunduh laporan: ${response.status} ${errorText}`);
+      }
 
       const blob = await response.blob();
       const fileName = `${reportId}-${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -278,10 +289,21 @@ ${JSON.stringify(state.previewData.data, null, 2)}
       const queryParams = buildQueryParams();
       const url = queryParams ? `${endpoint}?${queryParams}` : endpoint;
       
+      // Get auth token for the request
+      const token = await (window.apiService?.getAuthToken?.() || 
+        (window.supabaseClient ? (await window.supabaseClient.auth.getSession()).data.session?.access_token : null));
+      
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      };
+      
       alert('Mengunduh laporan PDF...\nHarap tunggu sebentar.');
       
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Gagal mengunduh laporan');
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gagal mengunduh laporan: ${response.status} ${errorText}`);
+      }
 
       const blob = await response.blob();
       const fileName = `${reportId}-${new Date().toISOString().split('T')[0]}.pdf`;

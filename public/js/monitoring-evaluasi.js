@@ -126,26 +126,49 @@ const MonitoringEvaluasi = {
             </div>
         `;
         
-        // Render progress chart
+        // Render progress chart - wait for Chart.js
         if (data.length > 0) {
-            this.renderProgressChart(data);
+            if (typeof Chart !== 'undefined') {
+                setTimeout(() => this.renderProgressChart(data), 100);
+            } else {
+                const checkChart = setInterval(() => {
+                    if (typeof Chart !== 'undefined') {
+                        clearInterval(checkChart);
+                        setTimeout(() => this.renderProgressChart(data), 100);
+                    }
+                }, 100);
+                setTimeout(() => clearInterval(checkChart), 5000);
+            }
         }
     },
     
     renderProgressChart(data) {
         const ctx = document.getElementById('monitoring-progress-chart');
-        if (!ctx) return;
+        if (!ctx || typeof Chart === 'undefined') {
+            console.warn('Chart context not available or Chart.js not loaded');
+            return;
+        }
         
-        const sortedData = [...data].sort((a, b) => new Date(a.tanggal_monitoring) - new Date(b.tanggal_monitoring));
+        const sortedData = [...data].sort((a, b) => {
+            const dateA = a.tanggal_monitoring ? new Date(a.tanggal_monitoring) : new Date(0);
+            const dateB = b.tanggal_monitoring ? new Date(b.tanggal_monitoring) : new Date(0);
+            return dateA - dateB;
+        });
         const labels = sortedData.map(d => d.risk_inputs?.kode_risiko || 'N/A');
-        const progressData = sortedData.map(d => d.progress_mitigasi || 0);
+        const progressData = sortedData.map(d => parseFloat(d.progress_mitigasi) || 0);
         const colors = progressData.map(p => 
             p >= 75 ? 'rgba(39, 174, 96, 0.7)' :
             p >= 50 ? 'rgba(52, 152, 219, 0.7)' :
             p >= 25 ? 'rgba(243, 156, 18, 0.7)' : 'rgba(231, 76, 60, 0.7)'
         );
         
-        new Chart(ctx, {
+        if (labels.length === 0 || progressData.every(p => p === 0)) {
+            console.warn('No valid data for progress chart');
+            return;
+        }
+        
+        try {
+            new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
@@ -185,6 +208,9 @@ const MonitoringEvaluasi = {
                 }
             }
         });
+        } catch (error) {
+            console.error('Error creating monitoring progress chart:', error);
+        }
     },
 
     async showAddModal() {

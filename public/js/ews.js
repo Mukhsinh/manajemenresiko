@@ -100,18 +100,35 @@ const EWS = {
             </div>
         `;
         
-        // Render charts
-        setTimeout(() => {
-            this.renderLevelChart(stats);
-            this.renderStatusChart(data);
-        }, 100);
+        // Render charts - wait for Chart.js
+        if (typeof Chart !== 'undefined') {
+            setTimeout(() => {
+                this.renderLevelChart(stats);
+                this.renderStatusChart(data);
+            }, 100);
+        } else {
+            const checkChart = setInterval(() => {
+                if (typeof Chart !== 'undefined') {
+                    clearInterval(checkChart);
+                    setTimeout(() => {
+                        this.renderLevelChart(stats);
+                        this.renderStatusChart(data);
+                    }, 100);
+                }
+            }, 100);
+            setTimeout(() => clearInterval(checkChart), 5000);
+        }
     },
 
     renderLevelChart(stats) {
         const ctx = document.getElementById('ews-level-chart');
-        if (!ctx) return;
+        if (!ctx || typeof Chart === 'undefined') {
+            console.warn('Chart context not available or Chart.js not loaded');
+            return;
+        }
         
-        new Chart(ctx, {
+        try {
+            new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Normal', 'Peringatan', 'Waspada', 'Darurat'],
@@ -129,25 +146,32 @@ const EWS = {
 
     renderStatusChart(data) {
         const ctx = document.getElementById('ews-status-chart');
-        if (!ctx) return;
+        if (!ctx || typeof Chart === 'undefined') {
+            console.warn('Chart context not available or Chart.js not loaded');
+            return;
+        }
         
         const aktif = data.filter(d => d.status_aktif).length;
         const tidakAktif = data.length - aktif;
         
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Aktif', 'Tidak Aktif'],
-                datasets: [{
-                    data: [aktif, tidakAktif],
-                    backgroundColor: ['#10b981', '#6b7280']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true
-            }
-        });
+        try {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aktif', 'Tidak Aktif'],
+                    datasets: [{
+                        data: [aktif, tidakAktif],
+                        backgroundColor: ['#10b981', '#6b7280']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        } catch (error) {
+            console.error('Error creating EWS status chart:', error);
+        }
     },
 
     async showAddModal() {

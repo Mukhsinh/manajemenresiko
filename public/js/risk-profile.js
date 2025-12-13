@@ -88,7 +88,21 @@ const RiskProfileModule = (() => {
       </div>
     `;
 
-    renderChart();
+    // Wait for Chart.js and DOM to be ready
+    if (typeof Chart !== 'undefined') {
+      setTimeout(() => renderChart(), 100);
+    } else {
+      // Wait for Chart.js to load
+      const checkChart = setInterval(() => {
+        if (typeof Chart !== 'undefined') {
+          clearInterval(checkChart);
+          setTimeout(() => renderChart(), 100);
+        }
+      }, 100);
+      
+      // Timeout after 5 seconds
+      setTimeout(() => clearInterval(checkChart), 5000);
+    }
   }
 
   function renderFilters() {
@@ -234,11 +248,14 @@ const RiskProfileModule = (() => {
             <tbody>
               ${state.data.map(item => {
                 const risk = item.risk_inputs || {};
+                const riskName = risk?.kode_risiko || '-';
+                const unitName = risk?.master_work_units?.name || '-';
+                const categoryName = risk?.master_risk_categories?.name || '-';
                 return `
                   <tr>
-                    <td><strong>${risk.kode_risiko || '-'}</strong></td>
-                    <td>${risk.master_work_units?.name || '-'}</td>
-                    <td>${risk.master_risk_categories?.name || '-'}</td>
+                    <td><strong>${riskName}</strong></td>
+                    <td>${unitName}</td>
+                    <td>${categoryName}</td>
                     <td>${item.probability || '-'}</td>
                     <td>${item.impact || '-'}</td>
                     <td><strong>${item.risk_value || '-'}</strong></td>
@@ -257,28 +274,47 @@ const RiskProfileModule = (() => {
 
   function renderChart() {
     const ctx = document.getElementById('inherent-risk-matrix');
-    if (!ctx) return;
+    if (!ctx || typeof Chart === 'undefined') {
+      console.warn('Chart context not available or Chart.js not loaded');
+      return;
+    }
 
     if (state.chart) {
       state.chart.destroy();
+      state.chart = null;
     }
 
     if (state.data.length === 0) {
-      ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+      const canvas = ctx.getContext('2d');
+      if (canvas) {
+        canvas.clearRect(0, 0, ctx.width, ctx.height);
+      }
       return;
     }
 
     // Create points for scatter chart
-    const points = state.data.map(item => ({
-      x: item.impact || 0,
-      y: item.probability || 0,
-      riskId: item.risk_inputs?.kode_risiko || 'N/A',
-      value: item.risk_value || 0,
-      level: item.risk_level || 'LOW RISK',
-      color: getRiskColor(item.risk_level)
-    }));
+    const points = state.data
+      .filter(item => item.risk_inputs) // Filter out items without risk_inputs
+      .map(item => {
+        const risk = item.risk_inputs || {};
+        return {
+          x: parseFloat(item.impact) || 0,
+          y: parseFloat(item.probability) || 0,
+          riskId: risk.kode_risiko || 'N/A',
+          value: parseFloat(item.risk_value) || 0,
+          level: item.risk_level || 'LOW RISK',
+          color: getRiskColor(item.risk_level)
+        };
+      })
+      .filter(p => p.x > 0 && p.y > 0); // Filter out invalid points
 
-    state.chart = new Chart(ctx, {
+    if (points.length === 0) {
+      console.warn('No valid data points for chart');
+      return;
+    }
+
+    try {
+      state.chart = new Chart(ctx, {
       type: 'scatter',
       data: {
         datasets: [{
@@ -406,6 +442,9 @@ const RiskProfileModule = (() => {
         }
       }]
     });
+    } catch (error) {
+      console.error('Error creating risk profile chart:', error);
+    }
   }
 
   function getRiskColor(level) {

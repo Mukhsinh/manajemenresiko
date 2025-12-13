@@ -45,6 +45,7 @@ app.use('/api/ews', require('./routes/ews'));
 app.use('/api/organizations', require('./routes/organizations'));
 app.use('/api/pengaturan', require('./routes/pengaturan'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/ai-assistant', require('./routes/ai-assistant'));
 app.use('/api/analisis-swot', require('./routes/analisis-swot'));
 app.use('/api/diagram-kartesius', require('./routes/diagram-kartesius'));
 app.use('/api/matriks-tows', require('./routes/matriks-tows'));

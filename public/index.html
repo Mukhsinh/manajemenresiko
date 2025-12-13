@@ -289,6 +289,10 @@
                         <i class="fab fa-whatsapp"></i>
                         <span class="chat-unread" id="chat-unread-sidebar" hidden>0</span>
                     </button>
+                    <button id="ai-assistant-toggle" class="chat-toggle-sidebar ai-assistant-toggle" type="button" aria-expanded="false" aria-controls="ai-assistant-panel" aria-label="Ask AI">
+                        <i class="fas fa-headset"></i>
+                        <span>Ask AI</span>
+                    </button>
                 </div>
             </aside>
 
@@ -356,6 +360,33 @@
                         </div>
                         <div class="chat-status" id="chat-status" role="status"></div>
                     </div>
+                    <!-- AI Assistant Panel -->
+                    <div id="ai-assistant-panel" class="chat-panel ai-assistant-panel" aria-hidden="true">
+                        <div class="chat-panel-header">
+                            <div>
+                                <p><i class="fas fa-robot"></i> AI Assistant</p>
+                                <span>Bantuan Manajemen Risiko</span>
+                            </div>
+                            <button class="chat-close ai-close" type="button" aria-label="Tutup panel AI">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="chat-messages" id="ai-messages">
+                            <div class="ai-empty-state">
+                                <i class="fas fa-robot"></i>
+                                <p>Mulai percakapan dengan AI Assistant untuk bantuan manajemen risiko.</p>
+                                <p class="ai-empty-hint">Coba tanyakan: "Bagaimana cara mengidentifikasi risiko di unit IGD?"</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea id="ai-input" rows="2" placeholder="Tanyakan sesuatu tentang manajemen risiko..."></textarea>
+                            <button id="ai-send-btn" type="button" aria-label="Kirim pesan">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="chat-status ai-status" id="ai-status" role="status"></div>
+                    </div>
+                    <div id="ai-assistant-widget" class="ai-assistant-widget"></div>
                 </header>
 
                 <!-- Content Area -->
@@ -1155,6 +1186,7 @@
     <script src="/js/risk-appetite.js"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/master-data.js"></script>
+    <script src="/js/ai-assistant.js"></script>
 </body>
 </html>
 

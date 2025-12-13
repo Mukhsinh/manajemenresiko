@@ -14,10 +14,10 @@ const KRI = {
     render(data) {
         const content = document.getElementById('kri-content');
         
-        // Calculate statistics
+        // Calculate statistics - map "Peringatan" to "Hati-hati"
         const stats = {
             aman: data.filter(d => d.status_indikator === 'Aman').length,
-            hati_hati: data.filter(d => d.status_indikator === 'Hati-hati').length,
+            hati_hati: data.filter(d => d.status_indikator === 'Hati-hati' || d.status_indikator === 'Peringatan').length,
             kritis: data.filter(d => d.status_indikator === 'Kritis').length
         };
         
@@ -69,8 +69,8 @@ const KRI = {
                                     <td>
                                         <span class="badge-status badge-${
                                             item.status_indikator === 'Aman' ? 'aman' : 
-                                            item.status_indikator === 'Hati-hati' ? 'hati-hati' : 'kritis'
-                                        }">${item.status_indikator}</span>
+                                            (item.status_indikator === 'Hati-hati' || item.status_indikator === 'Peringatan') ? 'hati-hati' : 'kritis'
+                                        }">${item.status_indikator === 'Peringatan' ? 'Hati-hati' : item.status_indikator}</span>
                                     </td>
                                     <td>
                                         <button class="btn btn-edit btn-sm" onclick="KRI.edit('${item.id}')">
@@ -94,9 +94,13 @@ const KRI = {
 
     renderChart(stats) {
         const ctx = document.getElementById('kri-status-chart');
-        if (!ctx) return;
+        if (!ctx || typeof Chart === 'undefined') {
+            console.warn('Chart context not available or Chart.js not loaded');
+            return;
+        }
         
-        new Chart(ctx, {
+        try {
+            new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Aman', 'Hati-hati', 'Kritis'],

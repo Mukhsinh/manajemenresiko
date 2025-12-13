@@ -94,7 +94,21 @@ const ResidualRiskModule = (() => {
       </div>
     `;
 
-    renderCharts();
+    // Wait for Chart.js and DOM to be ready
+    if (typeof Chart !== 'undefined') {
+      setTimeout(() => renderCharts(), 100);
+    } else {
+      // Wait for Chart.js to load
+      const checkChart = setInterval(() => {
+        if (typeof Chart !== 'undefined') {
+          clearInterval(checkChart);
+          setTimeout(() => renderCharts(), 100);
+        }
+      }, 100);
+      
+      // Timeout after 5 seconds
+      setTimeout(() => clearInterval(checkChart), 5000);
+    }
   }
 
   function renderFilters() {
@@ -213,22 +227,46 @@ const ResidualRiskModule = (() => {
 
   function renderResidualMatrix() {
     const ctx = document.getElementById('residual-risk-matrix');
-    if (!ctx || state.data.length === 0) return;
+    if (!ctx || typeof Chart === 'undefined') {
+      console.warn('Chart context not available or Chart.js not loaded');
+      return;
+    }
+
+    if (state.data.length === 0) {
+      const canvas = ctx.getContext('2d');
+      if (canvas) {
+        canvas.clearRect(0, 0, ctx.width, ctx.height);
+      }
+      return;
+    }
 
     if (state.chart) {
       state.chart.destroy();
+      state.chart = null;
     }
 
-    const points = state.data.map(item => ({
-      x: item.impact || 0,
-      y: item.probability || 0,
-      riskId: item.risk_inputs?.kode_risiko || 'N/A',
-      value: item.risk_value || 0,
-      level: item.risk_level || 'LOW RISK',
-      color: getRiskColor(item.risk_level)
-    }));
+    const points = state.data
+      .filter(item => item.risk_inputs) // Filter out items without risk_inputs
+      .map(item => {
+        const risk = item.risk_inputs || {};
+        return {
+          x: parseFloat(item.impact) || 0,
+          y: parseFloat(item.probability) || 0,
+          riskId: risk.kode_risiko || 'N/A',
+          value: parseFloat(item.risk_value) || 0,
+          level: item.risk_level || 'LOW RISK',
+          color: getRiskColor(item.risk_level)
+        };
+      })
+      .filter(p => p.x > 0 && p.y > 0); // Filter out invalid points
 
-    state.chart = new Chart(ctx, {
+    if (points.length === 0) {
+      console.warn('No valid data points for residual matrix chart');
+      return;
+    }
+
+    try {
+      state.chart = new Chart(ctx, {
       type: 'scatter',
       data: {
         datasets: [{
@@ -275,21 +313,56 @@ const ResidualRiskModule = (() => {
         }
       }
     });
+    } catch (error) {
+      console.error('Error creating residual matrix chart:', error);
+    }
   }
 
   function renderComparisonChart() {
     const ctx = document.getElementById('comparison-chart');
-    if (!ctx || state.data.length === 0) return;
+    if (!ctx || typeof Chart === 'undefined') {
+      console.warn('Chart context not available or Chart.js not loaded');
+      return;
+    }
+
+    if (state.data.length === 0) {
+      const canvas = ctx.getContext('2d');
+      if (canvas) {
+        canvas.clearRect(0, 0, ctx.width, ctx.height);
+      }
+      return;
+    }
 
     if (state.comparisonChart) {
       state.comparisonChart.destroy();
+      state.comparisonChart = null;
     }
 
-    const labels = state.data.map(item => item.risk_inputs?.kode_risiko || 'N/A');
-    const inherentValues = state.data.map(item => item.risk_inputs?.risk_inherent_analysis?.[0]?.risk_value || 0);
-    const residualValues = state.data.map(item => item.risk_value || 0);
+    const labels = state.data.map(item => {
+      const risk = item.risk_inputs;
+      return risk?.kode_risiko || 'N/A';
+    });
+    const inherentValues = state.data.map(item => {
+      const risk = item.risk_inputs;
+      if (risk && risk.risk_inherent_analysis) {
+        const inherent = Array.isArray(risk.risk_inherent_analysis) 
+          ? risk.risk_inherent_analysis[0] 
+          : risk.risk_inherent_analysis;
+        if (inherent && inherent.risk_value) {
+          return parseFloat(inherent.risk_value) || 0;
+        }
+      }
+      return 0;
+    });
+    const residualValues = state.data.map(item => parseFloat(item.risk_value) || 0);
 
-    state.comparisonChart = new Chart(ctx, {
+    if (labels.length === 0 || (inherentValues.every(v => v === 0) && residualValues.every(v => v === 0))) {
+      console.warn('No valid data for comparison chart');
+      return;
+    }
+
+    try {
+      state.comparisonChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels,
@@ -348,6 +421,9 @@ const ResidualRiskModule = (() => {
         }
       }
     });
+    } catch (error) {
+      console.error('Error creating comparison chart:', error);
+    }
   }
 
   function getRiskColor(level) {

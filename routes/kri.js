@@ -3,11 +3,12 @@ const router = express.Router();
 const { supabase } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodeKRI } = require('../utils/codeGenerator');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Get all KRI
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('key_risk_indicator')
       .select(`
         *,
@@ -22,8 +23,11 @@ router.get('/', authenticateUser, async (req, res) => {
           kode_risiko
         )
       `)
-      .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
+    
+    query = buildOrganizationFilter(query, req.user);
+
+    const { data, error } = await query;
 
     if (error) throw error;
     res.json(data || []);
