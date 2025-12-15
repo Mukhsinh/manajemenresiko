@@ -46,52 +46,88 @@ const API_BASE_URL = window.location.origin;
 
 // Helper function to get auth token
 async function getAuthToken() {
-    const supabaseClient = supabase || window.supabaseClient;
-    if (!supabaseClient) return null;
-    
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    return session?.access_token || null;
+    try {
+        const supabaseClient = supabase || window.supabaseClient;
+        if (!supabaseClient) {
+            console.warn('Supabase client not available for token');
+            return null;
+        }
+        
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.error('Error getting session:', error);
+            return null;
+        }
+        
+        const token = session?.access_token;
+        console.log('Auth token retrieved:', !!token, token ? `${token.substring(0, 20)}...` : 'null');
+        return token || null;
+    } catch (error) {
+        console.error('Error getting auth token:', error);
+        return null;
+    }
 }
 
 // Helper function for API calls
 async function apiCall(endpoint, options = {}) {
-    const token = await getAuthToken();
-    const headers = {
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
+    try {
+        console.log(`Making API call to: ${endpoint}`);
+        
+        const token = await getAuthToken();
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const config = {
-        ...options,
-        headers
-    };
-
-    // Handle body for POST/PUT requests
-    if (options.body && typeof options.body === 'object') {
-        config.body = JSON.stringify(options.body);
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-
-    if (!response.ok) {
-        let error;
-        try {
-            error = await response.json();
-        } catch (e) {
-            error = { error: response.statusText };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            console.log(`Request with auth token: ${token.substring(0, 20)}...`);
+        } else {
+            console.log('Request without auth token');
         }
-        throw new Error(error.error || 'Request failed');
-    }
 
-    // Handle empty responses
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-        return response.json();
+        const config = {
+            ...options,
+            headers
+        };
+
+        // Handle body for POST/PUT requests
+        if (options.body && typeof options.body === 'object') {
+            config.body = JSON.stringify(options.body);
+        }
+
+        console.log(`Request config:`, { url: `${API_BASE_URL}${endpoint}`, method: config.method || 'GET', hasAuth: !!token });
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+        console.log(`Response status: ${response.status} ${response.statusText}`);
+
+        if (!response.ok) {
+            let error;
+            try {
+                error = await response.json();
+            } catch (e) {
+                error = { error: response.statusText };
+            }
+            
+            console.error(`API Error (${response.status}):`, error);
+            throw new Error(error.error || error.message || `Request failed with status ${response.status}`);
+        }
+
+        // Handle empty responses
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            console.log(`API Response:`, result);
+            return result;
+        }
+        
+        const textResult = await response.text();
+        console.log(`API Text Response:`, textResult);
+        return textResult;
+    } catch (error) {
+        console.error('API call error:', error);
+        throw error;
     }
-    return response.text();
 }
 

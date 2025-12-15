@@ -16,10 +16,20 @@ function setAuthToken(token) {
 async function getAuthToken() {
     try {
         const supabaseClient = window.supabaseClient;
-        if (!supabaseClient) return null;
+        if (!supabaseClient) {
+            console.warn('Supabase client not available for token');
+            return null;
+        }
         
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        return session?.access_token || null;
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.error('Error getting session:', error);
+            return null;
+        }
+        
+        const token = session?.access_token;
+        console.log('Auth token retrieved:', !!token);
+        return token || null;
     } catch (error) {
         console.error('Error getting auth token:', error);
         return null;
@@ -31,8 +41,11 @@ async function getAuthToken() {
  */
 async function apiCall(endpoint, options = {}) {
     try {
+        console.log(`Making API call to: ${endpoint}`);
+        
         // Get fresh token for each request
         const token = await getAuthToken();
+        console.log(`Token available: ${!!token}`);
         
         const headers = {
             'Content-Type': 'application/json',
@@ -53,7 +66,11 @@ async function apiCall(endpoint, options = {}) {
             config.body = JSON.stringify(options.body);
         }
 
+        console.log(`Request config:`, { url: `${API_BASE_URL}${endpoint}`, method: config.method || 'GET', hasAuth: !!token });
+
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+        console.log(`Response status: ${response.status} ${response.statusText}`);
 
         // Handle non-JSON responses
         const contentType = response.headers.get('content-type');
@@ -71,28 +88,51 @@ async function apiCall(endpoint, options = {}) {
                 error = { error: response.statusText };
             }
             
+            console.error(`API Error (${response.status}):`, error);
+            
             // Handle 401 - Unauthorized
             if (response.status === 401) {
+                console.log('Unauthorized - clearing session');
                 // Clear session and redirect to login
                 const supabaseClient = window.supabaseClient;
                 if (supabaseClient) {
                     await supabaseClient.auth.signOut();
                 }
-                if (window.app && window.app.showLogin) {
-                    window.app.showLogin();
+                if (window.location.pathname !== '/') {
+                    window.location.href = '/';
                 }
+                throw new Error('Session expired. Please login again.');
             }
             
-            throw new Error(error.error || error.message || 'Request failed');
+            // Handle 403 - Forbidden
+            if (response.status === 403) {
+                throw new Error('Access denied. You do not have permission to perform this action.');
+            }
+            
+            // Handle 404 - Not Found
+            if (response.status === 404) {
+                throw new Error('Resource not found.');
+            }
+            
+            // Handle 500 - Server Error
+            if (response.status >= 500) {
+                throw new Error('Server error. Please try again later.');
+            }
+            
+            throw new Error(error.error || error.message || `Request failed with status ${response.status}`);
         }
 
         // Handle empty responses
         if (isJson) {
             const text = await response.text();
-            return text ? JSON.parse(text) : null;
+            const result = text ? JSON.parse(text) : null;
+            console.log(`API Response:`, result);
+            return result;
         }
         
-        return await response.text();
+        const textResult = await response.text();
+        console.log(`API Text Response:`, textResult);
+        return textResult;
     } catch (error) {
         console.error('API call error:', error);
         throw error;

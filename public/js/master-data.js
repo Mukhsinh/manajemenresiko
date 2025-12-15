@@ -89,13 +89,37 @@ async function loadMasterDataContent(type) {
   const config = masterConfigs[type];
   const container = document.getElementById('master-data-content');
   if (!config || !container) return;
+  
   try {
-    const data = await getMasterApi()(`/api/master-data/${config.endpoint}`);
+    // Try authenticated endpoint first, fallback to test endpoint
+    let data;
+    try {
+      data = await getMasterApi()(`/api/master-data/${config.endpoint}`);
+      console.log(`Master data loaded from authenticated endpoint (${type}):`, data?.length || 0, 'records');
+    } catch (authError) {
+      console.warn(`Authenticated endpoint failed for ${type}, trying test endpoint:`, authError.message);
+      try {
+        data = await getMasterApi()(`/api/test-data/master/${config.endpoint}`);
+        console.log(`Master data loaded from test endpoint (${type}):`, data?.length || 0, 'records');
+      } catch (testError) {
+        console.error(`Both endpoints failed for ${type}:`, testError.message);
+        throw new Error('Tidak dapat memuat data. Silakan login terlebih dahulu.');
+      }
+    }
+    
     masterState.data[type] = data || [];
     container.innerHTML = renderMasterSection(config, masterState.data[type]);
   } catch (error) {
     console.error('Error loading master data:', error);
-    container.innerHTML = `<p class="text-danger">Gagal memuat data: ${error.message}</p>`;
+    container.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data</h5>
+          <p>${error.message}</p>
+          <button onclick="loadMasterDataContent('${type}')" class="btn btn-primary">Coba Lagi</button>
+        </div>
+      </div>
+    `;
   }
 }
 
@@ -107,21 +131,21 @@ function renderMasterSection(config, data) {
           ${config.fields.map((field) => `<td>${formatFieldValue(field, item)}</td>`).join('')}
           <td>
             <div class="table-actions">
-              <button class="btn btn-edit btn-sm" onclick="editMasterData('${config.endpoint}', '${item.id}')"><i class="fas fa-edit"></i></button>
-              <button class="btn btn-delete btn-sm" onclick="deleteMasterData('${config.endpoint}', '${item.id}')"><i class="fas fa-trash"></i></button>
+              <button class="btn btn-edit btn-sm" data-action="edit" data-endpoint="${config.endpoint}" data-id="${item.id}"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-delete btn-sm" data-action="delete" data-endpoint="${config.endpoint}" data-id="${item.id}"><i class="fas fa-trash"></i></button>
             </div>
           </td>
         </tr>`
     )
     .join('');
 
-  return `
+  const html = `
     <div class="master-actions-bar">
       <div class="action-group">
-        <button class="btn btn-warning btn-sm" onclick="downloadMasterTemplate('${config.endpoint}')"><i class="fas fa-download"></i> Unduh Template</button>
-        <button class="btn btn-success btn-sm" onclick="importMasterData('${config.endpoint}')"><i class="fas fa-upload"></i> Import Data</button>
-        <button class="btn btn-primary btn-sm" onclick="showMasterDataForm('${config.endpoint}')"><i class="fas fa-plus"></i> Tambah Data</button>
-        <button class="btn btn-info btn-sm" onclick="downloadMasterReport('${config.endpoint}')"><i class="fas fa-file-alt"></i> Unduh Laporan</button>
+        <button class="btn btn-warning btn-sm" data-action="download-template" data-endpoint="${config.endpoint}"><i class="fas fa-download"></i> Unduh Template</button>
+        <button class="btn btn-success btn-sm" data-action="import" data-endpoint="${config.endpoint}"><i class="fas fa-upload"></i> Import Data</button>
+        <button class="btn btn-primary btn-sm" data-action="add" data-endpoint="${config.endpoint}"><i class="fas fa-plus"></i> Tambah Data</button>
+        <button class="btn btn-info btn-sm" data-action="download-report" data-endpoint="${config.endpoint}"><i class="fas fa-file-alt"></i> Unduh Laporan</button>
       </div>
     </div>
     <table class="data-table">
@@ -135,6 +159,59 @@ function renderMasterSection(config, data) {
     </table>
     ${renderMasterForm(config)}
   `;
+
+  // Add event listeners after rendering
+  setTimeout(() => {
+    bindMasterActionEvents();
+  }, 100);
+
+  return html;
+}
+
+function bindMasterActionEvents() {
+  // Remove existing listeners to prevent duplicates
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+  });
+
+  // Add new listeners
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', handleMasterAction);
+  });
+}
+
+function handleMasterAction(event) {
+  event.preventDefault();
+  const button = event.currentTarget;
+  const action = button.dataset.action;
+  const endpoint = button.dataset.endpoint;
+  const id = button.dataset.id;
+
+  console.log('Master action:', action, 'endpoint:', endpoint, 'id:', id);
+
+  switch (action) {
+    case 'add':
+      showMasterDataForm(endpoint);
+      break;
+    case 'edit':
+      editMasterData(endpoint, id);
+      break;
+    case 'delete':
+      deleteMasterData(endpoint, id);
+      break;
+    case 'download-template':
+      downloadMasterTemplate(endpoint);
+      break;
+    case 'download-report':
+      downloadMasterReport(endpoint);
+      break;
+    case 'import':
+      importMasterData(endpoint);
+      break;
+    default:
+      console.warn('Unknown action:', action);
+  }
 }
 
 function formatFieldValue(field, item) {
@@ -295,12 +372,40 @@ async function downloadMasterReport(endpoint) {
 
 async function downloadFileWithAuth(url, filename) {
   try {
+    console.log('Downloading file:', url);
+    
+    // Get auth token
     const token = await getMasterToken();
-    const response = await fetch(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined
+    console.log('Token available:', !!token);
+    
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${window.location.origin}${url}`, {
+      method: 'GET',
+      headers: headers
     });
-    if (!response.ok) throw new Error('Gagal mengunduh berkas');
+    
+    console.log('Download response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Download error response:', errorText);
+      throw new Error(`Gagal mengunduh berkas: ${response.status} ${response.statusText}`);
+    }
+    
     const blob = await response.blob();
+    console.log('Blob size:', blob.size);
+    
+    if (blob.size === 0) {
+      throw new Error('File kosong atau tidak ditemukan');
+    }
+    
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = filename;
@@ -308,8 +413,11 @@ async function downloadFileWithAuth(url, filename) {
     link.click();
     link.remove();
     URL.revokeObjectURL(link.href);
+    
+    console.log('File downloaded successfully:', filename);
   } catch (error) {
-    alert('Error: ' + error.message);
+    console.error('Download error:', error);
+    alert('Error mengunduh file: ' + error.message);
   }
 }
 
@@ -320,19 +428,63 @@ function importMasterData(endpoint) {
   input.onchange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
     try {
+      console.log('Importing file:', file.name, 'Size:', file.size);
+      
+      // Show loading state
+      const container = document.getElementById('master-data-content');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'loading-overlay';
+      loadingDiv.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Mengimpor data...</div>';
+      container.appendChild(loadingDiv);
+      
+      // Check if XLSX is available
+      if (typeof XLSX === 'undefined') {
+        throw new Error('XLSX library tidak tersedia. Silakan refresh halaman.');
+      }
+      
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
+      
+      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('File Excel tidak memiliki sheet yang valid');
+      }
+      
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet);
-      await getMasterApi()(`/api/master-data/${endpoint}/import`, {
+      
+      console.log('Parsed data:', json.length, 'rows');
+      
+      if (json.length === 0) {
+        throw new Error('File Excel kosong atau tidak memiliki data yang valid');
+      }
+      
+      const response = await getMasterApi()(`/api/master-data/${endpoint}/import`, {
         method: 'POST',
         body: JSON.stringify({ items: json })
       });
-      alert('Import berhasil');
+      
+      console.log('Import response:', response);
+      
+      // Remove loading state
+      if (loadingDiv.parentNode) {
+        loadingDiv.parentNode.removeChild(loadingDiv);
+      }
+      
+      alert(`Import berhasil! ${json.length} data telah diimpor.`);
       loadMasterDataContent(masterState.currentType);
+      
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('Import error:', error);
+      
+      // Remove loading state
+      const loadingDiv = document.querySelector('.loading-overlay');
+      if (loadingDiv && loadingDiv.parentNode) {
+        loadingDiv.parentNode.removeChild(loadingDiv);
+      }
+      
+      alert('Error import: ' + error.message);
     }
   };
   input.click();

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive App Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .step { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Comprehensive Application Test</h1>
+    <p>This test will verify all aspects of the data display functionality.</p>
+    
+    <div class="section">
+        <h2>Step 1: Initialize Supabase Client</h2>
+        <button onclick="initializeSupabase()">Initialize Supabase</button>
+        <div id="supabase-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Test Database Connection (No Auth)</h2>
+        <button onclick="testDatabaseConnection()">Test Database</button>
+        <div id="database-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 3: Create Test User</h2>
+        <div>
+            <input type="email" id="test-email" placeholder="Test Email" value="test@example.com">
+            <input type="password" id="test-password" placeholder="Test Password" value="test123456">
+            <button onclick="createTestUser()">Create Test User</button>
+        </div>
+        <div id="create-user-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 4: Login with Test User</h2>
+        <div>
+            <input type="email" id="login-email" placeholder="Login Email" value="test@example.com">
+            <input type="password" id="login-password" placeholder="Login Password" value="test123456">
+            <button onclick="loginTestUser()">Login</button>
+        </div>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 5: Test Authenticated API Calls</h2>
+        <button onclick="testAuthenticatedAPIs()">Test APIs with Auth</button>
+        <div id="auth-api-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 6: Test Frontend Data Display</h2>
+        <button onclick="testFrontendDisplay()">Test Frontend Display</button>
+        <div id="frontend-result"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+
+    <script>
+        let supabaseClient = null;
+        let testUser = null;
+        let authToken = null;
+        
+        async function initializeSupabase() {
+            const resultDiv = document.getElementById('supabase-result');
+            resultDiv.innerHTML = '<div class="loading">Initializing Supabase...</div>';
+            
+            try {
+                // Wait for config to load
+                let retries = 0;
+                while (!window.supabaseClient && retries < 20) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    retries++;
+                }
+                
+                if (window.supabaseClient) {
+                    supabaseClient = window.supabaseClient;
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Supabase client initialized</div>
+                        <div>URL: ${supabaseClient.supabaseUrl}</div>
+                        <div>Key: ${supabaseClient.supabaseKey.substring(0, 20)}...</div>
+                    `;
+                } else {
+                    throw new Error('Supabase client not available after 2 seconds');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Supabase initialization error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDatabaseConnection() {
+            const resultDiv = document.getElementById('database-result');
+            resultDiv.innerHTML = '<div class="loading">Testing database connection...</div>';
+            
+            try {
+                const response = await fetch('/api/test-data/data-counts');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let html = '<div class="success">✓ Database connection works</div><table><tr><th>Table</th><th>Count</th></tr>';
+                    
+                    Object.entries(result).forEach(([table, info]) => {
+                        if (info.error) {
+                            html += `<tr><td>${table}</td><td class="error">Error: ${info.error}</td></tr>`;
+                        } else {
+                            html += `<tr><td>${table}</td><td>${info.count}</td></tr>`;
+                        }
+                    });
+                    
+                    html += '</table>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ Database connection error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Database connection error: ${error.message}</div>`;
+            }
+        }
+        
+        async function createTestUser() {
+            const resultDiv = document.getElementById('create-user-result');
+            resultDiv.innerHTML = '<div class="loading">Creating test user...</div>';
+            
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="error">Please enter email and password</div>';
+                return;
+            }
+            
+            try {
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                // Try to sign up the user
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: 'Test User'
+                        }
+                    }
+                });
+                
+                if (error) {
+                    // If user already exists, that's okay
+                    if (error.message.includes('already registered')) {
+                        resultDiv.innerHTML = '<div class="warning">⚠ User already exists, you can try to login</div>';
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    testUser = data.user;
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Test user created successfully</div>
+                        <div>User ID: ${data.user?.id}</div>
+                        <div>Email: ${data.user?.email}</div>
+                        <div class="warning">⚠ Check email for confirmation link (if required)</div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Create user error: ${error.message}</div>`;
+            }
+        }
+        
+        async function loginTestUser() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<div class="loading">Logging in...</div>';
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="error">Please enter email and password</div>';
+                return;
+            }
+            
+            try {
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                // Try to sign in
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.session) {
+                    testUser = data.user;
+                    authToken = data.session.access_token;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Login successful</div>
+                        <div>User: ${data.user?.email}</div>
+                        <div>Token: ${authToken.substring(0, 30)}...</div>
+                        <div>Session expires: ${new Date(data.session.expires_at * 1000).toLocaleString()}</div>
+                    `;
+                } else {
+                    throw new Error('No session created');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Login error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testAuthenticatedAPIs() {
+            const resultDiv = document.getElementById('auth-api-result');
+            resultDiv.innerHTML = '<div class="loading">Testing authenticated APIs...</div>';
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error">Please login first</div>';
+                return;
+            }
+            
+            try {
+                const headers = { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                const tests = [
+                    { name: 'Dashboard', url: '/api/simple/dashboard' },
+                    { name: 'Visi Misi', url: '/api/simple/visi-misi' },
+                    { name: 'Rencana Strategis', url: '/api/simple/rencana-strategis' },
+                    { name: 'Master Data - Work Units', url: '/api/master-data/work-units' },
+                    { name: 'Master Data - Risk Categories', url: '/api/master-data/risk-categories' }
+                ];
+                
+                let html = '<div class="success">✓ Testing authenticated APIs</div><table><tr><th>API</th><th>Status</th><th>Data Count</th></tr>';
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url, { headers });
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            const count = Array.isArray(data) ? data.length : 
+                                         (data.total_risks !== undefined ? 'Dashboard Data' : 'Object');
+                            html += `<tr><td>${test.name}</td><td class="success">✓ ${response.status}</td><td>${count}</td></tr>`;
+                        } else {
+                            html += `<tr><td>${test.name}</td><td class="error">✗ ${response.status}</td><td>${data.error || 'Error'}</td></tr>`;
+                        }
+                    } catch (error) {
+                        html += `<tr><td>${test.name}</td><td class="error">✗ Network Error</td><td>${error.message}</td></tr>`;
+                    }
+                }
+                
+                html += '</table>';
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ API test error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testFrontendDisplay() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.innerHTML = '<div class="loading">Testing frontend display...</div>';
+            
+            try {
+                // Test if dashboard module can load
+                const dashboardTest = await testDashboardModule();
+                const masterDataTest = await testMasterDataModule();
+                
+                let html = '<div class="success">✓ Frontend display tests</div>';
+                html += `<div class="step"><strong>Dashboard Module:</strong> ${dashboardTest}</div>`;
+                html += `<div class="step"><strong>Master Data Module:</strong> ${masterDataTest}</div>`;
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Frontend test error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDashboardModule() {
+            try {
+                // Check if scripts are loaded
+                if (typeof window.dashboardModule === 'undefined') {
+                    return '✗ Dashboard module not loaded';
+                }
+                
+                if (typeof window.apiCall === 'undefined') {
+                    return '✗ API service not loaded';
+                }
+                
+                return '✓ Dashboard module available';
+            } catch (error) {
+                return `✗ Error: ${error.message}`;
+            }
+        }
+        
+        async function testMasterDataModule() {
+            try {
+                // Check if master data functions are available
+                if (typeof window.loadMasterData === 'undefined') {
+                    return '✗ Master data module not loaded';
+                }
+                
+                return '✓ Master data module available';
+            } catch (error) {
+                return `✗ Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-initialize when page loads
+        window.onload = async function() {
+            console.log('Comprehensive test page loaded');
+            
+            // Auto-initialize Supabase
+            setTimeout(() => {
+                initializeSupabase();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

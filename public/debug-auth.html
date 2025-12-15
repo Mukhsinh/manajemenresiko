@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Authentication</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px; }
+        button { padding: 10px 15px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Authentication & Data</h1>
+    
+    <div class="section">
+        <h2>Step 1: Load Config</h2>
+        <button onclick="loadConfig()">Load Config</button>
+        <div id="config-status"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Login</h2>
+        <input type="email" id="email" placeholder="Email" value="mukhsin9@gmail.com">
+        <input type="password" id="password" placeholder="Password" value="">
+        <button onclick="login()">Login</button>
+        <div id="login-status"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 3: Test API Calls</h2>
+        <button onclick="testVisiMisi()">Test Visi Misi</button>
+        <button onclick="testRencanaStrategis()">Test Rencana Strategis</button>
+        <button onclick="testDashboard()">Test Dashboard</button>
+        <div id="api-status"></div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        let currentUser = null;
+        let authToken = null;
+        
+        async function loadConfig() {
+            const status = document.getElementById('config-status');
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.supabaseUrl && config.supabaseAnonKey) {
+                    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                    status.innerHTML = '<div class="success">✓ Config loaded</div>';
+                    console.log('Config:', config);
+                } else {
+                    status.innerHTML = '<div class="error">✗ Config incomplete</div>';
+                }
+            } catch (error) {
+                status.innerHTML = '<div class="error">✗ Config error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function login() {
+            const status = document.getElementById('login-status');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!supabaseClient) {
+                status.innerHTML = '<div class="error">✗ Load config first</div>';
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                authToken = data.session.access_token;
+                
+                status.innerHTML = `
+                    <div class="success">✓ Login successful</div>
+                    <pre>User: ${data.user.email}
+Token: ${authToken ? 'Available' : 'Missing'}
+User ID: ${data.user.id}</pre>
+                `;
+                
+                console.log('Login data:', data);
+            } catch (error) {
+                status.innerHTML = '<div class="error">✗ Login error: ' + error.message + '</div>';
+                console.error('Login error:', error);
+            }
+        }
+        
+        async function makeAuthenticatedRequest(url, description) {
+            const status = document.getElementById('api-status');
+            
+            if (!authToken) {
+                status.innerHTML = '<div class="error">✗ Login first</div>';
+                return;
+            }
+            
+            try {
+                console.log(`Making request to: ${url}`);
+                console.log(`Using token: ${authToken.substring(0, 20)}...`);
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log(`Response status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    status.innerHTML = `
+                        <div class="success">✓ ${description} successful</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    status.innerHTML = `
+                        <div class="error">✗ ${description} error (${response.status})</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+                
+                console.log(`${description} response:`, data);
+            } catch (error) {
+                status.innerHTML = `<div class="error">✗ ${description} error: ${error.message}</div>`;
+                console.error(`${description} error:`, error);
+            }
+        }
+        
+        async function testVisiMisi() {
+            await makeAuthenticatedRequest('/api/simple/visi-misi', 'Visi Misi');
+        }
+        
+        async function testRencanaStrategis() {
+            await makeAuthenticatedRequest('/api/simple/rencana-strategis', 'Rencana Strategis');
+        }
+        
+        async function testDashboard() {
+            await makeAuthenticatedRequest('/api/simple/dashboard', 'Dashboard');
+        }
+        
+        // Auto-load config
+        window.addEventListener('load', loadConfig);
+    </script>
+</body>
+</html>

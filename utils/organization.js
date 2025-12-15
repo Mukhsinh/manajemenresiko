@@ -104,13 +104,13 @@ async function getUserRole(user) {
 /**
  * Build organization filter for Supabase query
  * @param {object} query - Supabase query builder
- * @param {object} user - User object from req.user (must have isSuperAdmin and organizations)
+ * @param {object} user - User object from req.user (must have isSuperAdmin, role and organizations)
  * @param {string} organizationIdColumn - Column name for organization_id (default: 'organization_id')
- * @returns {object} Query with organization filter applied (or original query if superadmin)
+ * @returns {object} Query with organization filter applied (or original query if superadmin/admin)
  */
 function buildOrganizationFilter(query, user, organizationIdColumn = 'organization_id') {
-  // Superadmin can see everything
-  if (user.isSuperAdmin) {
+  // Superadmin and admin can see everything
+  if (user.isSuperAdmin || user.role === 'superadmin' || user.role === 'admin') {
     return query;
   }
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Get all analisis SWOT
 router.get('/', authenticateUser, async (req, res) => {
@@ -16,10 +17,27 @@ router.get('/', authenticateUser, async (req, res) => {
         *,
         master_work_units(id, name, code)
       `)
-      .eq('user_id', req.user.id)
       .order('tahun', { ascending: false })
       .order('kategori', { ascending: true })
       .order('created_at', { ascending: false });
+
+    // Apply organization filter through rencana_strategis relationship
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      // Get accessible rencana_strategis IDs first
+      let rsQuery = clientToUse
+        .from('rencana_strategis')
+        .select('id');
+      rsQuery = buildOrganizationFilter(rsQuery, req.user);
+      const { data: accessibleRS } = await rsQuery;
+      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
+      
+      if (accessibleRSIds.length > 0) {
+        query = query.in('rencana_strategis_id', accessibleRSIds);
+      } else {
+        // No accessible rencana strategis, return empty
+        return res.json([]);
+      }
+    }
 
     if (rencana_strategis_id) {
       query = query.eq('rencana_strategis_id', rencana_strategis_id);
@@ -53,8 +71,31 @@ router.get('/summary', authenticateUser, async (req, res) => {
     const clientToUse = supabaseAdmin || supabase;
     let query = clientToUse
       .from('swot_analisis')
-      .select('kategori, score, bobot, rank, kuantitas, unit_kerja_id')
-      .eq('user_id', req.user.id);
+      .select('kategori, score, bobot, rank, kuantitas, unit_kerja_id, rencana_strategis_id');
+
+    // Apply organization filter through rencana_strategis relationship
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      // Get accessible rencana_strategis IDs first
+      let rsQuery = clientToUse
+        .from('rencana_strategis')
+        .select('id');
+      rsQuery = buildOrganizationFilter(rsQuery, req.user);
+      const { data: accessibleRS } = await rsQuery;
+      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
+      
+      if (accessibleRSIds.length > 0) {
+        query = query.in('rencana_strategis_id', accessibleRSIds);
+      } else {
+        // No accessible rencana strategis, return empty summary
+        return res.json({
+          Strength: { totalScore: 0, totalBobot: 0, items: [] },
+          Weakness: { totalScore: 0, totalBobot: 0, items: [] },
+          Opportunity: { totalScore: 0, totalBobot: 0, items: [] },
+          Threat: { totalScore: 0, totalBobot: 0, items: [] },
+          differences: { external: 0, internal: 0 }
+        });
+      }
+    }
 
     if (rencana_strategis_id) {
       query = query.eq('rencana_strategis_id', rencana_strategis_id);
@@ -142,13 +183,20 @@ router.get('/:id', authenticateUser, async (req, res) => {
     const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('swot_analisis')
-      .select('*')
+      .select('*, rencana_strategis(organization_id)')
       .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
       .single();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
+    
+    // Check organization access through rencana_strategis
+    if (!req.user.isSuperAdmin && data.rencana_strategis?.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(data.rencana_strategis.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
+    
     res.json(data);
   } catch (error) {
     console.error('Analisis SWOT error:', error);
@@ -230,6 +278,27 @@ router.put('/:id', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Rank harus antara 1-5' });
     }
 
+    // Use supabaseAdmin to bypass RLS
+    const clientToUse = supabaseAdmin || supabase;
+    
+    // First check access through rencana_strategis
+    const { data: existing, error: checkError } = await clientToUse
+      .from('swot_analisis')
+      .select('rencana_strategis(organization_id)')
+      .eq('id', req.params.id)
+      .single();
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    // Check organization access through rencana_strategis
+    if (!req.user.isSuperAdmin && existing.rencana_strategis?.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
+
     const updateData = {
       updated_at: new Date().toISOString()
     };
@@ -243,13 +312,10 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (kuantitas !== undefined) updateData.kuantitas = parseInt(kuantitas);
     if (rank !== undefined) updateData.rank = parseInt(rank);
 
-    // Use supabaseAdmin to bypass RLS
-    const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('swot_analisis')
       .update(updateData)
       .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
       .select()
       .single();
 
@@ -267,11 +333,29 @@ router.delete('/:id', authenticateUser, async (req, res) => {
   try {
     // Use supabaseAdmin to bypass RLS
     const clientToUse = supabaseAdmin || supabase;
+    
+    // First check access through rencana_strategis
+    const { data: existing, error: checkError } = await clientToUse
+      .from('swot_analisis')
+      .select('rencana_strategis(organization_id)')
+      .eq('id', req.params.id)
+      .single();
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    // Check organization access through rencana_strategis
+    if (!req.user.isSuperAdmin && existing.rencana_strategis?.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
+
     const { error } = await clientToUse
       .from('swot_analisis')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('id', req.params.id);
 
     if (error) throw error;
     res.json({ message: 'Data berhasil dihapus' });

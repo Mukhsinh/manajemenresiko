@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Get all visi misi
 router.get('/', authenticateUser, async (req, res) => {
@@ -13,10 +14,8 @@ router.get('/', authenticateUser, async (req, res) => {
       .select('*')
       .order('tahun', { ascending: false });
     
-    // Filter by organization if not superadmin
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      query = query.in('organization_id', req.user.organizations);
-    }
+    // Apply organization filter (superadmin and admin can see all data)
+    query = buildOrganizationFilter(query, req.user);
 
     const { data, error } = await query;
 
@@ -38,10 +37,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
       .select('*')
       .eq('id', req.params.id);
     
-    // Filter by organization if not superadmin
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      query = query.in('organization_id', req.user.organizations);
-    }
+    // Apply organization filter (superadmin and admin can see all data)
+    query = buildOrganizationFilter(query, req.user);
     
     const { data, error } = await query.single();
 
@@ -96,22 +93,19 @@ router.put('/:id', authenticateUser, async (req, res) => {
   try {
     const clientToUse = supabaseAdmin || supabase;
     
-    // First check if user has access
-    const { data: existing, error: checkError } = await clientToUse
+    // First check if record exists and user has access
+    let checkQuery = clientToUse
       .from('visi_misi')
       .select('organization_id')
-      .eq('id', req.params.id)
-      .single();
+      .eq('id', req.params.id);
+    
+    // Apply organization filter for access check
+    checkQuery = buildOrganizationFilter(checkQuery, req.user);
+    
+    const { data: existing, error: checkError } = await checkQuery.single();
 
     if (checkError || !existing) {
-      return res.status(404).json({ error: 'Visi Misi tidak ditemukan' });
-    }
-
-    // Check organization access if not superadmin
-    if (!req.user.isSuperAdmin && existing.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(existing.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
+      return res.status(404).json({ error: 'Visi Misi tidak ditemukan atau Anda tidak memiliki akses' });
     }
 
     const { visi, misi, tahun, status } = req.body;
@@ -137,22 +131,19 @@ router.delete('/:id', authenticateUser, async (req, res) => {
   try {
     const clientToUse = supabaseAdmin || supabase;
     
-    // First check if user has access
-    const { data: existing, error: checkError } = await clientToUse
+    // First check if record exists and user has access
+    let checkQuery = clientToUse
       .from('visi_misi')
       .select('organization_id')
-      .eq('id', req.params.id)
-      .single();
+      .eq('id', req.params.id);
+    
+    // Apply organization filter for access check
+    checkQuery = buildOrganizationFilter(checkQuery, req.user);
+    
+    const { data: existing, error: checkError } = await checkQuery.single();
 
     if (checkError || !existing) {
-      return res.status(404).json({ error: 'Visi Misi tidak ditemukan' });
-    }
-
-    // Check organization access if not superadmin
-    if (!req.user.isSuperAdmin && existing.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(existing.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
+      return res.status(404).json({ error: 'Visi Misi tidak ditemukan atau Anda tidak memiliki akses' });
     }
 
     const { error } = await clientToUse

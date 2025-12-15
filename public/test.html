@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data Loading</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+        button { padding: 10px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Data Loading</h1>
+    
+    <div class="section">
+        <h2>1. Test Configuration</h2>
+        <button onclick="testConfig()">Test Config</button>
+        <div id="config-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Login</h2>
+        <input type="email" id="email" placeholder="Email" value="mukhsin9@gmail.com">
+        <input type="password" id="password" placeholder="Password" value="">
+        <button onclick="testLogin()">Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Test Data Access</h2>
+        <button onclick="testData()">Test Data</button>
+        <div id="data-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. Test Dashboard API</h2>
+        <button onclick="testDashboard()">Test Dashboard</button>
+        <div id="dashboard-result"></div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        let currentUser = null;
+        
+        async function testConfig() {
+            const result = document.getElementById('config-result');
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.supabaseUrl && config.supabaseAnonKey) {
+                    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                    result.innerHTML = '<div class="success">✓ Config loaded successfully</div><pre>' + JSON.stringify(config, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Config incomplete</div><pre>' + JSON.stringify(config, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Config error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!supabaseClient) {
+                result.innerHTML = '<div class="error">✗ Please test config first</div>';
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                result.innerHTML = '<div class="success">✓ Login successful</div><pre>' + JSON.stringify(data.user, null, 2) + '</pre>';
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Login error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testData() {
+            const result = document.getElementById('data-result');
+            
+            if (!currentUser) {
+                result.innerHTML = '<div class="error">✗ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const token = (await supabaseClient.auth.getSession()).data.session?.access_token;
+                
+                const response = await fetch('/api/test/auth-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<div class="success">✓ Data loaded successfully</div><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Data error: ' + data.error + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Data error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testDashboard() {
+            const result = document.getElementById('dashboard-result');
+            
+            if (!currentUser) {
+                result.innerHTML = '<div class="error">✗ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const token = (await supabaseClient.auth.getSession()).data.session?.access_token;
+                
+                const response = await fetch('/api/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<div class="success">✓ Dashboard loaded successfully</div><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Dashboard error: ' + data.error + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Dashboard error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-load config on page load
+        window.addEventListener('load', testConfig);
+    </script>
+</body>
+</html>

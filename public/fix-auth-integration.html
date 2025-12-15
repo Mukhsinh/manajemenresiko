@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Authentication Integration</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        input { padding: 8px; margin: 5px; width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; border-radius: 4px; font-size: 12px; }
+        .step { margin: 10px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; }
+        .fix-box { background: #e7f3ff; border: 2px solid #007bff; border-radius: 8px; padding: 20px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Authentication Integration</h1>
+        <p>This tool will diagnose and fix the authentication integration issues.</p>
+        
+        <div class="section">
+            <h2>🔍 Problem Diagnosis</h2>
+            <button onclick="diagnoseProblem()">Diagnose Problem</button>
+            <div id="diagnosis-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🛠️ Fix Authentication</h2>
+            <div>
+                <p>Use existing user credentials:</p>
+                <input type="email" id="email" placeholder="Email" value="syaefulhartono@gmail.com">
+                <input type="password" id="password" placeholder="Password" value="">
+                <button onclick="fixAuthentication()">Fix Authentication</button>
+            </div>
+            <div id="fix-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>✅ Verify Fix</h2>
+            <button onclick="verifyFix()" id="verify-btn" disabled>Verify All Systems</button>
+            <div id="verify-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Integration Guide</h2>
+            <div id="integration-guide">
+                <div class="fix-box">
+                    <h3>🎯 How to Fix the Main Application</h3>
+                    <p>After successful authentication here, apply these fixes to the main application:</p>
+                    <ol>
+                        <li><strong>Update API Service:</strong> Ensure apiService.js properly gets tokens from Supabase session</li>
+                        <li><strong>Fix Login Flow:</strong> Use proper Supabase authentication instead of custom login</li>
+                        <li><strong>Update Frontend Modules:</strong> Ensure all modules use authenticated API calls</li>
+                        <li><strong>Test Integration:</strong> Verify that dashboard and master data load correctly</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        let authToken = null;
+        let currentUser = null;
+        let diagnosisResults = {};
+        
+        async function diagnoseProblem() {
+            const resultDiv = document.getElementById('diagnosis-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Diagnosing authentication problems...</div>';
+            
+            try {
+                diagnosisResults = {};
+                
+                // Test 1: Config availability
+                try {
+                    const configResponse = await fetch('/api/config');
+                    const config = await configResponse.json();
+                    
+                    if (config.supabaseUrl && config.supabaseAnonKey) {
+                        diagnosisResults.config = { status: 'success', message: 'Config available' };
+                    } else {
+                        diagnosisResults.config = { status: 'error', message: 'Config incomplete' };
+                    }
+                } catch (error) {
+                    diagnosisResults.config = { status: 'error', message: error.message };
+                }
+                
+                // Test 2: Supabase initialization
+                try {
+                    if (typeof window.supabase !== 'undefined') {
+                        diagnosisResults.supabase = { status: 'success', message: 'Supabase JS loaded' };
+                    } else {
+                        diagnosisResults.supabase = { status: 'error', message: 'Supabase JS not loaded' };
+                    }
+                } catch (error) {
+                    diagnosisResults.supabase = { status: 'error', message: error.message };
+                }
+                
+                // Test 3: API endpoints without auth
+                try {
+                    const testResponse = await fetch('/api/test-data/dashboard');
+                    if (testResponse.ok) {
+                        diagnosisResults.apiNoAuth = { status: 'success', message: 'Non-auth APIs working' };
+                    } else {
+                        diagnosisResults.apiNoAuth = { status: 'error', message: 'Non-auth APIs failing' };
+                    }
+                } catch (error) {
+                    diagnosisResults.apiNoAuth = { status: 'error', message: error.message };
+                }
+                
+                // Test 4: API endpoints with auth (should fail without token)
+                try {
+                    const authResponse = await fetch('/api/simple/dashboard');
+                    if (authResponse.status === 401) {
+                        diagnosisResults.apiAuth = { status: 'success', message: 'Auth APIs correctly require authentication' };
+                    } else {
+                        diagnosisResults.apiAuth = { status: 'warning', message: 'Auth APIs not properly protected' };
+                    }
+                } catch (error) {
+                    diagnosisResults.apiAuth = { status: 'error', message: error.message };
+                }
+                
+                // Display results
+                let html = '<div class="success">✅ Diagnosis Complete</div>';
+                html += '<table border="1" style="width: 100%; margin: 10px 0;"><tr><th>Component</th><th>Status</th><th>Details</th></tr>';
+                
+                Object.entries(diagnosisResults).forEach(([test, result]) => {
+                    const statusClass = result.status === 'success' ? 'success' : 
+                                       result.status === 'warning' ? 'warning' : 'error';
+                    const statusIcon = result.status === 'success' ? '✅' : 
+                                      result.status === 'warning' ? '⚠️' : '❌';
+                    
+                    html += `<tr><td>${test}</td><td class="${statusClass}">${statusIcon} ${result.status}</td><td>${result.message}</td></tr>`;
+                });
+                
+                html += '</table>';
+                
+                // Diagnosis summary
+                const successCount = Object.values(diagnosisResults).filter(r => r.status === 'success').length;
+                const totalCount = Object.keys(diagnosisResults).length;
+                
+                if (successCount === totalCount) {
+                    html += '<div class="success" style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 8px;"><strong>🎉 All systems healthy! The issue is likely in the authentication flow.</strong></div>';
+                } else {
+                    html += '<div class="warning" style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px;"><strong>⚠️ Some issues detected. Fix authentication to resolve.</strong></div>';
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Diagnosis failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function fixAuthentication() {
+            const resultDiv = document.getElementById('fix-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Fixing authentication...</div>';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter email and password</div>';
+                return;
+            }
+            
+            try {
+                // Step 1: Initialize Supabase
+                const configResponse = await fetch('/api/config');
+                const config = await configResponse.json();
+                
+                if (!config.supabaseUrl || !config.supabaseAnonKey) {
+                    throw new Error('Supabase configuration not available');
+                }
+                
+                supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                
+                // Step 2: Try to login
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.session) {
+                    authToken = data.session.access_token;
+                    currentUser = data.user;
+                    
+                    // Step 3: Test authenticated API call
+                    const testResponse = await fetch('/api/simple/dashboard', {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    
+                    if (testResponse.ok) {
+                        const testData = await testResponse.json();
+                        
+                        resultDiv.innerHTML = `
+                            <div class="success">✅ Authentication fixed successfully!</div>
+                            <div class="step">
+                                <strong>Login Details:</strong><br>
+                                User: ${data.user.email}<br>
+                                Token: ${authToken.substring(0, 30)}...<br>
+                                Expires: ${new Date(data.session.expires_at * 1000).toLocaleString()}
+                            </div>
+                            <div class="step">
+                                <strong>API Test Result:</strong><br>
+                                Dashboard API: ✅ Working<br>
+                                Total Risks: ${testData.total_risks || 0}<br>
+                                Loss Events: ${testData.loss_events || 0}
+                            </div>
+                            <div class="fix-box">
+                                <strong>🎯 Authentication is now working!</strong><br>
+                                The token is valid and API calls are successful.
+                            </div>
+                        `;
+                        
+                        document.getElementById('verify-btn').disabled = false;
+                    } else {
+                        throw new Error(`API test failed: ${testResponse.status}`);
+                    }
+                } else {
+                    throw new Error('No session created');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Authentication fix failed: ${error.message}</div>
+                    <div class="fix-box">
+                        <strong>Possible Solutions:</strong><br>
+                        1. Check if the password is correct<br>
+                        2. Try creating a new test user<br>
+                        3. Verify Supabase configuration<br>
+                        4. Check if email confirmation is required
+                    </div>
+                `;
+            }
+        }
+        
+        async function verifyFix() {
+            const resultDiv = document.getElementById('verify-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Verifying all systems...</div>';
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please fix authentication first</div>';
+                return;
+            }
+            
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                const tests = [
+                    { name: 'Dashboard API', url: '/api/simple/dashboard' },
+                    { name: 'Visi Misi API', url: '/api/simple/visi-misi' },
+                    { name: 'Rencana Strategis API', url: '/api/simple/rencana-strategis' },
+                    { name: 'Work Units API', url: '/api/master-data/work-units' },
+                    { name: 'Risk Categories API', url: '/api/master-data/risk-categories' },
+                    { name: 'Probability Criteria API', url: '/api/master-data/probability-criteria' },
+                    { name: 'Impact Criteria API', url: '/api/master-data/impact-criteria' }
+                ];
+                
+                let html = '<div class="success">✅ System Verification Results:</div>';
+                html += '<table border="1" style="width: 100%; margin: 10px 0;"><tr><th>API Endpoint</th><th>Status</th><th>Data Count</th><th>Response Time</th></tr>';
+                
+                let successCount = 0;
+                
+                for (const test of tests) {
+                    const startTime = Date.now();
+                    try {
+                        const response = await fetch(test.url, { headers });
+                        const endTime = Date.now();
+                        const responseTime = endTime - startTime;
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const count = Array.isArray(data) ? data.length : 
+                                         (data.total_risks !== undefined ? 'Dashboard Data' : 'Object');
+                            
+                            html += `<tr><td>${test.name}</td><td class="success">✅ ${response.status}</td><td>${count}</td><td>${responseTime}ms</td></tr>`;
+                            successCount++;
+                        } else {
+                            const errorData = await response.json();
+                            html += `<tr><td>${test.name}</td><td class="error">❌ ${response.status}</td><td colspan="2">${errorData.error || 'Error'}</td></tr>`;
+                        }
+                    } catch (error) {
+                        html += `<tr><td>${test.name}</td><td class="error">❌ Network Error</td><td colspan="2">${error.message}</td></tr>`;
+                    }
+                }
+                
+                html += '</table>';
+                
+                // Final summary
+                const successRate = Math.round((successCount / tests.length) * 100);
+                
+                if (successCount === tests.length) {
+                    html += `
+                        <div class="success" style="margin-top: 15px; padding: 20px; background: #d4edda; border-radius: 8px;">
+                            <h3>🎉 ALL SYSTEMS WORKING PERFECTLY!</h3>
+                            <p><strong>Success Rate:</strong> ${successRate}% (${successCount}/${tests.length} APIs working)</p>
+                            <p><strong>Authentication:</strong> ✅ Working</p>
+                            <p><strong>Data Display:</strong> ✅ Ready</p>
+                            <p><strong>Backend Integration:</strong> ✅ Complete</p>
+                        </div>
+                        <div class="fix-box">
+                            <h3>🚀 Next Steps:</h3>
+                            <ol>
+                                <li>Apply the same authentication pattern to the main application</li>
+                                <li>Update frontend modules to use proper Supabase authentication</li>
+                                <li>Test the main application with user: <strong>${currentUser.email}</strong></li>
+                                <li>Verify that dashboard and master data display correctly</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="warning" style="margin-top: 15px; padding: 20px; background: #fff3cd; border-radius: 8px;">
+                            <h3>⚠️ Partial Success</h3>
+                            <p><strong>Success Rate:</strong> ${successRate}% (${successCount}/${tests.length} APIs working)</p>
+                            <p>Some APIs are still failing. Check the errors above.</p>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Verification failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-initialize
+        window.onload = function() {
+            console.log('Fix authentication integration page loaded');
+        };
+    </script>
+</body>
+</html>

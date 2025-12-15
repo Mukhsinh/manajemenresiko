@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Data Display Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        input { padding: 8px; margin: 5px; width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; border-radius: 4px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .step { margin: 10px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; }
+        .dashboard-preview { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; background: #fafafa; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0; }
+        .chart-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; }
+        .big-number { font-size: 2rem; font-weight: bold; color: #007bff; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Final Data Display Test</h1>
+        <p>Complete test of the application's data display functionality after all fixes.</p>
+        
+        <div class="section">
+            <h2>🔐 Authentication Test</h2>
+            <div>
+                <input type="email" id="login-email" placeholder="Email" value="syaefulhartono@gmail.com">
+                <input type="password" id="login-password" placeholder="Password" value="">
+                <button onclick="performLogin()">Login & Test</button>
+                <button onclick="runAllTests()" id="run-all-btn" disabled>Run All Tests</button>
+            </div>
+            <div id="auth-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Dashboard Data Test</h2>
+            <button onclick="testDashboard()" id="dashboard-btn" disabled>Test Dashboard</button>
+            <div id="dashboard-result"></div>
+            <div id="dashboard-preview" class="dashboard-preview" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🗂️ Master Data Test</h2>
+            <button onclick="testMasterData()" id="master-btn" disabled>Test Master Data</button>
+            <div id="master-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>⚠️ Risk Data Test</h2>
+            <button onclick="testRiskData()" id="risk-btn" disabled>Test Risk Data</button>
+            <div id="risk-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Visi Misi & Rencana Strategis Test</h2>
+            <button onclick="testVisiMisiRencana()" id="visi-btn" disabled>Test Visi Misi & Rencana</button>
+            <div id="visi-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🔧 Button Functionality Test</h2>
+            <button onclick="testButtonFunctionality()" id="button-btn" disabled>Test Buttons</button>
+            <div id="button-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Final Summary</h2>
+            <div id="final-summary">
+                <p>Complete all tests above to see the final summary.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/master-data.js"></script>
+
+    <script>
+        let supabaseClient = null;
+        let authToken = null;
+        let testResults = {};
+        
+        // Wait for config to load
+        async function waitForConfig() {
+            let retries = 0;
+            while (!window.supabaseClient && retries < 30) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retries++;
+            }
+            return !!window.supabaseClient;
+        }
+        
+        async function performLogin() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Logging in...</div>';
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter email and password</div>';
+                return;
+            }
+            
+            try {
+                // Wait for config
+                const configReady = await waitForConfig();
+                if (!configReady) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                supabaseClient = window.supabaseClient;
+                
+                // Try to sign in
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.session) {
+                    authToken = data.session.access_token;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Login successful!</div>
+                        <div><strong>User:</strong> ${data.user?.email}</div>
+                        <div><strong>Session expires:</strong> ${new Date(data.session.expires_at * 1000).toLocaleString()}</div>
+                    `;
+                    
+                    // Enable test buttons
+                    document.getElementById('run-all-btn').disabled = false;
+                    document.getElementById('dashboard-btn').disabled = false;
+                    document.getElementById('master-btn').disabled = false;
+                    document.getElementById('risk-btn').disabled = false;
+                    document.getElementById('visi-btn').disabled = false;
+                    document.getElementById('button-btn').disabled = false;
+                    
+                    testResults.auth = { status: 'success', message: 'Login successful' };
+                } else {
+                    throw new Error('No session created');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Login failed: ${error.message}</div>`;
+                testResults.auth = { status: 'error', message: error.message };
+            }
+        }
+        
+        async function testDashboard() {
+            const resultDiv = document.getElementById('dashboard-result');
+            const previewDiv = document.getElementById('dashboard-preview');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing dashboard...</div>';
+            
+            try {
+                const headers = { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                const response = await fetch('/api/simple/dashboard', { headers });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const totalRisks = data.total_risks || 0;
+                    const lossEvents = data.loss_events || 0;
+                    const visiMisiCount = data.sample_data?.visi_misi?.length || 0;
+                    const rencanaCount = data.sample_data?.rencana_strategis?.length || 0;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Dashboard data loaded successfully!</div>
+                        <table>
+                            <tr><th>Metric</th><th>Value</th><th>Status</th></tr>
+                            <tr><td>Total Risks</td><td>${totalRisks}</td><td><span class="status-indicator ${totalRisks > 0 ? 'status-success' : 'status-warning'}"></span>${totalRisks > 0 ? 'Has Data' : 'No Data'}</td></tr>
+                            <tr><td>Loss Events</td><td>${lossEvents}</td><td><span class="status-indicator ${lossEvents >= 0 ? 'status-success' : 'status-error'}"></span>OK</td></tr>
+                            <tr><td>Visi Misi</td><td>${visiMisiCount}</td><td><span class="status-indicator ${visiMisiCount > 0 ? 'status-success' : 'status-warning'}"></span>${visiMisiCount > 0 ? 'Has Data' : 'No Data'}</td></tr>
+                            <tr><td>Rencana Strategis</td><td>${rencanaCount}</td><td><span class="status-indicator ${rencanaCount > 0 ? 'status-success' : 'status-warning'}"></span>${rencanaCount > 0 ? 'Has Data' : 'No Data'}</td></tr>
+                        </table>
+                    `;
+                    
+                    // Show dashboard preview
+                    previewDiv.innerHTML = `
+                        <h4>📊 Dashboard Preview</h4>
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <div class="big-number">${totalRisks}</div>
+                                <div>Total Risiko</div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="big-number">${lossEvents}</div>
+                                <div>Loss Events</div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="big-number">${visiMisiCount}</div>
+                                <div>Visi Misi</div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="big-number">${rencanaCount}</div>
+                                <div>Rencana Strategis</div>
+                            </div>
+                        </div>
+                    `;
+                    previewDiv.style.display = 'block';
+                    
+                    testResults.dashboard = { 
+                        status: 'success', 
+                        message: `Dashboard loaded with ${totalRisks} risks, ${visiMisiCount} visi misi, ${rencanaCount} rencana strategis` 
+                    };
+                } else {
+                    throw new Error(data.error || 'Dashboard API error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Dashboard test failed: ${error.message}</div>`;
+                testResults.dashboard = { status: 'error', message: error.message };
+            }
+        }
+        
+        async function testMasterData() {
+            const resultDiv = document.getElementById('master-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing master data...</div>';
+            
+            try {
+                const headers = { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                const endpoints = [
+                    { name: 'Work Units', endpoint: 'work-units' },
+                    { name: 'Risk Categories', endpoint: 'risk-categories' },
+                    { name: 'Probability Criteria', endpoint: 'probability-criteria' },
+                    { name: 'Impact Criteria', endpoint: 'impact-criteria' }
+                ];
+                
+                let html = '<div class="success">✅ Master data test results:</div><table><tr><th>Master Data</th><th>Count</th><th>Status</th><th>Sample</th></tr>';
+                let allSuccess = true;
+                
+                for (const item of endpoints) {
+                    try {
+                        const response = await fetch(`/api/master-data/${item.endpoint}`, { headers });
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            const count = Array.isArray(data) ? data.length : 0;
+                            const sample = Array.isArray(data) && data.length > 0 ? 
+                                (data[0].name || data[0].probability || data[0].impact || 'Data Available') : 'No Data';
+                            html += `<tr><td>${item.name}</td><td>${count}</td><td><span class="status-indicator ${count > 0 ? 'status-success' : 'status-warning'}"></span>${count > 0 ? 'OK' : 'Empty'}</td><td>${sample}</td></tr>`;
+                        } else {
+                            html += `<tr><td>${item.name}</td><td>-</td><td><span class="status-indicator status-error"></span>Error</td><td>${data.error}</td></tr>`;
+                            allSuccess = false;
+                        }
+                    } catch (error) {
+                        html += `<tr><td>${item.name}</td><td>-</td><td><span class="status-indicator status-error"></span>Error</td><td>${error.message}</td></tr>`;
+                        allSuccess = false;
+                    }
+                }
+                
+                html += '</table>';
+                resultDiv.innerHTML = html;
+                
+                testResults.masterData = { 
+                    status: allSuccess ? 'success' : 'partial', 
+                    message: allSuccess ? 'All master data loaded' : 'Some master data failed' 
+                };
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Master data test failed: ${error.message}</div>`;
+                testResults.masterData = { status: 'error', message: error.message };
+            }
+        }
+        
+        async function testRiskData() {
+            const resultDiv = document.getElementById('risk-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing risk data...</div>';
+            
+            try {
+                const headers = { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                const response = await fetch('/api/risks/risk-inputs', { headers });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const count = Array.isArray(data) ? data.length : 0;
+                    const sample = Array.isArray(data) && data.length > 0 ? data.slice(0, 3) : [];
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Risk data loaded successfully!</div>
+                        <table>
+                            <tr><th>Metric</th><th>Value</th></tr>
+                            <tr><td>Total Risk Inputs</td><td>${count}</td></tr>
+                            <tr><td>Sample Available</td><td>${sample.length > 0 ? 'Yes' : 'No'}</td></tr>
+                        </table>
+                        ${sample.length > 0 ? `
+                        <h4>Sample Risk Data:</h4>
+                        <pre>${JSON.stringify(sample.map(r => ({
+                            kode_risiko: r.kode_risiko,
+                            sasaran: r.sasaran,
+                            kategori: r.kategori_risiko
+                        })), null, 2)}</pre>
+                        ` : ''}
+                    `;
+                    
+                    testResults.riskData = { 
+                        status: 'success', 
+                        message: `Risk data loaded: ${count} records` 
+                    };
+                } else {
+                    throw new Error(data.error || 'Risk data API error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Risk data test failed: ${error.message}</div>`;
+                testResults.riskData = { status: 'error', message: error.message };
+            }
+        }
+        
+        async function testVisiMisiRencana() {
+            const resultDiv = document.getElementById('visi-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing visi misi & rencana strategis...</div>';
+            
+            try {
+                const headers = { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                const [visiResponse, rencanaResponse] = await Promise.all([
+                    fetch('/api/simple/visi-misi', { headers }),
+                    fetch('/api/simple/rencana-strategis', { headers })
+                ]);
+                
+                const visiData = await visiResponse.json();
+                const rencanaData = await rencanaResponse.json();
+                
+                if (visiResponse.ok && rencanaResponse.ok) {
+                    const visiCount = Array.isArray(visiData) ? visiData.length : 0;
+                    const rencanaCount = Array.isArray(rencanaData) ? rencanaData.length : 0;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Visi Misi & Rencana Strategis loaded successfully!</div>
+                        <table>
+                            <tr><th>Data Type</th><th>Count</th><th>Status</th></tr>
+                            <tr><td>Visi Misi</td><td>${visiCount}</td><td><span class="status-indicator ${visiCount > 0 ? 'status-success' : 'status-warning'}"></span>${visiCount > 0 ? 'Has Data' : 'No Data'}</td></tr>
+                            <tr><td>Rencana Strategis</td><td>${rencanaCount}</td><td><span class="status-indicator ${rencanaCount > 0 ? 'status-success' : 'status-warning'}"></span>${rencanaCount > 0 ? 'Has Data' : 'No Data'}</td></tr>
+                        </table>
+                    `;
+                    
+                    testResults.visiMisiRencana = { 
+                        status: 'success', 
+                        message: `Visi Misi: ${visiCount}, Rencana Strategis: ${rencanaCount}` 
+                    };
+                } else {
+                    throw new Error('Visi Misi or Rencana Strategis API error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Visi Misi & Rencana test failed: ${error.message}</div>`;
+                testResults.visiMisiRencana = { status: 'error', message: error.message };
+            }
+        }
+        
+        async function testButtonFunctionality() {
+            const resultDiv = document.getElementById('button-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing button functionality...</div>';
+            
+            try {
+                const headers = { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+                
+                // Test template download endpoints
+                const templateTests = [
+                    { name: 'Work Units Template', url: '/api/master-data/work-units/template' },
+                    { name: 'Risk Categories Template', url: '/api/master-data/risk-categories/template' },
+                    { name: 'Probability Criteria Template', url: '/api/master-data/probability-criteria/template' }
+                ];
+                
+                let html = '<div class="success">✅ Button functionality test results:</div><table><tr><th>Button/Function</th><th>Status</th><th>Response</th></tr>';
+                let allSuccess = true;
+                
+                for (const test of templateTests) {
+                    try {
+                        const response = await fetch(test.url, { 
+                            method: 'GET',
+                            headers: headers
+                        });
+                        
+                        if (response.ok) {
+                            const contentType = response.headers.get('content-type');
+                            const isExcel = contentType && contentType.includes('spreadsheet');
+                            html += `<tr><td>${test.name}</td><td><span class="status-indicator status-success"></span>OK</td><td>${isExcel ? 'Excel file generated' : 'Response received'}</td></tr>`;
+                        } else {
+                            html += `<tr><td>${test.name}</td><td><span class="status-indicator status-error"></span>Error</td><td>HTTP ${response.status}</td></tr>`;
+                            allSuccess = false;
+                        }
+                    } catch (error) {
+                        html += `<tr><td>${test.name}</td><td><span class="status-indicator status-error"></span>Error</td><td>${error.message}</td></tr>`;
+                        allSuccess = false;
+                    }
+                }
+                
+                html += '</table>';
+                resultDiv.innerHTML = html;
+                
+                testResults.buttonFunctionality = { 
+                    status: allSuccess ? 'success' : 'partial', 
+                    message: allSuccess ? 'All buttons working' : 'Some buttons failed' 
+                };
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Button functionality test failed: ${error.message}</div>`;
+                testResults.buttonFunctionality = { status: 'error', message: error.message };
+            }
+        }
+        
+        async function runAllTests() {
+            testResults = {};
+            
+            await testDashboard();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testMasterData();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testRiskData();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testVisiMisiRencana();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testButtonFunctionality();
+            
+            // Generate final summary
+            generateFinalSummary();
+        }
+        
+        function generateFinalSummary() {
+            const summaryDiv = document.getElementById('final-summary');
+            
+            const totalTests = Object.keys(testResults).length;
+            const successTests = Object.values(testResults).filter(r => r.status === 'success').length;
+            const partialTests = Object.values(testResults).filter(r => r.status === 'partial').length;
+            const errorTests = Object.values(testResults).filter(r => r.status === 'error').length;
+            
+            let html = `
+                <h3>🎯 Final Test Summary</h3>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="big-number" style="color: #28a745;">${successTests}</div>
+                        <div>Successful</div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="big-number" style="color: #ffc107;">${partialTests}</div>
+                        <div>Partial</div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="big-number" style="color: #dc3545;">${errorTests}</div>
+                        <div>Failed</div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="big-number" style="color: #007bff;">${Math.round((successTests / totalTests) * 100)}%</div>
+                        <div>Success Rate</div>
+                    </div>
+                </div>
+                
+                <h4>📋 Detailed Results:</h4>
+                <table>
+                    <tr><th>Test Category</th><th>Status</th><th>Details</th></tr>
+            `;
+            
+            Object.entries(testResults).forEach(([test, result]) => {
+                const statusIcon = result.status === 'success' ? '✅' : 
+                                 result.status === 'partial' ? '⚠️' : '❌';
+                const statusClass = result.status === 'success' ? 'status-success' : 
+                                   result.status === 'partial' ? 'status-warning' : 'status-error';
+                
+                html += `<tr><td>${test}</td><td><span class="status-indicator ${statusClass}"></span>${statusIcon} ${result.status}</td><td>${result.message}</td></tr>`;
+            });
+            
+            html += '</table>';
+            
+            if (successTests === totalTests) {
+                html += '<div class="success" style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px;"><strong>🎉 All tests passed! The application data display is working perfectly.</strong></div>';
+            } else if (successTests + partialTests === totalTests) {
+                html += '<div class="warning" style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;"><strong>⚠️ Most tests passed with some minor issues. The application is mostly functional.</strong></div>';
+            } else {
+                html += '<div class="error" style="margin-top: 20px; padding: 15px; background: #f8d7da; border-radius: 8px;"><strong>❌ Some tests failed. Please review the issues above.</strong></div>';
+            }
+            
+            summaryDiv.innerHTML = html;
+        }
+        
+        // Auto-initialize when page loads
+        window.onload = async function() {
+            console.log('Final test page loaded');
+            
+            // Wait for config to load
+            const configReady = await waitForConfig();
+            if (configReady) {
+                console.log('✅ Supabase client ready');
+            } else {
+                console.error('❌ Supabase client not ready');
+            }
+        };
+    </script>
+</body>
+</html>

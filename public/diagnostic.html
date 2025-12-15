@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic - Data Display & Button Functionality</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error { color: #dc3545; }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            overflow-x: auto; 
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        h1, h2 { color: #495057; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .test-result.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .test-result.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .test-result.warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic - Data Display & Button Functionality</h1>
+        <p>This diagnostic tool will test all the critical functionality to identify and fix data display and button issues.</p>
+        
+        <div class="grid">
+            <div class="section">
+                <h2>1. Configuration Test</h2>
+                <button onclick="testConfig()">Test Configuration</button>
+                <div id="config-result"></div>
+            </div>
+            
+            <div class="section">
+                <h2>2. Authentication Test</h2>
+                <input type="email" id="email" placeholder="Email" value="mukhsin9@gmail.com" style="width: 100%; margin: 5px 0; padding: 8px;">
+                <input type="password" id="password" placeholder="Password" style="width: 100%; margin: 5px 0; padding: 8px;">
+                <button onclick="testLogin()">Test Login</button>
+                <div id="login-result"></div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="section">
+                <h2>3. Data Display Tests</h2>
+                <button onclick="testDashboardData()">Test Dashboard Data</button>
+                <button onclick="testVisiMisiData()">Test Visi Misi Data</button>
+                <button onclick="testRencanaStrategisData()">Test Rencana Strategis Data</button>
+                <button onclick="testMasterData()">Test Master Data</button>
+                <div id="data-display-result"></div>
+            </div>
+            
+            <div class="section">
+                <h2>4. Button Functionality Tests</h2>
+                <button onclick="testTemplateDownload()">Test Template Download</button>
+                <button onclick="testReportDownload()">Test Report Download</button>
+                <button onclick="testImportFunction()">Test Import Function</button>
+                <div id="button-test-result"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>5. Real-time Sync Tests</h2>
+            <button onclick="testDataSync()">Test Data Synchronization</button>
+            <div id="sync-test-result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>6. Overall System Health</h2>
+            <button onclick="runFullDiagnostic()" style="background: #28a745;">Run Full Diagnostic</button>
+            <div id="full-diagnostic-result"></div>
+        </div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        let currentUser = null;
+        let authToken = null;
+        
+        // Utility functions
+        function showResult(elementId, status, message, details = null) {
+            const element = document.getElementById(elementId);
+            const statusClass = status === 'success' ? 'success' : status === 'error' ? 'error' : 'warning';
+            const statusIcon = status === 'success' ? '✅' : status === 'error' ? '❌' : '⚠️';
+            
+            let html = `<div class="test-result ${statusClass}">${statusIcon} ${message}</div>`;
+            if (details) {
+                html += `<pre>${JSON.stringify(details, null, 2)}</pre>`;
+            }
+            element.innerHTML = html;
+        }
+        
+        function setLoading(elementId, isLoading) {
+            const element = document.getElementById(elementId);
+            if (isLoading) {
+                element.innerHTML = '<div class="loading">🔄 Testing...</div>';
+            }
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            const response = await fetch(`${window.location.origin}${endpoint}`, {
+                ...options,
+                headers
+            });
+            
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(`${response.status}: ${error}`);
+            }
+            
+            return response.json();
+        }
+        
+        // Test functions
+        async function testConfig() {
+            setLoading('config-result', true);
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.supabaseUrl && config.supabaseAnonKey) {
+                    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                    showResult('config-result', 'success', 'Configuration loaded successfully', {
+                        hasSupabaseUrl: !!config.supabaseUrl,
+                        hasAnonKey: !!config.supabaseAnonKey
+                    });
+                } else {
+                    showResult('config-result', 'error', 'Configuration incomplete', config);
+                }
+            } catch (error) {
+                showResult('config-result', 'error', 'Configuration error: ' + error.message);
+            }
+        }
+        
+        async function testLogin() {
+            setLoading('login-result', true);
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!supabaseClient) {
+                showResult('login-result', 'error', 'Please test configuration first');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                authToken = data.session.access_token;
+                
+                showResult('login-result', 'success', 'Login successful', {
+                    userId: data.user.id,
+                    email: data.user.email,
+                    hasToken: !!authToken
+                });
+            } catch (error) {
+                showResult('login-result', 'error', 'Login error: ' + error.message);
+            }
+        }
+        
+        async function testDashboardData() {
+            setLoading('data-display-result', true);
+            
+            if (!authToken) {
+                showResult('data-display-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/simple/dashboard');
+                showResult('data-display-result', 'success', 'Dashboard data loaded successfully', {
+                    totalRisks: data.total_risks,
+                    lossEvents: data.loss_events,
+                    hasInherentRisks: !!data.inherent_risks,
+                    hasResidualRisks: !!data.residual_risks,
+                    hasKRI: !!data.kri
+                });
+            } catch (error) {
+                showResult('data-display-result', 'error', 'Dashboard data error: ' + error.message);
+            }
+        }
+        
+        async function testVisiMisiData() {
+            if (!authToken) {
+                showResult('data-display-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/simple/visi-misi');
+                showResult('data-display-result', 'success', `Visi Misi data loaded: ${data.length} records`, {
+                    count: data.length,
+                    sample: data.slice(0, 2)
+                });
+            } catch (error) {
+                showResult('data-display-result', 'error', 'Visi Misi data error: ' + error.message);
+            }
+        }
+        
+        async function testRencanaStrategisData() {
+            if (!authToken) {
+                showResult('data-display-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/simple/rencana-strategis');
+                showResult('data-display-result', 'success', `Rencana Strategis data loaded: ${data.length} records`, {
+                    count: data.length,
+                    sample: data.slice(0, 2)
+                });
+            } catch (error) {
+                showResult('data-display-result', 'error', 'Rencana Strategis data error: ' + error.message);
+            }
+        }
+        
+        async function testMasterData() {
+            if (!authToken) {
+                showResult('data-display-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                const endpoints = ['probability-criteria', 'impact-criteria', 'risk-categories', 'work-units'];
+                const results = {};
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const data = await apiCall(`/api/master-data/${endpoint}`);
+                        results[endpoint] = { count: data.length, status: 'success' };
+                    } catch (error) {
+                        results[endpoint] = { error: error.message, status: 'error' };
+                    }
+                }
+                
+                showResult('data-display-result', 'success', 'Master data test completed', results);
+            } catch (error) {
+                showResult('data-display-result', 'error', 'Master data test error: ' + error.message);
+            }
+        }
+        
+        async function testTemplateDownload() {
+            setLoading('button-test-result', true);
+            
+            if (!authToken) {
+                showResult('button-test-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/master-data/probability-criteria/template', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    showResult('button-test-result', 'success', `Template download test successful (${blob.size} bytes)`);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                showResult('button-test-result', 'error', 'Template download error: ' + error.message);
+            }
+        }
+        
+        async function testReportDownload() {
+            if (!authToken) {
+                showResult('button-test-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/master-data/probability-criteria/export', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    showResult('button-test-result', 'success', `Report download test successful (${blob.size} bytes)`);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                showResult('button-test-result', 'error', 'Report download error: ' + error.message);
+            }
+        }
+        
+        async function testImportFunction() {
+            if (!authToken) {
+                showResult('button-test-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                // Test if XLSX library is available
+                if (typeof XLSX === 'undefined') {
+                    throw new Error('XLSX library not available');
+                }
+                
+                // Create a simple test Excel data
+                const testData = [
+                    { index: 1, probability: 'Very Low', description: 'Test description', percentage: '0-5%' }
+                ];
+                
+                const response = await apiCall('/api/master-data/probability-criteria/import', {
+                    method: 'POST',
+                    body: JSON.stringify({ items: testData })
+                });
+                
+                showResult('button-test-result', 'success', 'Import function test successful', response);
+            } catch (error) {
+                showResult('button-test-result', 'error', 'Import function error: ' + error.message);
+            }
+        }
+        
+        async function testDataSync() {
+            setLoading('sync-test-result', true);
+            
+            if (!authToken) {
+                showResult('sync-test-result', 'error', 'Please login first');
+                return;
+            }
+            
+            try {
+                // Test creating and retrieving data
+                const testVisiMisi = {
+                    tahun: new Date().getFullYear(),
+                    visi: 'Test Visi for Sync',
+                    misi: 'Test Misi for Sync',
+                    status: 'Aktif'
+                };
+                
+                // Create
+                const created = await apiCall('/api/visi-misi', {
+                    method: 'POST',
+                    body: JSON.stringify(testVisiMisi)
+                });
+                
+                // Retrieve
+                const retrieved = await apiCall(`/api/visi-misi/${created.id}`);
+                
+                // Clean up
+                await apiCall(`/api/visi-misi/${created.id}`, { method: 'DELETE' });
+                
+                showResult('sync-test-result', 'success', 'Data synchronization test successful', {
+                    created: !!created.id,
+                    retrieved: retrieved.visi === testVisiMisi.visi,
+                    deleted: true
+                });
+            } catch (error) {
+                showResult('sync-test-result', 'error', 'Data sync error: ' + error.message);
+            }
+        }
+        
+        async function runFullDiagnostic() {
+            setLoading('full-diagnostic-result', true);
+            
+            const results = {
+                config: 'pending',
+                auth: 'pending',
+                dataDisplay: 'pending',
+                buttons: 'pending',
+                sync: 'pending'
+            };
+            
+            try {
+                // Test configuration
+                await testConfig();
+                results.config = 'success';
+                
+                // Test authentication if credentials are provided
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                if (email && password) {
+                    await testLogin();
+                    results.auth = authToken ? 'success' : 'error';
+                    
+                    if (authToken) {
+                        // Test data display
+                        await testDashboardData();
+                        await testVisiMisiData();
+                        results.dataDisplay = 'success';
+                        
+                        // Test buttons
+                        await testTemplateDownload();
+                        results.buttons = 'success';
+                        
+                        // Test sync
+                        await testDataSync();
+                        results.sync = 'success';
+                    }
+                } else {
+                    results.auth = 'skipped';
+                    results.dataDisplay = 'skipped';
+                    results.buttons = 'skipped';
+                    results.sync = 'skipped';
+                }
+                
+                showResult('full-diagnostic-result', 'success', 'Full diagnostic completed', results);
+            } catch (error) {
+                showResult('full-diagnostic-result', 'error', 'Full diagnostic error: ' + error.message, results);
+            }
+        }
+        
+        // Auto-load config on page load
+        window.addEventListener('load', testConfig);
+    </script>
+</body>
+</html>

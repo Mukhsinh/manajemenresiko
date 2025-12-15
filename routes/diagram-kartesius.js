@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 // Calculate and generate diagram kartesius from SWOT analysis
 router.post('/calculate', authenticateUser, async (req, res) => {
@@ -16,9 +17,11 @@ router.post('/calculate', authenticateUser, async (req, res) => {
     const clientToUse = supabaseAdmin || supabase;
     let analisisQuery = clientToUse
       .from('swot_analisis')
-      .select('kategori, score, bobot, kuantitas, unit_kerja_id')
-      .eq('user_id', req.user.id)
+      .select('kategori, score, bobot, kuantitas, unit_kerja_id, organization_id')
       .eq('tahun', parseInt(tahun));
+    
+    // Apply organization filter (superadmin and admin can see all data)
+    analisisQuery = buildOrganizationFilter(analisisQuery, req.user);
 
     if (rencana_strategis_id) {
       analisisQuery = analisisQuery.eq('rencana_strategis_id', rencana_strategis_id);
@@ -144,9 +147,27 @@ router.get('/', authenticateUser, async (req, res) => {
     let query = clientToUse
       .from('swot_diagram_kartesius')
       .select('*, rencana_strategis(nama_rencana)')
-      .eq('swot_diagram_kartesius.user_id', req.user.id)
       .order('tahun', { ascending: false })
       .order('created_at', { ascending: false });
+
+    // Apply organization filter through rencana_strategis relationship
+    // Since diagram kartesius doesn't have direct organization_id, we filter through rencana_strategis
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      // Get accessible rencana_strategis IDs first
+      let rsQuery = clientToUse
+        .from('rencana_strategis')
+        .select('id');
+      rsQuery = buildOrganizationFilter(rsQuery, req.user);
+      const { data: accessibleRS } = await rsQuery;
+      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
+      
+      if (accessibleRSIds.length > 0) {
+        query = query.in('rencana_strategis_id', accessibleRSIds);
+      } else {
+        // No accessible rencana strategis, return empty
+        return res.json([]);
+      }
+    }
 
     if (rencana_strategis_id) {
       query = query.eq('rencana_strategis_id', rencana_strategis_id);
@@ -174,15 +195,23 @@ router.get('/', authenticateUser, async (req, res) => {
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
     const clientToUse = supabaseAdmin || supabase;
-    const { data, error } = await clientToUse
+    let query = clientToUse
       .from('swot_diagram_kartesius')
-      .select('*, rencana_strategis(nama_rencana)')
-      .eq('swot_diagram_kartesius.id', req.params.id)
-      .eq('swot_diagram_kartesius.user_id', req.user.id)
-      .single();
+      .select('*, rencana_strategis(nama_rencana, organization_id)')
+      .eq('swot_diagram_kartesius.id', req.params.id);
+
+    const { data, error } = await query.single();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
+    
+    // Check organization access through rencana_strategis
+    if (!req.user.isSuperAdmin && data.rencana_strategis?.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(data.rencana_strategis.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
+    
     res.json(data);
   } catch (error) {
     console.error('Diagram kartesius error:', error);
@@ -194,6 +223,25 @@ router.get('/:id', authenticateUser, async (req, res) => {
 router.put('/:id', authenticateUser, async (req, res) => {
   try {
     const { x_axis, y_axis, kuadran, strategi } = req.body;
+    const clientToUse = supabaseAdmin || supabase;
+
+    // First check access through rencana_strategis
+    const { data: existing, error: checkError } = await clientToUse
+      .from('swot_diagram_kartesius')
+      .select('rencana_strategis(organization_id)')
+      .eq('id', req.params.id)
+      .single();
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    // Check organization access through rencana_strategis
+    if (!req.user.isSuperAdmin && existing.rencana_strategis?.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
 
     const updateData = {
       updated_at: new Date().toISOString()
@@ -204,12 +252,10 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (kuadran !== undefined) updateData.kuadran = kuadran;
     if (strategi !== undefined) updateData.strategi = strategi;
 
-    const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('swot_diagram_kartesius')
       .update(updateData)
-      .eq('swot_diagram_kartesius.id', req.params.id)
-      .eq('swot_diagram_kartesius.user_id', req.user.id)
+      .eq('id', req.params.id)
       .select()
       .single();
 
@@ -226,11 +272,29 @@ router.put('/:id', authenticateUser, async (req, res) => {
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
     const clientToUse = supabaseAdmin || supabase;
+    
+    // First check access through rencana_strategis
+    const { data: existing, error: checkError } = await clientToUse
+      .from('swot_diagram_kartesius')
+      .select('rencana_strategis(organization_id)')
+      .eq('id', req.params.id)
+      .single();
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    // Check organization access through rencana_strategis
+    if (!req.user.isSuperAdmin && existing.rencana_strategis?.organization_id) {
+      if (!req.user.organizations || !req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
+        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+      }
+    }
+
     const { error } = await clientToUse
       .from('swot_diagram_kartesius')
       .delete()
-      .eq('swot_diagram_kartesius.id', req.params.id)
-      .eq('swot_diagram_kartesius.user_id', req.user.id);
+      .eq('id', req.params.id);
 
     if (error) throw error;
     res.json({ message: 'Data berhasil dihapus' });

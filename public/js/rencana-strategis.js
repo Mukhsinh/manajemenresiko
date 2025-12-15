@@ -35,12 +35,86 @@ const RencanaStrategisModule = (() => {
   }
 
   async function fetchInitialData() {
-    const [rencana, visiMisi] = await Promise.all([
-      api()('/api/rencana-strategis'),
-      api()('/api/visi-misi')
-    ]);
-    state.data = rencana || [];
-    state.missions = visiMisi || [];
+    try {
+      console.log('Fetching rencana strategis initial data...');
+      
+      // Try multiple endpoints in order of preference
+      let rencana, visiMisi;
+      
+      const rencanaEndpoints = [
+        '/api/rencana-strategis',
+        '/api/simple/rencana-strategis', 
+        '/api/debug-data/rencana-strategis',
+        '/api/test-data/rencana-strategis'
+      ];
+      
+      const visiMisiEndpoints = [
+        '/api/visi-misi',
+        '/api/simple/visi-misi', 
+        '/api/debug-data/visi-misi',
+        '/api/test-data/visi-misi'
+      ];
+      
+      // Fetch rencana strategis
+      for (const endpoint of rencanaEndpoints) {
+        try {
+          console.log(`Trying rencana strategis endpoint: ${endpoint}`);
+          const response = await api()(endpoint);
+          console.log(`Rencana strategis response from ${endpoint}:`, response);
+          
+          // Handle different response formats
+          if (response && response.success && response.data) {
+            rencana = response.data;
+          } else if (Array.isArray(response)) {
+            rencana = response;
+          } else if (response && typeof response === 'object') {
+            rencana = response;
+          }
+          
+          console.log(`Rencana strategis processed from ${endpoint}:`, rencana?.length || 0);
+          break;
+        } catch (error) {
+          console.warn(`Rencana strategis endpoint ${endpoint} failed:`, error.message);
+          continue;
+        }
+      }
+      
+      // Fetch visi misi
+      for (const endpoint of visiMisiEndpoints) {
+        try {
+          console.log(`Trying visi misi endpoint: ${endpoint}`);
+          const response = await api()(endpoint);
+          console.log(`Visi misi response from ${endpoint}:`, response);
+          
+          // Handle different response formats
+          if (response && response.success && response.data) {
+            visiMisi = response.data;
+          } else if (Array.isArray(response)) {
+            visiMisi = response;
+          } else if (response && typeof response === 'object') {
+            visiMisi = response;
+          }
+          
+          console.log(`Visi misi processed from ${endpoint}:`, visiMisi?.length || 0);
+          break;
+        } catch (error) {
+          console.warn(`Visi misi endpoint ${endpoint} failed:`, error.message);
+          continue;
+        }
+      }
+      
+      state.data = Array.isArray(rencana) ? rencana : [];
+      state.missions = Array.isArray(visiMisi) ? visiMisi : [];
+      
+      console.log('Fetched data:', {
+        rencanaCount: state.data.length,
+        visiMisiCount: state.missions.length
+      });
+    } catch (error) {
+      console.error('Error in fetchInitialData:', error);
+      state.data = [];
+      state.missions = [];
+    }
   }
 
   async function generateKode(force = false) {

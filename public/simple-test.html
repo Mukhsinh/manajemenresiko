@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Data Display Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+        button { padding: 10px 15px; margin: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Simple Data Display Test</h1>
+    
+    <div class="section">
+        <h2>Test Dashboard API (No Auth)</h2>
+        <button onclick="testDashboardNoAuth()">Test Dashboard</button>
+        <div id="dashboard-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Test Master Data API (No Auth)</h2>
+        <button onclick="testMasterDataNoAuth()">Test Master Data</button>
+        <div id="master-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Test All Data Counts</h2>
+        <button onclick="testDataCounts()">Test Data Counts</button>
+        <div id="counts-result"></div>
+    </div>
+
+    <script>
+        async function testDashboardNoAuth() {
+            const resultDiv = document.getElementById('dashboard-result');
+            resultDiv.innerHTML = '<div class="loading">Testing dashboard...</div>';
+            
+            try {
+                const response = await fetch('/api/test-data/dashboard');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Dashboard API works</div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">✗ Dashboard API error</div>
+                        <pre>Status: ${response.status}\nResponse: ${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Network error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testMasterDataNoAuth() {
+            const resultDiv = document.getElementById('master-result');
+            resultDiv.innerHTML = '<div class="loading">Testing master data...</div>';
+            
+            try {
+                const endpoints = [
+                    'probability-criteria',
+                    'impact-criteria', 
+                    'risk-categories',
+                    'work-units'
+                ];
+                
+                let html = '<div class="success">✓ Testing master data endpoints</div>';
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`/api/test-data/master/${endpoint}`);
+                        const data = await response.json();
+                        
+                        html += `<h4>${endpoint}</h4>`;
+                        if (response.ok) {
+                            const count = Array.isArray(data) ? data.length : 0;
+                            html += `<div class="success">✓ Status: ${response.status}, Count: ${count}</div>`;
+                            if (count > 0) {
+                                html += `<pre>${JSON.stringify(data[0], null, 2)}</pre>`;
+                            }
+                        } else {
+                            html += `<div class="error">✗ Status: ${response.status}</div>`;
+                            html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        }
+                    } catch (error) {
+                        html += `<h4>${endpoint}</h4><div class="error">✗ Error: ${error.message}</div>`;
+                    }
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Master data error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDataCounts() {
+            const resultDiv = document.getElementById('counts-result');
+            resultDiv.innerHTML = '<div class="loading">Testing data counts...</div>';
+            
+            try {
+                const response = await fetch('/api/test-data/data-counts');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let html = '<div class="success">✓ Data counts loaded</div><table border="1"><tr><th>Table</th><th>Count</th><th>Status</th></tr>';
+                    
+                    Object.entries(result).forEach(([table, info]) => {
+                        if (info.error) {
+                            html += `<tr><td>${table}</td><td>-</td><td class="error">Error: ${info.error}</td></tr>`;
+                        } else {
+                            html += `<tr><td>${table}</td><td>${info.count}</td><td class="success">OK</td></tr>`;
+                        }
+                    });
+                    
+                    html += '</table>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">✗ Data counts error</div>
+                        <pre>Status: ${response.status}\nResponse: ${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Network error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

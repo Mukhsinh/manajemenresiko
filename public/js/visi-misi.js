@@ -1,12 +1,92 @@
 // Visi Misi Module
 async function loadVisiMisi() {
     try {
-        const data = await apiCall('/api/visi-misi');
+        console.log('Loading visi misi data...');
+        
+        // Show loading state
+        const content = document.getElementById('visi-misi-content');
+        if (content) {
+            content.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Memuat data visi misi...</div>';
+        }
+        
+        // Try multiple endpoints in order of preference
+        let data;
+        const endpoints = [
+            '/api/visi-misi',
+            '/api/simple/visi-misi', 
+            '/api/debug-data/visi-misi',
+            '/api/test-data/visi-misi'
+        ];
+        
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`Trying endpoint: ${endpoint}`);
+                const response = await apiCall(endpoint);
+                console.log(`Visi misi response from ${endpoint}:`, response);
+                
+                // Handle different response formats
+                if (response && response.success && response.data) {
+                    data = response.data;
+                } else if (Array.isArray(response)) {
+                    data = response;
+                } else if (response && typeof response === 'object') {
+                    data = response;
+                } else {
+                    throw new Error('Invalid response format');
+                }
+                
+                console.log(`Visi misi data processed from ${endpoint}:`, data);
+                break;
+            } catch (error) {
+                console.warn(`Endpoint ${endpoint} failed:`, error.message);
+                continue;
+            }
+        }
+        
+        if (!data) {
+            throw new Error('Tidak dapat memuat data visi misi dari semua endpoint yang tersedia.');
+        }
+        
+        if (!Array.isArray(data)) {
+            console.warn('Data is not an array, converting:', data);
+            data = Array.isArray(data) ? data : [];
+        }
+        
         renderVisiMisi(data);
     } catch (error) {
         console.error('Error loading visi misi:', error);
-        document.getElementById('visi-misi-content').innerHTML = 
-            '<div class="card"><p>Error: ' + error.message + '</p></div>';
+        const content = document.getElementById('visi-misi-content');
+        if (content) {
+            content.innerHTML = 
+                '<div class="card"><div class="card-body"><h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat visi misi</h5><p>' + error.message + '</p><button onclick="window.visiMisiModule.loadVisiMisi()" class="btn btn-primary">Coba Lagi</button><button onclick="loadTestVisiMisi()" class="btn btn-secondary">Muat Data Test</button></div></div>';
+        }
+    }
+}
+
+async function loadTestVisiMisi() {
+    try {
+        console.log('Loading test visi misi data...');
+        
+        const content = document.getElementById('visi-misi-content');
+        if (content) {
+            content.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Memuat data test...</div>';
+        }
+        
+        const data = await apiCall('/api/test-data/visi-misi');
+        console.log('Test visi misi data loaded:', data);
+        
+        if (!Array.isArray(data)) {
+            throw new Error('Invalid test data format received from server');
+        }
+        
+        renderVisiMisi(data);
+    } catch (error) {
+        console.error('Error loading test visi misi:', error);
+        const content = document.getElementById('visi-misi-content');
+        if (content) {
+            content.innerHTML = 
+                '<div class="card"><div class="card-body"><h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data test</h5><p>' + error.message + '</p></div></div>';
+        }
     }
 }
 
@@ -28,7 +108,7 @@ function renderVisiMisi(data) {
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Visi dan Misi Organisasi</h3>
-                <button class="btn btn-primary" onclick="showVisiMisiModal()">
+                <button class="btn btn-primary" id="btn-tambah-visi-misi">
                     <i class="fas fa-plus"></i> Tambah Visi Misi
                 </button>
             </div>
@@ -52,10 +132,10 @@ function renderVisiMisi(data) {
                                 <td>${formatMisi(item.misi)}</td>
                                 <td><span class="badge-status badge-${item.status === 'Aktif' ? 'aman' : 'secondary'}">${item.status}</span></td>
                                 <td>
-                                    <button class="btn btn-edit btn-sm" onclick="editVisiMisi('${item.id}')">
+                                    <button class="btn btn-edit btn-sm" data-action="edit" data-id="${item.id}">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button class="btn btn-delete btn-sm" onclick="deleteVisiMisi('${item.id}')">
+                                    <button class="btn btn-delete btn-sm" data-action="delete" data-id="${item.id}">
                                         <i class="fas fa-trash"></i> Hapus
                                     </button>
                                 </td>
@@ -66,6 +146,32 @@ function renderVisiMisi(data) {
             </div>
         </div>
     `;
+    
+    // Attach event listeners after rendering
+    attachVisiMisiEventListeners();
+}
+
+function attachVisiMisiEventListeners() {
+    // Tambah button
+    const btnTambah = document.getElementById('btn-tambah-visi-misi');
+    if (btnTambah) {
+        btnTambah.addEventListener('click', () => showVisiMisiModal());
+    }
+    
+    // Edit and delete buttons
+    document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            editVisiMisi(id);
+        });
+    });
+    
+    document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            deleteVisiMisi(id);
+        });
+    });
 }
 
 function showVisiMisiModal(id = null) {

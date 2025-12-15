@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data Display</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 10px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Data Display - Comprehensive App Audit</h1>
+    
+    <div class="section">
+        <h2>1. Test Login & Authentication</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Dashboard Data</h2>
+        <button onclick="testDashboard()">Test Dashboard</button>
+        <div id="dashboard-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Test Master Data Display</h2>
+        <button onclick="testMasterData()">Test Master Data</button>
+        <div id="master-data-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. Test Risk Input Data</h2>
+        <button onclick="testRiskData()">Test Risk Data</button>
+        <div id="risk-data-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>5. Test Visi Misi Data</h2>
+        <button onclick="testVisiMisi()">Test Visi Misi</button>
+        <div id="visi-misi-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>6. Test Rencana Strategis Data</h2>
+        <button onclick="testRencanaStrategis()">Test Rencana Strategis</button>
+        <div id="rencana-strategis-result"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<div class="loading">Testing login with Supabase...</div>';
+            
+            try {
+                // Load Supabase config first
+                const configResponse = await fetch('/api/config');
+                const config = await configResponse.json();
+                
+                if (!config.supabaseUrl || !config.supabaseAnonKey) {
+                    throw new Error('Supabase configuration not available');
+                }
+                
+                // Initialize Supabase client
+                const supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                
+                // Try to login with existing user
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: 'syaefulhartono@gmail.com',
+                    password: 'password123' // You need to provide the correct password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.session) {
+                    authToken = data.session.access_token;
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Login berhasil dengan Supabase</div>
+                        <div>Token: ${authToken.substring(0, 30)}...</div>
+                        <div>User: ${data.user.email}</div>
+                        <div>Expires: ${new Date(data.session.expires_at * 1000).toLocaleString()}</div>
+                    `;
+                } else {
+                    throw new Error('No session created');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">✗ Login error: ${error.message}</div>
+                    <div style="margin-top: 10px;">
+                        <strong>Note:</strong> Please ensure you have the correct password for syaefulhartono@gmail.com
+                        or create a test user first.
+                    </div>
+                `;
+            }
+        }
+        
+        async function testDashboard() {
+            const resultDiv = document.getElementById('dashboard-result');
+            resultDiv.innerHTML = '<div class="loading">Testing dashboard...</div>';
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                
+                const response = await fetch('/api/simple/dashboard', { headers });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Dashboard data loaded</div>
+                        <table>
+                            <tr><th>Metric</th><th>Value</th></tr>
+                            <tr><td>Total Risks</td><td>${result.total_risks || 0}</td></tr>
+                            <tr><td>Loss Events</td><td>${result.loss_events || 0}</td></tr>
+                            <tr><td>Visi Misi Count</td><td>${result.sample_data?.visi_misi?.length || 0}</td></tr>
+                            <tr><td>Rencana Strategis Count</td><td>${result.sample_data?.rencana_strategis?.length || 0}</td></tr>
+                        </table>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ Dashboard error: ${result.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Dashboard error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testMasterData() {
+            const resultDiv = document.getElementById('master-data-result');
+            resultDiv.innerHTML = '<div class="loading">Testing master data...</div>';
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                
+                const endpoints = [
+                    'probability-criteria',
+                    'impact-criteria', 
+                    'risk-categories',
+                    'work-units'
+                ];
+                
+                let html = '<div class="success">✓ Master data loaded</div><table><tr><th>Table</th><th>Count</th><th>Sample Data</th></tr>';
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`/api/master-data/${endpoint}`, { headers });
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            const count = Array.isArray(data) ? data.length : 0;
+                            const sample = Array.isArray(data) && data.length > 0 ? 
+                                JSON.stringify(data[0]).substring(0, 100) + '...' : 'No data';
+                            html += `<tr><td>${endpoint}</td><td>${count}</td><td>${sample}</td></tr>`;
+                        } else {
+                            html += `<tr><td>${endpoint}</td><td colspan="2" class="error">Error: ${data.error}</td></tr>`;
+                        }
+                    } catch (error) {
+                        html += `<tr><td>${endpoint}</td><td colspan="2" class="error">Error: ${error.message}</td></tr>`;
+                    }
+                }
+                
+                html += '</table>';
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Master data error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testRiskData() {
+            const resultDiv = document.getElementById('risk-data-result');
+            resultDiv.innerHTML = '<div class="loading">Testing risk data...</div>';
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                
+                const response = await fetch('/api/risk-inputs', { headers });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const count = Array.isArray(result) ? result.length : 0;
+                    const sample = Array.isArray(result) && result.length > 0 ? 
+                        result.slice(0, 3).map(r => `${r.kode_risiko}: ${r.sasaran}`).join('<br>') : 'No data';
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Risk data loaded</div>
+                        <table>
+                            <tr><th>Total Count</th><td>${count}</td></tr>
+                            <tr><th>Sample Data</th><td>${sample}</td></tr>
+                        </table>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ Risk data error: ${result.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Risk data error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testVisiMisi() {
+            const resultDiv = document.getElementById('visi-misi-result');
+            resultDiv.innerHTML = '<div class="loading">Testing visi misi...</div>';
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                
+                const response = await fetch('/api/simple/visi-misi', { headers });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const count = Array.isArray(result) ? result.length : 0;
+                    const sample = Array.isArray(result) && result.length > 0 ? 
+                        result.slice(0, 2).map(v => `${v.tahun}: ${v.visi?.substring(0, 50)}...`).join('<br>') : 'No data';
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Visi Misi data loaded</div>
+                        <table>
+                            <tr><th>Total Count</th><td>${count}</td></tr>
+                            <tr><th>Sample Data</th><td>${sample}</td></tr>
+                        </table>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ Visi Misi error: ${result.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Visi Misi error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testRencanaStrategis() {
+            const resultDiv = document.getElementById('rencana-strategis-result');
+            resultDiv.innerHTML = '<div class="loading">Testing rencana strategis...</div>';
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                
+                const response = await fetch('/api/simple/rencana-strategis', { headers });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const count = Array.isArray(result) ? result.length : 0;
+                    const sample = Array.isArray(result) && result.length > 0 ? 
+                        result.slice(0, 2).map(r => `${r.nama_rencana || 'Unnamed'}: ${r.deskripsi?.substring(0, 50)}...`).join('<br>') : 'No data';
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Rencana Strategis data loaded</div>
+                        <table>
+                            <tr><th>Total Count</th><td>${count}</td></tr>
+                            <tr><th>Sample Data</th><td>${sample}</td></tr>
+                        </table>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ Rencana Strategis error: ${result.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Rencana Strategis error: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-run tests when page loads
+        window.onload = function() {
+            console.log('Starting comprehensive data display tests...');
+        };
+    </script>
+</body>
+</html>

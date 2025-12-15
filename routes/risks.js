@@ -78,29 +78,71 @@ function buildRiskPayload(body, userId, isUpdate = false) {
 // Get all risks for current user
 router.get('/', authenticateUser, async (req, res) => {
   try {
+    console.log('Fetching risks for user:', req.user?.email, 'Role:', req.user?.role);
+    
+    // First, get basic risk data
     let query = supabase
       .from('risk_inputs')
-      .select(`
-        *,
-        master_work_units(name),
-        master_risk_categories(name),
-        rencana_strategis(*, visi_misi(visi, misi)),
-        risk_inherent_analysis(*),
-        risk_residual_analysis(*),
-        risk_treatments(*),
-        risk_appetite(*),
-        risk_monitoring(*)
-      `);
+      .select('*');
 
-    // Apply organization filter with qualified column name
+    // Apply organization filter
     query = buildOrganizationFilter(query, req.user, 'risk_inputs.organization_id');
     query = query.order('created_at', { ascending: false });
 
-    const { data, error } = await query;
+    const { data: risks, error: risksError } = await query;
 
-    if (error) throw error;
+    if (risksError) {
+      console.error('Error fetching risks:', risksError);
+      throw risksError;
+    }
 
-    res.json(data || []);
+    console.log('Fetched risks:', risks?.length || 0);
+
+    // If no risks found, return empty array
+    if (!risks || risks.length === 0) {
+      return res.json([]);
+    }
+
+    // Get related data separately to avoid complex joins
+    const riskIds = risks.map(r => r.id);
+    const unitIds = [...new Set(risks.map(r => r.nama_unit_kerja_id).filter(Boolean))];
+    const categoryIds = [...new Set(risks.map(r => r.kategori_risiko_id).filter(Boolean))];
+    const planIds = [...new Set(risks.map(r => r.rencana_strategis_id).filter(Boolean))];
+
+    // Fetch related data in parallel
+    const [
+      { data: units },
+      { data: categories },
+      { data: plans },
+      { data: inherentAnalysis },
+      { data: residualAnalysis }
+    ] = await Promise.all([
+      unitIds.length > 0 ? supabase.from('master_work_units').select('id, name').in('id', unitIds) : Promise.resolve({ data: [] }),
+      categoryIds.length > 0 ? supabase.from('master_risk_categories').select('id, name').in('id', categoryIds) : Promise.resolve({ data: [] }),
+      planIds.length > 0 ? supabase.from('rencana_strategis').select('id, kode, nama_rencana').in('id', planIds) : Promise.resolve({ data: [] }),
+      supabase.from('risk_inherent_analysis').select('*').in('risk_input_id', riskIds),
+      supabase.from('risk_residual_analysis').select('*').in('risk_input_id', riskIds)
+    ]);
+
+    // Create lookup maps
+    const unitMap = (units || []).reduce((acc, unit) => ({ ...acc, [unit.id]: unit }), {});
+    const categoryMap = (categories || []).reduce((acc, cat) => ({ ...acc, [cat.id]: cat }), {});
+    const planMap = (plans || []).reduce((acc, plan) => ({ ...acc, [plan.id]: plan }), {});
+    const inherentMap = (inherentAnalysis || []).reduce((acc, analysis) => ({ ...acc, [analysis.risk_input_id]: analysis }), {});
+    const residualMap = (residualAnalysis || []).reduce((acc, analysis) => ({ ...acc, [analysis.risk_input_id]: analysis }), {});
+
+    // Combine data
+    const enrichedRisks = risks.map(risk => ({
+      ...risk,
+      master_work_units: risk.nama_unit_kerja_id ? unitMap[risk.nama_unit_kerja_id] : null,
+      master_risk_categories: risk.kategori_risiko_id ? categoryMap[risk.kategori_risiko_id] : null,
+      rencana_strategis: risk.rencana_strategis_id ? planMap[risk.rencana_strategis_id] : null,
+      risk_inherent_analysis: inherentMap[risk.id] || null,
+      risk_residual_analysis: residualMap[risk.id] || null
+    }));
+
+    console.log('Returning enriched risks:', enrichedRisks.length);
+    res.json(enrichedRisks);
   } catch (error) {
     console.error('Get risks error:', error);
     res.status(500).json({ error: error.message });

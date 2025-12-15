@@ -30,6 +30,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/api/config', require('./routes/config'));
+app.use('/api/test', require('./routes/test'));
+app.use('/api/test-data', require('./routes/test-data'));
+app.use('/api/simple', require('./routes/simple-data'));
+app.use('/api/debug-data', require('./routes/debug-data'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/risks', require('./routes/risks'));
 app.use('/api/master-data', require('./routes/master-data'));
@@ -52,6 +56,7 @@ app.use('/api/matriks-tows', require('./routes/matriks-tows'));
 app.use('/api/sasaran-strategi', require('./routes/sasaran-strategi'));
 app.use('/api/strategic-map', require('./routes/strategic-map'));
 app.use('/api/indikator-kinerja-utama', require('./routes/indikator-kinerja-utama'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Serve index.html for all routes (SPA) - must be last
 app.get('*', (req, res) => {

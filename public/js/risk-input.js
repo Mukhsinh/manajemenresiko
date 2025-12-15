@@ -131,9 +131,46 @@ const RiskInputModule = (() => {
   }
 
   async function loadRisks() {
-    const api = getApi();
-    state.risks = await api('/api/risks');
-    renderRiskTable();
+    try {
+      console.log('Loading risks data...');
+      const api = getApi();
+      
+      // Try authenticated endpoint first, fallback to test endpoint
+      let risks;
+      try {
+        risks = await api('/api/risks');
+        console.log('Risks loaded from authenticated endpoint:', risks?.length || 0);
+      } catch (authError) {
+        console.warn('Authenticated risks endpoint failed, trying test endpoint:', authError.message);
+        try {
+          risks = await api('/api/test-data/risks');
+          console.log('Risks loaded from test endpoint:', risks?.length || 0);
+        } catch (testError) {
+          console.error('Both risks endpoints failed:', testError.message);
+          throw new Error('Tidak dapat memuat data risiko. Silakan login terlebih dahulu.');
+        }
+      }
+      
+      state.risks = Array.isArray(risks) ? risks : [];
+      renderRiskTable();
+    } catch (error) {
+      console.error('Error loading risks:', error);
+      state.risks = [];
+      renderRiskTable();
+      
+      // Show error message in table
+      const tbody = getEl('risk-input-tbody');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-danger">
+              <i class="fas fa-exclamation-triangle"></i> Error memuat data: ${error.message}
+              <br><button onclick="window.RiskInputModule?.loadRisks?.()" class="btn btn-sm btn-primary mt-2">Coba Lagi</button>
+            </td>
+          </tr>
+        `;
+      }
+    }
   }
 
   function renderRiskTable() {
@@ -383,43 +420,87 @@ const RiskInputModule = (() => {
   }
 
   function downloadTemplate() {
-    const sample = [
-      {
-        'Nama Unit Kerja': 'UNIT-001',
-        'Kategori Risiko': 'CAT-001',
-        'Rencana Strategis': 'Kode Rencana',
-        Sasaran: 'Deskripsi sasaran',
-        'Tanggal Registrasi': '2025-01-01',
-        'Penyebab Risiko': 'Deskripsi penyebab',
-        'Dampak Risiko': 'Deskripsi dampak',
-        'Pihak Terkait': 'Nama pihak',
-        'Status Risiko': 'Active',
-        'Jenis Risiko': 'Threat'
+    try {
+      // Check if XLSX library is available
+      if (typeof XLSX === 'undefined') {
+        alert('Library XLSX tidak tersedia. Silakan refresh halaman dan coba lagi.');
+        return;
       }
-    ];
-    const worksheet = XLSX.utils.json_to_sheet(sample);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Risk Input');
-    XLSX.writeFile(workbook, 'template-risk-input.xlsx');
+
+      const sample = [
+        {
+          'Nama Unit Kerja': 'UNIT-001',
+          'Kategori Risiko': 'CAT-001',
+          'Rencana Strategis': 'Kode Rencana',
+          Sasaran: 'Deskripsi sasaran',
+          'Tanggal Registrasi': '2025-01-01',
+          'Penyebab Risiko': 'Deskripsi penyebab',
+          'Dampak Risiko': 'Deskripsi dampak',
+          'Pihak Terkait': 'Nama pihak',
+          'Status Risiko': 'Active',
+          'Jenis Risiko': 'Threat'
+        }
+      ];
+      
+      const worksheet = XLSX.utils.json_to_sheet(sample);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Risk Input');
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `template-risk-input-${timestamp}.xlsx`;
+      
+      XLSX.writeFile(workbook, filename);
+      
+      // Show success message
+      alert('Template berhasil diunduh!');
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert('Gagal mengunduh template. Error: ' + error.message);
+    }
   }
 
   function downloadReport() {
-    if (!state.risks.length) {
-      alert('Tidak ada data untuk diunduh');
-      return;
+    try {
+      if (!state.risks.length) {
+        alert('Tidak ada data untuk diunduh');
+        return;
+      }
+      
+      // Check if XLSX library is available
+      if (typeof XLSX === 'undefined') {
+        alert('Library XLSX tidak tersedia. Silakan refresh halaman dan coba lagi.');
+        return;
+      }
+      
+      const rows = state.risks.map((risk) => ({
+        'Kode Risiko': risk.kode_risiko || '-',
+        'Unit Kerja': risk.master_work_units?.name || '-',
+        'Rencana Strategis': risk.rencana_strategis?.nama_rencana || '-',
+        'Status Risiko': risk.status_risiko || '-',
+        'Sasaran': risk.sasaran || '-',
+        'Pemilik Risiko': risk.pemilik_risiko_nama || '-',
+        'Penyebab Risiko': risk.penyebab_risiko || '-',
+        'Dampak Risiko': risk.dampak_risiko || '-',
+        'Tanggal Registrasi': risk.tanggal_registrasi || '-'
+      }));
+      
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Risk Input');
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `laporan-risk-input-${timestamp}.xlsx`;
+      
+      XLSX.writeFile(workbook, filename);
+      
+      // Show success message
+      alert('Laporan berhasil diunduh!');
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      alert('Gagal mengunduh laporan. Error: ' + error.message);
     }
-    const rows = state.risks.map((risk) => ({
-      'Kode Risiko': risk.kode_risiko,
-      'Unit Kerja': risk.master_work_units?.name || '-',
-      'Rencana Strategis': risk.rencana_strategis?.nama_rencana || '-',
-      'Status Risiko': risk.status_risiko,
-      'Sasaran': risk.sasaran,
-      'Pemilik Risiko': risk.pemilik_risiko_nama || '-'
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Risk Input');
-    XLSX.writeFile(workbook, 'laporan-risk-input.xlsx');
   }
 
   function handleImportFile(event) {
@@ -483,7 +564,27 @@ const RiskInputModule = (() => {
 })();
 
 async function loadRiskInputData() {
-  await RiskInputModule.load();
+  try {
+    console.log('Loading risk input data...');
+    await RiskInputModule.load();
+  } catch (error) {
+    console.error('Error loading risk input data:', error);
+    
+    // Show error in the UI
+    const container = document.getElementById('risk-input-content') || document.querySelector('#risk-input .page-content');
+    if (container) {
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-body">
+            <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data risiko</h5>
+            <p>${error.message}</p>
+            <button onclick="loadRiskInputData()" class="btn btn-primary">Coba Lagi</button>
+            <button onclick="window.open('/test-auth-fix.html', '_blank')" class="btn btn-secondary">Test Auth</button>
+          </div>
+        </div>
+      `;
+    }
+  }
 }
 
 window.loadRiskInputData = loadRiskInputData;

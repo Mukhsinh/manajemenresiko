@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login & Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px; }
+        button { padding: 10px 15px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Test Login & Data Access</h1>
+    
+    <div class="section">
+        <h2>1. Test Configuration</h2>
+        <button onclick="testConfig()">Test Config</button>
+        <div id="config-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Login</h2>
+        <input type="email" id="email" placeholder="Email" value="mukhsin9@gmail.com">
+        <input type="password" id="password" placeholder="Password" value="">
+        <button onclick="testLogin()">Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Test Dashboard API</h2>
+        <button onclick="testDashboard()">Test Dashboard</button>
+        <div id="dashboard-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>4. Test Visi Misi API</h2>
+        <button onclick="testVisiMisi()">Test Visi Misi</button>
+        <div id="visi-misi-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>5. Test Rencana Strategis API</h2>
+        <button onclick="testRencanaStrategis()">Test Rencana Strategis</button>
+        <div id="rencana-strategis-result"></div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        let currentUser = null;
+        let authToken = null;
+        
+        async function testConfig() {
+            const result = document.getElementById('config-result');
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.supabaseUrl && config.supabaseAnonKey) {
+                    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                    result.innerHTML = '<div class="success">✓ Config loaded successfully</div><pre>' + JSON.stringify(config, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Config incomplete</div><pre>' + JSON.stringify(config, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Config error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!supabaseClient) {
+                result.innerHTML = '<div class="error">✗ Please test config first</div>';
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                authToken = data.session.access_token;
+                result.innerHTML = '<div class="success">✓ Login successful</div><pre>' + JSON.stringify({
+                    user: data.user.email,
+                    token: authToken ? 'Token received' : 'No token'
+                }, null, 2) + '</pre>';
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Login error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testDashboard() {
+            const result = document.getElementById('dashboard-result');
+            
+            if (!authToken) {
+                result.innerHTML = '<div class="error">✗ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/simple/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<div class="success">✓ Dashboard loaded successfully</div><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Dashboard error: ' + JSON.stringify(data, null, 2) + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Dashboard error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testVisiMisi() {
+            const result = document.getElementById('visi-misi-result');
+            
+            if (!authToken) {
+                result.innerHTML = '<div class="error">✗ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/simple/visi-misi', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<div class="success">✓ Visi Misi loaded successfully (' + data.length + ' records)</div><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Visi Misi error: ' + JSON.stringify(data, null, 2) + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Visi Misi error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testRencanaStrategis() {
+            const result = document.getElementById('rencana-strategis-result');
+            
+            if (!authToken) {
+                result.innerHTML = '<div class="error">✗ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/simple/rencana-strategis', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<div class="success">✓ Rencana Strategis loaded successfully (' + data.length + ' records)</div><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<div class="error">✗ Rencana Strategis error: ' + JSON.stringify(data, null, 2) + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">✗ Rencana Strategis error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-load config on page load
+        window.addEventListener('load', testConfig);
+    </script>
+</body>
+</html>

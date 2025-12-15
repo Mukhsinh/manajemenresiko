@@ -4,6 +4,7 @@ const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodeRencanaStrategis } = require('../utils/codeGenerator');
 const { exportToExcel, generateTemplate } = require('../utils/exportHelper');
+const { buildOrganizationFilter } = require('../utils/organization');
 
 function sendExcel(res, buffer, filename) {
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -23,10 +24,8 @@ router.get('/', authenticateUser, async (req, res) => {
       .from('rencana_strategis')
       .select('id, kode, nama_rencana, deskripsi, periode_mulai, periode_selesai, target, indikator_kinerja, status, visi_misi_id, user_id, organization_id, sasaran_strategis, indikator_kinerja_utama, created_at, updated_at, visi_misi(id, visi, misi, tahun)');
     
-    // Filter by organization if not superadmin
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      query = query.in('organization_id', req.user.organizations);
-    }
+    // Apply organization filter (superadmin and admin can see all data)
+    query = buildOrganizationFilter(query, req.user);
     
     query = query.order('created_at', { ascending: false });
 
@@ -52,10 +51,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
       .select('*')
       .eq('id', req.params.id);
     
-    // Filter by organization if not superadmin
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      query = query.in('organization_id', req.user.organizations);
-    }
+    // Apply organization filter (superadmin and admin can see all data)
+    query = buildOrganizationFilter(query, req.user);
     
     const { data, error } = await query.single();
 
@@ -187,22 +184,19 @@ router.put('/:id', authenticateUser, async (req, res) => {
   try {
     const clientToUse = supabaseAdmin || supabase;
     
-    // First check if user has access
-    const { data: existing, error: checkError } = await clientToUse
+    // First check if record exists and user has access
+    let checkQuery = clientToUse
       .from('rencana_strategis')
       .select('organization_id')
-      .eq('id', req.params.id)
-      .single();
+      .eq('id', req.params.id);
+    
+    // Apply organization filter for access check
+    checkQuery = buildOrganizationFilter(checkQuery, req.user);
+    
+    const { data: existing, error: checkError } = await checkQuery.single();
 
     if (checkError || !existing) {
-      return res.status(404).json({ error: 'Rencana Strategis tidak ditemukan' });
-    }
-
-    // Check organization access if not superadmin
-    if (!req.user.isSuperAdmin && existing.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(existing.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
+      return res.status(404).json({ error: 'Rencana Strategis tidak ditemukan atau Anda tidak memiliki akses' });
     }
 
     const {
@@ -251,22 +245,19 @@ router.delete('/:id', authenticateUser, async (req, res) => {
   try {
     const clientToUse = supabaseAdmin || supabase;
     
-    // First check if user has access
-    const { data: existing, error: checkError } = await clientToUse
+    // First check if record exists and user has access
+    let checkQuery = clientToUse
       .from('rencana_strategis')
       .select('organization_id')
-      .eq('id', req.params.id)
-      .single();
+      .eq('id', req.params.id);
+    
+    // Apply organization filter for access check
+    checkQuery = buildOrganizationFilter(checkQuery, req.user);
+    
+    const { data: existing, error: checkError } = await checkQuery.single();
 
     if (checkError || !existing) {
-      return res.status(404).json({ error: 'Rencana Strategis tidak ditemukan' });
-    }
-
-    // Check organization access if not superadmin
-    if (!req.user.isSuperAdmin && existing.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(existing.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
+      return res.status(404).json({ error: 'Rencana Strategis tidak ditemukan atau Anda tidak memiliki akses' });
     }
 
     const { error } = await clientToUse
@@ -305,10 +296,8 @@ router.get('/actions/export', authenticateUser, async (req, res) => {
       .from('rencana_strategis')
       .select('*, visi_misi(misi)');
     
-    // Filter by organization if not superadmin
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      query = query.in('organization_id', req.user.organizations);
-    }
+    // Apply organization filter for export
+    query = buildOrganizationFilter(query, req.user);
     
     const { data, error } = await query;
 
@@ -349,9 +338,8 @@ router.post('/actions/import', authenticateUser, async (req, res) => {
       .from('visi_misi')
       .select('id, misi, organization_id');
     
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      visiMisiQuery = visiMisiQuery.in('organization_id', req.user.organizations);
-    }
+    // Apply organization filter for visi misi access
+    visiMisiQuery = buildOrganizationFilter(visiMisiQuery, req.user);
     
     const { data: visiMisiList, error: visiError } = await visiMisiQuery;
 

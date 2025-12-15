@@ -311,13 +311,13 @@
                     </div>
                     <div class="header-right">
                         <div class="header-alerts">
-                            <button class="notification-icon alert" id="notif-alert-pill" type="button" data-tooltip="Peringatan Aktif" aria-label="Peringatan Risiko">
+                            <button class="notification-icon alert" id="notif-alert-pill" type="button" data-tooltip="Peringatan Aktif" aria-label="Peringatan Risiko" style="display: none;">
                                 <i class="fas fa-exclamation-circle"></i>
-                                <span class="notification-count" id="notif-alert-count">1</span>
+                                <span class="notification-count" id="notif-alert-count">0</span>
                             </button>
-                            <button class="notification-icon info" id="notif-info-pill" type="button" data-tooltip="Pesan Masuk" aria-label="Pesan Masuk">
+                            <button class="notification-icon info" id="notif-info-pill" type="button" data-tooltip="Pesan Masuk" aria-label="Pesan Masuk" style="display: none;">
                                 <i class="fas fa-bell"></i>
-                                <span class="notification-count" id="notif-message-count">6</span>
+                                <span class="notification-count" id="notif-message-count">0</span>
                             </button>
                         </div>
                         <div class="user-info">
@@ -942,6 +942,7 @@
     <script src="/js/config.js"></script>
     <script src="/js/services/apiService.js"></script>
     <script src="/js/services/authService.js"></script>
+    <script src="/js/button-fix.js"></script>
     <script>
         // CRITICAL: Test if Font Awesome is loaded
         (function() {

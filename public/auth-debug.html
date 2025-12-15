@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Debug</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; border-radius: 4px; font-size: 12px; }
+        .step { margin: 10px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Authentication Debug Tool</h1>
+    <p>This tool will help diagnose authentication issues step by step.</p>
+    
+    <div class="section">
+        <h2>Step 1: Load Configuration</h2>
+        <button onclick="loadConfig()">Load Config</button>
+        <div id="config-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Initialize Supabase Client</h2>
+        <button onclick="initSupabase()" id="init-btn" disabled>Initialize Supabase</button>
+        <div id="supabase-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 3: Test Login</h2>
+        <div>
+            <input type="email" id="email" placeholder="Email" value="syaefulhartono@gmail.com">
+            <input type="password" id="password" placeholder="Password" value="">
+            <button onclick="testLogin()" id="login-btn" disabled>Test Login</button>
+        </div>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 4: Test API Call with Token</h2>
+        <button onclick="testApiCall()" id="api-btn" disabled>Test API Call</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 5: Test Master Data API</h2>
+        <button onclick="testMasterDataAPI()" id="master-api-btn" disabled>Test Master Data</button>
+        <div id="master-api-result"></div>
+    </div>
+
+    <script>
+        let config = null;
+        let supabaseClient = null;
+        let currentSession = null;
+        
+        async function loadConfig() {
+            const resultDiv = document.getElementById('config-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Loading configuration...</div>';
+            
+            try {
+                const response = await fetch('/api/config');
+                if (!response.ok) {
+                    throw new Error(`Config API error: ${response.status} ${response.statusText}`);
+                }
+                
+                config = await response.json();
+                
+                if (!config.supabaseUrl || !config.supabaseAnonKey) {
+                    throw new Error('Configuration incomplete: missing Supabase URL or anon key');
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Configuration loaded successfully!</div>
+                    <pre>Supabase URL: ${config.supabaseUrl}
+Anon Key: ${config.supabaseAnonKey.substring(0, 50)}...</pre>
+                `;
+                
+                document.getElementById('init-btn').disabled = false;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Configuration error: ${error.message}</div>`;
+            }
+        }
+        
+        async function initSupabase() {
+            const resultDiv = document.getElementById('supabase-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Initializing Supabase client...</div>';
+            
+            try {
+                if (!config) {
+                    throw new Error('Configuration not loaded');
+                }
+                
+                if (typeof window.supabase === 'undefined') {
+                    throw new Error('Supabase JS library not loaded');
+                }
+                
+                supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+                
+                // Test client by getting current session
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                
+                if (error) {
+                    console.warn('Session check error:', error);
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Supabase client initialized successfully!</div>
+                    <pre>Client URL: ${supabaseClient.supabaseUrl}
+Current Session: ${session ? 'Active session found' : 'No active session'}
+${session ? 'User: ' + session.user.email : ''}</pre>
+                `;
+                
+                document.getElementById('login-btn').disabled = false;
+                
+                if (session) {
+                    currentSession = session;
+                    document.getElementById('api-btn').disabled = false;
+                    document.getElementById('master-api-btn').disabled = false;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Supabase initialization error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing login...</div>';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter email and password</div>';
+                return;
+            }
+            
+            try {
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.session) {
+                    currentSession = data.session;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Login successful!</div>
+                        <pre>User ID: ${data.user.id}
+Email: ${data.user.email}
+Access Token: ${data.session.access_token.substring(0, 50)}...
+Expires At: ${new Date(data.session.expires_at * 1000).toLocaleString()}</pre>
+                    `;
+                    
+                    document.getElementById('api-btn').disabled = false;
+                    document.getElementById('master-api-btn').disabled = false;
+                } else {
+                    throw new Error('No session created');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Login failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testApiCall() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing API call with authentication...</div>';
+            
+            try {
+                if (!currentSession) {
+                    throw new Error('No active session');
+                }
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentSession.access_token}`
+                };
+                
+                // Test simple dashboard API
+                const response = await fetch('/api/simple/dashboard', { headers });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error ${response.status}: ${errorData.error || response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ API call successful!</div>
+                    <pre>Response: ${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ API call failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testMasterDataAPI() {
+            const resultDiv = document.getElementById('master-api-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing master data API...</div>';
+            
+            try {
+                if (!currentSession) {
+                    throw new Error('No active session');
+                }
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentSession.access_token}`
+                };
+                
+                const endpoints = [
+                    { name: 'Work Units', url: '/api/master-data/work-units' },
+                    { name: 'Risk Categories', url: '/api/master-data/risk-categories' },
+                    { name: 'Probability Criteria', url: '/api/master-data/probability-criteria' }
+                ];
+                
+                let html = '<div class="success">✅ Master data API test results:</div>';
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(endpoint.url, { headers });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const count = Array.isArray(data) ? data.length : 0;
+                            html += `<div class="step"><strong>${endpoint.name}:</strong> ✅ Success (${count} records)</div>`;
+                        } else {
+                            const errorData = await response.json();
+                            html += `<div class="step"><strong>${endpoint.name}:</strong> ❌ Error ${response.status}: ${errorData.error}</div>`;
+                        }
+                    } catch (error) {
+                        html += `<div class="step"><strong>${endpoint.name}:</strong> ❌ Network Error: ${error.message}</div>`;
+                    }
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Master data API test failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-load config on page load
+        window.onload = function() {
+            console.log('Auth debug page loaded');
+            setTimeout(loadConfig, 500);
+        };
+    </script>
+</body>
+</html>

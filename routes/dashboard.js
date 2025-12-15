@@ -7,8 +7,6 @@ const { buildOrganizationFilter } = require('../utils/organization');
 // Get dashboard statistics
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const userId = req.user.id;
-
     // Get total risks with organization filter
     let risksQuery = supabase
       .from('risk_inputs')
@@ -68,6 +66,46 @@ router.get('/', authenticateUser, async (req, res) => {
     ewsQuery = buildOrganizationFilter(ewsQuery, req.user);
     const { data: ewsAlerts } = await ewsQuery;
 
+    // Get Visi Misi count with organization filter
+    let visiMisiQuery = supabase
+      .from('visi_misi')
+      .select('*', { count: 'exact', head: true });
+    visiMisiQuery = buildOrganizationFilter(visiMisiQuery, req.user);
+    const { count: visiMisiCount } = await visiMisiQuery;
+
+    // Get Rencana Strategis count with organization filter
+    let rencanaStrategisQuery = supabase
+      .from('rencana_strategis')
+      .select('*', { count: 'exact', head: true });
+    rencanaStrategisQuery = buildOrganizationFilter(rencanaStrategisQuery, req.user);
+    const { count: rencanaStrategisCount } = await rencanaStrategisQuery;
+
+    // Get sample data for display
+    let sampleVisiMisiQuery = supabase
+      .from('visi_misi')
+      .select('id, visi, misi, tahun, status')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    sampleVisiMisiQuery = buildOrganizationFilter(sampleVisiMisiQuery, req.user);
+    const { data: sampleVisiMisi } = await sampleVisiMisiQuery;
+
+    let sampleRencanaStrategisQuery = supabase
+      .from('rencana_strategis')
+      .select('id, nama_rencana, deskripsi, status')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    sampleRencanaStrategisQuery = buildOrganizationFilter(sampleRencanaStrategisQuery, req.user);
+    const { data: sampleRencanaStrategis } = await sampleRencanaStrategisQuery;
+
+    console.log('Dashboard data summary:', {
+      totalRisks,
+      visiMisiCount,
+      rencanaStrategisCount,
+      lossEvents,
+      sampleVisiMisiCount: sampleVisiMisi?.length || 0,
+      sampleRencanaStrategisCount: sampleRencanaStrategis?.length || 0
+    });
+
     // Count by risk level
     const countByLevel = (risks, level) => {
       return risks?.filter(r => r.risk_level === level).length || 0;
@@ -98,6 +136,14 @@ router.get('/', authenticateUser, async (req, res) => {
         peringatan: ewsAlerts?.filter(e => e.level_peringatan === 'Peringatan').length || 0,
         waspada: ewsAlerts?.filter(e => e.level_peringatan === 'Waspada').length || 0,
         darurat: ewsAlerts?.filter(e => e.level_peringatan === 'Darurat').length || 0
+      },
+      sample_data: {
+        visi_misi: sampleVisiMisi || [],
+        rencana_strategis: sampleRencanaStrategis || []
+      },
+      counts: {
+        visi_misi: visiMisiCount || 0,
+        rencana_strategis: rencanaStrategisCount || 0
       }
     };
 

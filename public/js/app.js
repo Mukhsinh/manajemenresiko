@@ -5,11 +5,15 @@ let kopSettingsCache = null;
 
 // Check authentication on load
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM Content Loaded - Initializing app...');
+    
     // Wait for config and Supabase to be loaded
     if (typeof window.supabase === 'undefined') {
         console.error('Supabase library not loaded. Please check script tags in HTML.');
         return;
     }
+    
+    console.log('Supabase library loaded, waiting for client initialization...');
     
     // Wait for config to load
     let retries = 0;
@@ -17,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     while (!window.supabaseClient && retries < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 100));
         retries++;
+        console.log(`Waiting for Supabase client... attempt ${retries}`);
     }
     
     if (!window.supabaseClient) {
@@ -24,9 +29,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
+    console.log('Supabase client initialized, checking auth...');
+    
     try {
         await checkAuth();
         setupEventListeners();
+        console.log('App initialization complete');
     } catch (error) {
         console.error('Error initializing app:', error);
     }
@@ -34,20 +42,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function checkAuth() {
     try {
+        console.log('Checking authentication...');
+        
         // Use authService if available, otherwise fallback to direct check
         if (window.authService) {
+            console.log('Using authService for authentication check');
             const authResult = await window.authService.checkAuth();
             
             if (authResult.authenticated && authResult.user) {
+                console.log('User authenticated via authService:', authResult.user.email);
                 currentUser = authResult.user;
                 showApp();
                 await loadUserData();
                 await loadKopHeader();
                 navigateToPage('dashboard');
             } else {
+                console.log('User not authenticated via authService');
                 showLogin();
             }
         } else {
+            console.log('Using direct Supabase check for authentication');
             // Fallback to direct Supabase check
             const supabaseClient = window.supabaseClient;
             if (!supabaseClient) {
@@ -65,12 +79,14 @@ async function checkAuth() {
             }
             
             if (session) {
+                console.log('User authenticated via Supabase:', session.user.email);
                 currentUser = session.user;
                 showApp();
                 await loadUserData();
                 await loadKopHeader();
                 navigateToPage('dashboard');
             } else {
+                console.log('No active session found');
                 showLogin();
             }
         }
@@ -122,6 +138,9 @@ async function loadUserData() {
                 
                 // Update menu visibility based on role
                 updateMenuVisibility(result.user);
+                
+                // Load notifications after user data is loaded
+                await loadNotifications();
             }
         } else {
             // Fallback to direct API call
@@ -144,6 +163,9 @@ async function loadUserData() {
                 
                 // Update menu visibility based on role
                 updateMenuVisibility(userData.user);
+                
+                // Load notifications after user data is loaded
+                await loadNotifications();
             }
         }
     } catch (error) {
@@ -158,6 +180,50 @@ async function loadUserData() {
     if (window.chatWidget && currentUser) {
         window.chatWidget.init();
     }
+}
+
+async function loadNotifications() {
+    try {
+        // Load notifications from API
+        const notifications = await apiCall('/api/notifications');
+        updateNotificationUI(notifications);
+    } catch (error) {
+        console.warn('Could not load notifications:', error);
+        // Hide notification icons if no notifications available
+        hideNotifications();
+    }
+}
+
+function updateNotificationUI(notifications = {}) {
+    const alertPill = document.getElementById('notif-alert-pill');
+    const infoPill = document.getElementById('notif-info-pill');
+    const alertCount = document.getElementById('notif-alert-count');
+    const messageCount = document.getElementById('notif-message-count');
+    
+    const alerts = notifications.alerts || 0;
+    const messages = notifications.messages || 0;
+    
+    if (alerts > 0) {
+        alertPill.style.display = '';
+        alertCount.textContent = alerts;
+    } else {
+        alertPill.style.display = 'none';
+    }
+    
+    if (messages > 0) {
+        infoPill.style.display = '';
+        messageCount.textContent = messages;
+    } else {
+        infoPill.style.display = 'none';
+    }
+}
+
+function hideNotifications() {
+    const alertPill = document.getElementById('notif-alert-pill');
+    const infoPill = document.getElementById('notif-info-pill');
+    
+    if (alertPill) alertPill.style.display = 'none';
+    if (infoPill) infoPill.style.display = 'none';
 }
 
 function updateMenuVisibility(user) {
@@ -848,6 +914,7 @@ window.app = {
     currentRiskId,
     switchTab,
     apiCall,
+    navigateToPage,
     getSupabaseClient: () => window.supabaseClient,
     refreshKopHeader: () => loadKopHeader(true),
     setKopHeaderState: (state = {}) => {
