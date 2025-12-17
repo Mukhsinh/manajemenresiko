@@ -175,13 +175,45 @@ const RencanaStrategisModule = (() => {
   }
 
   function render() {
-    const container = getEl('rencana-strategis-content');
+    let container = getEl('rencana-strategis-content');
     if (!container) {
       console.error('Container rencana-strategis-content not found!');
+      console.error('Available containers:', document.querySelectorAll('[id*="rencana"]'));
+      
+      // Wait a bit and try again
+      setTimeout(() => {
+        container = getEl('rencana-strategis-content');
+        if (container) {
+          console.log('Container found after delay, rendering...');
+          renderContent(container);
+        } else {
+          // Try to find alternative containers
+          const alternatives = [
+            'rencana-strategis',
+            'content-area',
+            'main-content'
+          ];
+          
+          for (const altId of alternatives) {
+            const altContainer = document.getElementById(altId);
+            if (altContainer) {
+              console.log(`Found alternative container: ${altId}`);
+              renderContent(altContainer);
+              break;
+            }
+          }
+        }
+      }, 500);
       return;
     }
     
+    renderContent(container);
+  }
+
+  function renderContent(container) {
     console.log('Rendering rencana strategis form...');
+    console.log('Container found:', container);
+    console.log('Container innerHTML length:', container.innerHTML.length);
     console.log('State:', {
       currentId: state.currentId,
       formValues: state.formValues,
@@ -276,6 +308,11 @@ const RencanaStrategisModule = (() => {
     `;
 
     console.log('Form HTML rendered, binding events...');
+    console.log('Container innerHTML after render:', container.innerHTML.length, 'characters');
+    console.log('Form element found:', !!container.querySelector('#rs-form'));
+    console.log('Input elements found:', container.querySelectorAll('input').length);
+    console.log('Button elements found:', container.querySelectorAll('button').length);
+    
     bindRenderedEvents();
     console.log('Events bound successfully');
   }
@@ -668,10 +705,31 @@ window.loadRencanaStrategis = loadRencanaStrategis;
 
 // Auto-initialize if container exists
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.getElementById('rencana-strategis-content');
-  if (container && container.innerHTML.trim() === '') {
-    console.log('Auto-initializing rencana strategis module...');
-    // Don't auto-load, let the app handle it
-  }
+  console.log('DOM loaded, checking for rencana strategis container...');
+  
+  const checkAndInit = () => {
+    const container = document.getElementById('rencana-strategis-content');
+    console.log('Container check:', !!container);
+    
+    if (container && container.innerHTML.trim() === '') {
+      console.log('Auto-initializing rencana strategis module...');
+      // Auto-load if not handled by app
+      setTimeout(() => {
+        const containerCheck = document.getElementById('rencana-strategis-content');
+        if (containerCheck && containerCheck.innerHTML.trim() === '') {
+          console.log('Container still empty, auto-loading rencana strategis...');
+          loadRencanaStrategis();
+        }
+      }, 1000);
+    }
+  };
+  
+  // Try immediately and with delays
+  checkAndInit();
+  setTimeout(checkAndInit, 500);
+  setTimeout(checkAndInit, 1500);
 });
+
+// Also make module available immediately when script loads
+console.log('Rencana Strategis module loaded and available');
 

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Container Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis Container Fix</h1>
+        
+        <div class="debug-info">
+            <h3>Test Progress</h3>
+            <div id="debug-info">Starting test...</div>
+        </div>
+
+        <!-- Exact same structure as main app -->
+        <div id="rencana-strategis" class="page-content active">
+            <div class="page-header">
+                <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Rencana Strategis</h1>
+                <p class="page-subtitle">Perencanaan Strategis Organisasi</p>
+            </div>
+            <div id="rencana-strategis-content"></div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <script>
+        function updateDebugInfo(message) {
+            const debugEl = document.getElementById('debug-info');
+            const timestamp = new Date().toLocaleTimeString();
+            debugEl.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        async function runContainerTest() {
+            updateDebugInfo('🔄 Starting container test...');
+            
+            // Step 1: Check container availability
+            updateDebugInfo('Step 1: Checking container availability');
+            const container = document.getElementById('rencana-strategis-content');
+            updateDebugInfo(`Container found: ${!!container ? '✅' : '❌'}`);
+            
+            if (!container) {
+                updateDebugInfo('❌ Container not found, test failed');
+                return;
+            }
+            
+            // Step 2: Check module availability
+            updateDebugInfo('Step 2: Checking module availability');
+            updateDebugInfo(`RencanaStrategisModule: ${!!window.RencanaStrategisModule ? '✅' : '❌'}`);
+            updateDebugInfo(`loadRencanaStrategis: ${!!window.loadRencanaStrategis ? '✅' : '❌'}`);
+            
+            // Step 3: Test module loading
+            updateDebugInfo('Step 3: Testing module loading');
+            
+            try {
+                if (window.loadRencanaStrategis) {
+                    updateDebugInfo('Calling loadRencanaStrategis...');
+                    await window.loadRencanaStrategis();
+                    
+                    // Check if content was rendered
+                    const contentLength = container.innerHTML.length;
+                    updateDebugInfo(`Content rendered: ${contentLength > 0 ? '✅' : '❌'} (${contentLength} characters)`);
+                    
+                    if (contentLength > 0) {
+                        const formCount = container.querySelectorAll('form').length;
+                        const inputCount = container.querySelectorAll('input').length;
+                        const buttonCount = container.querySelectorAll('button').length;
+                        
+                        updateDebugInfo(`Forms: ${formCount}, Inputs: ${inputCount}, Buttons: ${buttonCount}`);
+                        
+                        if (formCount > 0 && inputCount > 0 && buttonCount > 0) {
+                            updateDebugInfo('🎉 <span class="success">SUCCESS: All elements rendered!</span>');
+                        } else {
+                            updateDebugInfo('⚠️ <span class="warning">WARNING: Some elements missing</span>');
+                        }
+                    } else {
+                        updateDebugInfo('❌ <span class="error">ERROR: No content rendered</span>');
+                    }
+                } else {
+                    updateDebugInfo('❌ <span class="error">ERROR: loadRencanaStrategis function not found</span>');
+                }
+                
+            } catch (error) {
+                updateDebugInfo(`❌ <span class="error">ERROR: ${error.message}</span>`);
+                console.error('Test error:', error);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDebugInfo('DOM loaded, waiting for modules...');
+            
+            // Wait for modules to load
+            setTimeout(() => {
+                runContainerTest();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

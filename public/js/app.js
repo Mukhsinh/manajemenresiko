@@ -800,7 +800,83 @@ function loadPageData(pageName) {
             window.visiMisiModule?.loadVisiMisi?.();
             break;
         case 'rencana-strategis':
-            window.rencanaStrategisModule?.load?.();
+            console.log('Loading rencana strategis module...');
+            console.log('RencanaStrategisModule available:', !!window.RencanaStrategisModule);
+            console.log('rencanaStrategisModule available:', !!window.rencanaStrategisModule);
+            console.log('loadRencanaStrategis function available:', !!window.loadRencanaStrategis);
+            
+            // Check if container exists first
+            const rencanaContainer = document.getElementById('rencana-strategis-content');
+            console.log('Container rencana-strategis-content exists:', !!rencanaContainer);
+            
+            if (!rencanaContainer) {
+                console.error('Container rencana-strategis-content not found! Waiting...');
+                setTimeout(() => {
+                    const delayedContainer = document.getElementById('rencana-strategis-content');
+                    if (delayedContainer) {
+                        console.log('Container found after delay, loading module...');
+                        loadRencanaStrategisModule();
+                    } else {
+                        console.error('Container still not found after delay');
+                    }
+                }, 500);
+                return;
+            }
+            
+            loadRencanaStrategisModule();
+            
+            function loadRencanaStrategisModule() {
+                if (window.loadRencanaStrategis) {
+                    console.log('Calling loadRencanaStrategis function...');
+                    window.loadRencanaStrategis();
+                } else if (window.RencanaStrategisModule?.load) {
+                    console.log('Calling RencanaStrategisModule.load...');
+                    window.RencanaStrategisModule.load();
+                } else if (window.rencanaStrategisModule?.load) {
+                    console.log('Calling rencanaStrategisModule.load...');
+                    window.rencanaStrategisModule.load();
+                } else {
+                    console.error('No rencana strategis module found!');
+                    // Fallback: try multiple times with increasing delays
+                    let retryCount = 0;
+                    const maxRetries = 5;
+                    
+                    const retryRencanaStrategis = () => {
+                        retryCount++;
+                        console.log(`Retry loading rencana strategis module, attempt ${retryCount}`);
+                        
+                        if (window.loadRencanaStrategis) {
+                            console.log('Rencana strategis module found on retry, loading...');
+                            window.loadRencanaStrategis();
+                        } else if (window.RencanaStrategisModule?.load) {
+                            console.log('RencanaStrategisModule found on retry, loading...');
+                            window.RencanaStrategisModule.load();
+                        } else if (window.rencanaStrategisModule?.load) {
+                            console.log('rencanaStrategisModule found on retry, loading...');
+                            window.rencanaStrategisModule.load();
+                        } else if (retryCount < maxRetries) {
+                            setTimeout(retryRencanaStrategis, retryCount * 200);
+                        } else {
+                            console.error('Rencana strategis module still not available after all retries');
+                            // Last resort: show error message
+                            const content = document.getElementById('rencana-strategis-content');
+                            if (content) {
+                                content.innerHTML = `
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error Loading Rencana Strategis</h5>
+                                            <p>Rencana strategis module tidak dapat dimuat. Silakan refresh halaman.</p>
+                                            <button onclick="location.reload()" class="btn btn-primary">Refresh Halaman</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    };
+                    
+                    setTimeout(retryRencanaStrategis, 100);
+                }
+            }
             break;
         case 'inventarisasi-swot':
             window.inventarisasiSwotModule?.load?.();

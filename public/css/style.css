@@ -699,51 +699,69 @@ body {
     padding: 1rem;
 }
 
-/* Status Badges */
+/* Status Badges - Enhanced Contrast */
 .badge-status {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
+    padding: 0.35rem 0.75rem;
     font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 4px;
+    font-weight: 700;
+    border-radius: 6px;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    min-width: 70px;
+    border: 2px solid transparent;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .badge-aman {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #155724;
+    color: #ffffff;
+    border-color: #0f4419;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-hati-hati {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: #856404;
+    color: #ffffff;
+    border-color: #6c5003;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-kritis {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #721c24;
+    color: #ffffff;
+    border-color: #5a161c;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-secondary {
-    background-color: #e2e3e5;
-    color: #383d41;
+    background-color: #495057;
+    color: #ffffff;
+    border-color: #383d41;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: #155724;
+    color: #ffffff;
+    border: 2px solid #0f4419;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: #721c24;
+    color: #ffffff;
+    border: 2px solid #5a161c;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-normal {
-    background-color: #d1ecf1;
-    color: #0c5460;
+    background-color: #0c5460;
+    color: #ffffff;
+    border-color: #094349;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive Design */
@@ -1515,93 +1533,51 @@ trategic Map Download Dropdown */
         break-inside: avoid;
         page-break-inside: avoid;
     }
-}/* 
-Badge Status Styling */
-.badge-status {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-align: center;
-    min-width: 60px;
 }
 
-.badge-aman {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
-}
-
-.badge-hati-hati,
-.badge-peringatan {
-    background: linear-gradient(135deg, #fd7e14, #ffc107);
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
-}
-
-.badge-kritis,
-.badge-darurat {
-    background: linear-gradient(135deg, #dc3545, #e74c3c);
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
-}
-
-.badge-normal {
-    background: linear-gradient(135deg, #17a2b8, #20c997);
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3);
-}
-
-.badge-waspada {
-    background-color: #ffeaa7;
-    color: #b7791f;
-    border: 1px solid #f39c12;
-}
-
-.badge-secondary {
-    background-color: #e2e3e5;
-    color: #383d41;
-    border: 1px solid #d6d8db;
-}
-
-/* Risk Level Colors */
+/* Risk Level Colors - Enhanced Contrast */
 .risk-extreme-high {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
+    background-color: #721c24;
+    color: #ffffff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    border: 2px solid #5a161c;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .risk-high-risk {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
+    background-color: #856404;
+    color: #ffffff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    border: 2px solid #6c5003;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .risk-medium-risk {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
+    background-color: #0c5460;
+    color: #ffffff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    border: 2px solid #094349;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .risk-low-risk {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
+    background-color: #155724;
+    color: #ffffff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    border: 2px solid #0f4419;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Table Styling for Risk Management */
@@ -2036,41 +2012,49 @@ sive Table Styles */
     text-align: right !important;
 }
 
-/* Risk Level Specific Styles */
+/* Risk Level Specific Styles - Mobile Optimized */
 .risk-low-risk {
-    background-color: #d4edda !important;
-    color: #155724 !important;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
+    background-color: #155724 !important;
+    color: #ffffff !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
     font-weight: bold;
+    border: 1px solid #0f4419;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .risk-medium-risk {
-    background-color: #fff3cd !important;
-    color: #856404 !important;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
+    background-color: #0c5460 !important;
+    color: #ffffff !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
     font-weight: bold;
+    border: 1px solid #094349;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .risk-high-risk {
-    background-color: #f8d7da !important;
-    color: #721c24 !important;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
+    background-color: #856404 !important;
+    color: #ffffff !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
     font-weight: bold;
+    border: 1px solid #6c5003;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .risk-extreme-high {
-    background-color: #f5c6cb !important;
-    color: #721c24 !important;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
+    background-color: #721c24 !important;
+    color: #ffffff !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
     font-weight: bold;
+    border: 1px solid #5a161c;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Mobile Responsive */
@@ -2139,20 +2123,31 @@ ana Strategis Form Styles */
 }
 
 .badge-status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    min-width: 70px;
+    border: 2px solid transparent;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .badge-normal {
-    background-color: var(--light-green);
-    color: #2E7D32;
+    background-color: #0c5460;
+    color: #ffffff;
+    border-color: #094349;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .badge-hati-hati {
-    background-color: var(--light-yellow);
-    color: #F57F17;
+    background-color: #856404;
+    color: #ffffff;
+    border-color: #6c5003;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .form-grid {
@@ -3058,5 +3053,224 @@ kator Kinerja Utama Table Styles */
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 1rem;
+    }
+}
+/* 
+Residual Risk Badge Enhancements */
+.residual-risk-table .badge-status {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    min-width: 75px;
+    border: 2px solid transparent;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.residual-risk-table .badge-status:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Enhanced contrast for residual risk badges */
+.residual-risk-table .badge-aman,
+.residual-risk-table .badge-status.badge-aman {
+    background-color: #0d4f1c !important;
+    color: #ffffff !important;
+    border-color: #0a3d16 !important;
+}
+
+.residual-risk-table .badge-hati-hati,
+.residual-risk-table .badge-status.badge-hati-hati {
+    background-color: #6b4e03 !important;
+    color: #ffffff !important;
+    border-color: #553e02 !important;
+}
+
+.residual-risk-table .badge-kritis,
+.residual-risk-table .badge-status.badge-kritis {
+    background-color: #5c171e !important;
+    color: #ffffff !important;
+    border-color: #471218 !important;
+}
+
+.residual-risk-table .badge-normal,
+.residual-risk-table .badge-status.badge-normal {
+    background-color: #0a4249 !important;
+    color: #ffffff !important;
+    border-color: #08343a !important;
+}
+
+.residual-risk-table .badge-secondary,
+.residual-risk-table .badge-status.badge-secondary {
+    background-color: #3c4043 !important;
+    color: #ffffff !important;
+    border-color: #2d3032 !important;
+}
+
+/* Risk level badges in residual risk table */
+.residual-risk-table .risk-low-risk {
+    background-color: #0d4f1c !important;
+    color: #ffffff !important;
+    border: 2px solid #0a3d16 !important;
+    padding: 0.4rem 0.8rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.residual-risk-table .risk-medium-risk {
+    background-color: #0a4249 !important;
+    color: #ffffff !important;
+    border: 2px solid #08343a !important;
+    padding: 0.4rem 0.8rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.residual-risk-table .risk-high-risk {
+    background-color: #6b4e03 !important;
+    color: #ffffff !important;
+    border: 2px solid #553e02 !important;
+    padding: 0.4rem 0.8rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.residual-risk-table .risk-extreme-high {
+    background-color: #5c171e !important;
+    color: #ffffff !important;
+    border: 2px solid #471218 !important;
+    padding: 0.4rem 0.8rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Table styling for residual risk */
+.residual-risk-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.residual-risk-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.residual-risk-table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.residual-risk-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Mobile responsive for residual risk badges */
+@media (max-width: 768px) {
+    .residual-risk-table .badge-status {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.7rem;
+        min-width: 60px;
+    }
+    
+    .residual-risk-table .risk-low-risk,
+    .residual-risk-table .risk-medium-risk,
+    .residual-risk-table .risk-high-risk,
+    .residual-risk-table .risk-extreme-high {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.7rem !important;
+    }
+}/* S
+olid Badge Colors for Residual Risk - Based on Excel Reference */
+.badge-low-risk {
+    background-color: #4CAF50 !important; /* Green - Solid */
+    color: #ffffff !important;
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #388E3C !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.badge-medium-risk {
+    background-color: #FF9800 !important; /* Orange - Solid */
+    color: #ffffff !important;
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #F57C00 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.badge-high-risk {
+    background-color: #FF5722 !important; /* Deep Orange - Solid */
+    color: #ffffff !important;
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #E64A19 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.badge-extreme-high {
+    background-color: #F44336 !important; /* Red - Solid */
+    color: #ffffff !important;
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #D32F2F !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Hover effects for solid badges */
+.badge-low-risk:hover {
+    background-color: #388E3C !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+.badge-medium-risk:hover {
+    background-color: #F57C00 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+.badge-high-risk:hover {
+    background-color: #E64A19 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+.badge-extreme-high:hover {
+    background-color: #D32F2F !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Mobile responsive for solid badges */
+@media (max-width: 768px) {
+    .badge-low-risk,
+    .badge-medium-risk,
+    .badge-high-risk,
+    .badge-extreme-high {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.7rem !important;
+        min-width: 60px !important;
     }
 }

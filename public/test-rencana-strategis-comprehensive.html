@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Comprehensive</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis Comprehensive</h1>
+        
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3>Test Progress</h3>
+            </div>
+            <div class="card-body">
+                <div id="test-progress">Starting tests...</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3>API Test Results</h3>
+            </div>
+            <div class="card-body">
+                <div id="api-results">Testing APIs...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Rencana Strategis Module Test</h3>
+            </div>
+            <div class="card-body">
+                <div id="rencana-strategis-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <script>
+        async function runComprehensiveTest() {
+            console.log('=== COMPREHENSIVE RENCANA STRATEGIS TEST START ===');
+            
+            const progressEl = document.getElementById('test-progress');
+            const apiResultsEl = document.getElementById('api-results');
+            
+            // Step 1: Test API endpoints
+            progressEl.innerHTML = '🔄 Step 1: Testing API endpoints...';
+            
+            const apiResults = [];
+            const endpoints = [
+                '/api/rencana-strategis/public',
+                '/api/rencana-strategis/generate/kode/public',
+                '/api/visi-misi/public'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`Testing API: ${endpoint}`);
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    
+                    apiResults.push(`
+                        <div style="color: green; margin-bottom: 1rem;">
+                            <h4>✅ ${endpoint}</h4>
+                            <p>Status: ${response.status}</p>
+                            <details>
+                                <summary>Response Data</summary>
+                                <pre style="background: #f8f9fa; padding: 0.5rem; border-radius: 4px; font-size: 0.8rem;">${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `);
+                    
+                } catch (error) {
+                    apiResults.push(`
+                        <div style="color: red; margin-bottom: 1rem;">
+                            <h4>❌ ${endpoint}</h4>
+                            <p>Error: ${error.message}</p>
+                        </div>
+                    `);
+                }
+            }
+            
+            apiResultsEl.innerHTML = apiResults.join('');
+            
+            // Step 2: Test module availability
+            progressEl.innerHTML = '🔄 Step 2: Checking module availability...';
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const moduleStatus = [];
+            moduleStatus.push(`RencanaStrategisModule: ${!!window.RencanaStrategisModule ? '✅' : '❌'}`);
+            moduleStatus.push(`rencanaStrategisModule: ${!!window.rencanaStrategisModule ? '✅' : '❌'}`);
+            moduleStatus.push(`loadRencanaStrategis: ${!!window.loadRencanaStrategis ? '✅' : '❌'}`);
+            moduleStatus.push(`apiCall: ${!!window.apiCall ? '✅' : '❌'}`);
+            moduleStatus.push(`supabaseClient: ${!!window.supabaseClient ? '✅' : '❌'}`);
+            
+            progressEl.innerHTML = `🔄 Step 2: Module Status<br>${moduleStatus.join('<br>')}`;
+            
+            // Step 3: Test module loading
+            progressEl.innerHTML += '<br><br>🔄 Step 3: Loading rencana strategis module...';
+            
+            try {
+                if (window.loadRencanaStrategis) {
+                    console.log('Using loadRencanaStrategis function');
+                    await window.loadRencanaStrategis();
+                    progressEl.innerHTML += '<br>✅ Module loaded via loadRencanaStrategis';
+                } else if (window.RencanaStrategisModule?.load) {
+                    console.log('Using RencanaStrategisModule.load');
+                    await window.RencanaStrategisModule.load();
+                    progressEl.innerHTML += '<br>✅ Module loaded via RencanaStrategisModule.load';
+                } else if (window.rencanaStrategisModule?.load) {
+                    console.log('Using rencanaStrategisModule.load');
+                    await window.rencanaStrategisModule.load();
+                    progressEl.innerHTML += '<br>✅ Module loaded via rencanaStrategisModule.load';
+                } else {
+                    throw new Error('No rencana strategis module found');
+                }
+                
+                progressEl.innerHTML += '<br><br>🎉 <strong>All tests completed successfully!</strong>';
+                
+            } catch (error) {
+                console.error('Error loading rencana strategis:', error);
+                progressEl.innerHTML += `<br><br>❌ <strong>Error: ${error.message}</strong>`;
+                
+                // Show fallback content
+                document.getElementById('rencana-strategis-content').innerHTML = `
+                    <div style="color: red; padding: 1rem; border: 1px solid red; border-radius: 4px;">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Error Loading Module</h5>
+                        <p>Error: ${error.message}</p>
+                        <p>Check console for more details.</p>
+                    </div>
+                `;
+            }
+            
+            console.log('=== COMPREHENSIVE RENCANA STRATEGIS TEST END ===');
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runComprehensiveTest, 1000);
+        });
+    </script>
+</body>
+</html>

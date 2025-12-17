@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Render</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis Render</h1>
+        
+        <div class="debug-info">
+            <h3>Debug Information</h3>
+            <div id="debug-info">Loading...</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Rencana Strategis Content</h3>
+            </div>
+            <div class="card-body">
+                <div id="rencana-strategis-content">
+                    <!-- This should be populated by the module -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <script>
+        function updateDebugInfo(message) {
+            const debugEl = document.getElementById('debug-info');
+            const timestamp = new Date().toLocaleTimeString();
+            debugEl.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        async function testRender() {
+            updateDebugInfo('🔄 Starting render test...');
+            
+            // Check if container exists
+            const container = document.getElementById('rencana-strategis-content');
+            updateDebugInfo(`Container found: ${!!container ? '✅' : '❌'}`);
+            
+            if (!container) {
+                updateDebugInfo('❌ Container not found, cannot proceed');
+                return;
+            }
+            
+            // Check module availability
+            updateDebugInfo(`RencanaStrategisModule: ${!!window.RencanaStrategisModule ? '✅' : '❌'}`);
+            updateDebugInfo(`rencanaStrategisModule: ${!!window.rencanaStrategisModule ? '✅' : '❌'}`);
+            updateDebugInfo(`loadRencanaStrategis: ${!!window.loadRencanaStrategis ? '✅' : '❌'}`);
+            updateDebugInfo(`apiCall: ${!!window.apiCall ? '✅' : '❌'}`);
+            
+            // Wait for modules to be ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Try to load the module
+            updateDebugInfo('🔄 Attempting to load module...');
+            
+            try {
+                if (window.loadRencanaStrategis) {
+                    updateDebugInfo('Using loadRencanaStrategis function');
+                    await window.loadRencanaStrategis();
+                } else if (window.RencanaStrategisModule?.load) {
+                    updateDebugInfo('Using RencanaStrategisModule.load');
+                    await window.RencanaStrategisModule.load();
+                } else if (window.rencanaStrategisModule?.load) {
+                    updateDebugInfo('Using rencanaStrategisModule.load');
+                    await window.rencanaStrategisModule.load();
+                } else {
+                    throw new Error('No rencana strategis module found');
+                }
+                
+                // Check if content was rendered
+                const contentLength = container.innerHTML.length;
+                updateDebugInfo(`Content rendered: ${contentLength > 0 ? '✅' : '❌'} (${contentLength} characters)`);
+                
+                if (contentLength > 0) {
+                    const formCount = container.querySelectorAll('form').length;
+                    const inputCount = container.querySelectorAll('input').length;
+                    const buttonCount = container.querySelectorAll('button').length;
+                    const tableCount = container.querySelectorAll('table').length;
+                    
+                    updateDebugInfo(`Forms found: ${formCount}`);
+                    updateDebugInfo(`Inputs found: ${inputCount}`);
+                    updateDebugInfo(`Buttons found: ${buttonCount}`);
+                    updateDebugInfo(`Tables found: ${tableCount}`);
+                    
+                    if (formCount > 0 && inputCount > 0 && buttonCount > 0) {
+                        updateDebugInfo('🎉 <span class="success">SUCCESS: Form and inputs rendered correctly!</span>');
+                    } else {
+                        updateDebugInfo('⚠️ <span class="warning">WARNING: Some elements missing</span>');
+                    }
+                } else {
+                    updateDebugInfo('❌ <span class="error">ERROR: No content rendered</span>');
+                }
+                
+            } catch (error) {
+                updateDebugInfo(`❌ <span class="error">ERROR: ${error.message}</span>`);
+                console.error('Error loading rencana strategis:', error);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDebugInfo('DOM loaded, starting test in 2 seconds...');
+            setTimeout(testRender, 2000);
+        });
+    </script>
+</body>
+</html>

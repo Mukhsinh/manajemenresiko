@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Residual Risk Inherent Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1><i class="fas fa-bug"></i> Test Residual Risk Inherent Data Fix</h1>
+        <p class="text-muted">Testing inherent risk data display and reduction calculation</p>
+
+        <!-- API Test -->
+        <div class="test-section">
+            <h3><i class="fas fa-server"></i> API Data Test</h3>
+            <button class="btn btn-primary" onclick="testAPI()">
+                <i class="fas fa-play"></i> Test API Data
+            </button>
+            <div id="api-result" class="debug-info" style="display: none;"></div>
+        </div>
+
+        <!-- Badge Color Test -->
+        <div class="test-section">
+            <h3><i class="fas fa-palette"></i> Solid Badge Colors Test</h3>
+            <div class="row">
+                <div class="col-md-3">
+                    <h5>Risk Levels</h5>
+                    <div class="d-flex flex-column gap-2">
+                        <span class="badge-low-risk">LOW RISK</span>
+                        <span class="badge-medium-risk">MEDIUM RISK</span>
+                        <span class="badge-high-risk">HIGH RISK</span>
+                        <span class="badge-extreme-high">EXTREME HIGH</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h5>Risk Values</h5>
+                    <div class="d-flex flex-column gap-2">
+                        <span class="badge-low-risk">2.5</span>
+                        <span class="badge-medium-risk">8.0</span>
+                        <span class="badge-high-risk">15.0</span>
+                        <span class="badge-extreme-high">25.0</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Color Reference (Excel-based)</h5>
+                    <ul>
+                        <li><strong>Low Risk:</strong> Green (#4CAF50) - Safe zone</li>
+                        <li><strong>Medium Risk:</strong> Orange (#FF9800) - Caution zone</li>
+                        <li><strong>High Risk:</strong> Deep Orange (#FF5722) - Warning zone</li>
+                        <li><strong>Extreme High:</strong> Red (#F44336) - Critical zone</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Table Test -->
+        <div class="test-section">
+            <h3><i class="fas fa-table"></i> Sample Residual Risk Table</h3>
+            <div class="table-container">
+                <table class="table residual-risk-table">
+                    <thead>
+                        <tr>
+                            <th>Kode Risiko</th>
+                            <th>Unit Kerja</th>
+                            <th>Inherent</th>
+                            <th>Residual</th>
+                            <th>Reduction</th>
+                            <th>Level</th>
+                            <th>Review Status</th>
+                            <th>Next Review</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>RISK-2025-0001</strong></td>
+                            <td>Direktur</td>
+                            <td><span class="badge-extreme-high">25</span></td>
+                            <td><span class="badge-medium-risk">9</span></td>
+                            <td><strong style="color: #0d4f1c; font-weight: 700;">64.0%</strong></td>
+                            <td><span class="badge-medium-risk">MEDIUM RISK</span></td>
+                            <td><span class="badge-status badge-secondary">Need Attention</span></td>
+                            <td>2026-05-04</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RISK-2025-0002</strong></td>
+                            <td>Bid Pelayanan Medis</td>
+                            <td><span class="badge-high-risk">15</span></td>
+                            <td><span class="badge-medium-risk">9</span></td>
+                            <td><strong style="color: #0d4f1c; font-weight: 700;">40.0%</strong></td>
+                            <td><span class="badge-medium-risk">MEDIUM RISK</span></td>
+                            <td><span class="badge-status badge-secondary">Need Attention</span></td>
+                            <td>2026-05-08</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RISK-2025-0003</strong></td>
+                            <td>Bag Tata Usaha</td>
+                            <td><span class="badge-medium-risk">8</span></td>
+                            <td><span class="badge-low-risk">4</span></td>
+                            <td><strong style="color: #0d4f1c; font-weight: 700;">50.0%</strong></td>
+                            <td><span class="badge-low-risk">LOW RISK</span></td>
+                            <td><span class="badge-status badge-secondary">On Track</span></td>
+                            <td>2026-03-15</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RISK-2025-0004</strong></td>
+                            <td>Seksi Pengembangan</td>
+                            <td><span class="badge-medium-risk">8</span></td>
+                            <td><span class="badge-medium-risk">8</span></td>
+                            <td><strong style="color: #0d4f1c; font-weight: 700;">0.0%</strong></td>
+                            <td><span class="badge-medium-risk">MEDIUM RISK</span></td>
+                            <td><span class="badge-status badge-secondary">Need Attention</span></td>
+                            <td>2026-01-09</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Calculation Test -->
+        <div class="test-section">
+            <h3><i class="fas fa-calculator"></i> Reduction Calculation Test</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Test Cases</h5>
+                    <div id="calculation-tests"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Formula</h5>
+                    <div class="alert alert-info">
+                        <strong>Reduction % = ((Inherent - Residual) / Inherent) × 100</strong>
+                        <br><br>
+                        <strong>Examples:</strong>
+                        <ul>
+                            <li>Inherent: 25, Residual: 9 → (25-9)/25 × 100 = 64.0%</li>
+                            <li>Inherent: 15, Residual: 9 → (15-9)/15 × 100 = 40.0%</li>
+                            <li>Inherent: 8, Residual: 4 → (8-4)/8 × 100 = 50.0%</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Residual Risk Module Test -->
+        <div class="test-section">
+            <h3><i class="fas fa-chart-line"></i> Live Residual Risk Module Test</h3>
+            <button class="btn btn-success" onclick="loadResidualRiskModule()">
+                <i class="fas fa-play"></i> Load Residual Risk Module
+            </button>
+            <div id="residual-risk-content" style="margin-top: 20px;">
+                <div class="text-center py-5">
+                    <p class="text-muted">Click "Load Residual Risk Module" to test the actual module</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/residual-risk.js"></script>
+
+    <script>
+        // Test API data structure
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing API...';
+            
+            try {
+                const response = await fetch('/api/reports/residual-risk-simple');
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                let html = `<strong>API Test Results:</strong><br>`;
+                html += `Total Records: ${data.length}<br><br>`;
+                
+                if (data.length > 0) {
+                    const sample = data[0];
+                    html += `<strong>Sample Record Structure:</strong><br>`;
+                    html += `- ID: ${sample.id}<br>`;
+                    html += `- Risk Value: ${sample.risk_value}<br>`;
+                    html += `- Risk Level: ${sample.risk_level}<br>`;
+                    html += `- Has risk_inputs: ${!!sample.risk_inputs}<br>`;
+                    
+                    if (sample.risk_inputs) {
+                        html += `- Kode Risiko: ${sample.risk_inputs.kode_risiko}<br>`;
+                        html += `- Unit Kerja: ${sample.risk_inputs.master_work_units?.name}<br>`;
+                        html += `- Has inherent analysis: ${!!sample.risk_inputs.risk_inherent_analysis}<br>`;
+                        
+                        if (sample.risk_inputs.risk_inherent_analysis) {
+                            const inherent = Array.isArray(sample.risk_inputs.risk_inherent_analysis) 
+                                ? sample.risk_inputs.risk_inherent_analysis[0] 
+                                : sample.risk_inputs.risk_inherent_analysis;
+                            html += `- Inherent Value: ${inherent?.risk_value || 'N/A'}<br>`;
+                            html += `- Inherent Level: ${inherent?.risk_level || 'N/A'}<br>`;
+                        }
+                    }
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                console.error('API Test Error:', error);
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+
+        // Test reduction calculations
+        function testCalculations() {
+            const testCases = [
+                { inherent: 25, residual: 9, expected: 64.0 },
+                { inherent: 15, residual: 9, expected: 40.0 },
+                { inherent: 8, residual: 4, expected: 50.0 },
+                { inherent: 8, residual: 8, expected: 0.0 },
+                { inherent: 0, residual: 5, expected: 0.0 }
+            ];
+            
+            let html = '';
+            testCases.forEach((test, index) => {
+                const calculated = test.inherent > 0 
+                    ? ((test.inherent - test.residual) / test.inherent * 100).toFixed(1)
+                    : '0.0';
+                const isCorrect = parseFloat(calculated) === test.expected;
+                
+                html += `
+                    <div class="alert ${isCorrect ? 'alert-success' : 'alert-danger'}">
+                        <strong>Test ${index + 1}:</strong> 
+                        Inherent: ${test.inherent}, Residual: ${test.residual}<br>
+                        Expected: ${test.expected}%, Calculated: ${calculated}%
+                        ${isCorrect ? ' ✅' : ' ❌'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('calculation-tests').innerHTML = html;
+        }
+
+        // Load actual residual risk module
+        async function loadResidualRiskModule() {
+            try {
+                // Mock authentication for testing
+                window.authService = {
+                    isAuthenticated: () => true,
+                    getToken: () => 'mock-token'
+                };
+                
+                await ResidualRiskModule.load();
+            } catch (error) {
+                console.error('Error loading residual risk module:', error);
+                document.getElementById('residual-risk-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+                        <p>Failed to load residual risk module: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize tests
+        document.addEventListener('DOMContentLoaded', function() {
+            testCalculations();
+            
+            // Add hover effects to badges
+            const badges = document.querySelectorAll('.badge-low-risk, .badge-medium-risk, .badge-high-risk, .badge-extreme-high');
+            badges.forEach(badge => {
+                badge.style.cursor = 'pointer';
+                badge.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                    this.style.transition = 'all 0.2s ease';
+                });
+                
+                badge.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            console.log('Residual Risk Inherent Fix Test loaded successfully!');
+        });
+    </script>
+</body>
+</html>

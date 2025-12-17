@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis API</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; }
+        .card { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 1rem; }
+        .card-header { background: #f8f9fa; padding: 1rem; border-bottom: 1px solid #ddd; }
+        .card-body { padding: 1rem; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f8f9fa; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis API</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>API Test Results</h3>
+        </div>
+        <div class="card-body">
+            <div id="test-results">Testing...</div>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultsEl = document.getElementById('test-results');
+            const results = [];
+            
+            const endpoints = [
+                '/api/rencana-strategis/public',
+                '/api/rencana-strategis/generate/kode/public',
+                '/api/visi-misi/public'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`Testing: ${endpoint}`);
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    
+                    results.push(`
+                        <div class="success">
+                            <h4>✅ ${endpoint}</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `);
+                    
+                } catch (error) {
+                    results.push(`
+                        <div class="error">
+                            <h4>❌ ${endpoint}</h4>
+                            <p>Error: ${error.message}</p>
+                        </div>
+                    `);
+                }
+            }
+            
+            resultsEl.innerHTML = results.join('');
+        }
+        
+        document.addEventListener('DOMContentLoaded', testAPI);
+    </script>
+</body>
+</html>

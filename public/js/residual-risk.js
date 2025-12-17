@@ -324,10 +324,36 @@ const ResidualRiskModule = (() => {
       `;
     }
 
+    // Calculate statistics with improved inherent data extraction
+    let totalInherent = 0;
+    let totalResidual = 0;
+    let validInherentCount = 0;
+    
+    state.data.forEach(item => {
+      const risk = item.risk_inputs || {};
+      let inherent = {};
+      
+      // Try multiple ways to get inherent data
+      if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+        inherent = risk.risk_inherent_analysis[0];
+      } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+        inherent = risk.risk_inherent_analysis;
+      }
+      
+      const inherentValue = parseFloat(inherent.risk_value) || 0;
+      const residualValue = parseFloat(item.risk_value) || 0;
+      
+      if (inherentValue > 0) {
+        totalInherent += inherentValue;
+        validInherentCount++;
+      }
+      totalResidual += residualValue;
+    });
+
     const stats = {
       total: state.data.length,
-      avgInherent: state.data.reduce((sum, d) => sum + (d.risk_inputs?.risk_inherent_analysis?.[0]?.risk_value || 0), 0) / state.data.length,
-      avgResidual: state.data.reduce((sum, d) => sum + (d.risk_value || 0), 0) / state.data.length,
+      avgInherent: validInherentCount > 0 ? totalInherent / validInherentCount : 0,
+      avgResidual: state.data.length > 0 ? totalResidual / state.data.length : 0,
       reduction: 0
     };
     
@@ -339,6 +365,7 @@ const ResidualRiskModule = (() => {
     }
 
     console.log('ResidualRiskModule: Calculated statistics:', stats);
+    console.log('ResidualRiskModule: Valid inherent count:', validInherentCount);
 
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
@@ -371,7 +398,7 @@ const ResidualRiskModule = (() => {
       <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <h4 style="margin-bottom: 1rem;"><i class="fas fa-table"></i> Detail Residual Risk Analysis</h4>
         <div class="table-container">
-          <table class="table">
+          <table class="table residual-risk-table">
             <thead>
               <tr>
                 <th>Kode Risiko</th>
@@ -386,21 +413,44 @@ const ResidualRiskModule = (() => {
             </thead>
             <tbody>
               ${state.data.map(item => {
+                console.log('Processing item:', item); // Debug log
+                
                 const risk = item.risk_inputs || {};
-                const inherent = risk.risk_inherent_analysis?.[0] || {};
-                const reduction = inherent.risk_value && item.risk_value 
-                  ? ((inherent.risk_value - item.risk_value) / inherent.risk_value * 100).toFixed(1) + '%'
-                  : '-';
+                console.log('Risk inputs:', risk); // Debug log
+                
+                // Try multiple ways to get inherent data
+                let inherent = {};
+                if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                  inherent = risk.risk_inherent_analysis[0];
+                } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+                  inherent = risk.risk_inherent_analysis;
+                }
+                
+                console.log('Inherent data:', inherent); // Debug log
+                
+                // Get inherent risk value and level
+                const inherentValue = inherent.risk_value || 0;
+                const inherentLevel = inherent.risk_level || 'UNKNOWN';
+                const residualValue = item.risk_value || 0;
+                
+                // Calculate reduction percentage
+                let reduction = '-';
+                if (inherentValue > 0 && residualValue >= 0) {
+                  const reductionPercent = ((inherentValue - residualValue) / inherentValue * 100);
+                  reduction = reductionPercent.toFixed(1) + '%';
+                }
+                
+                console.log('Values:', { inherentValue, residualValue, reduction }); // Debug log
                 
                 return `
                   <tr>
                     <td><strong>${risk.kode_risiko || '-'}</strong></td>
                     <td>${risk.master_work_units?.name || '-'}</td>
-                    <td><span class="badge-status badge-hati-hati">${inherent.risk_value || '-'}</span></td>
-                    <td><span class="badge-status badge-${getRiskLevelColor(item.risk_level)}">${item.risk_value || '-'}</span></td>
-                    <td><strong style="color: #27ae60;">${reduction}</strong></td>
-                    <td><span class="badge-status badge-${getRiskLevelColor(item.risk_level)}">${item.risk_level || '-'}</span></td>
-                    <td>${item.review_status || '-'}</td>
+                    <td><span class="badge-status ${getBadgeClassForRiskLevel(inherentLevel)}">${inherentValue || '-'}</span></td>
+                    <td><span class="badge-status ${getBadgeClassForRiskLevel(item.risk_level)}">${residualValue || '-'}</span></td>
+                    <td><strong style="color: #0d4f1c; font-weight: 700;">${reduction}</strong></td>
+                    <td><span class="badge-status ${getBadgeClassForRiskLevel(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                    <td><span class="badge-status badge-secondary">${item.review_status || '-'}</span></td>
                     <td>${item.next_review_date || '-'}</td>
                   </tr>
                 `;
@@ -530,28 +580,35 @@ const ResidualRiskModule = (() => {
       state.comparisonChart = null;
     }
 
-    const labels = state.data.map(item => {
-      const risk = item.risk_inputs;
-      return risk?.kode_risiko || 'N/A';
-    });
-    const inherentValues = state.data.map(item => {
-      const risk = item.risk_inputs;
-      if (risk && risk.risk_inherent_analysis) {
-        const inherent = Array.isArray(risk.risk_inherent_analysis) 
-          ? risk.risk_inherent_analysis[0] 
-          : risk.risk_inherent_analysis;
-        if (inherent && inherent.risk_value) {
-          return parseFloat(inherent.risk_value) || 0;
-        }
+    const labels = [];
+    const inherentValues = [];
+    const residualValues = [];
+
+    state.data.forEach(item => {
+      const risk = item.risk_inputs || {};
+      let inherent = {};
+      
+      // Try multiple ways to get inherent data
+      if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+        inherent = risk.risk_inherent_analysis[0];
+      } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+        inherent = risk.risk_inherent_analysis;
       }
-      return 0;
+      
+      const inherentValue = parseFloat(inherent.risk_value) || 0;
+      const residualValue = parseFloat(item.risk_value) || 0;
+      
+      labels.push(risk.kode_risiko || 'N/A');
+      inherentValues.push(inherentValue);
+      residualValues.push(residualValue);
     });
-    const residualValues = state.data.map(item => parseFloat(item.risk_value) || 0);
 
     if (labels.length === 0 || (inherentValues.every(v => v === 0) && residualValues.every(v => v === 0))) {
       console.warn('No valid data for comparison chart');
       return;
     }
+
+    console.log('Chart data:', { labels, inherentValues, residualValues });
 
     try {
       state.comparisonChart = new Chart(ctx, {
@@ -562,15 +619,15 @@ const ResidualRiskModule = (() => {
           {
             label: 'Inherent Risk',
             data: inherentValues,
-            backgroundColor: 'rgba(231, 76, 60, 0.7)',
-            borderColor: 'rgba(231, 76, 60, 1)',
+            backgroundColor: 'rgba(244, 67, 54, 0.8)', // Red for inherent (higher risk)
+            borderColor: 'rgba(244, 67, 54, 1)',
             borderWidth: 2
           },
           {
             label: 'Residual Risk',
             data: residualValues,
-            backgroundColor: 'rgba(52, 152, 219, 0.7)',
-            borderColor: 'rgba(52, 152, 219, 1)',
+            backgroundColor: 'rgba(76, 175, 80, 0.8)', // Green for residual (lower risk)
+            borderColor: 'rgba(76, 175, 80, 1)',
             borderWidth: 2
           }
         ]
@@ -636,6 +693,23 @@ const ResidualRiskModule = (() => {
       'LOW RISK': 'aman'
     };
     return colorMap[level] || 'secondary';
+  }
+
+  // New function for solid badge colors based on Excel reference
+  function getBadgeClassForRiskLevel(level) {
+    const levelUpper = (level || '').toUpperCase();
+    
+    if (levelUpper.includes('LOW') || levelUpper.includes('RENDAH')) {
+      return 'badge-low-risk';
+    } else if (levelUpper.includes('MEDIUM') || levelUpper.includes('SEDANG')) {
+      return 'badge-medium-risk';
+    } else if (levelUpper.includes('HIGH') && !levelUpper.includes('EXTREME')) {
+      return 'badge-high-risk';
+    } else if (levelUpper.includes('EXTREME') || levelUpper.includes('SANGAT')) {
+      return 'badge-extreme-high';
+    } else {
+      return 'badge-secondary';
+    }
   }
 
   async function applyFilter() {
