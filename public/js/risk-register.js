@@ -46,13 +46,27 @@ function displayRiskRegister(data) {
     `;
 
     data.forEach((risk, index) => {
-        // Fix: Access first element of arrays since API returns arrays
-        const inherent = (risk.risk_inherent_analysis && risk.risk_inherent_analysis.length > 0) 
-            ? risk.risk_inherent_analysis[0] : {};
-        const residual = (risk.risk_residual_analysis && risk.risk_residual_analysis.length > 0) 
-            ? risk.risk_residual_analysis[0] : {};
-        const appetite = (risk.risk_appetite && risk.risk_appetite.length > 0) 
-            ? risk.risk_appetite[0] : {};
+        // Enhanced: Better handling of nested data with proper null checks
+        const inherent = (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) 
+            ? risk.risk_inherent_analysis[0] : null;
+        const residual = (risk.risk_residual_analysis && Array.isArray(risk.risk_residual_analysis) && risk.risk_residual_analysis.length > 0) 
+            ? risk.risk_residual_analysis[0] : null;
+        const appetite = (risk.risk_appetite && Array.isArray(risk.risk_appetite) && risk.risk_appetite.length > 0) 
+            ? risk.risk_appetite[0] : null;
+
+        // Enhanced: Better text truncation with proper handling
+        const truncateText = (text, maxLength = 50) => {
+            if (!text || text === null || text === undefined) return '-';
+            const str = String(text);
+            return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+        };
+
+        // Enhanced: Better risk level formatting
+        const formatRiskLevel = (level) => {
+            if (!level) return '-';
+            const levelClass = level.toLowerCase().replace(/\s+/g, '-');
+            return `<span class="risk-level risk-${levelClass}">${level}</span>`;
+        };
 
         html += `
             <tr>
@@ -62,19 +76,19 @@ function displayRiskRegister(data) {
                 <td>${risk.jenis_risiko || 'Threat'}</td>
                 <td>${risk.master_risk_categories?.name || '-'}</td>
                 <td>${risk.master_work_units?.name || '-'}</td>
-                <td>${risk.sasaran ? risk.sasaran.substring(0, 50) + '...' : '-'}</td>
+                <td title="${risk.sasaran || ''}">${truncateText(risk.sasaran)}</td>
                 <td>${formatDate(risk.tanggal_registrasi) || '-'}</td>
-                <td>${risk.penyebab_risiko ? risk.penyebab_risiko.substring(0, 50) + '...' : '-'}</td>
-                <td>${risk.dampak_risiko ? risk.dampak_risiko.substring(0, 50) + '...' : '-'}</td>
-                <td>${inherent.probability || '-'}</td>
-                <td>${inherent.impact || '-'}</td>
-                <td>${inherent.risk_value || '-'}</td>
-                <td><span class="risk-${(inherent.risk_level || '').toLowerCase().replace(' ', '-')}">${inherent.risk_level || '-'}</span></td>
-                <td>${residual.probability || '-'}</td>
-                <td>${residual.impact || '-'}</td>
-                <td>${residual.risk_value || '-'}</td>
-                <td><span class="risk-${(residual.risk_level || '').toLowerCase().replace(' ', '-')}">${residual.risk_level || '-'}</span></td>
-                <td>${appetite.risk_appetite_level || '-'}</td>
+                <td title="${risk.penyebab_risiko || ''}">${truncateText(risk.penyebab_risiko)}</td>
+                <td title="${risk.dampak_risiko || ''}">${truncateText(risk.dampak_risiko)}</td>
+                <td>${inherent?.probability || '-'}</td>
+                <td>${inherent?.impact || '-'}</td>
+                <td>${inherent?.risk_value || '-'}</td>
+                <td>${formatRiskLevel(inherent?.risk_level)}</td>
+                <td>${residual?.probability || '-'}</td>
+                <td>${residual?.impact || '-'}</td>
+                <td>${residual?.risk_value || '-'}</td>
+                <td>${formatRiskLevel(residual?.risk_level)}</td>
+                <td>${appetite?.risk_appetite_level || '-'}</td>
             </tr>
         `;
     });

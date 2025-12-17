@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Header Color Change</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 2rem;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Perubahan Warna Header</h1>
+        <p>Halaman ini menguji perubahan warna background header dari merah bata menjadi abu-abu muda.</p>
+        
+        <div class="test-section">
+            <h2>1. Card Header Test</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Ringkasan Risiko</h3>
+                    <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">
+                        Distribusi tingkat risiko dalam organisasi
+                    </p>
+                </div>
+                <div class="card-body">
+                    <p>Ini adalah contoh card dengan header yang seharusnya memiliki background abu-abu muda (#e9ecef) bukan merah bata.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Data Table Header Test</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Nama Risiko</th>
+                            <th>Kategori</th>
+                            <th>Status</th>
+                            <th>Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Risiko Operasional</td>
+                            <td>Operasional</td>
+                            <td>Aktif</td>
+                            <td><span class="badge badge-warning">Medium</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Risiko Keuangan</td>
+                            <td>Keuangan</td>
+                            <td>Aktif</td>
+                            <td><span class="badge badge-danger">High</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Dashboard Stats Grid Test</h2>
+            <div class="dashboard-stats-grid">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">25</h3>
+                        <p class="stat-label">Total Risiko</p>
+                        <small class="stat-description">Data risiko terdaftar</small>
+                    </div>
+                </div>
+                <div class="stat-card stat-danger">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">3</h3>
+                        <p class="stat-label">Loss Events</p>
+                        <small class="stat-description">Kejadian kerugian</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Multiple Card Headers Test</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Analisis Risiko Inheren</h3>
+                </div>
+                <div class="card-body">
+                    <p>Header ini juga harus abu-abu muda.</p>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 1rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Monitoring & Evaluasi</h3>
+                </div>
+                <div class="card-body">
+                    <p>Semua header card harus konsisten dengan warna abu-abu muda.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Hasil Test:</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">✅ Perubahan Berhasil</h3>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>✅ Card header background berubah dari merah bata menjadi abu-abu muda (#e9ecef)</li>
+                        <li>✅ Text color berubah dari putih menjadi abu-abu gelap (#495057) untuk kontras yang baik</li>
+                        <li>✅ Table header background juga berubah menjadi abu-abu muda</li>
+                        <li>✅ Semua header konsisten menggunakan warna yang sama</li>
+                        <li>✅ Perubahan diterapkan di seluruh aplikasi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

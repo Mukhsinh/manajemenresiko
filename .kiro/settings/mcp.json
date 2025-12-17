@@ -9,7 +9,9 @@
         "execute_sql",
         "apply_migration",
         "get_logs",
-        "search_docs"
+        "search_docs",
+        "get_project_url",
+        "get_publishable_keys"
       ]
     }
   }

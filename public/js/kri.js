@@ -185,12 +185,29 @@ const KRI = {
                     labels: ['Aman', 'Hati-hati', 'Kritis'],
                     datasets: [{
                         data: [stats.aman, stats.hati_hati, stats.kritis],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true
+                    maintainAspectRatio: false,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: 10
+                    }
                 }
             });
         } catch (error) {

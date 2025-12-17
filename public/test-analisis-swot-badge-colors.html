@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Analisis SWOT Badge Colors</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+        .test-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .badge-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .badge-item {
+            text-align: center;
+        }
+        .badge-label {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #666;
+        }
+        .table-demo {
+            margin-top: 2rem;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1><i class="fas fa-palette"></i> Test Warna Badge Analisis SWOT</h1>
+        <p>Pengujian warna badge baru untuk halaman Analisis SWOT dengan warna solid cerah dan kontras tinggi.</p>
+        
+        <h3>Badge Individual</h3>
+        <div class="badge-demo">
+            <div class="badge-item">
+                <span class="badge-status badge-swot-strength">STRENGTH</span>
+                <span class="badge-label">Hijau Tua - Kekuatan</span>
+            </div>
+            <div class="badge-item">
+                <span class="badge-status badge-swot-weakness">WEAKNESS</span>
+                <span class="badge-label">Oranye Tua - Kelemahan</span>
+            </div>
+            <div class="badge-item">
+                <span class="badge-status badge-swot-opportunity">OPPORTUNITY</span>
+                <span class="badge-label">Biru - Peluang</span>
+            </div>
+            <div class="badge-item">
+                <span class="badge-status badge-swot-threat">THREAT</span>
+                <span class="badge-label">Merah - Ancaman</span>
+            </div>
+        </div>
+
+        <h3>Simulasi Tabel Analisis SWOT</h3>
+        <div class="table-demo">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tahun</th>
+                        <th>Unit Kerja</th>
+                        <th>Kategori</th>
+                        <th>Objek Analisis</th>
+                        <th>Bobot</th>
+                        <th>Rank</th>
+                        <th>Score</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024</td>
+                        <td>Unit A</td>
+                        <td><span class="badge-status badge-swot-strength">Strength</span></td>
+                        <td>Tenaga medis yang berpengalaman</td>
+                        <td>85</td>
+                        <td>4</td>
+                        <td><strong>340</strong></td>
+                        <td>
+                            <button class="btn btn-edit btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete btn-sm"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2024</td>
+                        <td>Unit B</td>
+                        <td><span class="badge-status badge-swot-weakness">Weakness</span></td>
+                        <td>Kurangnya peralatan medis modern</td>
+                        <td>70</td>
+                        <td>3</td>
+                        <td><strong>210</strong></td>
+                        <td>
+                            <button class="btn btn-edit btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete btn-sm"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2024</td>
+                        <td>Unit C</td>
+                        <td><span class="badge-status badge-swot-opportunity">Opportunity</span></td>
+                        <td>Program JKN yang berkembang</td>
+                        <td>90</td>
+                        <td>5</td>
+                        <td><strong>450</strong></td>
+                        <td>
+                            <button class="btn btn-edit btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete btn-sm"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2024</td>
+                        <td>Unit D</td>
+                        <td><span class="badge-status badge-swot-threat">Threat</span></td>
+                        <td>Persaingan dengan rumah sakit swasta</td>
+                        <td>75</td>
+                        <td>4</td>
+                        <td><strong>300</strong></td>
+                        <td>
+                            <button class="btn btn-edit btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete btn-sm"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Test Kontras Warna</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div style="background: #ffffff; padding: 1rem; border-radius: 8px; text-align: center;">
+                <h4>Background Putih</h4>
+                <span class="badge-status badge-swot-strength">Strength</span><br><br>
+                <span class="badge-status badge-swot-weakness">Weakness</span><br><br>
+                <span class="badge-status badge-swot-opportunity">Opportunity</span><br><br>
+                <span class="badge-status badge-swot-threat">Threat</span>
+            </div>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; text-align: center;">
+                <h4>Background Abu-abu Terang</h4>
+                <span class="badge-status badge-swot-strength">Strength</span><br><br>
+                <span class="badge-status badge-swot-weakness">Weakness</span><br><br>
+                <span class="badge-status badge-swot-opportunity">Opportunity</span><br><br>
+                <span class="badge-status badge-swot-threat">Threat</span>
+            </div>
+            <div style="background: #e9ecef; padding: 1rem; border-radius: 8px; text-align: center;">
+                <h4>Background Abu-abu</h4>
+                <span class="badge-status badge-swot-strength">Strength</span><br><br>
+                <span class="badge-status badge-swot-weakness">Weakness</span><br><br>
+                <span class="badge-status badge-swot-opportunity">Opportunity</span><br><br>
+                <span class="badge-status badge-swot-threat">Threat</span>
+            </div>
+        </div>
+
+        <h3>Informasi Warna</h3>
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+            <ul>
+                <li><strong>Strength (Kekuatan):</strong> Hijau Tua (#2E7D32) - Melambangkan kekuatan dan stabilitas</li>
+                <li><strong>Weakness (Kelemahan):</strong> Oranye Tua (#E65100) - Melambangkan peringatan dan area yang perlu diperbaiki</li>
+                <li><strong>Opportunity (Peluang):</strong> Biru (#1565C0) - Melambangkan peluang dan kemungkinan positif</li>
+                <li><strong>Threat (Ancaman):</strong> Merah (#C62828) - Melambangkan bahaya dan risiko</li>
+            </ul>
+            <p><strong>Semua badge menggunakan:</strong></p>
+            <ul>
+                <li>Warna teks putih (#ffffff) untuk kontras maksimal</li>
+                <li>Text shadow untuk keterbacaan yang lebih baik</li>
+                <li>Border dan box shadow untuk efek visual yang menarik</li>
+                <li>Hover effect untuk interaktivitas</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Test hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const badges = document.querySelectorAll('.badge-status');
+            badges.forEach(badge => {
+                badge.addEventListener('mouseenter', function() {
+                    console.log('Hover on:', this.textContent, 'Class:', this.className);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

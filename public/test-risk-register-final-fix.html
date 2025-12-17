@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Register Final Fix Test</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card.complete {
+            border-left-color: #28a745;
+        }
+        .stat-card.incomplete {
+            border-left-color: #dc3545;
+        }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Risk Register Final Fix Test</h1>
+        <p>Testing the complete Risk Register display with all columns properly filled</p>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadRiskRegisterData()">
+                🔄 Load Risk Register Data
+            </button>
+            <button class="btn btn-success" onclick="validateAllColumns()">
+                ✅ Validate All Columns
+            </button>
+            <button class="btn btn-info" onclick="exportToExcel()">
+                📊 Test Excel Export
+            </button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="validation-results"></div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Risk Register</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="loadRiskRegisterData()">
+                        <i class="fas fa-sync"></i> Refresh Data
+                    </button>
+                    <button class="btn btn-info" onclick="window.open('/api/reports/risk-register/excel', '_blank')">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <div id="risk-register-table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/risk-register.js"></script>
+    <script>
+        let currentData = [];
+        
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        async function loadRiskRegisterData() {
+            try {
+                showStatus('🔄 Loading Risk Register data...', 'success');
+                
+                // Use the same function as the main app
+                await loadRiskRegister();
+                
+                // Also get data for validation
+                const response = await fetch('/api/reports/risk-register-debug');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    currentData = result.fullData || [];
+                    showStatus(`✅ Loaded ${currentData.length} risk register records`, 'success');
+                    validateAllColumns();
+                } else {
+                    throw new Error(result.error || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading risk register:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function validateAllColumns() {
+            if (currentData.length === 0) {
+                showStatus('❌ No data loaded. Please load data first.', 'error');
+                return;
+            }
+            
+            let validation = {
+                totalRecords: currentData.length,
+                columns: {
+                    kode_risiko: { filled: 0, empty: 0 },
+                    status_risiko: { filled: 0, empty: 0 },
+                    jenis_risiko: { filled: 0, empty: 0 },
+                    kategori: { filled: 0, empty: 0 },
+                    unit_kerja: { filled: 0, empty: 0 },
+                    sasaran: { filled: 0, empty: 0 },
+                    tanggal_registrasi: { filled: 0, empty: 0 },
+                    penyebab_risiko: { filled: 0, empty: 0 },
+                    dampak_risiko: { filled: 0, empty: 0 },
+                    inherent_probability: { filled: 0, empty: 0 },
+                    inherent_impact: { filled: 0, empty: 0 },
+                    inherent_value: { filled: 0, empty: 0 },
+                    inherent_level: { filled: 0, empty: 0 },
+                    residual_probability: { filled: 0, empty: 0 },
+                    residual_impact: { filled: 0, empty: 0 },
+                    residual_value: { filled: 0, empty: 0 },
+                    residual_level: { filled: 0, empty: 0 },
+                    risk_appetite: { filled: 0, empty: 0 }
+                }
+            };
+            
+            currentData.forEach(record => {
+                const inherent = (record.risk_inherent_analysis && record.risk_inherent_analysis.length > 0) 
+                    ? record.risk_inherent_analysis[0] : null;
+                const residual = (record.risk_residual_analysis && record.risk_residual_analysis.length > 0) 
+                    ? record.risk_residual_analysis[0] : null;
+                const appetite = (record.risk_appetite && record.risk_appetite.length > 0) 
+                    ? record.risk_appetite[0] : null;
+                
+                // Validate each column
+                validation.columns.kode_risiko[record.kode_risiko ? 'filled' : 'empty']++;
+                validation.columns.status_risiko[record.status_risiko ? 'filled' : 'empty']++;
+                validation.columns.jenis_risiko[record.jenis_risiko ? 'filled' : 'empty']++;
+                validation.columns.kategori[record.master_risk_categories?.name ? 'filled' : 'empty']++;
+                validation.columns.unit_kerja[record.master_work_units?.name ? 'filled' : 'empty']++;
+                validation.columns.sasaran[record.sasaran ? 'filled' : 'empty']++;
+                validation.columns.tanggal_registrasi[record.tanggal_registrasi ? 'filled' : 'empty']++;
+                validation.columns.penyebab_risiko[record.penyebab_risiko ? 'filled' : 'empty']++;
+                validation.columns.dampak_risiko[record.dampak_risiko ? 'filled' : 'empty']++;
+                
+                validation.columns.inherent_probability[inherent?.probability ? 'filled' : 'empty']++;
+                validation.columns.inherent_impact[inherent?.impact ? 'filled' : 'empty']++;
+                validation.columns.inherent_value[inherent?.risk_value ? 'filled' : 'empty']++;
+                validation.columns.inherent_level[inherent?.risk_level ? 'filled' : 'empty']++;
+                
+                validation.columns.residual_probability[residual?.probability ? 'filled' : 'empty']++;
+                validation.columns.residual_impact[residual?.impact ? 'filled' : 'empty']++;
+                validation.columns.residual_value[residual?.risk_value ? 'filled' : 'empty']++;
+                validation.columns.residual_level[residual?.risk_level ? 'filled' : 'empty']++;
+                
+                validation.columns.risk_appetite[appetite?.risk_appetite_level ? 'filled' : 'empty']++;
+            });
+            
+            // Display validation results
+            const resultsDiv = document.getElementById('validation-results');
+            let html = `
+                <h3>📊 Column Validation Results</h3>
+                <div class="stats-grid">
+            `;
+            
+            Object.keys(validation.columns).forEach(column => {
+                const data = validation.columns[column];
+                const percentage = ((data.filled / validation.totalRecords) * 100).toFixed(1);
+                const isComplete = data.filled === validation.totalRecords;
+                
+                html += `
+                    <div class="stat-card ${isComplete ? 'complete' : 'incomplete'}">
+                        <div class="stat-number">${data.filled}/${validation.totalRecords}</div>
+                        <div class="stat-label">${column.replace(/_/g, ' ').toUpperCase()}</div>
+                        <div style="font-size: 0.75rem; color: ${isComplete ? '#28a745' : '#dc3545'};">
+                            ${percentage}% ${isComplete ? '✅' : '❌'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // Summary
+            const totalColumns = Object.keys(validation.columns).length;
+            const completeColumns = Object.values(validation.columns).filter(col => col.filled === validation.totalRecords).length;
+            const completionRate = ((completeColumns / totalColumns) * 100).toFixed(1);
+            
+            html += `
+                <div class="stat-card ${completeColumns === totalColumns ? 'complete' : 'incomplete'}" style="grid-column: 1 / -1;">
+                    <div class="stat-number">${completeColumns}/${totalColumns}</div>
+                    <div class="stat-label">COLUMNS COMPLETE (${completionRate}%)</div>
+                    <div style="margin-top: 10px; font-size: 0.875rem;">
+                        ${completeColumns === totalColumns ? 
+                            '🎉 All columns are properly filled!' : 
+                            `⚠️ ${totalColumns - completeColumns} columns need attention`}
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            
+            if (completeColumns === totalColumns) {
+                showStatus('🎉 All columns are properly filled!', 'success');
+            } else {
+                showStatus(`⚠️ ${totalColumns - completeColumns} columns need attention`, 'error');
+            }
+        }
+        
+        function exportToExcel() {
+            showStatus('📊 Opening Excel export...', 'success');
+            window.open('/api/reports/risk-register/excel', '_blank');
+        }
+        
+        // Auto-load data when page loads
+        window.addEventListener('load', () => {
+            loadRiskRegisterData();
+        });
+    </script>
+</body>
+</html>

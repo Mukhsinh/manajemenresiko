@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Risk Register - Columns Fix Test</title>
+    <title>Risk Register Columns Fix Test</title>
+    <link rel="stylesheet" href="/css/style.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,244 +19,174 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #007bff;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .btn-success {
-            background-color: #28a745;
-        }
-        .btn-success:hover {
-            background-color: #1e7e34;
-        }
-        .result {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 11px;
+            margin-top: 20px;
+            font-size: 12px;
         }
-        .data-table th, .data-table td {
+        .data-table th,
+        .data-table td {
             border: 1px solid #ddd;
-            padding: 6px;
+            padding: 8px;
             text-align: left;
+            vertical-align: top;
         }
         .data-table th {
-            background-color: #f2f2f2;
+            background-color: #f8f9fa;
             font-weight: bold;
             position: sticky;
             top: 0;
         }
-        .data-table tbody tr:nth-child(even) {
+        .data-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .data-table tbody tr:hover {
-            background-color: #f5f5f5;
-        }
-        .risk-low { 
-            background-color: #d4edda; 
-            color: #155724;
+        .risk-extreme-high {
+            background-color: #dc3545;
+            color: white;
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 10px;
         }
-        .risk-medium { 
-            background-color: #fff3cd; 
-            color: #856404;
+        .risk-high-risk {
+            background-color: #fd7e14;
+            color: white;
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 10px;
         }
-        .risk-high { 
-            background-color: #f8d7da; 
-            color: #721c24;
+        .risk-medium-risk {
+            background-color: #ffc107;
+            color: black;
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 10px;
         }
-        .risk-extreme { 
-            background-color: #f5c6cb; 
-            color: #721c24;
+        .risk-low-risk {
+            background-color: #28a745;
+            color: white;
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 10px;
-            font-weight: bold;
         }
-        .table-container {
-            max-height: 600px;
-            overflow: auto;
-            border: 1px solid #ddd;
+        .btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .comparison {
-            display: flex;
-            gap: 20px;
-            margin: 20px 0;
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
         }
-        .comparison-box {
-            flex: 1;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+        .btn-success {
+            background-color: #28a745;
+            color: white;
         }
-        .comparison-box h3 {
-            margin-top: 0;
-            color: #333;
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
         }
-        .data-preview {
-            background-color: #f8f9fa;
+        .status {
+            margin: 10px 0;
             padding: 10px;
             border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            max-height: 200px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
             overflow-y: auto;
+        }
+        .missing-data {
+            background-color: #fff3cd !important;
+            color: #856404;
+        }
+        .complete-data {
+            background-color: #d1ecf1 !important;
+            color: #0c5460;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔧 Risk Register - Columns Fix Test</h1>
-            <p>Testing perbaikan kolom yang kosong di Risk Register</p>
-        </div>
-
-        <div style="text-align: center; margin: 20px 0;">
-            <button class="btn btn-success" onclick="testColumnsFix()">
-                🔄 Test Columns Fix
+        <h1>🔍 Risk Register Columns Fix Test</h1>
+        <p>Testing Risk Register data display and identifying missing columns</p>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadRiskRegisterData()">
+                🔄 Load Risk Register Data
             </button>
-            <button class="btn" onclick="compareDataStructure()">
-                📊 Compare Data Structure
+            <button class="btn btn-success" onclick="analyzeDataCompleteness()">
+                📊 Analyze Data Completeness
+            </button>
+            <button class="btn btn-info" onclick="fixMissingColumns()">
+                🛠️ Fix Missing Columns
             </button>
         </div>
-
-        <div id="result-message"></div>
-
-        <div class="comparison" id="comparison-section" style="display: none;">
-            <div class="comparison-box">
-                <h3>📡 Raw API Data</h3>
-                <div id="raw-data-preview" class="data-preview"></div>
-            </div>
-            <div class="comparison-box">
-                <h3>🔍 Processed Data</h3>
-                <div id="processed-data-preview" class="data-preview"></div>
-            </div>
-        </div>
-
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="analysis-results" style="margin: 20px 0;"></div>
+        
         <div class="table-container">
-            <div id="risk-register-table">
-                <p style="text-align: center; color: #666; padding: 50px;">
-                    Click "Test Columns Fix" to display the risk register table
-                </p>
-            </div>
+            <div id="risk-register-table"></div>
         </div>
     </div>
 
     <script>
-        // Mock API service for testing
-        const apiService = {
-            async call(endpoint) {
-                const response = await fetch(endpoint, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                return await response.json();
-            }
-        };
-
-        let rawApiData = null;
-
-        // Test Columns Fix
-        async function testColumnsFix() {
-            const resultDiv = document.getElementById('result-message');
-            const tableDiv = document.getElementById('risk-register-table');
+        let riskRegisterData = [];
+        
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
             
-            resultDiv.innerHTML = '<div class="info">Testing columns fix...</div>';
-            tableDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 50px;">Loading...</p>';
-            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        async function loadRiskRegisterData() {
             try {
-                // Get data from debug endpoint
-                const debugData = await apiService.call('/api/reports/risk-register-debug');
-                rawApiData = debugData.fullData;
+                showStatus('🔄 Loading Risk Register data...', 'success');
                 
-                if (rawApiData && rawApiData.length > 0) {
-                    // Test the fixed display function
-                    displayRiskRegisterFixed(rawApiData);
-                    
-                    // Analyze columns
-                    const analysis = analyzeColumns(rawApiData);
-                    
-                    resultDiv.innerHTML = `
-                        <div class="success">
-                            ✅ Columns Fix Test Completed!<br>
-                            📊 Total Records: ${rawApiData.length}<br>
-                            📈 Records with Inherent Data: ${analysis.withInherent}<br>
-                            📉 Records with Residual Data: ${analysis.withResidual}<br>
-                            🎯 Records with Appetite Data: ${analysis.withAppetite}<br>
-                            ❌ Empty Columns Found: ${analysis.emptyColumns.length > 0 ? analysis.emptyColumns.join(', ') : 'None'}
-                        </div>
-                    `;
+                // Use debug endpoint to get data without auth
+                const response = await fetch('/api/reports/risk-register-debug');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    riskRegisterData = result.fullData || [];
+                    showStatus(`✅ Loaded ${riskRegisterData.length} risk register records`, 'success');
+                    displayRiskRegister(riskRegisterData);
+                    analyzeDataCompleteness();
                 } else {
-                    resultDiv.innerHTML = '<div class="error">❌ No data available for testing</div>';
+                    throw new Error(result.error || 'Failed to load data');
                 }
             } catch (error) {
-                console.error('Error testing columns fix:', error);
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        ❌ Error testing columns fix:<br>
-                        ${error.message}
-                    </div>
-                `;
+                console.error('Error loading risk register:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
             }
         }
-
-        // Fixed Display Function (same as updated risk-register.js)
-        function displayRiskRegisterFixed(data) {
+        
+        function displayRiskRegister(data) {
             const container = document.getElementById('risk-register-table');
-            
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666; padding: 50px;">No risk register data available</p>';
+            if (!container) return;
+
+            if (data.length === 0) {
+                container.innerHTML = '<p>Tidak ada data risk register.</p>';
                 return;
             }
 
@@ -288,7 +219,7 @@
             `;
 
             data.forEach((risk, index) => {
-                // FIXED: Access first element of arrays since API returns arrays
+                // Access first element of arrays since API returns arrays
                 const inherent = (risk.risk_inherent_analysis && risk.risk_inherent_analysis.length > 0) 
                     ? risk.risk_inherent_analysis[0] : {};
                 const residual = (risk.risk_residual_analysis && risk.risk_residual_analysis.length > 0) 
@@ -296,27 +227,41 @@
                 const appetite = (risk.risk_appetite && risk.risk_appetite.length > 0) 
                     ? risk.risk_appetite[0] : {};
 
+                // Check for missing data
+                const missingFields = [];
+                if (!risk.status_risiko) missingFields.push('status');
+                if (!risk.jenis_risiko) missingFields.push('jenis');
+                if (!risk.penyebab_risiko) missingFields.push('penyebab');
+                if (!risk.dampak_risiko) missingFields.push('dampak');
+                if (!inherent.probability) missingFields.push('p_inheren');
+                if (!inherent.impact) missingFields.push('d_inheren');
+                if (!residual.probability) missingFields.push('p_residual');
+                if (!residual.impact) missingFields.push('d_residual');
+                if (!appetite.risk_appetite_level) missingFields.push('appetite');
+
+                const rowClass = missingFields.length > 0 ? 'missing-data' : 'complete-data';
+
                 html += `
-                    <tr>
+                    <tr class="${rowClass}" title="${missingFields.length > 0 ? 'Missing: ' + missingFields.join(', ') : 'Complete data'}">
                         <td>${risk.no || index + 1}</td>
-                        <td><strong>${risk.kode_risiko || '-'}</strong></td>
-                        <td>${risk.status_risiko || 'Active'}</td>
-                        <td>${risk.jenis_risiko || 'Threat'}</td>
+                        <td>${risk.kode_risiko || '-'}</td>
+                        <td>${risk.status_risiko || '<span style="color: red;">MISSING</span>'}</td>
+                        <td>${risk.jenis_risiko || '<span style="color: red;">MISSING</span>'}</td>
                         <td>${risk.master_risk_categories?.name || '-'}</td>
                         <td>${risk.master_work_units?.name || '-'}</td>
-                        <td title="${risk.sasaran || ''}">${risk.sasaran ? risk.sasaran.substring(0, 30) + '...' : '-'}</td>
+                        <td>${risk.sasaran ? risk.sasaran.substring(0, 50) + '...' : '-'}</td>
                         <td>${formatDate(risk.tanggal_registrasi) || '-'}</td>
-                        <td title="${risk.penyebab_risiko || ''}">${risk.penyebab_risiko ? risk.penyebab_risiko.substring(0, 30) + '...' : '-'}</td>
-                        <td title="${risk.dampak_risiko || ''}">${risk.dampak_risiko ? risk.dampak_risiko.substring(0, 30) + '...' : '-'}</td>
-                        <td><strong>${inherent.probability || '-'}</strong></td>
-                        <td><strong>${inherent.impact || '-'}</strong></td>
-                        <td><strong>${inherent.risk_value || '-'}</strong></td>
-                        <td>${formatRiskLevel(inherent.risk_level)}</td>
-                        <td><strong>${residual.probability || '-'}</strong></td>
-                        <td><strong>${residual.impact || '-'}</strong></td>
-                        <td><strong>${residual.risk_value || '-'}</strong></td>
-                        <td>${formatRiskLevel(residual.risk_level)}</td>
-                        <td><strong>${appetite.risk_appetite_level || '-'}</strong></td>
+                        <td>${risk.penyebab_risiko ? risk.penyebab_risiko.substring(0, 50) + '...' : '<span style="color: red;">MISSING</span>'}</td>
+                        <td>${risk.dampak_risiko ? risk.dampak_risiko.substring(0, 50) + '...' : '<span style="color: red;">MISSING</span>'}</td>
+                        <td>${inherent.probability || '<span style="color: red;">-</span>'}</td>
+                        <td>${inherent.impact || '<span style="color: red;">-</span>'}</td>
+                        <td>${inherent.risk_value || '<span style="color: red;">-</span>'}</td>
+                        <td><span class="risk-${(inherent.risk_level || '').toLowerCase().replace(' ', '-')}">${inherent.risk_level || '<span style="color: red;">-</span>'}</span></td>
+                        <td>${residual.probability || '<span style="color: red;">-</span>'}</td>
+                        <td>${residual.impact || '<span style="color: red;">-</span>'}</td>
+                        <td>${residual.risk_value || '<span style="color: red;">-</span>'}</td>
+                        <td><span class="risk-${(residual.risk_level || '').toLowerCase().replace(' ', '-')}">${residual.risk_level || '<span style="color: red;">-</span>'}</span></td>
+                        <td>${appetite.risk_appetite_level || '<span style="color: red;">MISSING</span>'}</td>
                     </tr>
                 `;
             });
@@ -328,105 +273,141 @@
 
             container.innerHTML = html;
         }
-
-        // Analyze Columns
-        function analyzeColumns(data) {
-            const analysis = {
-                withInherent: 0,
-                withResidual: 0,
-                withAppetite: 0,
-                emptyColumns: []
-            };
-
-            data.forEach(risk => {
-                if (risk.risk_inherent_analysis && risk.risk_inherent_analysis.length > 0) {
-                    analysis.withInherent++;
-                }
-                if (risk.risk_residual_analysis && risk.risk_residual_analysis.length > 0) {
-                    analysis.withResidual++;
-                }
-                if (risk.risk_appetite && risk.risk_appetite.length > 0) {
-                    analysis.withAppetite++;
-                }
-            });
-
-            // Check for empty columns
-            if (analysis.withInherent === 0) analysis.emptyColumns.push('Inherent Analysis');
-            if (analysis.withResidual === 0) analysis.emptyColumns.push('Residual Analysis');
-            if (analysis.withAppetite === 0) analysis.emptyColumns.push('Risk Appetite');
-
-            return analysis;
-        }
-
-        // Compare Data Structure
-        async function compareDataStructure() {
-            const comparisonSection = document.getElementById('comparison-section');
-            const rawDataDiv = document.getElementById('raw-data-preview');
-            const processedDataDiv = document.getElementById('processed-data-preview');
+        
+        function analyzeDataCompleteness() {
+            if (riskRegisterData.length === 0) {
+                showStatus('❌ No data loaded. Please load data first.', 'error');
+                return;
+            }
             
+            let stats = {
+                totalRecords: riskRegisterData.length,
+                withStatus: 0,
+                withType: 0,
+                withCause: 0,
+                withImpact: 0,
+                withInherentP: 0,
+                withInherentD: 0,
+                withResidualP: 0,
+                withResidualD: 0,
+                withAppetite: 0
+            };
+            
+            riskRegisterData.forEach(record => {
+                if (record.status_risiko) stats.withStatus++;
+                if (record.jenis_risiko) stats.withType++;
+                if (record.penyebab_risiko) stats.withCause++;
+                if (record.dampak_risiko) stats.withImpact++;
+                
+                const inherent = (record.risk_inherent_analysis && record.risk_inherent_analysis.length > 0) 
+                    ? record.risk_inherent_analysis[0] : {};
+                const residual = (record.risk_residual_analysis && record.risk_residual_analysis.length > 0) 
+                    ? record.risk_residual_analysis[0] : {};
+                const appetite = (record.risk_appetite && record.risk_appetite.length > 0) 
+                    ? record.risk_appetite[0] : {};
+                
+                if (inherent.probability) stats.withInherentP++;
+                if (inherent.impact) stats.withInherentD++;
+                if (residual.probability) stats.withResidualP++;
+                if (residual.impact) stats.withResidualD++;
+                if (appetite.risk_appetite_level) stats.withAppetite++;
+            });
+            
+            const analysisDiv = document.getElementById('analysis-results');
+            analysisDiv.innerHTML = `
+                <h3>📊 Data Completeness Analysis</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div class="stat-card">
+                        <strong>Status:</strong> ${stats.withStatus}/${stats.totalRecords} 
+                        (${((stats.withStatus/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Type:</strong> ${stats.withType}/${stats.totalRecords} 
+                        (${((stats.withType/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Cause:</strong> ${stats.withCause}/${stats.totalRecords} 
+                        (${((stats.withCause/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Impact:</strong> ${stats.withImpact}/${stats.totalRecords} 
+                        (${((stats.withImpact/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Inherent P:</strong> ${stats.withInherentP}/${stats.totalRecords} 
+                        (${((stats.withInherentP/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Inherent D:</strong> ${stats.withInherentD}/${stats.totalRecords} 
+                        (${((stats.withInherentD/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Residual P:</strong> ${stats.withResidualP}/${stats.totalRecords} 
+                        (${((stats.withResidualP/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Residual D:</strong> ${stats.withResidualD}/${stats.totalRecords} 
+                        (${((stats.withResidualD/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                    <div class="stat-card">
+                        <strong>Risk Appetite:</strong> ${stats.withAppetite}/${stats.totalRecords} 
+                        (${((stats.withAppetite/stats.totalRecords)*100).toFixed(1)}%)
+                    </div>
+                </div>
+                <style>
+                    .stat-card {
+                        padding: 10px;
+                        background: #f8f9fa;
+                        border-radius: 4px;
+                        border-left: 4px solid #007bff;
+                    }
+                </style>
+            `;
+        }
+        
+        async function fixMissingColumns() {
             try {
-                if (!rawApiData) {
-                    const debugData = await apiService.call('/api/reports/risk-register-debug');
-                    rawApiData = debugData.fullData;
+                showStatus('🛠️ Fixing missing columns...', 'success');
+                
+                // This would typically involve updating the database
+                // For now, we'll just show what needs to be fixed
+                const missingDataRecords = riskRegisterData.filter(record => {
+                    const inherent = (record.risk_inherent_analysis && record.risk_inherent_analysis.length > 0) 
+                        ? record.risk_inherent_analysis[0] : {};
+                    const residual = (record.risk_residual_analysis && record.risk_residual_analysis.length > 0) 
+                        ? record.risk_residual_analysis[0] : {};
+                    const appetite = (record.risk_appetite && record.risk_appetite.length > 0) 
+                        ? record.risk_appetite[0] : {};
+                    
+                    return !record.status_risiko || !record.jenis_risiko || 
+                           !record.penyebab_risiko || !record.dampak_risiko ||
+                           !inherent.probability || !inherent.impact ||
+                           !residual.probability || !residual.impact ||
+                           !appetite.risk_appetite_level;
+                });
+                
+                if (missingDataRecords.length === 0) {
+                    showStatus('✅ All columns are complete!', 'success');
+                } else {
+                    showStatus(`⚠️ Found ${missingDataRecords.length} records with missing data. Check console for details.`, 'error');
+                    console.log('Records with missing data:', missingDataRecords);
                 }
                 
-                if (rawApiData && rawApiData.length > 0) {
-                    const sample = rawApiData[0];
-                    
-                    // Show raw structure
-                    rawDataDiv.textContent = JSON.stringify({
-                        kode_risiko: sample.kode_risiko,
-                        risk_inherent_analysis: sample.risk_inherent_analysis,
-                        risk_residual_analysis: sample.risk_residual_analysis,
-                        risk_appetite: sample.risk_appetite
-                    }, null, 2);
-                    
-                    // Show processed structure
-                    const inherent = (sample.risk_inherent_analysis && sample.risk_inherent_analysis.length > 0) 
-                        ? sample.risk_inherent_analysis[0] : {};
-                    const residual = (sample.risk_residual_analysis && sample.risk_residual_analysis.length > 0) 
-                        ? sample.risk_residual_analysis[0] : {};
-                    const appetite = (sample.risk_appetite && sample.risk_appetite.length > 0) 
-                        ? sample.risk_appetite[0] : {};
-                    
-                    processedDataDiv.textContent = JSON.stringify({
-                        kode_risiko: sample.kode_risiko,
-                        inherent_probability: inherent.probability,
-                        inherent_impact: inherent.impact,
-                        inherent_risk_value: inherent.risk_value,
-                        inherent_risk_level: inherent.risk_level,
-                        residual_probability: residual.probability,
-                        residual_impact: residual.impact,
-                        residual_risk_value: residual.risk_value,
-                        residual_risk_level: residual.risk_level,
-                        risk_appetite_level: appetite.risk_appetite_level
-                    }, null, 2);
-                    
-                    comparisonSection.style.display = 'flex';
-                }
             } catch (error) {
-                console.error('Error comparing data structure:', error);
+                console.error('Error fixing columns:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
             }
         }
-
-        // Format Date
+        
         function formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
             return date.toLocaleDateString('id-ID');
         }
-
-        // Format Risk Level
-        function formatRiskLevel(level) {
-            if (!level) return '-';
-            
-            const className = level.toLowerCase().replace(/\s+/g, '-');
-            return `<span class="risk-${className}">${level}</span>`;
-        }
-
-        // Auto-load test on page load
-        window.addEventListener('load', function() {
-            console.log('Risk Register Columns Fix Test Page loaded');
+        
+        // Auto-load data when page loads
+        window.addEventListener('load', () => {
+            loadRiskRegisterData();
         });
     </script>
 </body>

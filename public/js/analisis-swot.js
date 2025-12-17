@@ -204,10 +204,10 @@ const AnalisisSwotModule = (() => {
 
   function getKategoriColor(kategori) {
     const colors = {
-      'Strength': 'aman',
-      'Weakness': 'hati-hati',
-      'Opportunity': 'normal',
-      'Threat': 'kritis'
+      'Strength': 'swot-strength',
+      'Weakness': 'swot-weakness',
+      'Opportunity': 'swot-opportunity',
+      'Threat': 'swot-threat'
     };
     return colors[kategori] || 'secondary';
   }
