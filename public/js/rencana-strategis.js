@@ -192,16 +192,19 @@ const RencanaStrategisModule = (() => {
     });
     
     container.innerHTML = `
-      <div class="section-card">
-        <div class="section-header">
-          <div>
-            <h3>${state.currentId ? 'Edit Rencana Strategis' : 'Tambah Rencana Strategis'}</h3>
-            <p class="text-muted">Hubungkan sasaran strategis dengan indikator kinerja utama</p>
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="card-title">${state.currentId ? 'Edit Rencana Strategis' : 'Tambah Rencana Strategis'}</h3>
+              <p class="text-muted mb-0">Hubungkan sasaran strategis dengan indikator kinerja utama</p>
+            </div>
+            <span class="badge ${state.currentId ? 'badge-warning' : 'badge-primary'}">
+              ${state.currentId ? 'Mode Edit' : 'Mode Input'}
+            </span>
           </div>
-          <span class="badge-status ${state.currentId ? 'badge-hati-hati' : 'badge-normal'}">
-            ${state.currentId ? 'Mode Edit' : 'Mode Input'}
-          </span>
         </div>
+        <div class="card-body">
         <form id="rs-form" class="form-grid two-column">
           ${renderInput('Kode Rencana', 'rs-kode', 'text', state.formValues.kode, true)}
           ${renderSelect('Misi Strategis', 'rs-misi', state.missions, state.formValues.visi_misi_id)}
@@ -658,5 +661,17 @@ async function loadRencanaStrategis() {
   await RencanaStrategisModule.load();
 }
 
+// Export module to window
+window.RencanaStrategisModule = RencanaStrategisModule;
 window.rencanaStrategisModule = RencanaStrategisModule;
+window.loadRencanaStrategis = loadRencanaStrategis;
+
+// Auto-initialize if container exists
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('rencana-strategis-content');
+  if (container && container.innerHTML.trim() === '') {
+    console.log('Auto-initializing rencana strategis module...');
+    // Don't auto-load, let the app handle it
+  }
+});
 

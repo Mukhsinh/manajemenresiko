@@ -159,73 +159,82 @@ const IndikatorKinerjaUtamaModule = (() => {
               </select>
             </div>
           </div>
-          <div class="table-container" style="overflow-x: auto; max-width: 100%;">
-            <div class="table-responsive">
-              <table class="table table-striped" style="min-width: 1200px; table-layout: fixed;">
-                <thead>
+          <div class="table-container" style="overflow-x: auto; max-width: 100%; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative;">
+            <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+              <table class="table table-striped iku-table" style="min-width: 1200px; table-layout: fixed; margin: 0; font-size: 0.875rem;">
+                <thead style="background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                   <tr>
-                    <th style="width: 40px;">No</th>
-                    <th style="width: 180px;">Rencana Strategis</th>
-                    <th style="width: 180px;">Sasaran Strategi</th>
-                    <th style="width: 200px;">Indikator</th>
-                    <th style="width: 120px;">Baseline</th>
-                    <th style="width: 120px;">Target</th>
-                    <th style="width: 100px;">Progress</th>
-                    <th style="width: 100px;">PIC</th>
-                    <th style="width: 120px;">Aksi</th>
+                    <th style="width: 40px; text-align: center; padding: 8px 4px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">No</th>
+                    <th style="width: 180px; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Rencana Strategis</th>
+                    <th style="width: 180px; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Sasaran Strategi</th>
+                    <th style="width: 200px; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Indikator</th>
+                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Baseline</th>
+                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Target</th>
+                    <th style="width: 140px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Progress</th>
+                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">PIC</th>
+                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${state.data.length === 0 ? '<tr><td colspan="9" class="text-center">Tidak ada data</td></tr>' : ''}
                   ${state.data.map((item, index) => {
                     const progress = calculateProgress(item);
-                    const progressClass = progress > 0 ? 'text-success' : progress < 0 ? 'text-danger' : 'text-muted';
                     return `
-                    <tr>
-                      <td style="text-align: center;">${index + 1}</td>
-                      <td style="word-wrap: break-word; overflow: hidden;" title="${item.rencana_strategis?.nama_rencana || '-'}">
-                        <div style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <tr style="border-bottom: 1px solid #dee2e6; font-size: 0.8rem;">
+                      <td style="text-align: center; padding: 8px 4px; vertical-align: middle; font-size: 0.75rem;">${index + 1}</td>
+                      <td style="padding: 8px; vertical-align: middle;" title="${item.rencana_strategis?.nama_rencana || '-'}">
+                        <div style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-size: 0.75rem; word-break: break-word; hyphens: auto;">
                           ${item.rencana_strategis?.nama_rencana || '-'}
                         </div>
                       </td>
-                      <td style="word-wrap: break-word; overflow: hidden;" title="${item.sasaran_strategi?.sasaran || '-'}">
-                        <div style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      <td style="padding: 8px; vertical-align: middle;" title="${item.sasaran_strategi?.sasaran || '-'}">
+                        <div style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-size: 0.75rem; word-break: break-word; hyphens: auto;">
                           ${item.sasaran_strategi?.sasaran || '-'}
                         </div>
                       </td>
-                      <td style="word-wrap: break-word; overflow: hidden;" title="${item.indikator}">
-                        <div style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      <td style="padding: 8px; vertical-align: middle;" title="${item.indikator}">
+                        <div style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-size: 0.75rem; word-break: break-word; hyphens: auto;">
                           ${item.indikator}
                         </div>
                       </td>
-                      <td style="text-align: center;">
-                        <div style="font-size: 0.85em;">
-                          <div><strong>${item.baseline_nilai || '-'}</strong></div>
-                          <div style="color: #666; font-size: 0.8em;">(${item.baseline_tahun || '-'})</div>
+                      <td style="text-align: center; padding: 8px; vertical-align: middle;">
+                        <div style="font-size: 0.7rem; line-height: 1.2;">
+                          <div style="font-weight: 600; color: #495057;">${item.baseline_nilai || '-'}</div>
+                          <div style="color: #6c757d; font-size: 0.65rem;">(${item.baseline_tahun || '-'})</div>
                         </div>
                       </td>
-                      <td style="text-align: center;">
-                        <div style="font-size: 0.85em;">
-                          <div><strong>${item.target_nilai || '-'}</strong></div>
-                          <div style="color: #666; font-size: 0.8em;">(${item.target_tahun || '-'})</div>
+                      <td style="text-align: center; padding: 8px; vertical-align: middle;">
+                        <div style="font-size: 0.7rem; line-height: 1.2;">
+                          <div style="font-weight: 600; color: #495057;">${item.target_nilai || '-'}</div>
+                          <div style="color: #6c757d; font-size: 0.65rem;">(${item.target_tahun || '-'})</div>
                         </div>
                       </td>
-                      <td style="text-align: center;">
-                        <span class="badge ${progress !== null && progress > 0 ? 'badge-success' : progress !== null && progress < 0 ? 'badge-danger' : 'badge-secondary'}" style="font-size: 0.8em; padding: 4px 8px;">
-                          ${progress !== null ? progress.toFixed(1) + '%' : '-'}
-                        </span>
+                      <td style="text-align: center; padding: 8px; vertical-align: middle; min-width: 130px;">
+                        ${progress !== null ? `
+                          <div class="progress-container" style="display: flex; align-items: center; gap: 0.5rem; min-width: 120px; flex-direction: row;">
+                            <div class="progress-bar" style="flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; position: relative;">
+                              <div class="progress-fill" style="height: 100%; width: ${Math.min(Math.abs(progress), 100)}%; background: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                            </div>
+                            <span class="progress-text" style="font-weight: 600; font-size: 0.7rem; color: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; min-width: 35px; text-align: right;">
+                              ${progress >= 0 ? '+' : ''}${progress.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div style="font-size: 0.6rem; color: #6c757d; margin-top: 2px;">
+                            ${item.baseline_nilai || 0} → ${item.target_nilai || 0}
+                          </div>
+                        ` : '<span class="text-muted" style="font-size: 0.7rem;">-</span>'}
                       </td>
-                      <td style="word-wrap: break-word; overflow: hidden;" title="${item.pic || '-'}">
-                        <div style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      <td style="text-align: center; padding: 8px; vertical-align: middle;" title="${item.pic || '-'}">
+                        <div style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.7rem;">
                           ${item.pic || '-'}
                         </div>
                       </td>
-                      <td style="text-align: center;">
-                        <div style="display: flex; gap: 4px; justify-content: center;">
-                          <button class="btn btn-edit btn-sm" onclick="IndikatorKinerjaUtamaModule.edit('${item.id}')" title="Edit" style="padding: 4px 8px; font-size: 0.8em;">
+                      <td style="text-align: center; padding: 8px; vertical-align: middle;">
+                        <div style="display: flex; gap: 4px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                          <button class="btn btn-edit btn-sm" onclick="IndikatorKinerjaUtamaModule.edit('${item.id}')" title="Edit" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #17a2b8; color: white; border: none; cursor: pointer; transition: background-color 0.2s; min-width: 28px;">
                             <i class="fas fa-edit"></i>
                           </button>
-                          <button class="btn btn-delete btn-sm" onclick="IndikatorKinerjaUtamaModule.delete('${item.id}')" title="Hapus" style="padding: 4px 8px; font-size: 0.8em;">
+                          <button class="btn btn-delete btn-sm" onclick="IndikatorKinerjaUtamaModule.delete('${item.id}')" title="Hapus" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #dc3545; color: white; border: none; cursor: pointer; transition: background-color 0.2s; min-width: 28px;">
                             <i class="fas fa-trash"></i>
                           </button>
                         </div>
@@ -243,35 +252,27 @@ const IndikatorKinerjaUtamaModule = (() => {
   }
 
   function calculateProgress(item) {
-    console.log('Calculating progress for:', {
-      baseline_nilai: item.baseline_nilai,
-      target_nilai: item.target_nilai,
-      baseline_type: typeof item.baseline_nilai,
-      target_type: typeof item.target_nilai
-    });
-    
     if (!item.baseline_nilai || !item.target_nilai) {
-      console.log('Missing baseline or target values');
       return null;
     }
     
     const baseline = parseFloat(item.baseline_nilai);
     const target = parseFloat(item.target_nilai);
     
-    console.log('Parsed values:', { baseline, target });
-    
     if (isNaN(baseline) || isNaN(target)) {
-      console.log('Invalid numeric values');
       return null;
     }
     
     if (baseline === 0) {
-      return target > 0 ? 100 : 0;
+      return target > 0 ? 100 : (target < 0 ? -100 : 0);
     }
     
-    const progress = ((target - baseline) / baseline) * 100;
-    console.log('Calculated progress:', progress);
-    return progress;
+    // Calculate progress as percentage change from baseline to target
+    // Positive means improvement, negative means decline
+    const progress = ((target - baseline) / Math.abs(baseline)) * 100;
+    
+    // Cap progress at reasonable limits for display
+    return Math.max(-200, Math.min(200, progress));
   }
 
   function generateYearOptions() {
@@ -363,7 +364,25 @@ const IndikatorKinerjaUtamaModule = (() => {
 
   async function loadForEdit(id) {
     try {
-      const data = await api()(`/api/indikator-kinerja-utama/${id}`);
+      console.log('Loading data for edit, ID:', id);
+      
+      // Try multiple endpoints for better reliability
+      let data;
+      try {
+        data = await api()(`/api/indikator-kinerja-utama/${id}`);
+        console.log('Loaded from main endpoint:', data);
+      } catch (mainError) {
+        console.warn('Main endpoint failed, trying to find in current data:', mainError.message);
+        
+        // Fallback: find in current state data
+        data = state.data.find(item => item.id === id);
+        if (!data) {
+          throw new Error('Data tidak ditemukan dalam cache lokal');
+        }
+        console.log('Found in local data:', data);
+      }
+      
+      // Populate form fields
       document.getElementById('iku-rencana-strategis').value = data.rencana_strategis_id || '';
       document.getElementById('iku-sasaran-strategi').value = data.sasaran_strategi_id || '';
       document.getElementById('iku-indikator').value = data.indikator || '';
@@ -373,7 +392,10 @@ const IndikatorKinerjaUtamaModule = (() => {
       document.getElementById('iku-target-nilai').value = data.target_nilai || '';
       document.getElementById('iku-initiatif').value = data.initiatif_strategi || '';
       document.getElementById('iku-pic').value = data.pic || '';
+      
+      console.log('Form populated successfully');
     } catch (error) {
+      console.error('Error loading data for edit:', error);
       alert('Error loading data: ' + error.message);
     }
   }

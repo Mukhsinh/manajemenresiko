@@ -175,27 +175,52 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    console.log('=== GET BY ID REQUEST ===');
+    console.log('ID:', req.params.id);
+    console.log('User:', req.user.id);
+
+    // Use supabaseAdmin for better reliability
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+
+    const { data, error } = await client
       .from('indikator_kinerja_utama')
-      .select('*, rencana_strategis(nama_rencana, organization_id), sasaran_strategi(sasaran, perspektif)')
-      .eq('indikator_kinerja_utama.id', req.params.id)
+      .select(`
+        *,
+        rencana_strategis!inner(nama_rencana, kode, organization_id),
+        sasaran_strategi(sasaran, perspektif)
+      `)
+      .eq('id', req.params.id)
       .single();
 
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
+    if (error) {
+      console.error('Query error:', error);
+      throw error;
+    }
     
+    if (!data) {
+      console.log('No data found for ID:', req.params.id);
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+    
+    console.log('Found data:', {
+      id: data.id,
+      indikator: data.indikator,
+      rencana_strategis: data.rencana_strategis?.nama_rencana
+    });
+
     // Check organization access through rencana_strategis
     if (!req.user.isSuperAdmin && data.rencana_strategis?.organization_id) {
       if (!req.user.organizations || !req.user.organizations.includes(data.rencana_strategis.organization_id)) {
+        console.log('Access denied - organization mismatch');
         return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
       }
     }
 
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
+    console.log('=== END GET BY ID ===');
     res.json(data);
   } catch (error) {
-    console.error('Indikator kinerja utama error:', error);
+    console.error('Get by ID error:', error);
     res.status(500).json({ error: error.message });
   }
 });

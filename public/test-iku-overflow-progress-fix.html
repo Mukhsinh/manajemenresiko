@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IKU Overflow & Progress Fix</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app-header">
+        <h1><i class="fas fa-chart-line"></i> Test IKU Overflow & Progress Fix</h1>
+        <div class="user-info">
+            <span>Test Mode</span>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div id="indikator-kinerja-utama-content">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+
+    <!-- API Service -->
+    <script>
+        // Mock API service for testing
+        window.apiCall = async function(url, options = {}) {
+            console.log('API Call:', url, options);
+            
+            if (url.includes('/api/indikator-kinerja-utama')) {
+                if (url.includes('/public') || url.includes('/debug')) {
+                    return {
+                        data: [
+                            {
+                                id: '1',
+                                rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan 2025' },
+                                sasaran_strategi: { sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien' },
+                                indikator: 'Efisiensi Biaya Operasional per Pasien',
+                                baseline_tahun: 2024,
+                                baseline_nilai: 97,
+                                target_tahun: 2025,
+                                target_nilai: 91,
+                                initiatif_strategi: 'Implementasi program peningkatan kualitas dan monitoring berkala',
+                                pic: 'Dr. Ahmad Santoso',
+                                created_at: '2025-12-13T08:06:13.406891Z',
+                                updated_at: '2025-12-16T02:56:49.193849Z'
+                            },
+                            {
+                                id: '2',
+                                rencana_strategis: { nama_rencana: 'Optimalisasi Sumber Daya Manusia' },
+                                sasaran_strategi: { sasaran: 'Meningkatkan produktivitas dan kompetensi SDM' },
+                                indikator: 'Rasio Bed Occupancy Rate (BOR)',
+                                baseline_tahun: 2024,
+                                baseline_nilai: 56,
+                                target_tahun: 2025,
+                                target_nilai: 96,
+                                initiatif_strategi: 'Program pelatihan berkelanjutan dan sistem reward',
+                                pic: 'Dr. Dewi Sartika',
+                                created_at: '2025-12-13T08:06:13.406891Z',
+                                updated_at: '2025-12-16T02:56:50.920393Z'
+                            },
+                            {
+                                id: '3',
+                                rencana_strategis: { nama_rencana: 'Peningkatan Keselamatan Pasien' },
+                                sasaran_strategi: { sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan' },
+                                indikator: 'Angka Komplikasi Pasca Operasi',
+                                baseline_tahun: 2024,
+                                baseline_nilai: 95,
+                                target_tahun: 2025,
+                                target_nilai: 86,
+                                initiatif_strategi: 'Implementasi protokol keselamatan dan audit berkala',
+                                pic: 'Dr. Siti Nurhaliza',
+                                created_at: '2025-12-13T08:06:13.406891Z',
+                                updated_at: '2025-12-16T02:56:58.959799Z'
+                            },
+                            {
+                                id: '4',
+                                rencana_strategis: { nama_rencana: 'Digitalisasi Sistem Informasi' },
+                                sasaran_strategi: { sasaran: 'Meningkatkan efisiensi melalui teknologi digital' },
+                                indikator: 'Tingkat Adopsi Sistem Digital',
+                                baseline_tahun: 2024,
+                                baseline_nilai: 45,
+                                target_tahun: 2025,
+                                target_nilai: 85,
+                                initiatif_strategi: 'Implementasi SIMRS dan pelatihan pengguna',
+                                pic: 'Ir. Budi Hartono',
+                                created_at: '2025-12-13T08:06:13.406891Z',
+                                updated_at: '2025-12-16T02:57:02.794516Z'
+                            },
+                            {
+                                id: '5',
+                                rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan' },
+                                sasaran_strategi: { sasaran: 'Meningkatkan kepuasan dan loyalitas pasien' },
+                                indikator: 'Indeks Kepuasan Pasien',
+                                baseline_tahun: 2024,
+                                baseline_nilai: 78,
+                                target_tahun: 2025,
+                                target_nilai: 92,
+                                initiatif_strategi: 'Program customer service excellence dan feedback system',
+                                pic: 'Ns. Maria Ulfa',
+                                created_at: '2025-12-13T08:06:13.406891Z',
+                                updated_at: '2025-12-16T02:57:04.058024Z'
+                            }
+                        ]
+                    };
+                } else {
+                    return [
+                        {
+                            id: '1',
+                            rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan 2025' },
+                            sasaran_strategi: { sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien' },
+                            indikator: 'Efisiensi Biaya Operasional per Pasien',
+                            baseline_tahun: 2024,
+                            baseline_nilai: 97,
+                            target_tahun: 2025,
+                            target_nilai: 91,
+                            initiatif_strategi: 'Implementasi program peningkatan kualitas dan monitoring berkala',
+                            pic: 'Dr. Ahmad Santoso',
+                            created_at: '2025-12-13T08:06:13.406891Z',
+                            updated_at: '2025-12-16T02:56:49.193849Z'
+                        },
+                        {
+                            id: '2',
+                            rencana_strategis: { nama_rencana: 'Optimalisasi Sumber Daya Manusia' },
+                            sasaran_strategi: { sasaran: 'Meningkatkan produktivitas dan kompetensi SDM' },
+                            indikator: 'Rasio Bed Occupancy Rate (BOR)',
+                            baseline_tahun: 2024,
+                            baseline_nilai: 56,
+                            target_tahun: 2025,
+                            target_nilai: 96,
+                            initiatif_strategi: 'Program pelatihan berkelanjutan dan sistem reward',
+                            pic: 'Dr. Dewi Sartika',
+                            created_at: '2025-12-13T08:06:13.406891Z',
+                            updated_at: '2025-12-16T02:56:50.920393Z'
+                        },
+                        {
+                            id: '3',
+                            rencana_strategis: { nama_rencana: 'Peningkatan Keselamatan Pasien' },
+                            sasaran_strategi: { sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan' },
+                            indikator: 'Angka Komplikasi Pasca Operasi',
+                            baseline_tahun: 2024,
+                            baseline_nilai: 95,
+                            target_tahun: 2025,
+                            target_nilai: 86,
+                            initiatif_strategi: 'Implementasi protokol keselamatan dan audit berkala',
+                            pic: 'Dr. Siti Nurhaliza',
+                            created_at: '2025-12-13T08:06:13.406891Z',
+                            updated_at: '2025-12-16T02:56:58.959799Z'
+                        },
+                        {
+                            id: '4',
+                            rencana_strategis: { nama_rencana: 'Digitalisasi Sistem Informasi' },
+                            sasaran_strategi: { sasaran: 'Meningkatkan efisiensi melalui teknologi digital' },
+                            indikator: 'Tingkat Adopsi Sistem Digital',
+                            baseline_tahun: 2024,
+                            baseline_nilai: 45,
+                            target_tahun: 2025,
+                            target_nilai: 85,
+                            initiatif_strategi: 'Implementasi SIMRS dan pelatihan pengguna',
+                            pic: 'Ir. Budi Hartono',
+                            created_at: '2025-12-13T08:06:13.406891Z',
+                            updated_at: '2025-12-16T02:57:02.794516Z'
+                        },
+                        {
+                            id: '5',
+                            rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan' },
+                            sasaran_strategi: { sasaran: 'Meningkatkan kepuasan dan loyalitas pasien' },
+                            indikator: 'Indeks Kepuasan Pasien',
+                            baseline_tahun: 2024,
+                            baseline_nilai: 78,
+                            target_tahun: 2025,
+                            target_nilai: 92,
+                            initiatif_strategi: 'Program customer service excellence dan feedback system',
+                            pic: 'Ns. Maria Ulfa',
+                            created_at: '2025-12-13T08:06:13.406891Z',
+                            updated_at: '2025-12-16T02:57:04.058024Z'
+                        }
+                    ];
+                }
+            }
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return [
+                    { id: '1', nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan 2025' },
+                    { id: '2', nama_rencana: 'Optimalisasi Sumber Daya Manusia' },
+                    { id: '3', nama_rencana: 'Peningkatan Keselamatan Pasien' },
+                    { id: '4', nama_rencana: 'Digitalisasi Sistem Informasi' }
+                ];
+            }
+            
+            if (url.includes('/api/sasaran-strategi')) {
+                return [
+                    { id: '1', sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien' },
+                    { id: '2', sasaran: 'Meningkatkan produktivitas dan kompetensi SDM' },
+                    { id: '3', sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan' },
+                    { id: '4', sasaran: 'Meningkatkan efisiensi melalui teknologi digital' }
+                ];
+            }
+            
+            return [];
+        };
+    </script>
+
+    <!-- Load IKU Module -->
+    <script src="js/indikator-kinerja-utama.js"></script>
+    
+    <script>
+        // Initialize the module when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('=== INITIALIZING IKU TEST ===');
+            try {
+                await IndikatorKinerjaUtamaModule.load();
+                console.log('IKU module loaded successfully');
+            } catch (error) {
+                console.error('Error loading IKU module:', error);
+            }
+        });
+    </script>
+
+    <style>
+        /* Additional test styles */
+        .test-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-info h4 {
+            color: #1976d2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .test-info ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .test-info li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+
+    <div class="test-info" style="position: fixed; top: 80px; right: 20px; width: 300px; z-index: 1000;">
+        <h4><i class="fas fa-info-circle"></i> Test Features</h4>
+        <ul>
+            <li>✅ Overflow handling pada tabel</li>
+            <li>✅ Progress bar dengan persentase</li>
+            <li>✅ Responsive design</li>
+            <li>✅ Sticky header</li>
+            <li>✅ Hover effects</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -8,7 +8,8 @@
         "list_tables",
         "execute_sql",
         "apply_migration",
-        "get_logs"
+        "get_logs",
+        "search_docs"
       ]
     }
   }

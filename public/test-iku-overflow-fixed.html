@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IKU Overflow Fixed - Indikator Kinerja Utama</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .test-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-info h4 {
+            color: #1976d2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .fix-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .fix-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .fix-item h5 {
+            color: #28a745;
+            margin-bottom: 0.5rem;
+        }
+        
+        .fix-item p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .responsive-test {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .responsive-test h5 {
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .test-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .test-btn.active {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-chart-line"></i> Test IKU Overflow Fixed</h1>
+        <p>Pengujian perbaikan masalah overflow pada tabel Indikator Kinerja Utama</p>
+    </div>
+
+    <div class="test-info">
+        <h4><i class="fas fa-tools"></i> Perbaikan yang Diterapkan</h4>
+        <div class="fix-list">
+            <div class="fix-item">
+                <h5><i class="fas fa-compress-arrows-alt"></i> Optimasi Lebar Kolom</h5>
+                <p>Mengurangi lebar kolom dan mengoptimalkan penggunaan ruang</p>
+            </div>
+            <div class="fix-item">
+                <h5><i class="fas fa-text-height"></i> Font Size Responsif</h5>
+                <p>Menyesuaikan ukuran font berdasarkan ukuran layar</p>
+            </div>
+            <div class="fix-item">
+                <h5><i class="fas fa-arrows-alt-h"></i> Horizontal Scroll</h5>
+                <p>Menambahkan scroll horizontal dengan styling yang baik</p>
+            </div>
+            <div class="fix-item">
+                <h5><i class="fas fa-arrows-alt-v"></i> Vertical Scroll</h5>
+                <p>Membatasi tinggi tabel dengan scroll vertikal</p>
+            </div>
+            <div class="fix-item">
+                <h5><i class="fas fa-thumbtack"></i> Sticky Header</h5>
+                <p>Header tabel tetap terlihat saat scroll</p>
+            </div>
+            <div class="fix-item">
+                <h5><i class="fas fa-mobile-alt"></i> Mobile Responsive</h5>
+                <p>Optimasi tampilan untuk perangkat mobile</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="responsive-test">
+        <h5><i class="fas fa-desktop"></i> Test Responsif</h5>
+        <p style="font-size: 0.75rem; margin-bottom: 0.5rem;">Klik untuk simulasi ukuran layar:</p>
+        <div class="test-buttons">
+            <button class="test-btn active" onclick="setViewport('100%')">Desktop</button>
+            <button class="test-btn" onclick="setViewport('1024px')">Tablet</button>
+            <button class="test-btn" onclick="setViewport('768px')">Mobile L</button>
+            <button class="test-btn" onclick="setViewport('480px')">Mobile S</button>
+        </div>
+    </div>
+
+    <div id="indikator-kinerja-utama-content">
+        <!-- Content will be loaded here -->
+    </div>
+
+    <!-- API Service -->
+    <script>
+        // Mock API service for testing
+        window.apiCall = async function(url, options = {}) {
+            console.log('API Call:', url, options);
+            
+            if (url.includes('/api/indikator-kinerja-utama')) {
+                return [
+                    {
+                        id: '1',
+                        rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan Rumah Sakit 2025' },
+                        sasaran_strategi: { sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien melalui inovasi teknologi' },
+                        indikator: 'Efisiensi Biaya Operasional per Pasien dengan Standar Pelayanan Berkualitas',
+                        baseline_tahun: 2024,
+                        baseline_nilai: 97,
+                        target_tahun: 2025,
+                        target_nilai: 91,
+                        initiatif_strategi: 'Implementasi program peningkatan kualitas dan monitoring berkala',
+                        pic: 'Dr. Ahmad Santoso, M.Kes',
+                        created_at: '2025-12-13T08:06:13.406891Z',
+                        updated_at: '2025-12-16T02:56:49.193849Z'
+                    },
+                    {
+                        id: '2',
+                        rencana_strategis: { nama_rencana: 'Optimalisasi Sumber Daya Manusia dan Pengembangan Kompetensi' },
+                        sasaran_strategi: { sasaran: 'Meningkatkan produktivitas dan kompetensi SDM melalui program pelatihan berkelanjutan' },
+                        indikator: 'Rasio Bed Occupancy Rate (BOR) dengan Standar Pelayanan Optimal',
+                        baseline_tahun: 2024,
+                        baseline_nilai: 56,
+                        target_tahun: 2025,
+                        target_nilai: 96,
+                        initiatif_strategi: 'Program pelatihan berkelanjutan dan sistem reward berbasis kinerja',
+                        pic: 'Dr. Dewi Sartika, Sp.A',
+                        created_at: '2025-12-13T08:06:13.406891Z',
+                        updated_at: '2025-12-16T02:56:50.920393Z'
+                    },
+                    {
+                        id: '3',
+                        rencana_strategis: { nama_rencana: 'Peningkatan Keselamatan Pasien dan Manajemen Risiko Klinis' },
+                        sasaran_strategi: { sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan pasien secara berkelanjutan' },
+                        indikator: 'Angka Komplikasi Pasca Operasi dan Infeksi Nosokomial',
+                        baseline_tahun: 2024,
+                        baseline_nilai: 95,
+                        target_tahun: 2025,
+                        target_nilai: 86,
+                        initiatif_strategi: 'Implementasi protokol keselamatan dan audit berkala sistem mutu',
+                        pic: 'Dr. Siti Nurhaliza, Sp.An',
+                        created_at: '2025-12-13T08:06:13.406891Z',
+                        updated_at: '2025-12-16T02:56:58.959799Z'
+                    },
+                    {
+                        id: '4',
+                        rencana_strategis: { nama_rencana: 'Digitalisasi Sistem Informasi Manajemen Rumah Sakit' },
+                        sasaran_strategi: { sasaran: 'Meningkatkan efisiensi melalui teknologi digital dan sistem informasi terintegrasi' },
+                        indikator: 'Tingkat Adopsi Sistem Digital dan Integrasi Data Elektronik',
+                        baseline_tahun: 2024,
+                        baseline_nilai: 45,
+                        target_tahun: 2025,
+                        target_nilai: 85,
+                        initiatif_strategi: 'Implementasi SIMRS dan pelatihan pengguna sistem digital',
+                        pic: 'Ir. Budi Hartono, M.T',
+                        created_at: '2025-12-13T08:06:13.406891Z',
+                        updated_at: '2025-12-16T02:57:02.794516Z'
+                    },
+                    {
+                        id: '5',
+                        rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan dan Kepuasan Pelanggan' },
+                        sasaran_strategi: { sasaran: 'Meningkatkan kepuasan dan loyalitas pasien melalui pelayanan prima' },
+                        indikator: 'Indeks Kepuasan Pasien dan Net Promoter Score (NPS)',
+                        baseline_tahun: 2024,
+                        baseline_nilai: 78,
+                        target_tahun: 2025,
+                        target_nilai: 92,
+                        initiatif_strategi: 'Program customer service excellence dan feedback system terintegrasi',
+                        pic: 'Ns. Maria Ulfa, S.Kep',
+                        created_at: '2025-12-13T08:06:13.406891Z',
+                        updated_at: '2025-12-16T02:57:04.058024Z'
+                    },
+                    {
+                        id: '6',
+                        rencana_strategis: { nama_rencana: 'Pengembangan Infrastruktur dan Fasilitas Medis Modern' },
+                        sasaran_strategi: { sasaran: 'Modernisasi fasilitas dan peralatan medis untuk meningkatkan kualitas layanan' },
+                        indikator: 'Persentase Peralatan Medis Berstandar Internasional dan Terakreditasi',
+                        baseline_tahun: 2024,
+                        baseline_nilai: 65,
+                        target_tahun: 2025,
+                        target_nilai: 88,
+                        initiatif_strategi: 'Program modernisasi peralatan dan sertifikasi internasional',
+                        pic: 'Ir. Andi Wijaya, M.Eng',
+                        created_at: '2025-12-13T08:06:13.406891Z',
+                        updated_at: '2025-12-16T02:57:06.123456Z'
+                    }
+                ];
+            }
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return [
+                    { id: '1', nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan Rumah Sakit 2025' },
+                    { id: '2', nama_rencana: 'Optimalisasi Sumber Daya Manusia dan Pengembangan Kompetensi' },
+                    { id: '3', nama_rencana: 'Peningkatan Keselamatan Pasien dan Manajemen Risiko Klinis' },
+                    { id: '4', nama_rencana: 'Digitalisasi Sistem Informasi Manajemen Rumah Sakit' },
+                    { id: '5', nama_rencana: 'Peningkatan Kualitas Pelayanan dan Kepuasan Pelanggan' },
+                    { id: '6', nama_rencana: 'Pengembangan Infrastruktur dan Fasilitas Medis Modern' }
+                ];
+            }
+            
+            if (url.includes('/api/sasaran-strategi')) {
+                return [
+                    { id: '1', sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien melalui inovasi teknologi' },
+                    { id: '2', sasaran: 'Meningkatkan produktivitas dan kompetensi SDM melalui program pelatihan berkelanjutan' },
+                    { id: '3', sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan pasien secara berkelanjutan' },
+                    { id: '4', sasaran: 'Meningkatkan efisiensi melalui teknologi digital dan sistem informasi terintegrasi' },
+                    { id: '5', sasaran: 'Meningkatkan kepuasan dan loyalitas pasien melalui pelayanan prima' },
+                    { id: '6', sasaran: 'Modernisasi fasilitas dan peralatan medis untuk meningkatkan kualitas layanan' }
+                ];
+            }
+            
+            return [];
+        };
+
+        // Viewport testing function
+        function setViewport(width) {
+            const content = document.getElementById('indikator-kinerja-utama-content');
+            if (width === '100%') {
+                content.style.maxWidth = '100%';
+                content.style.margin = '0';
+            } else {
+                content.style.maxWidth = width;
+                content.style.margin = '0 auto';
+                content.style.border = '2px dashed #007bff';
+            }
+            
+            // Update active button
+            document.querySelectorAll('.test-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+
+    <!-- Load IKU Module -->
+    <script src="js/indikator-kinerja-utama.js"></script>
+    
+    <script>
+        // Initialize the module when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('=== INITIALIZING IKU OVERFLOW FIX TEST ===');
+            try {
+                await IndikatorKinerjaUtamaModule.load();
+                console.log('IKU module loaded successfully with overflow fixes');
+                
+                // Add test indicators
+                setTimeout(() => {
+                    const tableContainer = document.querySelector('.table-container');
+                    if (tableContainer) {
+                        // Add scroll indicators
+                        const scrollIndicator = document.createElement('div');
+                        scrollIndicator.innerHTML = `
+                            <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,123,255,0.8); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; z-index: 20;">
+                                <i class="fas fa-arrows-alt"></i> Scroll untuk melihat semua data
+                            </div>
+                        `;
+                        tableContainer.appendChild(scrollIndicator);
+                        
+                        // Auto-hide scroll indicator after 3 seconds
+                        setTimeout(() => {
+                            scrollIndicator.style.opacity = '0';
+                            scrollIndicator.style.transition = 'opacity 0.5s';
+                        }, 3000);
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error loading IKU module:', error);
+            }
+        });
+        
+        // Add resize event listener for responsive testing
+        window.addEventListener('resize', function() {
+            console.log('Window resized to:', window.innerWidth + 'x' + window.innerHeight);
+        });
+    </script>
+</body>
+</html>

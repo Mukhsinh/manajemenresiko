@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Browser Debug</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .debug-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .debug-panel h4 {
+            margin-top: 0;
+        }
+        .debug-log {
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .content-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        .status-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis Browser Debug</h1>
+        
+        <div class="debug-panel">
+            <h4>Test Controls</h4>
+            <button class="test-button" onclick="testAPIEndpoints()">Test API Endpoints</button>
+            <button class="test-button" onclick="testModuleLoad()">Test Module Load</button>
+            <button class="test-button" onclick="testFormRender()">Test Form Render</button>
+            <button class="test-button" onclick="clearCache()">Clear Cache & Reload</button>
+        </div>
+
+        <div class="debug-panel" id="status-panel">
+            <h4>Status</h4>
+            <div id="status-content">Ready for testing...</div>
+        </div>
+
+        <div id="rencana-strategis-content" class="content-area">
+            <p style="text-align: center; color: #666;">Form akan muncul di sini...</p>
+        </div>
+
+        <div class="debug-panel">
+            <h4>Debug Log</h4>
+            <div id="debug-log" class="debug-log">Starting debug session...</div>
+        </div>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        let debugLog = [];
+        
+        function addDebugLog(message) {
+            debugLog.push(`${new Date().toLocaleTimeString()}: ${message}`);
+            const logElement = document.getElementById('debug-log');
+            if (logElement) {
+                logElement.innerHTML = debugLog.slice(-30).join('\n');
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusContent = document.getElementById('status-content');
+            const statusPanel = document.getElementById('status-panel');
+            
+            if (statusContent) {
+                statusContent.innerHTML = message;
+            }
+            
+            if (statusPanel) {
+                statusPanel.className = `debug-panel ${type === 'success' ? 'status-success' : type === 'error' ? 'status-error' : ''}`;
+            }
+        }
+
+        // Mock apiCall if not available
+        if (!window.apiCall) {
+            window.apiCall = async function(url, options = {}) {
+                const method = options.method || 'GET';
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                const fetchOptions = {
+                    method,
+                    headers
+                };
+                
+                if (options.body) {
+                    fetchOptions.body = JSON.stringify(options.body);
+                }
+                
+                const response = await fetch(url, fetchOptions);
+                return await response.json();
+            };
+        }
+
+        if (!window.app) {
+            window.app = {
+                apiCall: window.apiCall
+            };
+        }
+
+        // Override console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            addDebugLog(`LOG: ${args.join(' ')}`);
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addDebugLog(`ERROR: ${args.join(' ')}`);
+            originalError.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            addDebugLog(`WARN: ${args.join(' ')}`);
+            originalWarn.apply(console, args);
+        };
+
+        async function testAPIEndpoints() {
+            try {
+                updateStatus('Testing API endpoints...', 'info');
+                addDebugLog('Starting API endpoint tests...');
+                
+                // Test rencana strategis public endpoint
+                const rencanaResponse = await fetch('/api/rencana-strategis/public');
+                const rencanaData = await rencanaResponse.json();
+                addDebugLog(`Rencana strategis API: ${rencanaResponse.status}, ${Array.isArray(rencanaData) ? rencanaData.length : 'not array'} records`);
+                
+                // Test visi misi public endpoint
+                const visiMisiResponse = await fetch('/api/visi-misi/public');
+                const visiMisiData = await visiMisiResponse.json();
+                addDebugLog(`Visi misi API: ${visiMisiResponse.status}, ${Array.isArray(visiMisiData) ? visiMisiData.length : 'not array'} records`);
+                
+                // Test generate kode endpoint
+                const kodeResponse = await fetch('/api/rencana-strategis/generate/kode/public');
+                const kodeData = await kodeResponse.json();
+                addDebugLog(`Generate kode API: ${kodeResponse.status}, kode: ${kodeData.kode || 'none'}`);
+                
+                if (rencanaResponse.ok && visiMisiResponse.ok && kodeResponse.ok) {
+                    updateStatus('✅ All API endpoints working correctly', 'success');
+                } else {
+                    updateStatus('❌ Some API endpoints failed', 'error');
+                }
+                
+            } catch (error) {
+                addDebugLog(`API test error: ${error.message}`);
+                updateStatus(`❌ API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testModuleLoad() {
+            try {
+                updateStatus('Testing module load...', 'info');
+                addDebugLog('Starting module load test...');
+                
+                // Check if module is available
+                if (typeof RencanaStrategisModule === 'undefined') {
+                    throw new Error('RencanaStrategisModule not defined');
+                }
+                addDebugLog('RencanaStrategisModule found');
+                
+                if (typeof window.rencanaStrategisModule === 'undefined') {
+                    addDebugLog('window.rencanaStrategisModule not found, setting it...');
+                    window.rencanaStrategisModule = RencanaStrategisModule;
+                }
+                
+                // Test load function
+                if (typeof RencanaStrategisModule.load !== 'function') {
+                    throw new Error('RencanaStrategisModule.load is not a function');
+                }
+                addDebugLog('Module load function found');
+                
+                // Call load
+                addDebugLog('Calling RencanaStrategisModule.load()...');
+                await RencanaStrategisModule.load();
+                addDebugLog('Module load completed');
+                
+                updateStatus('✅ Module loaded successfully', 'success');
+                
+            } catch (error) {
+                addDebugLog(`Module load error: ${error.message}`);
+                updateStatus(`❌ Module load failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFormRender() {
+            try {
+                updateStatus('Testing form render...', 'info');
+                addDebugLog('Starting form render test...');
+                
+                // Check container
+                const container = document.getElementById('rencana-strategis-content');
+                if (!container) {
+                    throw new Error('Container not found');
+                }
+                addDebugLog('Container found');
+                
+                // Wait a bit for rendering
+                setTimeout(() => {
+                    const form = document.getElementById('rs-form');
+                    const inputs = container.querySelectorAll('input, select, textarea');
+                    const buttons = container.querySelectorAll('button');
+                    const table = container.querySelector('.data-table');
+                    
+                    addDebugLog(`Form found: ${!!form}`);
+                    addDebugLog(`Inputs found: ${inputs.length}`);
+                    addDebugLog(`Buttons found: ${buttons.length}`);
+                    addDebugLog(`Table found: ${!!table}`);
+                    
+                    if (form && inputs.length > 0) {
+                        // Check specific inputs
+                        const kodeInput = document.getElementById('rs-kode');
+                        const misiSelect = document.getElementById('rs-misi');
+                        const namaInput = document.getElementById('rs-nama');
+                        
+                        addDebugLog(`Kode input: ${!!kodeInput} (value: ${kodeInput?.value || 'empty'})`);
+                        addDebugLog(`Misi select: ${!!misiSelect} (options: ${misiSelect?.options.length || 0})`);
+                        addDebugLog(`Nama input: ${!!namaInput}`);
+                        
+                        updateStatus(`✅ Form rendered successfully with ${inputs.length} inputs`, 'success');
+                    } else {
+                        updateStatus('❌ Form not rendered properly', 'error');
+                        addDebugLog('Form render failed - no form or inputs found');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                addDebugLog(`Form render test error: ${error.message}`);
+                updateStatus(`❌ Form render test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearCache() {
+            addDebugLog('Clearing cache and reloading...');
+            updateStatus('Clearing cache...', 'info');
+            
+            // Clear various caches
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            // Force reload with cache bypass
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1000);
+        }
+
+        // Auto-run tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('DOM loaded, ready for testing');
+            updateStatus('Ready for testing. Click buttons above to run tests.', 'info');
+        });
+    </script>
+</body>
+</html>

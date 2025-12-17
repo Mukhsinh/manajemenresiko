@@ -2348,3 +2348,715 @@ ana Strategis Form Styles */
         font-size: 0.875rem;
     }
 }
+/* Indikat
+or Kinerja Utama Specific Styles */
+.iku-table-container {
+    overflow-x: auto;
+    max-width: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+}
+
+.iku-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    min-width: 1400px;
+    table-layout: fixed;
+}
+
+.iku-table thead {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.iku-table th {
+    padding: 12px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.iku-table th.text-center {
+    text-align: center;
+}
+
+.iku-table td {
+    padding: 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 0.875rem;
+}
+
+.iku-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Progress Bar Styles for IKU */
+.iku-progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.iku-progress-bar {
+    flex: 1;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.iku-progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.iku-progress-fill.positive {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.iku-progress-fill.negative {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.iku-progress-fill.neutral {
+    background: linear-gradient(90deg, #6b7280, #4b5563);
+}
+
+.iku-progress-text {
+    font-weight: 600;
+    min-width: 45px;
+    text-align: right;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.iku-progress-text.positive {
+    color: #059669;
+}
+
+.iku-progress-text.negative {
+    color: #dc2626;
+}
+
+.iku-progress-text.neutral {
+    color: #6b7280;
+}
+
+/* Cell Content Overflow Handling */
+.iku-cell-content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.iku-cell-content.rencana {
+    max-width: 180px;
+}
+
+.iku-cell-content.sasaran {
+    max-width: 180px;
+}
+
+.iku-cell-content.indikator {
+    max-width: 230px;
+}
+
+.iku-cell-content.pic {
+    max-width: 100px;
+}
+
+/* Action Buttons */
+.iku-action-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+.iku-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.iku-btn-edit {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.iku-btn-edit:hover {
+    background-color: #138496;
+    transform: translateY(-1px);
+}
+
+.iku-btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.iku-btn-delete:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Baseline and Target Styling */
+.iku-metric {
+    font-size: 0.875rem;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.iku-metric-value {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 2px;
+}
+
+.iku-metric-year {
+    color: #6c757d;
+    font-size: 0.75rem;
+}
+
+/* Responsive Design for IKU */
+@media (max-width: 1200px) {
+    .iku-table {
+        min-width: 1200px;
+    }
+    
+    .iku-cell-content.rencana,
+    .iku-cell-content.sasaran {
+        max-width: 150px;
+    }
+    
+    .iku-cell-content.indikator {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .iku-table {
+        min-width: 1000px;
+        font-size: 0.75rem;
+    }
+    
+    .iku-table th,
+    .iku-table td {
+        padding: 8px 6px;
+    }
+    
+    .iku-progress-container {
+        min-width: 100px;
+        max-width: 120px;
+    }
+    
+    .iku-progress-text {
+        font-size: 0.7rem;
+        min-width: 35px;
+    }
+    
+    .iku-btn {
+        padding: 4px 6px;
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .iku-cell-content.rencana,
+    .iku-cell-content.sasaran {
+        max-width: 120px;
+    }
+    
+    .iku-cell-content.indikator {
+        max-width: 150px;
+    }
+    
+    .iku-cell-content.pic {
+        max-width: 80px;
+    }
+}
+
+@media (max-width: 576px) {
+    .iku-table {
+        min-width: 800px;
+        font-size: 0.7rem;
+    }
+    
+    .iku-table th,
+    .iku-table td {
+        padding: 6px 4px;
+    }
+    
+    .iku-progress-container {
+        flex-direction: column;
+        gap: 2px;
+        min-width: 80px;
+        max-width: 100px;
+    }
+    
+    .iku-progress-bar {
+        width: 100%;
+        height: 8px;
+    }
+    
+    .iku-progress-text {
+        font-size: 0.65rem;
+        text-align: center;
+        min-width: auto;
+    }
+}
+
+/* Filter Group Improvements */
+.iku-filter-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.iku-filter-group .form-group {
+    margin-bottom: 0;
+}
+
+.iku-filter-group .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.iku-filter-group .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.iku-filter-group .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Card Header Improvements */
+.iku-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.iku-card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.iku-card-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.iku-card-actions .btn {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.iku-card-actions .btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.iku-empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6c757d;
+}
+
+.iku-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #dee2e6;
+}
+
+.iku-empty-state h5 {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.iku-empty-state p {
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+}
+/* Indi
+kator Kinerja Utama Table Styles */
+.iku-table {
+    font-size: 0.875rem !important;
+}
+
+.iku-table th {
+    font-size: 0.75rem !important;
+    padding: 8px !important;
+    white-space: nowrap;
+    background-color: #f8f9fa !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.iku-table td {
+    padding: 8px !important;
+    vertical-align: middle !important;
+    font-size: 0.8rem !important;
+}
+
+.iku-table .progress-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    min-width: 110px !important;
+    flex-direction: column !important;
+}
+
+.iku-table .progress-bar {
+    width: 100% !important;
+    height: 6px !important;
+    background: #e5e7eb !important;
+    border-radius: 3px !important;
+    overflow: hidden !important;
+}
+
+.iku-table .progress-fill {
+    height: 100% !important;
+    border-radius: 3px !important;
+    transition: width 0.3s ease !important;
+}
+
+.iku-table .progress-text {
+    font-weight: 600 !important;
+    font-size: 0.65rem !important;
+}
+
+/* Responsive IKU Table */
+@media (max-width: 1200px) {
+    .iku-table {
+        min-width: 1000px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .iku-table th {
+        font-size: 0.7rem !important;
+        padding: 6px !important;
+    }
+    
+    .iku-table td {
+        padding: 6px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .iku-table th:nth-child(2),
+    .iku-table td:nth-child(2) {
+        width: 150px !important;
+    }
+    
+    .iku-table th:nth-child(3),
+    .iku-table td:nth-child(3) {
+        width: 150px !important;
+    }
+    
+    .iku-table th:nth-child(4),
+    .iku-table td:nth-child(4) {
+        width: 170px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .iku-table {
+        min-width: 900px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .iku-table th {
+        font-size: 0.65rem !important;
+        padding: 5px !important;
+    }
+    
+    .iku-table td {
+        padding: 5px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .iku-table .progress-container {
+        min-width: 90px !important;
+    }
+    
+    .iku-table .progress-text {
+        font-size: 0.6rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .iku-table {
+        min-width: 800px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .iku-table th {
+        font-size: 0.6rem !important;
+        padding: 4px !important;
+    }
+    
+    .iku-table td {
+        padding: 4px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    .iku-table th:nth-child(1),
+    .iku-table td:nth-child(1) {
+        width: 30px !important;
+    }
+    
+    .iku-table th:nth-child(2),
+    .iku-table td:nth-child(2) {
+        width: 120px !important;
+    }
+    
+    .iku-table th:nth-child(3),
+    .iku-table td:nth-child(3) {
+        width: 120px !important;
+    }
+    
+    .iku-table th:nth-child(4),
+    .iku-table td:nth-child(4) {
+        width: 140px !important;
+    }
+    
+    .iku-table th:nth-child(5),
+    .iku-table td:nth-child(5) {
+        width: 80px !important;
+    }
+    
+    .iku-table th:nth-child(6),
+    .iku-table td:nth-child(6) {
+        width: 80px !important;
+    }
+    
+    .iku-table th:nth-child(7),
+    .iku-table td:nth-child(7) {
+        width: 100px !important;
+    }
+    
+    .iku-table th:nth-child(8),
+    .iku-table td:nth-child(8) {
+        width: 80px !important;
+    }
+    
+    .iku-table th:nth-child(9),
+    .iku-table td:nth-child(9) {
+        width: 80px !important;
+    }
+    
+    .iku-table .progress-container {
+        min-width: 80px !important;
+    }
+    
+    .iku-table .btn-sm {
+        padding: 3px 5px !important;
+        font-size: 0.6rem !important;
+        min-width: 24px !important;
+    }
+}
+
+/* IKU Table Container Improvements */
+.table-container {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 70vh;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-responsive {
+    position: relative;
+}
+
+/* Scrollbar Styling */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Sticky Header Enhancement */
+.iku-table thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background-color: #f8f9fa !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Text Truncation Improvements */
+.iku-table .text-truncate {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Better text spacing for IKU table */
+.iku-table td div {
+    word-break: break-word !important;
+    hyphens: auto !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* Progress bar improvements */
+.iku-table .progress-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    min-width: 120px !important;
+    flex-direction: row !important;
+}
+
+.iku-table .progress-bar {
+    flex: 1 !important;
+    height: 8px !important;
+    background: #e5e7eb !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+.iku-table .progress-fill {
+    height: 100% !important;
+    border-radius: 4px !important;
+    transition: width 0.3s ease !important;
+}
+
+.iku-table .progress-text {
+    font-weight: 600 !important;
+    font-size: 0.7rem !important;
+    min-width: 35px !important;
+    text-align: right !important;
+}
+
+/* Hover Effects */
+.iku-table tbody tr:hover {
+    background-color: #f8f9fa !important;
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+.iku-table .btn:hover {
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+/* Loading State for IKU Table */
+.iku-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.iku-loading i {
+    font-size: 2rem;
+    color: #6c757d;
+    margin-right: 1rem;
+    animation: spin 1s linear infinite;
+}
+
+/* Filter Group Responsive */
+.filter-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .filter-group {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+}
+
+/* Card Header Actions Responsive */
+.card-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .card-header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .card-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+}

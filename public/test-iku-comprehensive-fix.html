@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IKU Comprehensive Fix - Indikator Kinerja Utama</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .fix-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .fix-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+            transition: transform 0.2s ease;
+        }
+        
+        .fix-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .fix-card h4 {
+            color: #28a745;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .fix-card ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .fix-card li {
+            margin-bottom: 0.5rem;
+            color: #6c757d;
+        }
+        
+        .test-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 320px;
+        }
+        
+        .test-controls h5 {
+            margin-bottom: 1rem;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-btn {
+            padding: 0.5rem;
+            border: 1px solid #28a745;
+            background: white;
+            color: #28a745;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .test-btn:hover {
+            background: #28a745;
+            color: white;
+        }
+        
+        .test-btn.active {
+            background: #28a745;
+            color: white;
+        }
+        
+        .progress-demo {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .progress-demo h6 {
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+        
+        .demo-progress {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .demo-bar {
+            flex: 1;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .demo-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 1rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-check-circle"></i> IKU Comprehensive Fix Test</h1>
+        <p>Pengujian lengkap perbaikan overflow, progress bar, dan API edit pada Indikator Kinerja Utama</p>
+    </div>
+
+    <div class="fix-summary">
+        <div class="fix-card">
+            <h4><i class="fas fa-text-width"></i> Text Spacing Fix</h4>
+            <ul>
+                <li>Perbaikan word-break dan hyphens</li>
+                <li>Optimasi line-height dan letter-spacing</li>
+                <li>Better text truncation dengan tooltip</li>
+                <li>Responsive font sizing</li>
+            </ul>
+        </div>
+        
+        <div class="fix-card">
+            <h4><i class="fas fa-chart-line"></i> Progress Bar Enhancement</h4>
+            <ul>
+                <li>Horizontal layout yang lebih informatif</li>
+                <li>Color coding berdasarkan persentase</li>
+                <li>Tampilan baseline → target</li>
+                <li>Improved calculation logic</li>
+            </ul>
+        </div>
+        
+        <div class="fix-card">
+            <h4><i class="fas fa-edit"></i> API Edit Fix</h4>
+            <ul>
+                <li>Perbaikan query select dengan inner join</li>
+                <li>Fallback ke local data cache</li>
+                <li>Better error handling</li>
+                <li>Enhanced logging untuk debugging</li>
+            </ul>
+        </div>
+        
+        <div class="fix-card">
+            <h4><i class="fas fa-mobile-alt"></i> Responsive Improvements</h4>
+            <ul>
+                <li>Optimized column widths</li>
+                <li>Better mobile experience</li>
+                <li>Sticky header enhancement</li>
+                <li>Smooth scrolling</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-controls">
+        <h5><i class="fas fa-cogs"></i> Test Controls</h5>
+        <div class="test-buttons">
+            <button class="test-btn active" onclick="setViewport('100%')">Desktop</button>
+            <button class="test-btn" onclick="setViewport('1024px')">Tablet</button>
+            <button class="test-btn" onclick="setViewport('768px')">Mobile L</button>
+            <button class="test-btn" onclick="setViewport('480px')">Mobile S</button>
+        </div>
+        
+        <div class="progress-demo">
+            <h6>Progress Bar Demo:</h6>
+            <div class="demo-progress">
+                <div class="demo-bar">
+                    <div class="demo-fill" style="width: 85%; background: #10b981;"></div>
+                </div>
+                <span style="font-size: 0.7rem; color: #10b981; font-weight: 600;">+85%</span>
+            </div>
+            <div class="demo-progress">
+                <div class="demo-bar">
+                    <div class="demo-fill" style="width: 45%; background: #f59e0b;"></div>
+                </div>
+                <span style="font-size: 0.7rem; color: #f59e0b; font-weight: 600;">+45%</span>
+            </div>
+            <div class="demo-progress">
+                <div class="demo-bar">
+                    <div class="demo-fill" style="width: 25%; background: #ef4444;"></div>
+                </div>
+                <span style="font-size: 0.7rem; color: #ef4444; font-weight: 600;">-25%</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="indikator-kinerja-utama-content">
+        <!-- Content will be loaded here -->
+    </div>
+
+    <div class="status-indicator">
+        <i class="fas fa-check"></i>
+        <span>All Fixes Applied</span>
+    </div>
+
+    <!-- API Service -->
+    <script>
+        // Enhanced mock API service for comprehensive testing
+        window.apiCall = async function(url, options = {}) {
+            console.log('API Call:', url, options);
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            if (url.includes('/api/indikator-kinerja-utama')) {
+                // Handle GET by ID
+                if (url.match(/\/api\/indikator-kinerja-utama\/[a-f0-9-]+$/)) {
+                    const id = url.split('/').pop();
+                    const mockData = getMockData();
+                    const item = mockData.find(d => d.id === id);
+                    
+                    if (item) {
+                        console.log('Found item for edit:', item);
+                        return item;
+                    } else {
+                        throw new Error('Data tidak ditemukan');
+                    }
+                }
+                
+                // Handle main list endpoint
+                return getMockData();
+            }
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return getMockRencanaStrategis();
+            }
+            
+            if (url.includes('/api/sasaran-strategi')) {
+                return getMockSasaranStrategi();
+            }
+            
+            return [];
+        };
+
+        function getMockData() {
+            return [
+                {
+                    id: '1d147b88-fd37-45b5-8878-ea7ed389ed8e',
+                    rencana_strategis_id: '1',
+                    sasaran_strategi_id: '1',
+                    rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan Rumah Sakit Terpadu 2025-2030' },
+                    sasaran_strategi: { sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien melalui inovasi teknologi digital' },
+                    indikator: 'Efisiensi Biaya Operasional per Pasien dengan Standar Pelayanan Berkualitas Internasional',
+                    baseline_tahun: 2024,
+                    baseline_nilai: 97,
+                    target_tahun: 2025,
+                    target_nilai: 91,
+                    initiatif_strategi: 'Implementasi program peningkatan kualitas dan monitoring berkala dengan sistem digital',
+                    pic: 'Dr. Ahmad Santoso, M.Kes, Sp.PD',
+                    created_at: '2025-12-13T08:06:13.406891Z',
+                    updated_at: '2025-12-16T02:56:49.193849Z'
+                },
+                {
+                    id: '2b258c99-ge48-56c6-9989-fb8fe490fe9f',
+                    rencana_strategis_id: '2',
+                    sasaran_strategi_id: '2',
+                    rencana_strategis: { nama_rencana: 'Optimalisasi Sumber Daya Manusia dan Pengembangan Kompetensi Berkelanjutan' },
+                    sasaran_strategi: { sasaran: 'Meningkatkan produktivitas dan kompetensi SDM melalui program pelatihan berkelanjutan dan sertifikasi' },
+                    indikator: 'Rasio Bed Occupancy Rate (BOR) dengan Standar Pelayanan Optimal dan Efisien',
+                    baseline_tahun: 2024,
+                    baseline_nilai: 56,
+                    target_tahun: 2025,
+                    target_nilai: 96,
+                    initiatif_strategi: 'Program pelatihan berkelanjutan dan sistem reward berbasis kinerja dengan teknologi AI',
+                    pic: 'Dr. Dewi Sartika, Sp.A, M.Kes',
+                    created_at: '2025-12-13T08:06:13.406891Z',
+                    updated_at: '2025-12-16T02:56:50.920393Z'
+                },
+                {
+                    id: '3c369d00-hf59-67d7-0090-gc9gf501gf0g',
+                    rencana_strategis_id: '3',
+                    sasaran_strategi_id: '3',
+                    rencana_strategis: { nama_rencana: 'Peningkatan Keselamatan Pasien dan Manajemen Risiko Klinis Terintegrasi' },
+                    sasaran_strategi: { sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan pasien secara berkelanjutan dengan sistem monitoring' },
+                    indikator: 'Angka Komplikasi Pasca Operasi dan Infeksi Nosokomial dengan Standar WHO',
+                    baseline_tahun: 2024,
+                    baseline_nilai: 95,
+                    target_tahun: 2025,
+                    target_nilai: 86,
+                    initiatif_strategi: 'Implementasi protokol keselamatan dan audit berkala sistem mutu dengan dashboard real-time',
+                    pic: 'Dr. Siti Nurhaliza, Sp.An, FIPM',
+                    created_at: '2025-12-13T08:06:13.406891Z',
+                    updated_at: '2025-12-16T02:56:58.959799Z'
+                },
+                {
+                    id: '4d470e11-ig60-78e8-1101-hd0hg612hg1h',
+                    rencana_strategis_id: '4',
+                    sasaran_strategi_id: '4',
+                    rencana_strategis: { nama_rencana: 'Digitalisasi Sistem Informasi Manajemen Rumah Sakit Berbasis Cloud Computing' },
+                    sasaran_strategi: { sasaran: 'Meningkatkan efisiensi melalui teknologi digital dan sistem informasi terintegrasi dengan AI dan IoT' },
+                    indikator: 'Tingkat Adopsi Sistem Digital dan Integrasi Data Elektronik Real-time',
+                    baseline_tahun: 2024,
+                    baseline_nilai: 45,
+                    target_tahun: 2025,
+                    target_nilai: 85,
+                    initiatif_strategi: 'Implementasi SIMRS berbasis cloud dan pelatihan pengguna sistem digital dengan gamifikasi',
+                    pic: 'Ir. Budi Hartono, M.T, CISSP',
+                    created_at: '2025-12-13T08:06:13.406891Z',
+                    updated_at: '2025-12-16T02:57:02.794516Z'
+                },
+                {
+                    id: '5e581f22-jh71-89f9-2212-ie1ih723ih2i',
+                    rencana_strategis_id: '5',
+                    sasaran_strategi_id: '5',
+                    rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan dan Kepuasan Pelanggan Berbasis Data Analytics' },
+                    sasaran_strategi: { sasaran: 'Meningkatkan kepuasan dan loyalitas pasien melalui pelayanan prima dengan pendekatan customer-centric' },
+                    indikator: 'Indeks Kepuasan Pasien dan Net Promoter Score (NPS) dengan Benchmark Internasional',
+                    baseline_tahun: 2024,
+                    baseline_nilai: 78,
+                    target_tahun: 2025,
+                    target_nilai: 92,
+                    initiatif_strategi: 'Program customer service excellence dan feedback system terintegrasi dengan sentiment analysis',
+                    pic: 'Ns. Maria Ulfa, S.Kep, M.Kep',
+                    created_at: '2025-12-13T08:06:13.406891Z',
+                    updated_at: '2025-12-16T02:57:04.058024Z'
+                }
+            ];
+        }
+
+        function getMockRencanaStrategis() {
+            return [
+                { id: '1', nama_rencana: 'Peningkatan Kualitas Pelayanan Kesehatan Rumah Sakit Terpadu 2025-2030' },
+                { id: '2', nama_rencana: 'Optimalisasi Sumber Daya Manusia dan Pengembangan Kompetensi Berkelanjutan' },
+                { id: '3', nama_rencana: 'Peningkatan Keselamatan Pasien dan Manajemen Risiko Klinis Terintegrasi' },
+                { id: '4', nama_rencana: 'Digitalisasi Sistem Informasi Manajemen Rumah Sakit Berbasis Cloud Computing' },
+                { id: '5', nama_rencana: 'Peningkatan Kualitas Pelayanan dan Kepuasan Pelanggan Berbasis Data Analytics' }
+            ];
+        }
+
+        function getMockSasaranStrategi() {
+            return [
+                { id: '1', sasaran: 'Meningkatkan efisiensi operasional rumah sakit dan kepuasan pasien melalui inovasi teknologi digital' },
+                { id: '2', sasaran: 'Meningkatkan produktivitas dan kompetensi SDM melalui program pelatihan berkelanjutan dan sertifikasi' },
+                { id: '3', sasaran: 'Menurunkan angka komplikasi dan meningkatkan keselamatan pasien secara berkelanjutan dengan sistem monitoring' },
+                { id: '4', sasaran: 'Meningkatkan efisiensi melalui teknologi digital dan sistem informasi terintegrasi dengan AI dan IoT' },
+                { id: '5', sasaran: 'Meningkatkan kepuasan dan loyalitas pasien melalui pelayanan prima dengan pendekatan customer-centric' }
+            ];
+        }
+
+        // Viewport testing function
+        function setViewport(width) {
+            const content = document.getElementById('indikator-kinerja-utama-content');
+            if (width === '100%') {
+                content.style.maxWidth = '100%';
+                content.style.margin = '0';
+                content.style.border = 'none';
+            } else {
+                content.style.maxWidth = width;
+                content.style.margin = '0 auto';
+                content.style.border = '2px dashed #28a745';
+                content.style.borderRadius = '8px';
+                content.style.padding = '1rem';
+            }
+            
+            // Update active button
+            document.querySelectorAll('.test-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+
+    <!-- Load IKU Module -->
+    <script src="js/indikator-kinerja-utama.js"></script>
+    
+    <script>
+        // Initialize the module when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('=== INITIALIZING IKU COMPREHENSIVE FIX TEST ===');
+            try {
+                await IndikatorKinerjaUtamaModule.load();
+                console.log('IKU module loaded successfully with all fixes applied');
+                
+                // Add test indicators after load
+                setTimeout(() => {
+                    addTestIndicators();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error loading IKU module:', error);
+            }
+        });
+        
+        function addTestIndicators() {
+            const tableContainer = document.querySelector('.table-container');
+            if (tableContainer) {
+                // Add scroll indicators
+                const scrollIndicator = document.createElement('div');
+                scrollIndicator.innerHTML = `
+                    <div style="position: absolute; top: 10px; left: 10px; background: rgba(40,167,69,0.9); color: white; padding: 0.5rem; border-radius: 6px; font-size: 0.75rem; z-index: 20;">
+                        <i class="fas fa-info-circle"></i> Scroll horizontal/vertikal untuk melihat semua data
+                    </div>
+                `;
+                tableContainer.appendChild(scrollIndicator);
+                
+                // Auto-hide scroll indicator after 5 seconds
+                setTimeout(() => {
+                    scrollIndicator.style.opacity = '0';
+                    scrollIndicator.style.transition = 'opacity 0.5s';
+                    setTimeout(() => scrollIndicator.remove(), 500);
+                }, 5000);
+            }
+            
+            // Test edit functionality
+            console.log('Testing edit functionality...');
+            setTimeout(() => {
+                const editButtons = document.querySelectorAll('.btn-edit');
+                if (editButtons.length > 0) {
+                    console.log(`Found ${editButtons.length} edit buttons - edit functionality ready`);
+                }
+            }, 500);
+        }
+        
+        // Add resize event listener for responsive testing
+        window.addEventListener('resize', function() {
+            console.log('Window resized to:', window.innerWidth + 'x' + window.innerHeight);
+        });
+    </script>
+</body>
+</html>
