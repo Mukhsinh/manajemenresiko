@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Register - Final Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .data-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .risk-low { 
+            background-color: #d4edda; 
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .risk-medium { 
+            background-color: #fff3cd; 
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .risk-high { 
+            background-color: #f8d7da; 
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .risk-extreme { 
+            background-color: #f5c6cb; 
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 5px;
+            min-width: 120px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Risk Register - Final Test</h1>
+            <p>Testing Risk Register dengan data lengkap tanpa filter user ID</p>
+        </div>
+
+        <div class="stats" id="stats-container" style="display: none;">
+            <!-- Stats will be populated here -->
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn btn-success" onclick="loadRiskRegisterData()">
+                🔄 Load Risk Register Data
+            </button>
+            <button class="btn" onclick="exportToExcel()">
+                📊 Export to Excel
+            </button>
+        </div>
+
+        <div id="result-message"></div>
+
+        <div class="table-container">
+            <div id="risk-register-table">
+                <p style="text-align: center; color: #666; padding: 50px;">
+                    Click "Load Risk Register Data" to display the risk register table
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock API service for testing
+        const apiService = {
+            async call(endpoint) {
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer mock-token-for-testing`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            }
+        };
+
+        // Load Risk Register Data
+        async function loadRiskRegisterData() {
+            const resultDiv = document.getElementById('result-message');
+            const tableDiv = document.getElementById('risk-register-table');
+            const statsDiv = document.getElementById('stats-container');
+            
+            resultDiv.innerHTML = '<div class="info">Loading risk register data...</div>';
+            tableDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 50px;">Loading...</p>';
+            
+            try {
+                // Use debug endpoint for testing
+                const data = await apiService.call('/api/reports/risk-register-debug');
+                
+                if (data && data.fullData && data.fullData.length > 0) {
+                    displayRiskRegister(data.fullData);
+                    displayStats(data.fullData, data.rawCounts);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Risk Register loaded successfully!<br>
+                            📊 Total Records: ${data.recordCount}<br>
+                            📈 With Inherent Analysis: ${data.rawCounts.inherent}<br>
+                            📉 With Residual Analysis: ${data.rawCounts.residual}<br>
+                            🛡️ With Treatments: ${data.rawCounts.treatments}
+                        </div>
+                    `;
+                    
+                    statsDiv.style.display = 'flex';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ No risk register data found</div>';
+                    tableDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 50px;">No data available</p>';
+                }
+            } catch (error) {
+                console.error('Error loading risk register:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Error loading risk register data:<br>
+                        ${error.message}
+                    </div>
+                `;
+                tableDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 50px;">Error loading data</p>';
+            }
+        }
+
+        // Display Risk Register Table
+        function displayRiskRegister(data) {
+            const container = document.getElementById('risk-register-table');
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 50px;">No risk register data available</p>';
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Kode Risiko</th>
+                            <th>Status</th>
+                            <th>Jenis</th>
+                            <th>Kategori</th>
+                            <th>Unit Kerja</th>
+                            <th>Sasaran</th>
+                            <th>Tanggal Registrasi</th>
+                            <th>Penyebab Risiko</th>
+                            <th>Dampak Risiko</th>
+                            <th>P Inheren</th>
+                            <th>D Inheren</th>
+                            <th>Nilai Inheren</th>
+                            <th>Tingkat Inheren</th>
+                            <th>P Residual</th>
+                            <th>D Residual</th>
+                            <th>Nilai Residual</th>
+                            <th>Tingkat Residual</th>
+                            <th>Risk Appetite</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach((risk, index) => {
+                const inherent = risk.risk_inherent_analysis?.[0] || {};
+                const residual = risk.risk_residual_analysis?.[0] || {};
+                const appetite = risk.risk_appetite?.[0] || {};
+
+                html += `
+                    <tr>
+                        <td>${risk.no || index + 1}</td>
+                        <td><strong>${risk.kode_risiko || '-'}</strong></td>
+                        <td>${risk.status_risiko || 'Active'}</td>
+                        <td>${risk.jenis_risiko || 'Threat'}</td>
+                        <td>${risk.master_risk_categories?.name || '-'}</td>
+                        <td>${risk.master_work_units?.name || '-'}</td>
+                        <td title="${risk.sasaran || ''}">${risk.sasaran ? risk.sasaran.substring(0, 30) + '...' : '-'}</td>
+                        <td>${formatDate(risk.tanggal_registrasi) || '-'}</td>
+                        <td title="${risk.penyebab_risiko || ''}">${risk.penyebab_risiko ? risk.penyebab_risiko.substring(0, 30) + '...' : '-'}</td>
+                        <td title="${risk.dampak_risiko || ''}">${risk.dampak_risiko ? risk.dampak_risiko.substring(0, 30) + '...' : '-'}</td>
+                        <td>${inherent.probability || '-'}</td>
+                        <td>${inherent.impact || '-'}</td>
+                        <td><strong>${inherent.risk_value || '-'}</strong></td>
+                        <td>${formatRiskLevel(inherent.risk_level)}</td>
+                        <td>${residual.probability || '-'}</td>
+                        <td>${residual.impact || '-'}</td>
+                        <td><strong>${residual.risk_value || '-'}</strong></td>
+                        <td>${formatRiskLevel(residual.risk_level)}</td>
+                        <td>${appetite.risk_appetite_level || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Display Statistics
+        function displayStats(data, rawCounts) {
+            const statsDiv = document.getElementById('stats-container');
+            
+            const stats = {
+                total: data.length,
+                withInherent: data.filter(d => d.risk_inherent_analysis && d.risk_inherent_analysis.length > 0).length,
+                withResidual: data.filter(d => d.risk_residual_analysis && d.risk_residual_analysis.length > 0).length,
+                withTreatments: data.filter(d => d.risk_treatments && d.risk_treatments.length > 0).length,
+                extremeHigh: data.filter(d => d.risk_inherent_analysis?.[0]?.risk_level === 'EXTREME HIGH').length,
+                high: data.filter(d => d.risk_inherent_analysis?.[0]?.risk_level === 'HIGH RISK').length,
+                medium: data.filter(d => d.risk_inherent_analysis?.[0]?.risk_level === 'MEDIUM RISK').length,
+                low: data.filter(d => d.risk_inherent_analysis?.[0]?.risk_level === 'LOW RISK').length
+            };
+            
+            statsDiv.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-value">${stats.total}</div>
+                    <div class="stat-label">Total Risks</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${stats.withInherent}</div>
+                    <div class="stat-label">With Inherent Analysis</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${stats.withResidual}</div>
+                    <div class="stat-label">With Residual Analysis</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${stats.extremeHigh}</div>
+                    <div class="stat-label">Extreme High</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${stats.high}</div>
+                    <div class="stat-label">High Risk</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${stats.medium}</div>
+                    <div class="stat-label">Medium Risk</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${stats.low}</div>
+                    <div class="stat-label">Low Risk</div>
+                </div>
+            `;
+        }
+
+        // Format Date
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID');
+        }
+
+        // Format Risk Level
+        function formatRiskLevel(level) {
+            if (!level) return '-';
+            
+            const className = level.toLowerCase().replace(/\s+/g, '-');
+            return `<span class="risk-${className}">${level}</span>`;
+        }
+
+        // Export to Excel (placeholder)
+        function exportToExcel() {
+            alert('Export to Excel functionality would be implemented here.\nEndpoint: /api/reports/risk-register/excel');
+        }
+
+        // Auto-load data on page load for demo
+        window.addEventListener('load', function() {
+            console.log('Risk Register Final Test Page loaded');
+            // Uncomment to auto-load data
+            // setTimeout(loadRiskRegisterData, 1000);
+        });
+    </script>
+</body>
+</html>

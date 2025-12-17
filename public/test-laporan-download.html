@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Laporan Download</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-card {
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .loading { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-file-download"></i> Test Laporan Download</h1>
+        <p class="text-muted">Testing download functionality untuk semua jenis laporan</p>
+
+        <!-- Test Login -->
+        <div class="test-card">
+            <div class="card-header">
+                <h5><i class="fas fa-key"></i> Authentication Test</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-primary" onclick="testLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Test Login
+                </button>
+                <div id="login-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Test Data Endpoints -->
+        <div class="test-card">
+            <div class="card-header">
+                <h5><i class="fas fa-database"></i> Data Endpoints Test</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-info" onclick="testDataEndpoints()">
+                    <i class="fas fa-search"></i> Test Data Endpoints
+                </button>
+                <div id="data-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Test Excel Downloads -->
+        <div class="test-card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-excel"></i> Excel Download Test</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-success w-100" onclick="testExcelDownload('risk-register')">
+                            <i class="fas fa-download"></i> Risk Register Excel
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-success w-100" onclick="testExcelDownload('risk-profile')">
+                            <i class="fas fa-download"></i> Risk Profile Excel
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-success w-100" onclick="testExcelDownload('residual-risk')">
+                            <i class="fas fa-download"></i> Residual Risk Excel
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-success w-100" onclick="testExcelDownload('risk-appetite')">
+                            <i class="fas fa-download"></i> Risk Appetite Excel
+                        </button>
+                    </div>
+                </div>
+                <div id="excel-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Test PDF Downloads -->
+        <div class="test-card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-pdf"></i> PDF Download Test</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-danger" onclick="testPDFDownload('residual-risk')">
+                    <i class="fas fa-download"></i> Residual Risk PDF (Implemented)
+                </button>
+                <div id="pdf-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Test Laporan Module -->
+        <div class="test-card">
+            <div class="card-header">
+                <h5><i class="fas fa-cogs"></i> Laporan Module Test</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-warning" onclick="testLaporanModule()">
+                    <i class="fas fa-play"></i> Test Laporan Module Functions
+                </button>
+                <div id="module-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Live Laporan Preview -->
+        <div class="test-card">
+            <div class="card-header">
+                <h5><i class="fas fa-eye"></i> Live Laporan Preview</h5>
+            </div>
+            <div class="card-body">
+                <div id="laporan-content-test"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/laporan.js"></script>
+
+    <script>
+        let authToken = null;
+
+        // Test login
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing login...';
+
+            try {
+                const response = await fetch('/api/test-data/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'admin@example.com', password: 'admin123' })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Login failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                authToken = data.token || data.access_token;
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check"></i> Login successful!<br>
+                    Token: ${authToken ? authToken.substring(0, 20) + '...' : 'Not found'}<br>
+                    User: ${data.user?.email || 'Unknown'}
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<i class="fas fa-times"></i> Login error: ${error.message}`;
+            }
+        }
+
+        // Test data endpoints
+        async function testDataEndpoints() {
+            const resultDiv = document.getElementById('data-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing data endpoints...';
+
+            const endpoints = [
+                { name: 'Risk Register Debug', url: '/api/reports/risk-register-debug' },
+                { name: 'Risk Profile Debug', url: '/api/reports/risk-profile-debug' },
+                { name: 'Residual Risk Simple', url: '/api/reports/residual-risk-simple' }
+            ];
+
+            let results = [];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const count = Array.isArray(data) ? data.length : 
+                                     (data.fullData ? data.fullData.length : 'object');
+                        results.push(`✅ ${endpoint.name}: ${count} records`);
+                    } else {
+                        results.push(`❌ ${endpoint.name}: ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${endpoint.name}: ${error.message}`);
+                }
+            }
+
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = results.join('<br>');
+        }
+
+        // Test Excel download
+        async function testExcelDownload(reportType) {
+            const resultDiv = document.getElementById('excel-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Testing ${reportType} Excel download...`;
+
+            try {
+                if (!authToken) {
+                    throw new Error('Please login first');
+                }
+
+                const url = `/api/reports/${reportType}/excel`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`${response.status}: ${errorText.substring(0, 100)}`);
+                }
+
+                const blob = await response.blob();
+                const filename = `${reportType}-test-${new Date().toISOString().split('T')[0]}.xlsx`;
+                
+                // Trigger download
+                const url2 = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url2;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url2);
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check"></i> ${reportType} Excel download successful!<br>
+                    File: ${filename}<br>
+                    Size: ${blob.size} bytes<br>
+                    Type: ${blob.type}
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<i class="fas fa-times"></i> Excel download error: ${error.message}`;
+            }
+        }
+
+        // Test PDF download
+        async function testPDFDownload(reportType) {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Testing ${reportType} PDF download...`;
+
+            try {
+                if (!authToken) {
+                    throw new Error('Please login first');
+                }
+
+                const url = `/api/reports/${reportType}/pdf`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`${response.status}: ${errorText.substring(0, 100)}`);
+                }
+
+                const blob = await response.blob();
+                const filename = `${reportType}-test-${new Date().toISOString().split('T')[0]}.pdf`;
+                
+                // Trigger download
+                const url2 = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url2;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url2);
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check"></i> ${reportType} PDF download successful!<br>
+                    File: ${filename}<br>
+                    Size: ${blob.size} bytes<br>
+                    Type: ${blob.type}
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<i class="fas fa-times"></i> PDF download error: ${error.message}`;
+            }
+        }
+
+        // Test laporan module
+        async function testLaporanModule() {
+            const resultDiv = document.getElementById('module-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing Laporan Module...';
+
+            try {
+                // Check if LaporanModule is available
+                if (typeof LaporanModule === 'undefined') {
+                    throw new Error('LaporanModule not found');
+                }
+
+                // Test module functions
+                const functions = ['load', 'updateFilter', 'downloadExcel', 'downloadPDF', 'showPreview'];
+                const results = [];
+
+                functions.forEach(func => {
+                    if (typeof LaporanModule[func] === 'function') {
+                        results.push(`✅ ${func}() available`);
+                    } else {
+                        results.push(`❌ ${func}() missing`);
+                    }
+                });
+
+                // Try to load the module
+                try {
+                    await LaporanModule.load();
+                    results.push('✅ Module loaded successfully');
+                } catch (error) {
+                    results.push(`⚠️ Module load error: ${error.message}`);
+                }
+
+                resultDiv.className = 'test-result info';
+                resultDiv.innerHTML = results.join('<br>');
+
+                // Load laporan content in preview
+                const previewDiv = document.getElementById('laporan-content-test');
+                previewDiv.innerHTML = '<div id="laporan-content"></div>';
+                
+                setTimeout(() => {
+                    LaporanModule.load().catch(console.error);
+                }, 500);
+
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<i class="fas fa-times"></i> Module test error: ${error.message}`;
+            }
+        }
+
+        // Auto-run some tests on page load
+        window.addEventListener('load', () => {
+            console.log('Test page loaded');
+            testDataEndpoints();
+        });
+    </script>
+</body>
+</html>

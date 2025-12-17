@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Indikator Kinerja Utama</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        <h1>Test Indikator Kinerja Utama</h1>
+        
+        <div class="test-section">
+            <h2>1. Test API Connection</h2>
+            <button onclick="testAPI()" class="btn btn-primary">Test API</button>
+            <div id="api-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Test Debug Endpoint</h2>
+            <button onclick="testDebug()" class="btn btn-secondary">Test Debug</button>
+            <div id="debug-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Load Indikator Kinerja Module</h2>
+            <button onclick="loadModule()" class="btn btn-success">Load Module</button>
+            <div id="indikator-kinerja-utama-content"></div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/indikator-kinerja-utama.js"></script>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch('/api/indikator-kinerja-utama', {
+                    headers: {
+                        'Authorization': 'Bearer test-token'
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <h3>API Response:</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Data Count: ${Array.isArray(data) ? data.length : 'Not array'}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testDebug() {
+            const resultDiv = document.getElementById('debug-result');
+            resultDiv.innerHTML = '<p>Testing Debug Endpoint...</p>';
+            
+            try {
+                const response = await fetch('/api/indikator-kinerja-utama/debug');
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <h3>Debug Response:</h3>
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function loadModule() {
+            try {
+                if (window.IndikatorKinerjaUtamaModule) {
+                    await window.IndikatorKinerjaUtamaModule.load();
+                } else if (window.indikatorKinerjaUtamaModule) {
+                    await window.indikatorKinerjaUtamaModule.load();
+                } else {
+                    document.getElementById('indikator-kinerja-utama-content').innerHTML = 
+                        '<p style="color: red;">Module not found</p>';
+                }
+            } catch (error) {
+                document.getElementById('indikator-kinerja-utama-content').innerHTML = 
+                    `<p style="color: red;">Error loading module: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

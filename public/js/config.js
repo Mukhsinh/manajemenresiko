@@ -103,15 +103,25 @@ async function apiCall(endpoint, options = {}) {
         console.log(`Response status: ${response.status} ${response.statusText}`);
 
         if (!response.ok) {
-            let error;
+            let errorMessage = `Request failed with status ${response.status}`;
+            let errorDetails = null;
+            
             try {
-                error = await response.json();
-            } catch (e) {
-                error = { error: response.statusText };
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    errorDetails = await response.json();
+                    errorMessage = errorDetails.error || errorDetails.message || errorMessage;
+                } else {
+                    const textError = await response.text();
+                    errorMessage = textError || errorMessage;
+                }
+            } catch (parseError) {
+                console.warn('Could not parse error response:', parseError);
+                errorMessage = response.statusText || errorMessage;
             }
             
-            console.error(`API Error (${response.status}):`, error);
-            throw new Error(error.error || error.message || `Request failed with status ${response.status}`);
+            console.error(`API Error (${response.status}):`, errorDetails || errorMessage);
+            throw new Error(errorMessage);
         }
 
         // Handle empty responses

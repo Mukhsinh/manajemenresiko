@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Indikator Kinerja Utama Complete</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .test-header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-results { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn:hover { opacity: 0.8; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .stats { display: flex; gap: 20px; margin: 10px 0; }
+        .stat { background: #e9ecef; padding: 10px; border-radius: 4px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #007bff; }
+        .stat-label { font-size: 12px; color: #6c757d; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1><i class="fas fa-tachometer-alt"></i> Test Indikator Kinerja Utama Complete</h1>
+            <p>Comprehensive testing for Indikator Kinerja Utama module functionality</p>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="total-records">-</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="api-status">-</div>
+                    <div class="stat-label">API Status</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="module-status">-</div>
+                    <div class="stat-label">Module Status</div>
+                </div>
+            </div>
+            
+            <div>
+                <button onclick="runAllTests()" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Run All Tests
+                </button>
+                <button onclick="testAPI()" class="btn btn-success">
+                    <i class="fas fa-server"></i> Test API
+                </button>
+                <button onclick="testModule()" class="btn btn-warning">
+                    <i class="fas fa-code"></i> Test Module
+                </button>
+                <button onclick="clearResults()" class="btn btn-secondary">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-results">
+            <h3>Test Results</h3>
+            <div id="results"></div>
+        </div>
+        
+        <!-- IKU content container -->
+        <div id="indikator-kinerja-utama-content" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/indikator-kinerja-utama.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function addResult(type, title, message, data = null) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `
+                <h4><i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}"></i> ${title}</h4>
+                <p><strong>[${timestamp}]</strong> ${message}</p>
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            
+            results.appendChild(resultDiv);
+            results.scrollTop = results.scrollHeight;
+            
+            testResults.push({ type, title, message, timestamp, data });
+        }
+
+        function updateStats(totalRecords = '-', apiStatus = '-', moduleStatus = '-') {
+            document.getElementById('total-records').textContent = totalRecords;
+            document.getElementById('api-status').textContent = apiStatus;
+            document.getElementById('module-status').textContent = moduleStatus;
+        }
+
+        async function testAPI() {
+            addResult('info', 'API Test Started', 'Testing all Indikator Kinerja Utama API endpoints...');
+            
+            try {
+                // Test public endpoint
+                const publicData = await fetch('/api/indikator-kinerja-utama/public').then(r => r.json());
+                addResult('success', 'Public API Test', `Retrieved ${publicData.length} records`, {
+                    count: publicData.length,
+                    sample: publicData.slice(0, 2).map(item => ({
+                        id: item.id,
+                        indikator: item.indikator,
+                        baseline_nilai: item.baseline_nilai,
+                        target_nilai: item.target_nilai
+                    }))
+                });
+                
+                updateStats(publicData.length, 'OK', '-');
+                
+                // Test debug endpoint
+                const debugData = await fetch('/api/indikator-kinerja-utama/debug').then(r => r.json());
+                addResult('success', 'Debug API Test', `Debug endpoint returned ${debugData.count} records`, {
+                    success: debugData.success,
+                    count: debugData.count
+                });
+                
+                return publicData;
+            } catch (error) {
+                addResult('error', 'API Test Failed', error.message);
+                updateStats('-', 'ERROR', '-');
+                throw error;
+            }
+        }
+
+        async function testModule() {
+            addResult('info', 'Module Test Started', 'Testing Indikator Kinerja Utama module functionality...');
+            
+            try {
+                // Check if module exists
+                if (!window.indikatorKinerjaUtamaModule) {
+                    throw new Error('Indikator Kinerja Utama module not found in window object');
+                }
+                
+                addResult('success', 'Module Found', 'Indikator Kinerja Utama module is available', {
+                    methods: Object.keys(window.indikatorKinerjaUtamaModule)
+                });
+                
+                // Check if load function exists
+                if (typeof window.indikatorKinerjaUtamaModule.load !== 'function') {
+                    throw new Error('Load function not found in module');
+                }
+                
+                addResult('success', 'Load Function Found', 'Module load function is available');
+                
+                // Test module load
+                await window.indikatorKinerjaUtamaModule.load();
+                
+                addResult('success', 'Module Load Test', 'Module loaded successfully');
+                updateStats('-', '-', 'OK');
+                
+                // Check if content was rendered
+                const content = document.getElementById('indikator-kinerja-utama-content');
+                if (content && content.innerHTML.trim()) {
+                    addResult('success', 'Render Test', 'Content rendered successfully', {
+                        contentLength: content.innerHTML.length,
+                        hasTable: content.innerHTML.includes('<table>'),
+                        hasData: content.innerHTML.includes('Efisiensi') || content.innerHTML.includes('Rasio')
+                    });
+                } else {
+                    addResult('error', 'Render Test', 'No content rendered or content is empty');
+                }
+                
+            } catch (error) {
+                addResult('error', 'Module Test Failed', error.message);
+                updateStats('-', '-', 'ERROR');
+                throw error;
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addResult('info', 'Test Suite Started', 'Running comprehensive Indikator Kinerja Utama tests...');
+            
+            try {
+                // Test API first
+                const apiData = await testAPI();
+                
+                // Wait a bit then test module
+                setTimeout(async () => {
+                    try {
+                        await testModule();
+                        addResult('success', 'All Tests Completed', 'All tests passed successfully!');
+                    } catch (error) {
+                        addResult('error', 'Test Suite Failed', 'Some tests failed. Check results above.');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                addResult('error', 'Test Suite Failed', 'API tests failed, skipping module tests.');
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('indikator-kinerja-utama-content').innerHTML = '';
+            testResults = [];
+            updateStats('-', '-', '-');
+        }
+
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            addResult('info', 'Page Loaded', 'Test page initialized successfully');
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

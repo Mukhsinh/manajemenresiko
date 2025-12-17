@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Main App KRI Direct</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Test Main App KRI Direct</h1>
+    
+    <div class="test-section">
+        <h2>1. Check Current Page State</h2>
+        <button class="btn" onclick="checkPageState()">Check State</button>
+        <div id="state-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Navigate to KRI Page</h2>
+        <button class="btn" onclick="navigateToKRI()">Navigate to KRI</button>
+        <div id="navigate-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Load KRI Data Directly</h2>
+        <button class="btn" onclick="loadKRIDirectly()">Load KRI Data</button>
+        <div id="kri-direct-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Simulate Main App</h2>
+        <button class="btn" onclick="simulateMainApp()">Simulate App</button>
+        <div id="simulate-result" class="result"></div>
+    </div>
+
+    <script>
+        function checkPageState() {
+            const resultDiv = document.getElementById('state-result');
+            
+            const state = {
+                currentUser: window.currentUser || 'Not set',
+                authToken: localStorage.getItem('token') || localStorage.getItem('authToken') || 'Not found',
+                kriModule: typeof window.kriModule,
+                apiCall: typeof window.apiCall,
+                Chart: typeof Chart,
+                supabaseClient: typeof window.supabaseClient
+            };
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h4>Current Page State</h4>
+                    <ul>
+                        <li><strong>Current User:</strong> ${typeof state.currentUser === 'object' ? state.currentUser.email || 'Object without email' : state.currentUser}</li>
+                        <li><strong>Auth Token:</strong> ${state.authToken !== 'Not found' ? 'Available' : 'Not found'}</li>
+                        <li><strong>KRI Module:</strong> ${state.kriModule}</li>
+                        <li><strong>API Call:</strong> ${state.apiCall}</li>
+                        <li><strong>Chart.js:</strong> ${state.Chart}</li>
+                        <li><strong>Supabase Client:</strong> ${state.supabaseClient}</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function navigateToKRI() {
+            const resultDiv = document.getElementById('navigate-result');
+            
+            try {
+                // Check if we're in main app context
+                if (window.parent !== window) {
+                    // We're in iframe, try to communicate with parent
+                    window.parent.postMessage({ action: 'navigateToKRI' }, '*');
+                    resultDiv.innerHTML = `
+                        <div class="info">
+                            <h4>Navigation Request Sent</h4>
+                            <p>Sent navigation request to parent window</p>
+                        </div>
+                    `;
+                } else {
+                    // We're in main window, try direct navigation
+                    if (typeof window.navigateToPage === 'function') {
+                        window.navigateToPage('kri');
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                <h4>✅ Navigation Successful</h4>
+                                <p>Navigated to KRI page</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h4>❌ Navigation Function Not Available</h4>
+                                <p>navigateToPage function not found</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Navigation Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadKRIDirectly() {
+            const resultDiv = document.getElementById('kri-direct-result');
+            
+            try {
+                resultDiv.innerHTML = '<p>Loading KRI data directly...</p>';
+                
+                // Try fallback endpoint first
+                const response = await fetch('/api/kri/test-no-auth');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                
+                // Create simple display
+                const tableRows = data.slice(0, 5).map(item => `
+                    <tr>
+                        <td>${item.kode || '-'}</td>
+                        <td>${item.nama_indikator || '-'}</td>
+                        <td>${item.status_indikator || '-'}</td>
+                        <td>${item.nilai_aktual || '-'}</td>
+                    </tr>
+                `).join('');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI Data Loaded (${data.length} records)</h4>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="border: 1px solid #ddd; padding: 8px;">Kode</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px;">Nama Indikator</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px;">Nilai Aktual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Loading KRI Data</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function simulateMainApp() {
+            const resultDiv = document.getElementById('simulate-result');
+            
+            try {
+                resultDiv.innerHTML = '<p>Simulating main app...</p>';
+                
+                // Load required scripts
+                const scripts = [
+                    '/js/services/apiService.js',
+                    '/js/kri.js'
+                ];
+                
+                for (const src of scripts) {
+                    if (!document.querySelector(`script[src="${src}"]`)) {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        document.head.appendChild(script);
+                        
+                        await new Promise((resolve, reject) => {
+                            script.onload = resolve;
+                            script.onerror = reject;
+                        });
+                    }
+                }
+                
+                // Wait a bit for scripts to initialize
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Mock apiCall if not available
+                if (typeof window.apiCall === 'undefined') {
+                    window.apiCall = async function(endpoint, options = {}) {
+                        // For KRI, use fallback endpoint
+                        if (endpoint === '/api/kri') {
+                            const response = await fetch('/api/kri/test-no-auth');
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                            }
+                            return response.json();
+                        }
+                        
+                        // For other endpoints, try normal fetch
+                        const response = await fetch(endpoint, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            ...options
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                        }
+                        
+                        return response.json();
+                    };
+                }
+                
+                // Create KRI content div
+                if (!document.getElementById('kri-content')) {
+                    const kriDiv = document.createElement('div');
+                    kriDiv.id = 'kri-content';
+                    kriDiv.style.cssText = 'border: 1px solid #ddd; padding: 20px; margin-top: 10px; min-height: 200px;';
+                    resultDiv.appendChild(kriDiv);
+                }
+                
+                // Load KRI module
+                if (window.kriModule && window.kriModule.load) {
+                    await window.kriModule.load();
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Main App Simulation Successful</h4>
+                            <p>KRI module loaded and data displayed below</p>
+                        </div>
+                    ` + document.getElementById('kri-content').outerHTML;
+                } else {
+                    throw new Error('KRI module not available after loading scripts');
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Simulation Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-check state on load
+        window.onload = function() {
+            checkPageState();
+        };
+
+        // Listen for messages from parent window
+        window.addEventListener('message', function(event) {
+            if (event.data.action === 'navigateToKRI') {
+                console.log('Received navigation request');
+            }
+        });
+    </script>
+</body>
+</html>

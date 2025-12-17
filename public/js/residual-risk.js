@@ -16,39 +16,176 @@ const ResidualRiskModule = (() => {
 
   const api = () => (window.app ? window.app.apiCall : window.apiCall);
 
+  // Fallback API call with manual token handling
+  async function fallbackApiCall(endpoint, options = {}) {
+    try {
+      // Try to get token from localStorage first
+      let token = localStorage.getItem('authToken');
+      
+      // If no token in localStorage, try Supabase session
+      if (!token && window.supabaseClient) {
+        try {
+          const { data: { session } } = await window.supabaseClient.auth.getSession();
+          token = session?.access_token;
+          if (token) {
+            localStorage.setItem('authToken', token);
+          }
+        } catch (e) {
+          console.warn('Failed to get Supabase session:', e);
+        }
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const config = {
+        ...options,
+        headers
+      };
+
+      if (options.body && typeof options.body === 'object') {
+        config.body = JSON.stringify(options.body);
+      }
+
+      const response = await fetch(endpoint, config);
+
+      if (!response.ok) {
+        let error;
+        try {
+          error = await response.json();
+        } catch (e) {
+          error = { error: response.statusText };
+        }
+        throw new Error(error.error || error.message || `Request failed with status ${response.status}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      }
+      
+      return await response.text();
+    } catch (error) {
+      console.error('Fallback API call error:', error);
+      throw error;
+    }
+  }
+
   async function load() {
-    await Promise.all([fetchMasterData(), fetchResidualRisk()]);
-    render();
+    console.log('ResidualRiskModule: Starting load...');
+    try {
+      // Check if API function is available
+      const apiFunction = api();
+      if (!apiFunction) {
+        console.error('ResidualRiskModule: API function not available');
+        showError('API function not available. Please refresh the page.');
+        return;
+      }
+
+      console.log('ResidualRiskModule: API function available, fetching data...');
+      await Promise.all([fetchMasterData(), fetchResidualRisk()]);
+      render();
+      console.log('ResidualRiskModule: Load completed successfully');
+    } catch (error) {
+      console.error('ResidualRiskModule: Load failed:', error);
+      showError('Failed to load residual risk data: ' + error.message);
+    }
+  }
+
+  function showError(message) {
+    const container = document.getElementById('residual-risk-content');
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 20px; text-align: center; color: #e74c3c;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+          <h3>Error Loading Data</h3>
+          <p>${message}</p>
+          <button class="btn btn-primary" onclick="ResidualRiskModule.load()" style="margin-top: 15px;">
+            <i class="fas fa-sync"></i> Retry
+          </button>
+        </div>
+      `;
+    }
   }
 
   async function fetchMasterData() {
     try {
+      console.log('ResidualRiskModule: Fetching master data...');
+      
       const [rencana, units, categories] = await Promise.all([
         api()('/api/rencana-strategis'),
         api()('/api/master-data/work-units'),
         api()('/api/master-data/risk-categories')
       ]);
-      state.rencanaStrategis = rencana || [];
-      state.unitKerja = units || [];
-      state.categories = categories || [];
+      
+      state.rencanaStrategis = Array.isArray(rencana) ? rencana : [];
+      state.unitKerja = Array.isArray(units) ? units : [];
+      state.categories = Array.isArray(categories) ? categories : [];
+      
+      console.log('ResidualRiskModule: Master data loaded:', {
+        rencanaStrategis: state.rencanaStrategis.length,
+        unitKerja: state.unitKerja.length,
+        categories: state.categories.length
+      });
+      
     } catch (error) {
-      console.error('Error fetching master data:', error);
+      console.error('ResidualRiskModule: Error fetching master data:', error);
+      // Don't throw error for master data, just use empty arrays
+      state.rencanaStrategis = [];
+      state.unitKerja = [];
+      state.categories = [];
     }
   }
 
   async function fetchResidualRisk() {
     try {
+      console.log('ResidualRiskModule: Fetching residual risk data...');
+      
       const params = new URLSearchParams();
       if (state.filters.rencana_strategis_id) params.append('rencana_strategis_id', state.filters.rencana_strategis_id);
       if (state.filters.unit_kerja_id) params.append('unit_kerja_id', state.filters.unit_kerja_id);
       if (state.filters.kategori_risiko_id) params.append('kategori_risiko_id', state.filters.kategori_risiko_id);
 
-      const data = await api()('/api/reports/residual-risk?' + params.toString());
-      state.data = data || [];
-      console.log('Residual risk loaded:', state.data.length, 'items');
+      const endpoint = '/api/reports/residual-risk' + (params.toString() ? '?' + params.toString() : '');
+      console.log('ResidualRiskModule: Calling endpoint:', endpoint);
+      
+      let data;
+      try {
+        // Try main API function first
+        const apiFunction = api();
+        if (apiFunction) {
+          data = await apiFunction(endpoint);
+        } else {
+          throw new Error('Main API function not available');
+        }
+      } catch (mainError) {
+        console.warn('ResidualRiskModule: Main API failed, trying fallback:', mainError.message);
+        // Try fallback API call
+        data = await fallbackApiCall(endpoint);
+      }
+      
+      state.data = Array.isArray(data) ? data : [];
+      
+      console.log('ResidualRiskModule: Residual risk loaded:', state.data.length, 'items');
+      
+      if (state.data.length > 0) {
+        console.log('ResidualRiskModule: Sample data structure:', {
+          firstItem: state.data[0],
+          hasRiskInputs: !!state.data[0]?.risk_inputs,
+          hasInherentAnalysis: !!state.data[0]?.risk_inputs?.risk_inherent_analysis
+        });
+      }
+      
     } catch (error) {
-      console.error('Error fetching residual risk:', error);
+      console.error('ResidualRiskModule: Error fetching residual risk:', error);
       state.data = [];
+      throw error; // Re-throw to be handled by load()
     }
   }
 
@@ -60,9 +197,33 @@ const ResidualRiskModule = (() => {
       <div class="card">
         <div class="card-header">
           <h3 class="card-title"><i class="fas fa-chart-pie"></i> Residual Risk Analysis</h3>
-          <button class="btn btn-success" onclick="ResidualRiskModule.refresh()">
-            <i class="fas fa-sync"></i> Refresh Data
-          </button>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="ResidualRiskModule.refresh()">
+              <i class="fas fa-sync"></i> Refresh Data
+            </button>
+            <div class="dropdown" style="position: relative;">
+              <button class="btn btn-primary dropdown-toggle" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+                <i class="fas fa-download"></i> Download
+              </button>
+              <div class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px;">
+                <a href="#" onclick="ResidualRiskModule.downloadExcel(); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
+                  <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel Report
+                </a>
+                <a href="#" onclick="ResidualRiskModule.downloadPDF(); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
+                  <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF Report
+                </a>
+                <a href="#" onclick="ResidualRiskModule.downloadChartImage('residual-risk-matrix', 'residual-matrix'); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
+                  <i class="fas fa-image" style="color: #3498db;"></i> Matrix Chart
+                </a>
+                <a href="#" onclick="ResidualRiskModule.downloadChartImage('comparison-chart', 'comparison-chart'); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
+                  <i class="fas fa-chart-bar" style="color: #9b59b6;"></i> Comparison Chart
+                </a>
+                <a href="#" onclick="ResidualRiskModule.printReport(); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333;">
+                  <i class="fas fa-print" style="color: #34495e;"></i> Print Report
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           ${renderFilters()}
@@ -140,13 +301,44 @@ const ResidualRiskModule = (() => {
   }
 
   function renderStatistics() {
+    if (state.data.length === 0) {
+      return `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <div style="font-size: 2rem; font-weight: bold;">0</div>
+            <div style="font-size: 0.875rem; opacity: 0.9;">Total Residual Risk</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <div style="font-size: 2rem; font-weight: bold;">0.00</div>
+            <div style="font-size: 0.875rem; opacity: 0.9;">Avg Inherent Value</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <div style="font-size: 2rem; font-weight: bold;">0.00</div>
+            <div style="font-size: 0.875rem; opacity: 0.9;">Avg Residual Value</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <div style="font-size: 2rem; font-weight: bold;">0%</div>
+            <div style="font-size: 0.875rem; opacity: 0.9;">Risk Reduction</div>
+          </div>
+        </div>
+      `;
+    }
+
     const stats = {
       total: state.data.length,
-      avgInherent: state.data.reduce((sum, d) => sum + (d.risk_inputs?.risk_inherent_analysis?.[0]?.risk_value || 0), 0) / (state.data.length || 1),
-      avgResidual: state.data.reduce((sum, d) => sum + (d.risk_value || 0), 0) / (state.data.length || 1),
+      avgInherent: state.data.reduce((sum, d) => sum + (d.risk_inputs?.risk_inherent_analysis?.[0]?.risk_value || 0), 0) / state.data.length,
+      avgResidual: state.data.reduce((sum, d) => sum + (d.risk_value || 0), 0) / state.data.length,
       reduction: 0
     };
-    stats.reduction = ((stats.avgInherent - stats.avgResidual) / stats.avgInherent * 100).toFixed(1);
+    
+    // Calculate reduction safely
+    if (stats.avgInherent > 0) {
+      stats.reduction = ((stats.avgInherent - stats.avgResidual) / stats.avgInherent * 100).toFixed(1);
+    } else {
+      stats.reduction = '0.0';
+    }
+
+    console.log('ResidualRiskModule: Calculated statistics:', stats);
 
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
@@ -459,10 +651,141 @@ const ResidualRiskModule = (() => {
     alert('Data residual risk berhasil di-refresh');
   }
 
+  // Download functions
+  async function downloadExcel() {
+    try {
+      const token = localStorage.getItem('authToken') || window.authService?.getToken?.();
+      if (!token) {
+        alert('Anda harus login terlebih dahulu');
+        return;
+      }
+
+      const response = await fetch('/api/reports/residual-risk/excel', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `residual-risk-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        alert('File Excel berhasil diunduh');
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      alert('Error downloading Excel: ' + error.message);
+    }
+  }
+
+  async function downloadPDF() {
+    try {
+      const token = localStorage.getItem('authToken') || window.authService?.getToken?.();
+      if (!token) {
+        alert('Anda harus login terlebih dahulu');
+        return;
+      }
+
+      const response = await fetch('/api/reports/residual-risk/pdf', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `residual-risk-report-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        alert('File PDF berhasil diunduh');
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Error downloading PDF: ' + error.message);
+    }
+  }
+
+  function downloadChartImage(chartId, filename) {
+    try {
+      const canvas = document.getElementById(chartId);
+      if (!canvas) {
+        alert('Chart tidak ditemukan');
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.download = `${filename}-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      alert('Gambar chart berhasil diunduh');
+    } catch (error) {
+      console.error('Error downloading chart:', error);
+      alert('Error downloading chart: ' + error.message);
+    }
+  }
+
+  function printReport() {
+    const printContent = `
+      <html>
+        <head>
+          <title>Residual Risk Analysis Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .stats { display: flex; justify-content: space-around; margin: 30px 0; }
+            .stat-box { text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+            .stat-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+            .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 11px; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .badge-aman { background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; }
+            .badge-normal { background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; }
+            .badge-hati-hati { background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; }
+            .badge-kritis { background-color: #f5c6cb; color: #721c24; padding: 4px 8px; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Residual Risk Analysis Report</h1>
+            <p>Generated on: ${new Date().toLocaleDateString('id-ID', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+          </div>
+          ${document.getElementById('residual-risk-content')?.innerHTML || ''}
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  }
+
   return {
     load,
     applyFilter,
-    refresh
+    refresh,
+    downloadExcel,
+    downloadPDF,
+    downloadChartImage,
+    printReport
   };
 })();
 

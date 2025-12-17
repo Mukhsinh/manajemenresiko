@@ -4,6 +4,35 @@ const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
+// Public endpoint for testing (no auth required) - MUST BE FIRST
+router.get('/public', async (req, res) => {
+  try {
+    console.log('=== VISI MISI PUBLIC ENDPOINT ===');
+    
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
+      .from('visi_misi')
+      .select('*')
+      .order('tahun', { ascending: false });
+
+    if (error) {
+      console.error('Visi misi public query error:', error);
+      throw error;
+    }
+
+    console.log('Visi misi public query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0
+    });
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Visi misi public endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get all visi misi
 router.get('/', authenticateUser, async (req, res) => {
   try {

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Assistant Widget</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .login-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .login-section input {
+            margin: 5px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .login-section button {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        
+        /* AI Assistant Widget Styles */
+        #ai-assistant-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        #ai-assistant-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        #ai-assistant-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        }
+        
+        #ai-assistant-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #ai-assistant-panel.open {
+            display: flex;
+        }
+        
+        .ai-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ai-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        #ai-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .ai-empty-state {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px 20px;
+        }
+        
+        .ai-empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #dee2e6;
+        }
+        
+        .ai-message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .ai-message-user {
+            flex-direction: row-reverse;
+        }
+        
+        .ai-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 8px;
+            font-size: 14px;
+        }
+        
+        .ai-message-user .ai-message-avatar {
+            background: #007bff;
+            color: white;
+        }
+        
+        .ai-message-assistant .ai-message-avatar {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .ai-message-content {
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        .ai-message-text {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
+        
+        .ai-message-user .ai-message-text {
+            background: #007bff;
+            color: white;
+        }
+        
+        .ai-message-time {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .ai-message-user .ai-message-time {
+            text-align: left;
+        }
+        
+        .ai-input-area {
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            background: white;
+        }
+        
+        .ai-input-container {
+            display: flex;
+            gap: 8px;
+        }
+        
+        #ai-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+        }
+        
+        #ai-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #ai-send-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .ai-status {
+            padding: 8px 15px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .ai-status-error { color: #dc3545; }
+        .ai-status-warning { color: #ffc107; }
+        .ai-status-loading { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test AI Assistant Widget</h1>
+        
+        <div class="login-section">
+            <h3>Login untuk Testing</h3>
+            <input type="email" id="email" placeholder="Email" value="admin@example.com">
+            <input type="password" id="password" placeholder="Password" value="admin123">
+            <button onclick="login()">Login</button>
+            <button onclick="logout()">Logout</button>
+            <div id="auth-status" class="status"></div>
+        </div>
+        
+        <div>
+            <h3>Instruksi Testing</h3>
+            <ol>
+                <li>Login menggunakan kredensial di atas</li>
+                <li>Klik tombol AI Assistant di pojok kanan bawah</li>
+                <li>Coba kirim pesan ke AI</li>
+                <li>Periksa console browser untuk error details</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- AI Assistant Widget -->
+    <div id="ai-assistant-widget">
+        <button id="ai-assistant-toggle" title="AI Assistant">
+            <i class="fas fa-robot"></i>
+        </button>
+        
+        <div id="ai-assistant-panel" aria-hidden="true">
+            <div class="ai-header">
+                <h4>AI Assistant</h4>
+                <button class="ai-close" title="Tutup">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="ai-messages">
+                <div class="ai-empty-state">
+                    <i class="fas fa-robot"></i>
+                    <p>Mulai percakapan dengan AI Assistant untuk bantuan manajemen risiko.</p>
+                    <p class="ai-empty-hint">Coba tanyakan: "Bagaimana cara mengidentifikasi risiko di unit IGD?"</p>
+                </div>
+            </div>
+            
+            <div class="ai-input-area">
+                <div id="ai-status" class="ai-status"></div>
+                <div class="ai-input-container">
+                    <textarea id="ai-input" placeholder="Ketik pesan Anda..." rows="1"></textarea>
+                    <button id="ai-send-btn" title="Kirim">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/ai-assistant.js"></script>
+    <script>
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const status = document.getElementById('auth-status');
+            
+            try {
+                status.textContent = 'Logging in...';
+                status.className = 'status';
+                
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                status.textContent = 'Login berhasil!';
+                status.className = 'status success';
+                
+                // Refresh AI availability check
+                if (window.AIAssistant) {
+                    setTimeout(() => {
+                        window.AIAssistant.checkAvailability();
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                status.textContent = `Login gagal: ${error.message}`;
+                status.className = 'status error';
+            }
+        }
+        
+        async function logout() {
+            const status = document.getElementById('auth-status');
+            
+            try {
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                const { error } = await window.supabaseClient.auth.signOut();
+                if (error) throw error;
+                
+                status.textContent = 'Logout berhasil!';
+                status.className = 'status success';
+                
+            } catch (error) {
+                status.textContent = `Logout gagal: ${error.message}`;
+                status.className = 'status error';
+            }
+        }
+        
+        // Check auth status on load
+        window.addEventListener('load', async () => {
+            const status = document.getElementById('auth-status');
+            
+            try {
+                // Wait for config to load
+                await new Promise(resolve => {
+                    const checkConfig = () => {
+                        if (window.supabaseClient) {
+                            resolve();
+                        } else {
+                            setTimeout(checkConfig, 100);
+                        }
+                    };
+                    checkConfig();
+                });
+                
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                
+                if (session) {
+                    status.textContent = 'Sudah login';
+                    status.className = 'status success';
+                } else {
+                    status.textContent = 'Belum login';
+                    status.className = 'status warning';
+                }
+            } catch (error) {
+                status.textContent = `Error: ${error.message}`;
+                status.className = 'status error';
+            }
+        });
+    </script>
+</body>
+</html>

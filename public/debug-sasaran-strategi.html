@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sasaran Strategi</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .json-output { background: #f5f5f5; padding: 10px; border-radius: 3px; white-space: pre-wrap; font-family: monospace; }
+        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Debug Sasaran Strategi API</h1>
+    
+    <div class="debug-section">
+        <h3>Test API Endpoints</h3>
+        <button class="btn btn-primary" onclick="testSasaranAPI()">Test Sasaran Strategi API</button>
+        <button class="btn btn-primary" onclick="testTowsAPI()">Test TOWS API</button>
+        <button class="btn btn-primary" onclick="testRencanaAPI()">Test Rencana Strategis API</button>
+    </div>
+
+    <div class="debug-section">
+        <h3>API Response:</h3>
+        <div id="api-response" class="json-output">Click a button to test API...</div>
+    </div>
+
+    <script>
+        async function makeAPICall(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                return { success: true, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testSasaranAPI() {
+            document.getElementById('api-response').textContent = 'Loading sasaran strategi...';
+            const result = await makeAPICall('/api/sasaran-strategi');
+            
+            if (result.success) {
+                document.getElementById('api-response').textContent = 
+                    `SUCCESS - Found ${result.data.length} sasaran strategi:\n\n` +
+                    JSON.stringify(result.data, null, 2);
+            } else {
+                document.getElementById('api-response').textContent = 
+                    `ERROR: ${result.error}`;
+            }
+        }
+
+        async function testTowsAPI() {
+            document.getElementById('api-response').textContent = 'Loading TOWS strategi...';
+            const result = await makeAPICall('/api/matriks-tows');
+            
+            if (result.success) {
+                document.getElementById('api-response').textContent = 
+                    `SUCCESS - Found ${result.data.length} TOWS strategi:\n\n` +
+                    JSON.stringify(result.data, null, 2);
+            } else {
+                document.getElementById('api-response').textContent = 
+                    `ERROR: ${result.error}`;
+            }
+        }
+
+        async function testRencanaAPI() {
+            document.getElementById('api-response').textContent = 'Loading rencana strategis...';
+            const result = await makeAPICall('/api/rencana-strategis');
+            
+            if (result.success) {
+                document.getElementById('api-response').textContent = 
+                    `SUCCESS - Found ${result.data.length} rencana strategis:\n\n` +
+                    JSON.stringify(result.data, null, 2);
+            } else {
+                document.getElementById('api-response').textContent = 
+                    `ERROR: ${result.error}`;
+            }
+        }
+    </script>
+</body>
+</html>

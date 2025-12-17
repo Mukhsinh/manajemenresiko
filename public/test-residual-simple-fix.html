@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Residual Risk Simple</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .badge-aman { background-color: #d4edda; color: #155724; }
+        .badge-normal { background-color: #fff3cd; color: #856404; }
+        .badge-hati-hati { background-color: #f8d7da; color: #721c24; }
+        .badge-kritis { background-color: #f5c6cb; color: #721c24; }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .stat-value { font-size: 2rem; font-weight: bold; }
+        .stat-label { font-size: 0.875rem; opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-pie"></i> Test Residual Risk Simple</h3>
+                        <button class="btn btn-primary" onclick="loadData()">
+                            <i class="fas fa-sync"></i> Load Data
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="status" class="alert alert-info">
+                            Klik "Load Data" untuk memuat data residual risk
+                        </div>
+                        
+                        <div id="statistics" class="row" style="display: none;">
+                            <!-- Statistics will be populated here -->
+                        </div>
+                        
+                        <div id="charts" class="row mt-4" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Residual Risk Matrix</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="residualMatrix" width="400" height="400"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Inherent vs Residual Comparison</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="comparisonChart" width="400" height="400"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="table" class="mt-4" style="display: none;">
+                            <!-- Table will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let residualData = [];
+        let matrixChart = null;
+        let comparisonChart = null;
+
+        async function loadData() {
+            try {
+                updateStatus('Loading data...', 'info');
+                
+                console.log('Fetching residual risk data...');
+                const response = await fetch('/api/reports/residual-risk-simple');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received data:', data);
+                
+                residualData = Array.isArray(data) ? data : [];
+                
+                if (residualData.length === 0) {
+                    updateStatus('Tidak ada data residual risk ditemukan', 'warning');
+                    return;
+                }
+                
+                updateStatus(`Berhasil memuat ${residualData.length} data residual risk`, 'success');
+                
+                // Render components
+                renderStatistics();
+                renderTable();
+                renderCharts();
+                
+                // Show components
+                document.getElementById('statistics').style.display = 'block';
+                document.getElementById('charts').style.display = 'block';
+                document.getElementById('table').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                updateStatus(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `alert alert-${type}`;
+            statusEl.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+        }
+
+        function renderStatistics() {
+            const stats = calculateStatistics();
+            
+            document.getElementById('statistics').innerHTML = `
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total}</div>
+                        <div class="stat-label">Total Residual Risk</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-value">${stats.avgInherent.toFixed(2)}</div>
+                        <div class="stat-label">Avg Inherent Value</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="stat-value">${stats.avgResidual.toFixed(2)}</div>
+                        <div class="stat-label">Avg Residual Value</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <div class="stat-value">${stats.reduction}%</div>
+                        <div class="stat-label">Risk Reduction</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function calculateStatistics() {
+            const total = residualData.length;
+            const avgInherent = residualData.reduce((sum, d) => {
+                const inherent = d.risk_inputs?.risk_inherent_analysis?.[0];
+                return sum + (inherent?.risk_value || 0);
+            }, 0) / total;
+            
+            const avgResidual = residualData.reduce((sum, d) => sum + (d.risk_value || 0), 0) / total;
+            
+            const reduction = avgInherent > 0 ? ((avgInherent - avgResidual) / avgInherent * 100).toFixed(1) : '0.0';
+            
+            return { total, avgInherent, avgResidual, reduction };
+        }
+
+        function renderTable() {
+            const tableHtml = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-table"></i> Detail Residual Risk Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Risiko</th>
+                                        <th>Unit Kerja</th>
+                                        <th>Inherent</th>
+                                        <th>Residual</th>
+                                        <th>Reduction</th>
+                                        <th>Level</th>
+                                        <th>Review Status</th>
+                                        <th>Next Review</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${residualData.map(item => {
+                                        const risk = item.risk_inputs || {};
+                                        const inherent = risk.risk_inherent_analysis?.[0] || {};
+                                        const reduction = inherent.risk_value && item.risk_value 
+                                            ? ((inherent.risk_value - item.risk_value) / inherent.risk_value * 100).toFixed(1) + '%'
+                                            : '-';
+                                        
+                                        return `
+                                            <tr>
+                                                <td><strong>${risk.kode_risiko || '-'}</strong></td>
+                                                <td>${risk.master_work_units?.name || '-'}</td>
+                                                <td><span class="badge badge-warning">${inherent.risk_value || '-'}</span></td>
+                                                <td><span class="badge badge-${getRiskLevelColor(item.risk_level)}">${item.risk_value || '-'}</span></td>
+                                                <td><strong style="color: #27ae60;">${reduction}</strong></td>
+                                                <td><span class="badge badge-${getRiskLevelColor(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                                                <td>${item.review_status || '-'}</td>
+                                                <td>${item.next_review_date || '-'}</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('table').innerHTML = tableHtml;
+        }
+
+        function renderCharts() {
+            renderResidualMatrix();
+            renderComparisonChart();
+        }
+
+        function renderResidualMatrix() {
+            const ctx = document.getElementById('residualMatrix').getContext('2d');
+            
+            if (matrixChart) {
+                matrixChart.destroy();
+            }
+            
+            const points = residualData.map(item => ({
+                x: parseFloat(item.impact) || 0,
+                y: parseFloat(item.probability) || 0,
+                riskId: item.risk_inputs?.kode_risiko || 'N/A',
+                value: parseFloat(item.risk_value) || 0,
+                level: item.risk_level || 'LOW RISK'
+            })).filter(p => p.x > 0 && p.y > 0);
+            
+            matrixChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Residual Risk',
+                        data: points,
+                        backgroundColor: points.map(p => getRiskColor(p.level)),
+                        borderColor: '#333',
+                        borderWidth: 2,
+                        pointRadius: 12,
+                        pointHoverRadius: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            min: 0.5,
+                            max: 5.5,
+                            ticks: { stepSize: 1 },
+                            title: { display: true, text: 'Dampak', font: { weight: 'bold' } }
+                        },
+                        y: {
+                            min: 0.5,
+                            max: 5.5,
+                            ticks: { stepSize: 1 },
+                            title: { display: true, text: 'Probabilitas', font: { weight: 'bold' } }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return [
+                                        `Kode: ${point.riskId}`,
+                                        `Risk Value: ${point.value}`,
+                                        `Level: ${point.level}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+            
+            const labels = residualData.map(item => item.risk_inputs?.kode_risiko || 'N/A');
+            const inherentValues = residualData.map(item => {
+                const inherent = item.risk_inputs?.risk_inherent_analysis?.[0];
+                return parseFloat(inherent?.risk_value) || 0;
+            });
+            const residualValues = residualData.map(item => parseFloat(item.risk_value) || 0);
+            
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Inherent Risk',
+                            data: inherentValues,
+                            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Residual Risk',
+                            data: residualValues,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Risk Value',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Kode Risiko',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function getRiskColor(level) {
+            const colorMap = {
+                'EXTREME HIGH': '#F44336',
+                'HIGH RISK': '#FF9800',
+                'MEDIUM RISK': '#FFC107',
+                'LOW RISK': '#4CAF50'
+            };
+            return colorMap[level] || '#999';
+        }
+
+        function getRiskLevelColor(level) {
+            const colorMap = {
+                'EXTREME HIGH': 'danger',
+                'HIGH RISK': 'warning',
+                'MEDIUM RISK': 'info',
+                'LOW RISK': 'success'
+            };
+            return colorMap[level] || 'secondary';
+        }
+    </script>
+</body>
+</html>

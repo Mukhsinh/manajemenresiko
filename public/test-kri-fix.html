@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test KRI Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Test Key Risk Indicator Fix</h1>
+    
+    <div class="test-section">
+        <h2>1. Test API KRI</h2>
+        <button class="btn" onclick="testKRIAPI()">Test KRI API</button>
+        <div id="kri-api-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test KRI dengan Organization Filter</h2>
+        <button class="btn" onclick="testKRIWithOrg()">Test dengan Organization ID</button>
+        <div id="kri-org-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Sample Data</h2>
+        <button class="btn" onclick="showSampleData()">Tampilkan Sample Data</button>
+        <div id="sample-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        // Get token from localStorage
+        function getAuthToken() {
+            return localStorage.getItem('token') || localStorage.getItem('authToken');
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const token = getAuthToken();
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                },
+                ...options
+            };
+            
+            if (options.body && typeof options.body === 'object') {
+                config.body = JSON.stringify(options.body);
+            }
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, config);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
+            return response.json();
+        }
+
+        async function testKRIAPI() {
+            const resultDiv = document.getElementById('kri-api-result');
+            try {
+                resultDiv.innerHTML = '<p>Loading...</p>';
+                
+                const data = await apiCall('/api/kri');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        <p><strong>Sample data:</strong></p>
+                        <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error KRI API</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testKRIWithOrg() {
+            const resultDiv = document.getElementById('kri-org-result');
+            try {
+                resultDiv.innerHTML = '<p>Loading...</p>';
+                
+                // Test dengan organization filter
+                const data = await apiCall('/api/kri');
+                
+                // Group by organization
+                const orgGroups = {};
+                data.forEach(item => {
+                    const orgId = item.organization_id || 'no-org';
+                    if (!orgGroups[orgId]) orgGroups[orgId] = [];
+                    orgGroups[orgId].push(item);
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI dengan Organization Filter</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        <p><strong>Grouping by Organization:</strong></p>
+                        ${Object.entries(orgGroups).map(([orgId, items]) => `
+                            <p>• Organization ${orgId}: ${items.length} items</p>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Organization Filter</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function showSampleData() {
+            const resultDiv = document.getElementById('sample-result');
+            try {
+                resultDiv.innerHTML = '<p>Loading...</p>';
+                
+                const data = await apiCall('/api/kri');
+                
+                if (data.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>⚠️ Tidak ada data KRI</h4>
+                            <p>Database kosong atau tidak ada data untuk organization ini</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const tableRows = data.slice(0, 10).map(item => `
+                    <tr>
+                        <td>${item.kode || '-'}</td>
+                        <td>${item.nama_indikator || '-'}</td>
+                        <td>${item.master_risk_categories?.name || '-'}</td>
+                        <td>${item.nilai_aktual || '-'}</td>
+                        <td>${item.status_indikator || '-'}</td>
+                        <td>${item.organization_id || '-'}</td>
+                    </tr>
+                `).join('');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Sample Data KRI (10 pertama)</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Indikator</th>
+                                    <th>Kategori</th>
+                                    <th>Nilai Aktual</th>
+                                    <th>Status</th>
+                                    <th>Org ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Sample Data</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto test on load
+        window.onload = function() {
+            const token = getAuthToken();
+            if (!token) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 50px;">
+                        <h2>⚠️ Token tidak ditemukan</h2>
+                        <p>Silakan login terlebih dahulu di <a href="/index.html">halaman utama</a></p>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

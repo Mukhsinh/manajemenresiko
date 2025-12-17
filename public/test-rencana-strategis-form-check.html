@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Form Check</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .status-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .test-log {
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis Form Check</h1>
+        
+        <div id="status-panel" class="status-panel">
+            <h3><i class="fas fa-spinner fa-spin"></i> Initializing...</h3>
+            <p>Checking form rendering...</p>
+        </div>
+
+        <div id="rencana-strategis-content">
+            <!-- Form will be rendered here -->
+        </div>
+
+        <div class="test-log" id="test-log">
+            Starting test...
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        let testLog = [];
+        
+        function addLog(message) {
+            testLog.push(`${new Date().toLocaleTimeString()}: ${message}`);
+            const logElement = document.getElementById('test-log');
+            if (logElement) {
+                logElement.innerHTML = testLog.slice(-20).join('\n');
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        function updateStatus(type, title, message) {
+            const statusPanel = document.getElementById('status-panel');
+            if (!statusPanel) return;
+
+            const iconClass = type === 'success' ? 'fa-check-circle' : 
+                             type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
+            
+            statusPanel.className = `status-panel status-${type}`;
+            statusPanel.innerHTML = `
+                <h3><i class="fas ${iconClass}"></i> ${title}</h3>
+                <p>${message}</p>
+            `;
+        }
+
+        async function runFormTest() {
+            try {
+                addLog('Starting form test...');
+                
+                // Check container
+                const container = document.getElementById('rencana-strategis-content');
+                if (!container) {
+                    throw new Error('Container not found');
+                }
+                addLog('Container found');
+
+                // Check module availability
+                if (!window.RencanaStrategisModule) {
+                    throw new Error('RencanaStrategisModule not available');
+                }
+                addLog('Module available');
+
+                // Load module
+                addLog('Loading module...');
+                await window.RencanaStrategisModule.load();
+                addLog('Module loaded');
+
+                // Wait for rendering
+                setTimeout(() => {
+                    addLog('Checking rendered content...');
+                    
+                    const form = document.getElementById('rs-form');
+                    const inputs = container.querySelectorAll('input, select, textarea');
+                    const buttons = container.querySelectorAll('button');
+                    const table = container.querySelector('.data-table');
+                    
+                    addLog(`Form found: ${!!form}`);
+                    addLog(`Inputs found: ${inputs.length}`);
+                    addLog(`Buttons found: ${buttons.length}`);
+                    addLog(`Table found: ${!!table}`);
+                    
+                    if (form && inputs.length > 0) {
+                        // Check specific inputs
+                        const kodeInput = document.getElementById('rs-kode');
+                        const misiSelect = document.getElementById('rs-misi');
+                        const namaInput = document.getElementById('rs-nama');
+                        const sasaranInput = document.getElementById('rs-sasaran-input');
+                        const indikatorInput = document.getElementById('rs-indikator-input');
+                        
+                        addLog(`Kode input: ${!!kodeInput} (value: ${kodeInput?.value || 'empty'})`);
+                        addLog(`Misi select: ${!!misiSelect} (options: ${misiSelect?.options.length || 0})`);
+                        addLog(`Nama input: ${!!namaInput}`);
+                        addLog(`Sasaran input: ${!!sasaranInput}`);
+                        addLog(`Indikator input: ${!!indikatorInput}`);
+                        
+                        // Check buttons
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        const resetBtn = document.getElementById('rs-reset-btn');
+                        const sasaranAddBtn = document.getElementById('rs-sasaran-add');
+                        const indikatorAddBtn = document.getElementById('rs-indikator-add');
+                        
+                        addLog(`Submit button: ${!!submitBtn}`);
+                        addLog(`Reset button: ${!!resetBtn}`);
+                        addLog(`Sasaran add button: ${!!sasaranAddBtn}`);
+                        addLog(`Indikator add button: ${!!indikatorAddBtn}`);
+                        
+                        // Check table
+                        if (table) {
+                            const rows = table.querySelectorAll('tbody tr');
+                            addLog(`Table rows: ${rows.length}`);
+                        }
+                        
+                        updateStatus('success', 'Form Test Passed!', 
+                            `Form berhasil di-render dengan ${inputs.length} input fields, ${buttons.length} buttons, dan ${table ? 'tabel data' : 'tanpa tabel'}.`);
+                        
+                    } else {
+                        updateStatus('error', 'Form Test Failed', 
+                            'Form tidak ditemukan atau tidak memiliki input fields.');
+                    }
+                }, 2000);
+
+            } catch (error) {
+                addLog(`Error: ${error.message}`);
+                updateStatus('error', 'Test Failed', `Error: ${error.message}`);
+            }
+        }
+
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            addLog(`LOG: ${args.join(' ')}`);
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addLog(`ERROR: ${args.join(' ')}`);
+            originalError.apply(console, args);
+        };
+
+        // Start test when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('DOM loaded, starting test in 1 second...');
+            setTimeout(runFormTest, 1000);
+        });
+    </script>
+</body>
+</html>

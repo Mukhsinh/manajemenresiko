@@ -27,11 +27,24 @@ const RencanaStrategisModule = (() => {
   }
 
   async function load() {
-    await fetchInitialData();
-    if (!state.currentId) {
-      await generateKode();
+    console.log('=== RENCANA STRATEGIS MODULE LOAD START ===');
+    try {
+      console.log('Fetching initial data...');
+      await fetchInitialData();
+      
+      console.log('Checking if need to generate kode...');
+      if (!state.currentId) {
+        console.log('Generating kode...');
+        await generateKode();
+      }
+      
+      console.log('Rendering form...');
+      render();
+      
+      console.log('=== RENCANA STRATEGIS MODULE LOAD COMPLETE ===');
+    } catch (error) {
+      console.error('=== RENCANA STRATEGIS MODULE LOAD ERROR ===', error);
     }
-    render();
   }
 
   async function fetchInitialData() {
@@ -42,6 +55,7 @@ const RencanaStrategisModule = (() => {
       let rencana, visiMisi;
       
       const rencanaEndpoints = [
+        '/api/rencana-strategis/public',
         '/api/rencana-strategis',
         '/api/simple/rencana-strategis', 
         '/api/debug-data/rencana-strategis',
@@ -49,6 +63,7 @@ const RencanaStrategisModule = (() => {
       ];
       
       const visiMisiEndpoints = [
+        '/api/visi-misi/public',
         '/api/visi-misi',
         '/api/simple/visi-misi', 
         '/api/debug-data/visi-misi',
@@ -119,13 +134,63 @@ const RencanaStrategisModule = (() => {
 
   async function generateKode(force = false) {
     if (state.currentId && !force) return;
-    const { kode } = await api()('/api/rencana-strategis/generate/kode');
-    state.formValues.kode = kode;
+    
+    try {
+      console.log('Generating kode via API...');
+      
+      // Try public endpoint first, then authenticated endpoint
+      const endpoints = [
+        '/api/rencana-strategis/generate/kode/public',
+        '/api/rencana-strategis/generate/kode'
+      ];
+      
+      let kode = null;
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`Trying kode generation endpoint: ${endpoint}`);
+          const response = await api()(endpoint);
+          kode = response.kode;
+          console.log(`Generated kode from ${endpoint}:`, kode);
+          break;
+        } catch (endpointError) {
+          console.warn(`Kode generation endpoint ${endpoint} failed:`, endpointError.message);
+          continue;
+        }
+      }
+      
+      if (kode) {
+        state.formValues.kode = kode;
+      } else {
+        throw new Error('All kode generation endpoints failed');
+      }
+    } catch (error) {
+      console.warn('Failed to generate kode via API, using fallback:', error.message);
+      // Fallback: generate kode locally
+      const year = new Date().getFullYear();
+      const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      const fallbackKode = `RS-${year}-${random}`;
+      state.formValues.kode = fallbackKode;
+      console.log('Generated fallback kode:', fallbackKode);
+    }
   }
 
   function render() {
     const container = getEl('rencana-strategis-content');
-    if (!container) return;
+    if (!container) {
+      console.error('Container rencana-strategis-content not found!');
+      return;
+    }
+    
+    console.log('Rendering rencana strategis form...');
+    console.log('State:', {
+      currentId: state.currentId,
+      formValues: state.formValues,
+      sasaranList: state.sasaranList,
+      indikatorList: state.indikatorList,
+      dataCount: state.data.length,
+      missionsCount: state.missions.length
+    });
+    
     container.innerHTML = `
       <div class="section-card">
         <div class="section-header">
@@ -207,7 +272,9 @@ const RencanaStrategisModule = (() => {
       </div>
     `;
 
+    console.log('Form HTML rendered, binding events...');
     bindRenderedEvents();
+    console.log('Events bound successfully');
   }
 
   function renderInput(label, id, type, value = '', readonly = false) {
@@ -520,9 +587,17 @@ const RencanaStrategisModule = (() => {
 
   async function downloadFile(endpoint, filename) {
     try {
-      const token = await getAuthToken?.();
+      let token = null;
+      try {
+        if (typeof getAuthToken === 'function') {
+          token = await getAuthToken();
+        }
+      } catch (tokenError) {
+        console.warn('Failed to get auth token:', tokenError.message);
+      }
+      
       const response = await fetch(`${window.location.origin}${endpoint}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (!response.ok) throw new Error('Gagal mengunduh berkas');
       const blob = await response.blob();

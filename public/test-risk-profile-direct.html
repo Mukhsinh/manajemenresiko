@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Direct</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .test-header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1><i class="fas fa-chart-bar"></i> Test Risk Profile Direct</h1>
+            <p>Test langsung untuk memuat Risk Profile dengan data real</p>
+            
+            <div class="test-controls">
+                <button class="btn" onclick="testAPI()">1. Test API</button>
+                <button class="btn" onclick="loadRiskProfileDirect()">2. Load Risk Profile</button>
+                <button class="btn" onclick="clearAll()">Clear</button>
+            </div>
+            
+            <div id="test-result"></div>
+        </div>
+        
+        <!-- Container untuk Risk Profile -->
+        <div id="risk-profile-content"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script>
+        // Test API endpoint
+        async function testAPI() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div class="info">Testing API endpoint...</div>';
+            
+            try {
+                const response = await fetch('/api/risk-profile-simple');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Data:', data);
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ API berhasil: ${data.length} records</div>
+                        <div class="info">Sample: ${data[0].risk_inputs?.kode_risiko} - ${data[0].risk_level}</div>
+                        <div class="info">Risk levels: ${[...new Set(data.map(d => d.risk_level))].join(', ')}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Tidak ada data ditemukan</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ API Error: ${error.message}</div>`;
+                console.error('API Test Error:', error);
+            }
+        }
+
+        // Load Risk Profile directly
+        async function loadRiskProfileDirect() {
+            const resultDiv = document.getElementById('test-result');
+            const contentDiv = document.getElementById('risk-profile-content');
+            
+            resultDiv.innerHTML = '<div class="info">Loading Risk Profile directly...</div>';
+            
+            try {
+                // Setup apiCall function
+                if (!window.apiCall) {
+                    window.apiCall = async function(endpoint) {
+                        console.log('Direct apiCall to:', endpoint);
+                        const response = await fetch(endpoint);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return await response.json();
+                    };
+                }
+                
+                // Load risk-profile.js dynamically
+                const script = document.createElement('script');
+                script.src = '/js/risk-profile.js?t=' + Date.now(); // Cache busting
+                script.onload = async function() {
+                    try {
+                        console.log('Risk profile script loaded');
+                        
+                        if (typeof RiskProfileModule !== 'undefined') {
+                            console.log('RiskProfileModule found, loading...');
+                            await RiskProfileModule.load();
+                            
+                            resultDiv.innerHTML = `
+                                <div class="success">✓ Risk Profile berhasil dimuat!</div>
+                                <div class="info">Periksa konten di bawah untuk melihat grafik dan tabel</div>
+                            `;
+                        } else {
+                            resultDiv.innerHTML = `<div class="error">❌ RiskProfileModule tidak ditemukan setelah load script</div>`;
+                        }
+                    } catch (moduleError) {
+                        resultDiv.innerHTML = `<div class="error">❌ Module Load Error: ${moduleError.message}</div>`;
+                        console.error('Module Load Error:', moduleError);
+                    }
+                };
+                script.onerror = function() {
+                    resultDiv.innerHTML = `<div class="error">❌ Failed to load risk-profile.js</div>`;
+                };
+                
+                // Remove existing script if any
+                const existingScript = document.querySelector('script[src*="risk-profile.js"]');
+                if (existingScript) {
+                    existingScript.remove();
+                }
+                
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Setup Error: ${error.message}</div>`;
+                console.error('Setup Error:', error);
+            }
+        }
+
+        // Clear all
+        function clearAll() {
+            document.getElementById('test-result').innerHTML = '';
+            document.getElementById('risk-profile-content').innerHTML = '';
+        }
+
+        // Auto-test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Risk Profile Direct Test ready');
+            
+            // Auto-test API after 1 second
+            setTimeout(() => {
+                testAPI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

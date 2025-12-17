@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data Display Fix</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bug"></i> Test Data Display Fix</h1>
+        <p>Halaman ini untuk menguji apakah data dapat dimuat dari database dengan benar.</p>
+
+        <!-- Indikator Kinerja Utama Test -->
+        <div class="test-section">
+            <h2><i class="fas fa-chart-line"></i> Test Indikator Kinerja Utama</h2>
+            <button onclick="testIndikatorKinerja()" class="btn btn-primary">
+                <i class="fas fa-play"></i> Test Load Data
+            </button>
+            <div id="iku-result" class="test-result loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+
+        <!-- Monitoring Evaluasi Test -->
+        <div class="test-section">
+            <h2><i class="fas fa-tasks"></i> Test Monitoring & Evaluasi</h2>
+            <button onclick="testMonitoringEvaluasi()" class="btn btn-primary">
+                <i class="fas fa-play"></i> Test Load Data
+            </button>
+            <div id="monitoring-result" class="test-result loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+
+        <!-- Peluang Test -->
+        <div class="test-section">
+            <h2><i class="fas fa-lightbulb"></i> Test Peluang</h2>
+            <button onclick="testPeluang()" class="btn btn-primary">
+                <i class="fas fa-play"></i> Test Load Data
+            </button>
+            <div id="peluang-result" class="test-result loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+
+        <!-- Risk Input Test -->
+        <div class="test-section">
+            <h2><i class="fas fa-exclamation-triangle"></i> Test Input Data Risiko</h2>
+            <button onclick="testRiskInput()" class="btn btn-primary">
+                <i class="fas fa-play"></i> Test Load Data
+            </button>
+            <div id="risk-result" class="test-result loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+
+        <!-- Test All -->
+        <div class="test-section">
+            <h2><i class="fas fa-rocket"></i> Test Semua Data</h2>
+            <button onclick="testAll()" class="btn btn-success">
+                <i class="fas fa-play-circle"></i> Test Semua
+            </button>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script>
+        async function testIndikatorKinerja() {
+            const resultDiv = document.getElementById('iku-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing Indikator Kinerja Utama...';
+
+            try {
+                console.log('Testing IKU endpoints...');
+                
+                let data, endpoint;
+                
+                // Try authenticated endpoint first
+                try {
+                    data = await apiCall('/api/indikator-kinerja-utama');
+                    endpoint = 'Authenticated API';
+                } catch (authError) {
+                    console.warn('Auth failed, trying debug:', authError.message);
+                    // Try debug endpoint
+                    const debugResponse = await apiCall('/api/indikator-kinerja-utama/debug');
+                    data = debugResponse.data || [];
+                    endpoint = 'Debug API';
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i> <strong>SUCCESS</strong><br>
+                    Endpoint: ${endpoint}<br>
+                    Data Count: ${data?.length || 0}<br>
+                    ${data && data.length > 0 ? `
+                        <table class="data-table">
+                            <tr><th>ID</th><th>Indikator</th><th>Baseline</th><th>Target</th><th>Org ID</th></tr>
+                            ${data.slice(0, 3).map(item => `
+                                <tr>
+                                    <td>${item.id?.substring(0, 8)}...</td>
+                                    <td>${item.indikator?.substring(0, 30)}...</td>
+                                    <td>${item.baseline_nilai || '-'}</td>
+                                    <td>${item.target_nilai || '-'}</td>
+                                    <td>${item.organization_id?.substring(0, 8)}...</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    ` : '<p>No data found</p>'}
+                `;
+            } catch (error) {
+                console.error('IKU test error:', error);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-times-circle"></i> <strong>ERROR</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testMonitoringEvaluasi() {
+            const resultDiv = document.getElementById('monitoring-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing Monitoring & Evaluasi...';
+
+            try {
+                console.log('Testing Monitoring endpoints...');
+                
+                let data, endpoint;
+                
+                // Try authenticated endpoint first
+                try {
+                    data = await apiCall('/api/monitoring-evaluasi');
+                    endpoint = 'Authenticated API';
+                } catch (authError) {
+                    console.warn('Auth failed, trying debug:', authError.message);
+                    // Try debug endpoint
+                    const debugResponse = await apiCall('/api/monitoring-evaluasi/debug');
+                    data = debugResponse.data || [];
+                    endpoint = 'Debug API';
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i> <strong>SUCCESS</strong><br>
+                    Endpoint: ${endpoint}<br>
+                    Data Count: ${data?.length || 0}<br>
+                    ${data && data.length > 0 ? `
+                        <table class="data-table">
+                            <tr><th>ID</th><th>Tanggal</th><th>Status</th><th>Nilai Risiko</th><th>Org ID</th></tr>
+                            ${data.slice(0, 3).map(item => `
+                                <tr>
+                                    <td>${item.id?.substring(0, 8)}...</td>
+                                    <td>${item.tanggal_monitoring || '-'}</td>
+                                    <td>${item.status_risiko || '-'}</td>
+                                    <td>${item.nilai_risiko || '-'}</td>
+                                    <td>${item.organization_id?.substring(0, 8)}...</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    ` : '<p>No data found</p>'}
+                `;
+            } catch (error) {
+                console.error('Monitoring test error:', error);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-times-circle"></i> <strong>ERROR</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testPeluang() {
+            const resultDiv = document.getElementById('peluang-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing Peluang...';
+
+            try {
+                console.log('Testing Peluang endpoints...');
+                
+                let data, endpoint;
+                
+                // Try authenticated endpoint first
+                try {
+                    data = await apiCall('/api/peluang');
+                    endpoint = 'Authenticated API';
+                } catch (authError) {
+                    console.warn('Auth failed, trying debug:', authError.message);
+                    // Try debug endpoint
+                    const debugResponse = await apiCall('/api/peluang/debug');
+                    data = debugResponse.data || [];
+                    endpoint = 'Debug API';
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i> <strong>SUCCESS</strong><br>
+                    Endpoint: ${endpoint}<br>
+                    Data Count: ${data?.length || 0}<br>
+                    ${data && data.length > 0 ? `
+                        <table class="data-table">
+                            <tr><th>Kode</th><th>Nama Peluang</th><th>Nilai</th><th>Status</th><th>Org ID</th></tr>
+                            ${data.slice(0, 3).map(item => `
+                                <tr>
+                                    <td>${item.kode || '-'}</td>
+                                    <td>${item.nama_peluang?.substring(0, 30)}...</td>
+                                    <td>${item.nilai_peluang || '-'}</td>
+                                    <td>${item.status || '-'}</td>
+                                    <td>${item.organization_id?.substring(0, 8)}...</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    ` : '<p>No data found</p>'}
+                `;
+            } catch (error) {
+                console.error('Peluang test error:', error);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-times-circle"></i> <strong>ERROR</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testRiskInput() {
+            const resultDiv = document.getElementById('risk-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing Risk Input...';
+
+            try {
+                console.log('Testing Risk endpoints...');
+                
+                let data, endpoint;
+                
+                // Try authenticated endpoint first
+                try {
+                    data = await apiCall('/api/risks');
+                    endpoint = 'Authenticated API';
+                } catch (authError) {
+                    console.warn('Auth failed, trying debug:', authError.message);
+                    // Try debug endpoint
+                    const debugResponse = await apiCall('/api/risks/debug');
+                    data = debugResponse.data || [];
+                    endpoint = 'Debug API';
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i> <strong>SUCCESS</strong><br>
+                    Endpoint: ${endpoint}<br>
+                    Data Count: ${data?.length || 0}<br>
+                    ${data && data.length > 0 ? `
+                        <table class="data-table">
+                            <tr><th>Kode</th><th>Sasaran</th><th>Status</th><th>Unit Kerja</th><th>Org ID</th></tr>
+                            ${data.slice(0, 3).map(item => `
+                                <tr>
+                                    <td>${item.kode_risiko || '-'}</td>
+                                    <td>${item.sasaran?.substring(0, 30)}...</td>
+                                    <td>${item.status_risiko || '-'}</td>
+                                    <td>${item.master_work_units?.name || '-'}</td>
+                                    <td>${item.organization_id?.substring(0, 8)}...</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    ` : '<p>No data found</p>'}
+                `;
+            } catch (error) {
+                console.error('Risk test error:', error);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <i class="fas fa-times-circle"></i> <strong>ERROR</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testAll() {
+            await Promise.all([
+                testIndikatorKinerja(),
+                testMonitoringEvaluasi(),
+                testPeluang(),
+                testRiskInput()
+            ]);
+        }
+
+        // Auto test on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, running auto test...');
+            setTimeout(testAll, 1000);
+        });
+    </script>
+</body>
+</html>

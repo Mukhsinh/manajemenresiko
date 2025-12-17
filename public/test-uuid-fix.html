@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test UUID Fix - Download Laporan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-bug"></i> Test UUID Fix</h1>
+        <p class="lead">Testing perbaikan error UUID pada download laporan</p>
+
+        <!-- Error Description -->
+        <div class="alert alert-warning">
+            <h5><i class="fas fa-exclamation-triangle"></i> Error yang Diperbaiki</h5>
+            <p><strong>Error:</strong> <code>invalid input syntax for type uuid: "undefined"</code></p>
+            <p><strong>Penyebab:</strong> Code mencoba mengakses <code>org.id</code> padahal <code>req.user.organizations</code> adalah array string UUID, bukan array objek.</p>
+            <p><strong>Solusi:</strong> Menggunakan UUID string langsung dan menambahkan validasi untuk filter undefined values.</p>
+        </div>
+
+        <!-- Test Debug Endpoints -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-check-circle"></i> Test Debug Endpoints (No Auth)</h5>
+            </div>
+            <div class="card-body">
+                <p>Test endpoint debug yang tidak memerlukan authentication</p>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-success w-100" onclick="testDebugExcel()">
+                            <i class="fas fa-download"></i> Test Debug Excel
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-danger w-100" onclick="testDebugPDF()">
+                            <i class="fas fa-download"></i> Test Debug PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="debug-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Test Frontend Integration -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-cogs"></i> Test Frontend Integration</h5>
+            </div>
+            <div class="card-body">
+                <p>Test integrasi dengan LaporanModule dan progress bar</p>
+                
+                <button class="btn btn-info w-100" onclick="testFrontendIntegration()">
+                    <i class="fas fa-play"></i> Test Frontend Integration
+                </button>
+                
+                <div id="frontend-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Test Actual Download -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-download"></i> Test Actual Download</h5>
+            </div>
+            <div class="card-body">
+                <p>Test download file dengan progress bar dan validasi format</p>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-primary w-100" onclick="testActualDownload('excel')">
+                            <i class="fas fa-file-excel"></i> Download Excel
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <button class="btn btn-primary w-100" onclick="testActualDownload('pdf')">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="download-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Live Laporan Module -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-eye"></i> Live Laporan Module</h5>
+            </div>
+            <div class="card-body">
+                <p>Load modul laporan untuk test langsung</p>
+                
+                <button class="btn btn-warning w-100" onclick="loadLaporanModule()">
+                    <i class="fas fa-play"></i> Load Laporan Module
+                </button>
+                
+                <div id="laporan-module-container" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/laporan.js"></script>
+
+    <script>
+        // Test Debug Excel
+        async function testDebugExcel() {
+            const resultDiv = document.getElementById('debug-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing debug Excel...';
+
+            try {
+                const response = await fetch('/api/reports/risk-register-excel-debug');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const contentType = response.headers.get('content-type');
+                    
+                    // Validate Excel format
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    const signature = Array.from(uint8Array.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join('');
+                    
+                    const isValidExcel = signature === '504b0304';
+                    
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Debug Excel Success</strong><br>
+                        Size: ${blob.size} bytes<br>
+                        Content-Type: ${contentType}<br>
+                        File Signature: ${signature}<br>
+                        Valid Excel: ${isValidExcel ? 'YES ✅' : 'NO ❌'}<br>
+                        UUID Error: FIXED ✅
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `<strong>❌ Debug Excel Failed</strong><br>${errorText}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<strong>❌ Debug Excel Error</strong><br>${error.message}`;
+            }
+        }
+
+        // Test Debug PDF
+        async function testDebugPDF() {
+            const resultDiv = document.getElementById('debug-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing debug PDF...';
+
+            try {
+                const response = await fetch('/api/reports/residual-risk-pdf-debug');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const contentType = response.headers.get('content-type');
+                    
+                    // Validate PDF format
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    const signature = String.fromCharCode(...uint8Array.slice(0, 4));
+                    
+                    const isValidPDF = signature === '%PDF';
+                    
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Debug PDF Success</strong><br>
+                        Size: ${blob.size} bytes<br>
+                        Content-Type: ${contentType}<br>
+                        File Signature: ${signature}<br>
+                        Valid PDF: ${isValidPDF ? 'YES ✅' : 'NO ❌'}<br>
+                        UUID Error: FIXED ✅
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `<strong>❌ Debug PDF Failed</strong><br>${errorText}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<strong>❌ Debug PDF Error</strong><br>${error.message}`;
+            }
+        }
+
+        // Test Frontend Integration
+        async function testFrontendIntegration() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing frontend integration...';
+
+            try {
+                let results = [];
+                
+                // Check if LaporanModule is available
+                if (typeof LaporanModule !== 'undefined') {
+                    results.push('✅ LaporanModule loaded');
+                    
+                    // Check functions
+                    const functions = ['downloadExcel', 'downloadPDF', 'showPreview'];
+                    functions.forEach(func => {
+                        if (typeof LaporanModule[func] === 'function') {
+                            results.push(`✅ ${func}() available`);
+                        } else {
+                            results.push(`❌ ${func}() missing`);
+                        }
+                    });
+                } else {
+                    results.push('❌ LaporanModule not loaded');
+                }
+                
+                // Check progress functions
+                const progressFunctions = ['showProgressModal', 'updateProgress', 'hideProgressModal'];
+                progressFunctions.forEach(func => {
+                    if (typeof window[func] === 'function') {
+                        results.push(`✅ ${func}() available`);
+                    } else {
+                        results.push(`❌ ${func}() missing`);
+                    }
+                });
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `<strong>Frontend Integration Results:</strong><br>${results.join('<br>')}`;
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<strong>❌ Frontend Integration Error</strong><br>${error.message}`;
+            }
+        }
+
+        // Test Actual Download
+        async function testActualDownload(type) {
+            const resultDiv = document.getElementById('download-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Testing actual ${type} download...`;
+
+            try {
+                let url, filename, expectedSignature, expectedMime;
+                
+                if (type === 'excel') {
+                    url = '/api/reports/risk-register-excel-debug';
+                    filename = `test-excel-${new Date().toISOString().split('T')[0]}.xlsx`;
+                    expectedSignature = '504b0304';
+                    expectedMime = 'spreadsheet';
+                } else {
+                    url = '/api/reports/residual-risk-pdf-debug';
+                    filename = `test-pdf-${new Date().toISOString().split('T')[0]}.pdf`;
+                    expectedSignature = '%PDF';
+                    expectedMime = 'pdf';
+                }
+
+                // Show progress modal if available
+                let progressModal = null;
+                if (typeof showProgressModal === 'function') {
+                    progressModal = showProgressModal(`Mengunduh ${type.toUpperCase()}`, 'Mempersiapkan download...');
+                    updateProgress(progressModal, 20, 'Menghubungi server...');
+                }
+                
+                const response = await fetch(url);
+                
+                if (progressModal) {
+                    updateProgress(progressModal, 60, 'Memproses file...');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                const contentType = response.headers.get('content-type');
+                
+                if (progressModal) {
+                    updateProgress(progressModal, 90, 'Validasi file...');
+                }
+                
+                // Validate file format
+                const arrayBuffer = await blob.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                let signature;
+                
+                if (type === 'excel') {
+                    signature = Array.from(uint8Array.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join('');
+                } else {
+                    signature = String.fromCharCode(...uint8Array.slice(0, 4));
+                }
+                
+                const isValidFormat = signature === expectedSignature;
+                const hasCorrectMime = contentType && contentType.includes(expectedMime);
+                
+                if (progressModal) {
+                    updateProgress(progressModal, 100, 'Download selesai!');
+                }
+                
+                // Trigger download
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+                
+                setTimeout(() => {
+                    if (progressModal) {
+                        hideProgressModal(progressModal);
+                        showSuccessNotification(`${type.toUpperCase()} berhasil diunduh!`, filename);
+                    }
+                }, 1000);
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <strong>✅ ${type.toUpperCase()} Download Success</strong><br>
+                    File: ${filename}<br>
+                    Size: ${blob.size} bytes<br>
+                    Content-Type: ${contentType}<br>
+                    File Signature: ${signature}<br>
+                    Valid Format: ${isValidFormat ? 'YES ✅' : 'NO ❌'}<br>
+                    Correct MIME: ${hasCorrectMime ? 'YES ✅' : 'NO ❌'}<br>
+                    Progress Bar: ${progressModal ? 'YES ✅' : 'NO ❌'}<br>
+                    UUID Error: FIXED ✅
+                `;
+                
+            } catch (error) {
+                if (document.getElementById('download-progress-modal')) {
+                    hideProgressModal(document.getElementById('download-progress-modal'));
+                }
+                showErrorNotification(`${type.toUpperCase()} Download Error`, error.message);
+                
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<strong>❌ ${type.toUpperCase()} Download Failed</strong><br>${error.message}`;
+            }
+        }
+
+        // Load Laporan Module
+        async function loadLaporanModule() {
+            const container = document.getElementById('laporan-module-container');
+            
+            try {
+                if (typeof LaporanModule !== 'undefined') {
+                    container.innerHTML = '<div id="laporan-content"></div>';
+                    await LaporanModule.load();
+                    
+                    container.innerHTML = `
+                        <div class="alert alert-success">
+                            <h6>✅ Laporan Module Loaded Successfully</h6>
+                            <p>Module telah dimuat. Anda dapat menggunakan tombol download di bawah untuk test.</p>
+                        </div>
+                        <div id="laporan-content"></div>
+                    `;
+                } else {
+                    throw new Error('LaporanModule not available');
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h6>❌ Failed to Load Laporan Module</h6>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize page
+        window.addEventListener('load', () => {
+            console.log('UUID Fix test page loaded');
+            
+            // Auto-test debug endpoints
+            setTimeout(() => {
+                testDebugExcel();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

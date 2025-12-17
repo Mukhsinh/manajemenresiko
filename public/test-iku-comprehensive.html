@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IKU Comprehensive</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .error { background-color: #ffebee; }
+        .success { background-color: #e8f5e8; }
+        .warning { background-color: #fff3e0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; font-size: 12px; }
+        .status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Test Indikator Kinerja Utama - Comprehensive</h1>
+    
+    <div class="test-section">
+        <h2>1. Basic Connectivity Tests</h2>
+        <button onclick="testDebugEndpoint()">Test Debug Endpoint</button>
+        <button onclick="testTestEndpoint()">Test Test Endpoint</button>
+        <button onclick="testMainEndpointNoAuth()">Test Main (No Auth)</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Authentication Tests</h2>
+        <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+        <button onclick="testWithMockAuth()">Test With Mock Auth</button>
+        <button onclick="testWithRealAuth()">Test With Real Auth</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Frontend Module Tests</h2>
+        <button onclick="testModuleLoad()">Test Module Load</button>
+        <button onclick="testApiService()">Test API Service</button>
+        <button onclick="testFullFlow()">Test Full Flow</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Live Module Test</h2>
+        <div id="indikator-kinerja-utama-content" style="border: 1px solid #ccc; padding: 10px; min-height: 200px;">
+            <p>Module will load here...</p>
+        </div>
+    </div>
+    
+    <div id="results"></div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/indikator-kinerja-utama.js"></script>
+    
+    <script>
+        function addResult(title, status, content, data = null) {
+            const resultsDiv = document.getElementById('results');
+            const statusClass = status === 'success' ? 'success' : status === 'error' ? 'error' : 'warning';
+            
+            resultsDiv.innerHTML += `
+                <div class="result ${statusClass}">
+                    <h3>${title} - <span class="status">${status.toUpperCase()}</span></h3>
+                    <p>${content}</p>
+                    ${data ? `<details><summary>Data</summary><pre>${JSON.stringify(data, null, 2)}</pre></details>` : ''}
+                </div>
+            `;
+        }
+
+        async function testDebugEndpoint() {
+            try {
+                console.log('Testing debug endpoint...');
+                const response = await fetch('/api/indikator-kinerja-utama/debug');
+                const data = await response.json();
+                
+                addResult(
+                    'Debug Endpoint',
+                    'success',
+                    `Status: ${response.status}, Count: ${data.count}, Message: ${data.message}`,
+                    data.data?.slice(0, 2)
+                );
+            } catch (error) {
+                addResult('Debug Endpoint', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testTestEndpoint() {
+            try {
+                console.log('Testing test endpoint...');
+                const response = await fetch('/api/indikator-kinerja-utama/test');
+                const data = await response.json();
+                
+                addResult(
+                    'Test Endpoint',
+                    'success',
+                    `Status: ${response.status}, Count: ${data.count}, Success: ${data.success}`,
+                    data.data
+                );
+            } catch (error) {
+                addResult('Test Endpoint', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testMainEndpointNoAuth() {
+            try {
+                console.log('Testing main endpoint without auth...');
+                const response = await fetch('/api/indikator-kinerja-utama');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(
+                        'Main Endpoint (No Auth)',
+                        'warning',
+                        `Status: ${response.status}, Data Length: ${Array.isArray(data) ? data.length : 'Not array'}`,
+                        data?.slice(0, 2)
+                    );
+                } else {
+                    const errorData = await response.json();
+                    addResult(
+                        'Main Endpoint (No Auth)',
+                        'error',
+                        `Status: ${response.status}, Error: ${errorData.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                addResult('Main Endpoint (No Auth)', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testSupabaseConnection() {
+            try {
+                console.log('Testing Supabase connection...');
+                
+                if (!window.supabaseClient) {
+                    addResult('Supabase Connection', 'error', 'Supabase client not available');
+                    return;
+                }
+
+                const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+                
+                if (error) {
+                    addResult('Supabase Connection', 'error', `Session error: ${error.message}`);
+                } else if (session) {
+                    addResult(
+                        'Supabase Connection',
+                        'success',
+                        `Session active, User: ${session.user.email}`,
+                        { userId: session.user.id, email: session.user.email }
+                    );
+                } else {
+                    addResult('Supabase Connection', 'warning', 'No active session');
+                }
+            } catch (error) {
+                addResult('Supabase Connection', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testWithMockAuth() {
+            try {
+                console.log('Testing with mock auth...');
+                const response = await fetch('/api/indikator-kinerja-utama', {
+                    headers: {
+                        'Authorization': 'Bearer mock-token',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(
+                        'Mock Auth Test',
+                        'warning',
+                        `Status: ${response.status}, Data Length: ${Array.isArray(data) ? data.length : 'Not array'}`,
+                        data?.slice(0, 2)
+                    );
+                } else {
+                    const errorData = await response.json();
+                    addResult(
+                        'Mock Auth Test',
+                        'error',
+                        `Status: ${response.status}, Error: ${errorData.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                addResult('Mock Auth Test', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testWithRealAuth() {
+            try {
+                console.log('Testing with real auth...');
+                
+                if (!window.apiCall) {
+                    addResult('Real Auth Test', 'error', 'apiCall function not available');
+                    return;
+                }
+
+                const data = await window.apiCall('/api/indikator-kinerja-utama');
+                addResult(
+                    'Real Auth Test',
+                    'success',
+                    `Data Length: ${Array.isArray(data) ? data.length : 'Not array'}`,
+                    data?.slice(0, 2)
+                );
+            } catch (error) {
+                addResult('Real Auth Test', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testModuleLoad() {
+            try {
+                console.log('Testing module load...');
+                
+                if (!window.IndikatorKinerjaUtamaModule && !window.indikatorKinerjaUtamaModule) {
+                    addResult('Module Load', 'error', 'Module not found in window object');
+                    return;
+                }
+
+                const module = window.IndikatorKinerjaUtamaModule || window.indikatorKinerjaUtamaModule;
+                
+                if (typeof module.load === 'function') {
+                    await module.load();
+                    addResult('Module Load', 'success', 'Module loaded successfully');
+                } else {
+                    addResult('Module Load', 'error', 'Module load function not found');
+                }
+            } catch (error) {
+                addResult('Module Load', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testApiService() {
+            try {
+                console.log('Testing API service...');
+                
+                if (!window.apiService) {
+                    addResult('API Service', 'error', 'API Service not available');
+                    return;
+                }
+
+                const token = await window.apiService.getAuthToken();
+                addResult(
+                    'API Service',
+                    token ? 'success' : 'warning',
+                    `Auth token available: ${!!token}`,
+                    { hasToken: !!token }
+                );
+            } catch (error) {
+                addResult('API Service', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testFullFlow() {
+            try {
+                console.log('Testing full flow...');
+                
+                // Test the full flow like the actual module
+                const module = window.IndikatorKinerjaUtamaModule || window.indikatorKinerjaUtamaModule;
+                if (!module) {
+                    addResult('Full Flow', 'error', 'Module not available');
+                    return;
+                }
+
+                // Clear the container first
+                const container = document.getElementById('indikator-kinerja-utama-content');
+                if (container) {
+                    container.innerHTML = '<p>Loading...</p>';
+                }
+
+                await module.load();
+                
+                addResult('Full Flow', 'success', 'Full flow completed successfully');
+            } catch (error) {
+                addResult('Full Flow', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', async () => {
+            console.log('Page loaded, running basic tests...');
+            await testDebugEndpoint();
+            await testTestEndpoint();
+            await testSupabaseConnection();
+        });
+    </script>
+</body>
+</html>

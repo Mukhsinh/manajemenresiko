@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis - Debug</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container" style="padding: 20px;">
+        <h1>Test Rencana Strategis - Debug Form Input</h1>
+        
+        <div class="debug-info" style="background: #f0f0f0; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h3>Debug Information</h3>
+            <div id="debug-output"></div>
+        </div>
+
+        <div id="rencana-strategis-content"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        let debugInfo = [];
+        
+        function addDebugInfo(message) {
+            debugInfo.push(`${new Date().toLocaleTimeString()}: ${message}`);
+            document.getElementById('debug-output').innerHTML = debugInfo.map(info => `<div>${info}</div>`).join('');
+        }
+
+        async function testRencanaStrategis() {
+            try {
+                addDebugInfo('Starting Rencana Strategis test...');
+                
+                // Check if modules are loaded
+                addDebugInfo(`RencanaStrategisModule available: ${!!window.RencanaStrategisModule}`);
+                addDebugInfo(`rencanaStrategisModule available: ${!!window.rencanaStrategisModule}`);
+                addDebugInfo(`loadRencanaStrategis function available: ${!!window.loadRencanaStrategis}`);
+                
+                // Test API endpoints
+                addDebugInfo('Testing API endpoints...');
+                
+                const endpoints = [
+                    '/api/rencana-strategis/public',
+                    '/api/rencana-strategis',
+                    '/api/visi-misi'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        addDebugInfo(`Testing ${endpoint}...`);
+                        const response = await fetch(endpoint);
+                        const data = await response.json();
+                        addDebugInfo(`${endpoint}: ${response.status} - ${Array.isArray(data) ? data.length : 'not array'} items`);
+                    } catch (error) {
+                        addDebugInfo(`${endpoint}: ERROR - ${error.message}`);
+                    }
+                }
+                
+                // Load the module
+                if (window.RencanaStrategisModule) {
+                    addDebugInfo('Loading RencanaStrategisModule...');
+                    await window.RencanaStrategisModule.load();
+                    addDebugInfo('RencanaStrategisModule loaded successfully');
+                } else if (window.loadRencanaStrategis) {
+                    addDebugInfo('Loading via loadRencanaStrategis function...');
+                    await window.loadRencanaStrategis();
+                    addDebugInfo('loadRencanaStrategis completed');
+                } else {
+                    addDebugInfo('ERROR: No Rencana Strategis module found!');
+                }
+                
+                // Check if content was rendered
+                const content = document.getElementById('rencana-strategis-content');
+                if (content && content.innerHTML.trim()) {
+                    addDebugInfo('Content rendered successfully');
+                    addDebugInfo(`Content length: ${content.innerHTML.length} characters`);
+                    
+                    // Check for form elements
+                    const form = content.querySelector('#rs-form');
+                    const inputs = content.querySelectorAll('input, select, textarea');
+                    addDebugInfo(`Form found: ${!!form}`);
+                    addDebugInfo(`Input elements found: ${inputs.length}`);
+                    
+                    // List input elements
+                    inputs.forEach((input, index) => {
+                        addDebugInfo(`Input ${index + 1}: ${input.tagName} - ID: ${input.id} - Type: ${input.type || 'N/A'}`);
+                    });
+                } else {
+                    addDebugInfo('ERROR: No content rendered!');
+                }
+                
+            } catch (error) {
+                addDebugInfo(`ERROR: ${error.message}`);
+                console.error('Test error:', error);
+            }
+        }
+
+        // Wait for DOM and then test
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugInfo('DOM loaded, starting test in 1 second...');
+            setTimeout(testRencanaStrategis, 1000);
+        });
+    </script>
+</body>
+</html>

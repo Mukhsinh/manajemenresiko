@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Assistant Debug</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; }
+        #output { background: #f5f5f5; padding: 10px; margin: 10px 0; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>AI Assistant Debug Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Configuration Test</h3>
+        <button onclick="testConfig()">Test Config Loading</button>
+        <div id="config-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Authentication Test</h3>
+        <button onclick="testAuth()">Test Authentication</button>
+        <div id="auth-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. AI Status Test</h3>
+        <button onclick="testAIStatus()">Test AI Status</button>
+        <div id="status-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. AI Chat Test</h3>
+        <button onclick="testAIChat()">Test AI Chat</button>
+        <div id="chat-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. API Call Debug</h3>
+        <button onclick="debugAPICall()">Debug API Call Function</button>
+        <div id="api-debug-result"></div>
+    </div>
+    
+    <div id="output"></div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        async function testConfig() {
+            const result = document.getElementById('config-result');
+            try {
+                log('Testing configuration loading...');
+                
+                // Wait for config to load
+                await new Promise(resolve => {
+                    const checkConfig = () => {
+                        if (window.supabaseClient || configLoaded) {
+                            resolve();
+                        } else {
+                            setTimeout(checkConfig, 100);
+                        }
+                    };
+                    checkConfig();
+                });
+                
+                if (window.supabaseClient) {
+                    result.innerHTML = '<span class="success">✓ Configuration loaded successfully</span>';
+                    log('Configuration loaded successfully');
+                } else {
+                    result.innerHTML = '<span class="error">❌ Configuration failed to load</span>';
+                    log('Configuration failed to load', 'error');
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                log(`Configuration error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAuth() {
+            const result = document.getElementById('auth-result');
+            try {
+                log('Testing authentication...');
+                
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                // Try to get current session
+                const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (session) {
+                    result.innerHTML = '<span class="success">✓ User is authenticated</span>';
+                    log('User is authenticated');
+                } else {
+                    result.innerHTML = '<span class="warning">⚠️ User not authenticated - trying login</span>';
+                    log('User not authenticated - trying login', 'warning');
+                    
+                    // Try to login with test credentials
+                    const { data, error: loginError } = await window.supabaseClient.auth.signInWithPassword({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    });
+                    
+                    if (loginError) {
+                        throw loginError;
+                    }
+                    
+                    result.innerHTML = '<span class="success">✓ Login successful</span>';
+                    log('Login successful');
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Auth error: ${error.message}</span>`;
+                log(`Auth error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAIStatus() {
+            const result = document.getElementById('status-result');
+            try {
+                log('Testing AI status endpoint...');
+                
+                if (typeof apiCall !== 'function') {
+                    throw new Error('apiCall function not available');
+                }
+                
+                const response = await apiCall('/api/ai-assistant/status');
+                
+                if (response.available) {
+                    result.innerHTML = `<span class="success">✓ AI is available (${response.model})</span>`;
+                    log(`AI is available (${response.model})`);
+                } else {
+                    result.innerHTML = '<span class="warning">⚠️ AI is not available</span>';
+                    log('AI is not available', 'warning');
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Status error: ${error.message}</span>`;
+                log(`Status error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAIChat() {
+            const result = document.getElementById('chat-result');
+            try {
+                log('Testing AI chat endpoint...');
+                
+                if (typeof apiCall !== 'function') {
+                    throw new Error('apiCall function not available');
+                }
+                
+                const response = await apiCall('/api/ai-assistant/chat', {
+                    method: 'POST',
+                    body: {
+                        message: 'Halo, apa itu manajemen risiko?',
+                        conversationHistory: []
+                    }
+                });
+                
+                if (response.success && response.message) {
+                    result.innerHTML = '<span class="success">✓ AI chat working</span>';
+                    log(`AI chat working - response length: ${response.message.length}`);
+                } else {
+                    result.innerHTML = `<span class="error">❌ Unexpected response: ${JSON.stringify(response)}</span>`;
+                    log(`Unexpected response: ${JSON.stringify(response)}`, 'error');
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Chat error: ${error.message}</span>`;
+                log(`Chat error: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugAPICall() {
+            const result = document.getElementById('api-debug-result');
+            try {
+                log('Debugging API call function...');
+                
+                // Check if apiCall function exists
+                if (typeof apiCall !== 'function') {
+                    throw new Error('apiCall function not defined');
+                }
+                
+                // Check if getAuthToken function exists
+                if (typeof getAuthToken !== 'function') {
+                    throw new Error('getAuthToken function not defined');
+                }
+                
+                // Test getAuthToken
+                const token = await getAuthToken();
+                log(`Auth token: ${token ? 'Available' : 'Not available'}`);
+                
+                // Test simple API call
+                const testResponse = await fetch('/api/config');
+                log(`Test fetch response: ${testResponse.status} ${testResponse.statusText}`);
+                
+                result.innerHTML = '<span class="success">✓ API call function is working</span>';
+                log('API call function is working');
+                
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ API debug error: ${error.message}</span>`;
+                log(`API debug error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run config test on load
+        window.addEventListener('load', () => {
+            setTimeout(testConfig, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -17,6 +17,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <style>
@@ -548,6 +550,50 @@
                         <div id="ews-content"></div>
                     </div>
 
+                    <!-- Risk Profile Page -->
+                    <div id="risk-profile" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-chart-bar"></i> Risk Profile</h1>
+                            <p class="page-subtitle">Profil Risiko Inheren</p>
+                        </div>
+                        <div id="risk-profile-content"></div>
+                    </div>
+
+                    <!-- Residual Risk Page -->
+                    <div id="residual-risk" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-chart-pie"></i> Residual Risk</h1>
+                            <p class="page-subtitle">Analisis Risiko Residual</p>
+                        </div>
+                        <div id="residual-risk-content"></div>
+                    </div>
+
+                    <!-- Risk Register Page -->
+                    <div id="risk-register" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-table-list"></i> Risk Register</h1>
+                            <p class="page-subtitle">Register Risiko Organisasi</p>
+                        </div>
+                        <div id="risk-register-content">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Risk Register</h3>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success" onclick="loadRiskRegister()">
+                                            <i class="fas fa-sync"></i> Refresh Data
+                                        </button>
+                                        <button class="btn btn-info" onclick="window.open('/api/reports/risk-register/excel', '_blank')">
+                                            <i class="fas fa-file-excel"></i> Export Excel
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="risk-register-table"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Laporan Page -->
                     <div id="laporan" class="page-content">
                         <div class="page-header">
@@ -825,8 +871,10 @@
                                         <tr>
                                             <th>No.</th>
                                             <th>Kode Risiko</th>
+                                            <th>Jenis</th>
                                             <th>Unit Kerja</th>
-                                            <th>Rencana Strategis</th>
+                                            <th>Kategori</th>
+                                            <th>Pemilik Risiko</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -837,16 +885,7 @@
                         </section>
                     </div>
 
-                    <!-- Risk Profile Page (Legacy) -->
-                    <div id="risk-profile" class="page-content">
-                <div class="sheet-header">
-                    <h2>Risk Profile - Inherent Risk Rating</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="inherent-risk-matrix"></canvas>
-                </div>
-                <div id="inherent-risk-table" class="data-table-container"></div>
-            </div>
+
 
                     <!-- Residual Risk Page (Legacy) -->
                     <div id="residual-risk" class="page-content">
@@ -1161,9 +1200,9 @@
             }
         })();
     </script>
-    <script src="/js/app.js"></script>
-    <script src="/js/chat.js"></script>
     <script src="/js/dashboard.js"></script>
+    <script src="/js/chat.js"></script>
+    <script src="/js/app.js"></script>
     <script src="/js/visi-misi.js"></script>
     <script src="/js/rencana-strategis.js"></script>
     <script src="/js/inventarisasi-swot.js"></script>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Peluang Simple</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Peluang Simple</h1>
+        
+        <button onclick="loadPeluang()" class="btn btn-primary">Load Peluang Data</button>
+        
+        <div id="results"></div>
+        
+        <!-- Peluang content container -->
+        <div id="peluang-content"></div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/peluang.js"></script>
+
+    <script>
+        async function loadPeluang() {
+            const results = document.getElementById('results');
+            
+            try {
+                console.log('Loading Peluang...');
+                
+                if (window.peluangModule && window.peluangModule.load) {
+                    await window.peluangModule.load();
+                    
+                    results.innerHTML = `
+                        <div class="result success">
+                            <h3>Peluang Loaded Successfully!</h3>
+                            <p>Check the content below.</p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="result error">
+                            <h3>Peluang Module Not Found</h3>
+                            <p>Module: ${typeof window.peluangModule}</p>
+                            <p>Load function: ${typeof window.peluangModule?.load}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading peluang:', error);
+                results.innerHTML = `
+                    <div class="result error">
+                        <h3>Error Loading Peluang</h3>
+                        <p>Error: ${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-load on page ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, testing peluang module...');
+            setTimeout(loadPeluang, 1000);
+        });
+    </script>
+</body>
+</html>

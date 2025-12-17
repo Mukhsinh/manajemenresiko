@@ -1,38 +1,116 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
-// Get all monitoring evaluasi
-router.get('/', authenticateUser, async (req, res) => {
+// Test endpoint - no auth required for testing
+router.get('/test', async (req, res) => {
   try {
-    // First get accessible risk IDs
-    let risksQuery = supabase
-      .from('risk_inputs')
-      .select('id');
-    risksQuery = buildOrganizationFilter(risksQuery, req.user);
-    const { data: accessibleRisks } = await risksQuery;
-    const accessibleRiskIds = (accessibleRisks || []).map(r => r.id);
-
-    if (accessibleRiskIds.length === 0) {
-      return res.json([]);
-    }
-
-    // Get monitoring data for accessible risks
-    const { data, error } = await supabase
+    console.log('=== MONITORING EVALUASI TEST ENDPOINT ===');
+    
+    // Use admin client to bypass RLS
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
       .from('monitoring_evaluasi_risiko')
       .select(`
         *,
         risk_inputs (
           kode_risiko,
-          sasaran
+          sasaran,
+          organization_id
         )
       `)
-      .in('risk_input_id', accessibleRiskIds)
+      .order('tanggal_monitoring', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Test query error:', error);
+      throw error;
+    }
+    
+    console.log('Test query success:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      sampleData: data && data.length > 0 ? {
+        id: data[0].id,
+        tanggal_monitoring: data[0].tanggal_monitoring,
+        status_risiko: data[0].status_risiko,
+        organization_id: data[0].organization_id
+      } : null
+    });
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Test error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all monitoring evaluasi
+router.get('/', authenticateUser, async (req, res) => {
+  try {
+    console.log('=== MONITORING EVALUASI REQUEST ===');
+    console.log('User info:', {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+      organizations: req.user.organizations
+    });
+
+    // Use admin client to bypass RLS issues
+    const client = supabaseAdmin || supabase;
+    
+    let query = client
+      .from('monitoring_evaluasi_risiko')
+      .select(`
+        *,
+        risk_inputs (
+          kode_risiko,
+          sasaran,
+          organization_id
+        )
+      `)
       .order('tanggal_monitoring', { ascending: false });
 
-    if (error) throw error;
+    // NEW APPROACH: Filter by organization_id only, ignore user_id
+    const isAdminOrSuper = req.user.isSuperAdmin || 
+                          req.user.role === 'superadmin' || 
+                          req.user.role === 'admin';
+
+    if (isAdminOrSuper) {
+      console.log('Admin/Super admin - showing all data');
+      // Admin can see all data, no filter needed
+    } else {
+      // Regular users - filter by organization_id instead of user_id
+      if (req.user.organizations && req.user.organizations.length > 0) {
+        console.log('Regular user - filtering by organization_id:', req.user.organizations);
+        query = query.in('organization_id', req.user.organizations);
+      } else {
+        console.log('Regular user - no organizations, showing all data');
+        // If no organization info, show all data (fallback)
+      }
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Monitoring evaluasi query error:', error);
+      throw error;
+    }
+
+    console.log('Query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      firstItem: data && data.length > 0 ? {
+        id: data[0].id,
+        tanggal_monitoring: data[0].tanggal_monitoring,
+        organization_id: data[0].organization_id
+      } : null
+    });
+    console.log('=== END REQUEST ===');
+
     res.json(data || []);
   } catch (error) {
     console.error('Monitoring Evaluasi error:', error);

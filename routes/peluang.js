@@ -4,10 +4,17 @@ const { supabase } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodePeluang } = require('../utils/codeGenerator');
 
-// Get all peluang
-router.get('/', authenticateUser, async (req, res) => {
+// Public endpoint for testing (no auth required) - MUST BE FIRST
+router.get('/public', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    console.log('=== PELUANG PUBLIC ENDPOINT ===');
+    
+    // Import supabaseAdmin directly
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    // Use the same query structure as the main endpoint
+    let query = client
       .from('peluang')
       .select(`
         *,
@@ -15,10 +22,148 @@ router.get('/', authenticateUser, async (req, res) => {
           name
         )
       `)
-      .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Peluang public query error:', error);
+      throw error;
+    }
+
+    console.log('Public query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0
+    });
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Public endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Debug endpoint - temporary (no auth required) - MUST BE FIRST
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('=== PELUANG DEBUG ENDPOINT ===');
+    
+    // Import supabaseAdmin directly
+    const { supabaseAdmin } = require('../config/supabase');
+    
+    console.log('Using supabaseAdmin:', !!supabaseAdmin);
+    
+    const client = supabaseAdmin || supabase;
+    
+    // Use the same query structure as the main endpoint
+    let query = client
+      .from('peluang')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Peluang debug query error:', error);
+      throw error;
+    }
+
+    console.log('Debug query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      firstItem: data && data.length > 0 ? {
+        id: data[0].id,
+        kode: data[0].kode,
+        nama_peluang: data[0].nama_peluang,
+        organization_id: data[0].organization_id
+      } : null
+    });
+
+    res.json({
+      success: true,
+      count: data?.length || 0,
+      data: data || [],
+      message: 'Peluang debug data retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get all peluang
+router.get('/', authenticateUser, async (req, res) => {
+  try {
+    console.log('=== PELUANG REQUEST ===');
+    console.log('User info:', {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+      organizations: req.user.organizations
+    });
+
+    // Use supabaseAdmin for better reliability
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+
+    let query = client
+      .from('peluang')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    // NEW APPROACH: Filter by organization_id only, ignore user_id
+    const isAdminOrSuper = req.user.isSuperAdmin || 
+                          req.user.role === 'superadmin' || 
+                          req.user.role === 'admin';
+
+    if (isAdminOrSuper) {
+      console.log('Admin/Super admin - showing all data');
+      // Admin can see all data, no filter needed
+    } else {
+      // Regular users - filter by organization_id instead of user_id
+      if (req.user.organizations && req.user.organizations.length > 0) {
+        console.log('Regular user - filtering by organization_id:', req.user.organizations);
+        query = query.in('organization_id', req.user.organizations);
+      } else {
+        console.log('Regular user - no organizations, showing all data');
+        // If no organization info, show all data (fallback)
+      }
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Peluang query error:', error);
+      throw error;
+    }
+
+    console.log('Query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      firstItem: data && data.length > 0 ? {
+        id: data[0].id,
+        kode: data[0].kode,
+        nama_peluang: data[0].nama_peluang,
+        organization_id: data[0].organization_id
+      } : null
+    });
+    console.log('=== END REQUEST ===');
+
     res.json(data || []);
   } catch (error) {
     console.error('Peluang error:', error);
@@ -165,6 +310,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 module.exports = router;
 

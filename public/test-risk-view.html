@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk View Feature</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+        .btn { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; border: none; }
+        .table-actions { display: flex; gap: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Risk View Feature</h1>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadRiskData()">Load Risk Data</button>
+            <button class="btn btn-primary" onclick="testViewFunction()">Test View Function</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <!-- Risk Table -->
+        <section class="section-card">
+            <div class="section-header">
+                <h3>Daftar Risiko dengan Tombol View</h3>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Kode Risiko</th>
+                            <th>Unit Kerja</th>
+                            <th>Rencana Strategis</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk-input-tbody">
+                        <tr>
+                            <td colspan="6" class="text-center">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="/js/risk-input.js"></script>
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        async function loadRiskData() {
+            showStatus('Loading risk data...', 'info');
+            
+            try {
+                if (window.RiskInputModule) {
+                    await window.RiskInputModule.load();
+                    showStatus('Risk data loaded successfully', 'success');
+                } else {
+                    showStatus('RiskInputModule not available', 'error');
+                }
+            } catch (error) {
+                showStatus(`Error loading risk data: ${error.message}`, 'error');
+            }
+        }
+
+        async function testViewFunction() {
+            showStatus('Testing view function...', 'info');
+            
+            try {
+                // Get first risk ID from the table
+                const firstRow = document.querySelector('#risk-input-tbody tr');
+                if (firstRow && firstRow.children.length > 1) {
+                    const viewButton = firstRow.querySelector('.btn-view');
+                    if (viewButton) {
+                        viewButton.click();
+                        showStatus('View function triggered successfully', 'success');
+                    } else {
+                        showStatus('View button not found in first row', 'error');
+                    }
+                } else {
+                    showStatus('No data rows found to test', 'error');
+                }
+            } catch (error) {
+                showStatus(`Error testing view function: ${error.message}`, 'error');
+            }
+        }
+
+        // Monitor table changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    const tbody = document.getElementById('risk-input-tbody');
+                    if (tbody && tbody.children.length > 0) {
+                        const firstRow = tbody.children[0];
+                        if (firstRow.children.length > 1) {
+                            showStatus(`Table updated with ${tbody.children.length} rows. View buttons available.`, 'success');
+                        }
+                    }
+                }
+            });
+        });
+
+        const tbody = document.getElementById('risk-input-tbody');
+        if (tbody) {
+            observer.observe(tbody, { childList: true });
+        }
+
+        // Auto-load on page ready
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Auto-loading risk data...');
+                loadRiskData();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Main Risk Profile</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Main Risk Profile</h1>
+        <button onclick="loadRiskProfileTest()">Load Risk Profile</button>
+        <div id="test-result"></div>
+        
+        <!-- Sama seperti di index.html -->
+        <div id="risk-profile" class="page-content" style="display: block;">
+            <div class="page-header">
+                <h1 class="page-title"><i class="page-title-icon fas fa-chart-bar"></i> Risk Profile</h1>
+                <p class="page-subtitle">Profil Risiko Inheren</p>
+            </div>
+            <div id="risk-profile-content"></div>
+        </div>
+    </div>
+
+    <!-- Load scripts in same order as index.html -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    
+    <script>
+        async function loadRiskProfileTest() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div style="color: blue;">Loading Risk Profile...</div>';
+            
+            try {
+                console.log('=== STARTING RISK PROFILE TEST ===');
+                console.log('window.apiCall available:', typeof window.apiCall);
+                console.log('window.RiskProfileModule available:', typeof window.RiskProfileModule);
+                console.log('window.loadRiskProfile available:', typeof window.loadRiskProfile);
+                
+                if (typeof window.loadRiskProfile === 'function') {
+                    console.log('Calling window.loadRiskProfile()...');
+                    await window.loadRiskProfile();
+                    resultDiv.innerHTML = '<div style="color: green;">✓ Risk Profile loaded via loadRiskProfile()</div>';
+                } else if (typeof window.RiskProfileModule !== 'undefined') {
+                    console.log('Calling RiskProfileModule.load()...');
+                    await window.RiskProfileModule.load();
+                    resultDiv.innerHTML = '<div style="color: green;">✓ Risk Profile loaded via RiskProfileModule.load()</div>';
+                } else {
+                    resultDiv.innerHTML = '<div style="color: red;">❌ No Risk Profile functions available</div>';
+                }
+                
+                console.log('=== RISK PROFILE TEST COMPLETE ===');
+            } catch (error) {
+                console.error('Risk Profile Test Error:', error);
+                resultDiv.innerHTML = `<div style="color: red;">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-load after page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, auto-testing in 2 seconds...');
+            setTimeout(loadRiskProfileTest, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test All Risk Pages Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .summary { background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test All Risk Management Pages Fix</h1>
+    <p>Testing semua halaman yang diminta: KRI, Loss Event, EWS, dan Risk Register</p>
+    
+    <div class="summary">
+        <h3>📋 Status Testing</h3>
+        <div id="test-summary">
+            <p>Klik "Test All" untuk menjalankan semua test sekaligus</p>
+        </div>
+        <button class="btn btn-success" onclick="testAll()">🚀 Test All</button>
+    </div>
+
+    <div class="test-section">
+        <h2>1. 📊 Key Risk Indicator (KRI)</h2>
+        <p><strong>Tabel Database:</strong> <code>key_risk_indicator</code></p>
+        <p><strong>API Endpoint:</strong> <code>/api/kri</code></p>
+        <button class="btn" onclick="testKRI()">Test KRI</button>
+        <div id="kri-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. ⚠️ Loss Event</h2>
+        <p><strong>Tabel Database:</strong> <code>loss_event</code></p>
+        <p><strong>API Endpoint:</strong> <code>/api/loss-event</code></p>
+        <button class="btn" onclick="testLossEvent()">Test Loss Event</button>
+        <div id="loss-event-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 🚨 Early Warning System (EWS)</h2>
+        <p><strong>Tabel Database:</strong> <code>early_warning_system</code></p>
+        <p><strong>API Endpoint:</strong> <code>/api/ews</code></p>
+        <button class="btn" onclick="testEWS()">Test EWS</button>
+        <div id="ews-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 📋 Risk Register</h2>
+        <p><strong>Tabel Database:</strong> <code>risk_inputs</code> (dengan relasi)</p>
+        <p><strong>API Endpoint:</strong> <code>/api/reports/risk-register</code></p>
+        <button class="btn" onclick="testRiskRegister()">Test Risk Register</button>
+        <div id="risk-register-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. 🔍 Organization Filter Test</h2>
+        <p>Test apakah data sudah difilter berdasarkan organization_id, bukan user_id</p>
+        <button class="btn" onclick="testOrganizationFilter()">Test Organization Filter</button>
+        <div id="org-filter-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let testResults = {};
+        
+        // Get token from localStorage
+        function getAuthToken() {
+            return localStorage.getItem('token') || localStorage.getItem('authToken');
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const token = getAuthToken();
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                },
+                ...options
+            };
+            
+            if (options.body && typeof options.body === 'object') {
+                config.body = JSON.stringify(options.body);
+            }
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, config);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
+            return response.json();
+        }
+
+        async function testKRI() {
+            const resultDiv = document.getElementById('kri-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing KRI...</p>';
+                
+                const data = await apiCall('/api/kri');
+                
+                testResults.kri = {
+                    success: true,
+                    count: data.length,
+                    sample: data.slice(0, 2)
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        <p><strong>Organization filter:</strong> ${data.every(item => item.organization_id) ? '✅ Ada' : '⚠️ Tidak ada'}</p>
+                        ${data.length > 0 ? `
+                            <details>
+                                <summary>Sample data (2 pertama)</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        ` : '<p>⚠️ Tidak ada data</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                testResults.kri = { success: false, error: error.message };
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error KRI</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+            updateSummary();
+        }
+
+        async function testLossEvent() {
+            const resultDiv = document.getElementById('loss-event-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing Loss Event...</p>';
+                
+                const data = await apiCall('/api/loss-event');
+                
+                testResults.lossEvent = {
+                    success: true,
+                    count: data.length,
+                    sample: data.slice(0, 2)
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Loss Event API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        <p><strong>Organization filter:</strong> ${data.every(item => item.organization_id) ? '✅ Ada' : '⚠️ Tidak ada'}</p>
+                        ${data.length > 0 ? `
+                            <details>
+                                <summary>Sample data (2 pertama)</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        ` : '<p>⚠️ Tidak ada data</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                testResults.lossEvent = { success: false, error: error.message };
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Loss Event</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+            updateSummary();
+        }
+
+        async function testEWS() {
+            const resultDiv = document.getElementById('ews-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing EWS...</p>';
+                
+                const data = await apiCall('/api/ews');
+                
+                testResults.ews = {
+                    success: true,
+                    count: data.length,
+                    sample: data.slice(0, 2)
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ EWS API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        <p><strong>Organization filter:</strong> ${data.every(item => item.organization_id) ? '✅ Ada' : '⚠️ Tidak ada'}</p>
+                        ${data.length > 0 ? `
+                            <details>
+                                <summary>Sample data (2 pertama)</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        ` : '<p>⚠️ Tidak ada data</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                testResults.ews = { success: false, error: error.message };
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error EWS</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+            updateSummary();
+        }
+
+        async function testRiskRegister() {
+            const resultDiv = document.getElementById('risk-register-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing Risk Register...</p>';
+                
+                const data = await apiCall('/api/reports/risk-register');
+                
+                testResults.riskRegister = {
+                    success: true,
+                    count: data.length,
+                    sample: data.slice(0, 2)
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Risk Register API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        <p><strong>Organization filter:</strong> ${data.every(item => item.organization_id) ? '✅ Ada' : '⚠️ Tidak ada'}</p>
+                        ${data.length > 0 ? `
+                            <details>
+                                <summary>Sample data (2 pertama)</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        ` : '<p>⚠️ Tidak ada data</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                testResults.riskRegister = { success: false, error: error.message };
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Risk Register</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+            updateSummary();
+        }
+
+        async function testOrganizationFilter() {
+            const resultDiv = document.getElementById('org-filter-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing Organization Filter...</p>';
+                
+                // Test semua endpoint
+                const endpoints = [
+                    { name: 'KRI', url: '/api/kri' },
+                    { name: 'Loss Event', url: '/api/loss-event' },
+                    { name: 'EWS', url: '/api/ews' },
+                    { name: 'Risk Register', url: '/api/reports/risk-register' }
+                ];
+                
+                let results = [];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const data = await apiCall(endpoint.url);
+                        const hasOrgFilter = data.every(item => item.organization_id);
+                        const orgIds = [...new Set(data.map(item => item.organization_id))];
+                        
+                        results.push({
+                            name: endpoint.name,
+                            success: true,
+                            count: data.length,
+                            hasOrgFilter,
+                            orgIds: orgIds.length
+                        });
+                    } catch (error) {
+                        results.push({
+                            name: endpoint.name,
+                            success: false,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                const orgFilterCount = results.filter(r => r.success && r.hasOrgFilter).length;
+                
+                resultDiv.innerHTML = `
+                    <div class="${successCount === endpoints.length ? 'success' : 'warning'}">
+                        <h4>${successCount === endpoints.length ? '✅' : '⚠️'} Organization Filter Test</h4>
+                        <p><strong>Endpoint berhasil:</strong> ${successCount}/${endpoints.length}</p>
+                        <p><strong>Dengan organization filter:</strong> ${orgFilterCount}/${successCount}</p>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Status</th>
+                                    <th>Data Count</th>
+                                    <th>Org Filter</th>
+                                    <th>Org IDs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(r => `
+                                    <tr>
+                                        <td>${r.name}</td>
+                                        <td>
+                                            <span class="status-indicator status-${r.success ? 'success' : 'error'}"></span>
+                                            ${r.success ? 'OK' : 'Error'}
+                                        </td>
+                                        <td>${r.success ? r.count : '-'}</td>
+                                        <td>
+                                            ${r.success ? (r.hasOrgFilter ? '✅' : '❌') : '-'}
+                                        </td>
+                                        <td>${r.success ? r.orgIds : '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Organization Filter Test</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAll() {
+            document.getElementById('test-summary').innerHTML = '<p>🔄 Running all tests...</p>';
+            
+            await testKRI();
+            await testLossEvent();
+            await testEWS();
+            await testRiskRegister();
+            await testOrganizationFilter();
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const tests = Object.keys(testResults);
+            const successCount = tests.filter(test => testResults[test].success).length;
+            const totalCount = tests.length;
+            
+            if (totalCount === 0) return;
+            
+            const totalData = tests.reduce((sum, test) => {
+                return sum + (testResults[test].success ? testResults[test].count || 0 : 0);
+            }, 0);
+            
+            summaryDiv.innerHTML = `
+                <h4>${successCount === totalCount ? '✅' : '⚠️'} Test Summary</h4>
+                <p><strong>Tests passed:</strong> ${successCount}/${totalCount}</p>
+                <p><strong>Total data found:</strong> ${totalData}</p>
+                
+                <div style="margin-top: 10px;">
+                    ${tests.map(test => `
+                        <div style="margin: 5px 0;">
+                            <span class="status-indicator status-${testResults[test].success ? 'success' : 'error'}"></span>
+                            <strong>${test}:</strong> 
+                            ${testResults[test].success ? 
+                                `${testResults[test].count || 0} records` : 
+                                `Error - ${testResults[test].error}`
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${successCount === totalCount && totalData > 0 ? 
+                    '<p style="color: #28a745; font-weight: bold;">🎉 Semua halaman berhasil dan data tampil!</p>' :
+                    '<p style="color: #856404; font-weight: bold;">⚠️ Ada masalah yang perlu diperbaiki</p>'
+                }
+            `;
+        }
+
+        // Auto check token on load
+        window.onload = function() {
+            const token = getAuthToken();
+            if (!token) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 50px;">
+                        <h2>⚠️ Token tidak ditemukan</h2>
+                        <p>Silakan login terlebih dahulu di <a href="/index.html">halaman utama</a></p>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

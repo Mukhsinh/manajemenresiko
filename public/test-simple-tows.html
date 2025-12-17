@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple Matriks TOWS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+        <h1 style="color: #8B0000; margin-bottom: 2rem;">
+            <i class="fas fa-table-cells"></i> Test Matriks TOWS
+        </h1>
+        
+        <div id="matriks-tows-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Matriks TOWS</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-success" onclick="testDownload()">
+                            <i class="fas fa-download"></i> Test Unduh Laporan
+                        </button>
+                        <button class="btn btn-primary" onclick="alert('Test Tambah Strategi')">
+                            <i class="fas fa-plus"></i> Test Tambah Strategi
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="filter-group">
+                        <div class="form-group">
+                            <label class="form-label">Rencana Strategis</label>
+                            <select class="form-control">
+                                <option value="">Semua</option>
+                                <option value="1">Peningkatan Kualitas Pelayanan Medis</option>
+                                <option value="2">Penguatan Sistem Keamanan Pasien</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipe Strategi</label>
+                            <select class="form-control">
+                                <option value="">Semua</option>
+                                <option value="SO">SO (Strengths-Opportunities)</option>
+                                <option value="WO">WO (Weaknesses-Opportunities)</option>
+                                <option value="ST">ST (Strengths-Threats)</option>
+                                <option value="WT">WT (Weaknesses-Threats)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tahun</label>
+                            <input type="number" class="form-control" value="2024">
+                        </div>
+                    </div>
+
+                    <!-- Strategi SO -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-header">
+                            <h4>Strategi SO (Strengths-Opportunities)</h4>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tahun</th>
+                                        <th>Strategi</th>
+                                        <th>Rencana Strategis</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024</td>
+                                        <td>Memanfaatkan kekuatan SDM medis yang berkualitas untuk mengoptimalkan peluang teknologi digital dalam meningkatkan kualitas pelayanan</td>
+                                        <td>Peningkatan Kualitas Pelayanan Medis</td>
+                                        <td>
+                                            <button class="btn btn-edit btn-sm" onclick="alert('Edit strategi')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-delete btn-sm" onclick="alert('Hapus strategi')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Strategi WO -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-header">
+                            <h4>Strategi WO (Weaknesses-Opportunities)</h4>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tahun</th>
+                                        <th>Strategi</th>
+                                        <th>Rencana Strategis</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024</td>
+                                        <td>Mengatasi keterbatasan infrastruktur dengan memanfaatkan peluang kerjasama dengan pihak ketiga untuk upgrade fasilitas</td>
+                                        <td>Peningkatan Kualitas Pelayanan Medis</td>
+                                        <td>
+                                            <button class="btn btn-edit btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-delete btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Strategi ST -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-header">
+                            <h4>Strategi ST (Strengths-Threats)</h4>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tahun</th>
+                                        <th>Strategi</th>
+                                        <th>Rencana Strategis</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024</td>
+                                        <td>Menggunakan kekuatan sistem keamanan yang ada untuk menghadapi ancaman cyber security dan human error</td>
+                                        <td>Penguatan Sistem Keamanan Pasien</td>
+                                        <td>
+                                            <button class="btn btn-edit btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-delete btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Strategi WT -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-header">
+                            <h4>Strategi WT (Weaknesses-Threats)</h4>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tahun</th>
+                                        <th>Strategi</th>
+                                        <th>Rencana Strategis</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024</td>
+                                        <td>Meminimalkan kelemahan dalam protokol keamanan dan menghindari ancaman kecelakaan medis melalui pelatihan intensif</td>
+                                        <td>Penguatan Sistem Keamanan Pasien</td>
+                                        <td>
+                                            <button class="btn btn-edit btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-delete btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testDownload() {
+            try {
+                // Test data for Excel export
+                const testData = [
+                    {
+                        tahun: 2024,
+                        tipe_strategi: 'SO',
+                        strategi: 'Memanfaatkan kekuatan SDM medis yang berkualitas untuk mengoptimalkan peluang teknologi digital dalam meningkatkan kualitas pelayanan',
+                        rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan Medis' },
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        tahun: 2024,
+                        tipe_strategi: 'WO',
+                        strategi: 'Mengatasi keterbatasan infrastruktur dengan memanfaatkan peluang kerjasama dengan pihak ketiga untuk upgrade fasilitas',
+                        rencana_strategis: { nama_rencana: 'Peningkatan Kualitas Pelayanan Medis' },
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        tahun: 2024,
+                        tipe_strategi: 'ST',
+                        strategi: 'Menggunakan kekuatan sistem keamanan yang ada untuk menghadapi ancaman cyber security dan human error',
+                        rencana_strategis: { nama_rencana: 'Penguatan Sistem Keamanan Pasien' },
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        tahun: 2024,
+                        tipe_strategi: 'WT',
+                        strategi: 'Meminimalkan kelemahan dalam protokol keamanan dan menghindari ancaman kecelakaan medis melalui pelatihan intensif',
+                        rencana_strategis: { nama_rencana: 'Penguatan Sistem Keamanan Pasien' },
+                        created_at: new Date().toISOString()
+                    }
+                ];
+
+                // Create Excel workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Summary sheet
+                const summaryData = [
+                    ['LAPORAN MATRIKS TOWS - TEST'],
+                    [''],
+                    ['Tanggal Generate:', new Date().toLocaleString('id-ID')],
+                    ['Dibuat oleh:', 'Test User'],
+                    [''],
+                    ['Ringkasan Data:'],
+                    ['Total Strategi SO:', testData.filter(d => d.tipe_strategi === 'SO').length],
+                    ['Total Strategi WO:', testData.filter(d => d.tipe_strategi === 'WO').length],
+                    ['Total Strategi ST:', testData.filter(d => d.tipe_strategi === 'ST').length],
+                    ['Total Strategi WT:', testData.filter(d => d.tipe_strategi === 'WT').length],
+                    ['Total Keseluruhan:', testData.length]
+                ];
+                
+                const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, summaryWs, 'Ringkasan');
+
+                // Detail data sheet
+                const detailHeaders = ['No', 'Tahun', 'Tipe Strategi', 'Strategi', 'Rencana Strategis', 'Tanggal Dibuat'];
+                const detailData = [detailHeaders];
+                
+                testData.forEach((item, index) => {
+                    detailData.push([
+                        index + 1,
+                        item.tahun,
+                        item.tipe_strategi,
+                        item.strategi,
+                        item.rencana_strategis?.nama_rencana || '-',
+                        new Date(item.created_at).toLocaleDateString('id-ID')
+                    ]);
+                });
+                
+                const detailWs = XLSX.utils.aoa_to_sheet(detailData);
+                XLSX.utils.book_append_sheet(wb, detailWs, 'Data Detail');
+
+                // Generate filename
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `Test_Laporan_Matriks_TOWS_${timestamp}.xlsx`;
+                
+                // Download file
+                XLSX.writeFile(wb, filename);
+                
+                alert('Test laporan berhasil diunduh!');
+            } catch (error) {
+                console.error('Error downloading test report:', error);
+                alert('Gagal mengunduh test laporan: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

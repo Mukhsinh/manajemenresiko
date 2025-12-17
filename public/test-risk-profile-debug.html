@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Risk Profile Debug Test</h1>
+        
+        <div class="test-section">
+            <h2>1. Test API Endpoint</h2>
+            <button class="btn" onclick="testRiskProfileAPI()">Test /api/reports/risk-profile</button>
+            <div id="api-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Test Risk Profile Module</h2>
+            <button class="btn" onclick="testRiskProfileModule()">Test RiskProfileModule</button>
+            <div id="module-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Risk Profile Display</h2>
+            <div id="risk-profile-content"></div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    <script>
+        // Test API endpoint
+        async function testRiskProfileAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<div class="info">Testing API endpoint...</div>';
+            
+            try {
+                const response = await fetch('/api/reports/risk-profile', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ API berhasil: ${data.length} records</div>
+                        <h4>Sample Data (5 pertama):</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Kode Risiko</th>
+                                    <th>Probabilitas</th>
+                                    <th>Dampak</th>
+                                    <th>Risk Value</th>
+                                    <th>Risk Level</th>
+                                    <th>Unit Kerja</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.slice(0, 5).map(item => {
+                                    const risk = item.risk_inputs || {};
+                                    return `
+                                        <tr>
+                                            <td>${item.id?.substring(0, 8)}...</td>
+                                            <td>${risk.kode_risiko || '-'}</td>
+                                            <td>${item.probability || '-'}</td>
+                                            <td>${item.impact || '-'}</td>
+                                            <td>${item.risk_value || '-'}</td>
+                                            <td>${item.risk_level || '-'}</td>
+                                            <td>${risk.master_work_units?.name || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Tidak ada data ditemukan</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('API Test Error:', error);
+            }
+        }
+
+        // Test Risk Profile Module
+        async function testRiskProfileModule() {
+            const resultDiv = document.getElementById('module-result');
+            resultDiv.innerHTML = '<div class="info">Testing RiskProfileModule...</div>';
+            
+            try {
+                if (typeof RiskProfileModule === 'undefined') {
+                    throw new Error('RiskProfileModule tidak ditemukan');
+                }
+                
+                // Load module
+                await RiskProfileModule.load();
+                
+                resultDiv.innerHTML = '<div class="success">✓ RiskProfileModule berhasil dimuat</div>';
+                
+                // Show in content area
+                const contentDiv = document.getElementById('risk-profile-content');
+                if (contentDiv) {
+                    contentDiv.innerHTML = '<div class="info">Loading Risk Profile...</div>';
+                    // Module akan render sendiri ke #risk-profile-content
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Module Error: ${error.message}</div>`;
+                console.error('Module Test Error:', error);
+            }
+        }
+
+        // Auto-login untuk testing
+        async function autoLogin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    // Try to login with test credentials
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: 'admin@example.com',
+                            password: 'password123'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        localStorage.setItem('token', result.token);
+                        console.log('Auto-login berhasil');
+                    }
+                }
+            } catch (error) {
+                console.log('Auto-login gagal:', error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await autoLogin();
+            console.log('Risk Profile Debug Test ready');
+        });
+    </script>
+</body>
+</html>

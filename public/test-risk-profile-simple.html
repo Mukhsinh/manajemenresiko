@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        #risk-profile-content { margin-top: 20px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Risk Profile Simple</h1>
+        
+        <button class="btn" onclick="testRiskProfile()">Load Risk Profile</button>
+        <div id="result"></div>
+        
+        <!-- Container untuk Risk Profile -->
+        <div id="risk-profile-content"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    <script>
+        async function testRiskProfile() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Loading Risk Profile...</div>';
+            
+            try {
+                // Test API endpoint first
+                const response = await fetch('/api/debug-risk-profile');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Data:', data);
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ API berhasil: ${data.length} records</div>`;
+                    
+                    // Load Risk Profile Module
+                    if (typeof RiskProfileModule !== 'undefined') {
+                        await RiskProfileModule.load();
+                        resultDiv.innerHTML += '<div class="success">✓ Risk Profile Module loaded</div>';
+                    } else {
+                        resultDiv.innerHTML += '<div class="error">❌ RiskProfileModule tidak ditemukan</div>';
+                    }
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Tidak ada data ditemukan</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Test Error:', error);
+            }
+        }
+
+        // Auto-test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Risk Profile Simple Test ready');
+            // Auto-load after 1 second
+            setTimeout(testRiskProfile, 1000);
+        });
+    </script>
+</body>
+</html>

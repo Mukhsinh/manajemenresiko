@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Complete Data Display - Risk Input</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-weight: 500;
+        }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+        .status.warning { background-color: #fff3cd; color: #856404; }
+        
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .btn { 
+            padding: 10px 16px; 
+            margin: 5px; 
+            cursor: pointer; 
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .table-actions { 
+            display: flex; 
+            gap: 5px; 
+            justify-content: center;
+        }
+        
+        .section-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .section-header h3 {
+            margin: 0;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .text-center { text-align: center; }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feature-test {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        .feature-test h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-clipboard-check"></i> Test Complete Data Display - Risk Input</h1>
+        <p>Comprehensive testing for Risk Input module with View, Edit, and Delete functionality</p>
+        
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-risks">0</div>
+                <div class="stat-label">Total Risks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="active-risks">0</div>
+                <div class="stat-label">Active Risks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="view-tests">0</div>
+                <div class="stat-label">View Tests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="api-calls">0</div>
+                <div class="stat-label">API Calls</div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-controls">
+            <button class="btn btn-primary" onclick="loadRiskData()">
+                <i class="fas fa-download"></i> Load Risk Data
+            </button>
+            <button class="btn btn-success" onclick="testAllViewButtons()">
+                <i class="fas fa-eye"></i> Test All View Buttons
+            </button>
+            <button class="btn btn-info" onclick="testRandomView()">
+                <i class="fas fa-random"></i> Test Random View
+            </button>
+            <button class="btn btn-warning" onclick="testApiEndpoints()">
+                <i class="fas fa-plug"></i> Test API Endpoints
+            </button>
+            <button class="btn btn-danger" onclick="clearResults()">
+                <i class="fas fa-trash"></i> Clear Results
+            </button>
+            <button class="btn btn-primary" onclick="exportTestResults()">
+                <i class="fas fa-file-export"></i> Export Results
+            </button>
+        </div>
+        
+        <!-- Status Display -->
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <!-- Feature Tests -->
+        <div class="feature-test">
+            <h4><i class="fas fa-cogs"></i> Feature Tests</h4>
+            <div id="feature-results"></div>
+        </div>
+        
+        <!-- Risk Table -->
+        <section class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-table"></i> Daftar Risiko dengan Fitur Lengkap</h3>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Kode Risiko</th>
+                            <th>Unit Kerja</th>
+                            <th>Rencana Strategis</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk-input-tbody">
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="loading-spinner"></div> Loading data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- Test Results -->
+        <section class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-chart-bar"></i> Test Results</h3>
+            </div>
+            <div id="test-results" style="padding: 20px;">
+                <p>No tests run yet. Click the test buttons above to start testing.</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="/js/risk-input.js"></script>
+    <script>
+        let testStats = {
+            totalRisks: 0,
+            activeRisks: 0,
+            viewTests: 0,
+            apiCalls: 0
+        };
+        
+        let testResults = [];
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+            
+            // Auto hide after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total-risks').textContent = testStats.totalRisks;
+            document.getElementById('active-risks').textContent = testStats.activeRisks;
+            document.getElementById('view-tests').textContent = testStats.viewTests;
+            document.getElementById('api-calls').textContent = testStats.apiCalls;
+        }
+
+        function addTestResult(test, result, details = '') {
+            testResults.push({
+                timestamp: new Date().toISOString(),
+                test: test,
+                result: result,
+                details: details
+            });
+            updateTestResultsDisplay();
+        }
+
+        function updateTestResultsDisplay() {
+            const resultsEl = document.getElementById('test-results');
+            if (testResults.length === 0) {
+                resultsEl.innerHTML = '<p>No tests run yet.</p>';
+                return;
+            }
+
+            const html = testResults.map(result => `
+                <div class="test-result ${result.result}">
+                    <strong>${result.test}</strong>: 
+                    <span class="result-status ${result.result}">${result.result.toUpperCase()}</span>
+                    ${result.details ? `<br><small>${result.details}</small>` : ''}
+                    <small class="timestamp">${new Date(result.timestamp).toLocaleTimeString()}</small>
+                </div>
+            `).join('');
+            
+            resultsEl.innerHTML = html;
+        }
+
+        async function loadRiskData() {
+            showStatus('Loading risk data...', 'info');
+            
+            try {
+                testStats.apiCalls++;
+                updateStats();
+                
+                if (window.RiskInputModule) {
+                    await window.RiskInputModule.load();
+                    
+                    // Count risks
+                    const tbody = document.getElementById('risk-input-tbody');
+                    const rows = tbody.querySelectorAll('tr');
+                    testStats.totalRisks = rows.length - (rows[0]?.textContent.includes('Loading') || rows[0]?.textContent.includes('Belum ada') ? 1 : 0);
+                    
+                    // Count active risks
+                    testStats.activeRisks = tbody.querySelectorAll('.status-badge.active').length;
+                    
+                    updateStats();
+                    showStatus(`Risk data loaded successfully. Found ${testStats.totalRisks} risks.`, 'success');
+                    addTestResult('Load Risk Data', 'success', `${testStats.totalRisks} risks loaded`);
+                } else {
+                    throw new Error('RiskInputModule not available');
+                }
+            } catch (error) {
+                showStatus(`Error loading risk data: ${error.message}`, 'error');
+                addTestResult('Load Risk Data', 'failed', error.message);
+            }
+        }
+
+        async function testAllViewButtons() {
+            showStatus('Testing all view buttons...', 'info');
+            
+            try {
+                const viewButtons = document.querySelectorAll('.btn-view');
+                if (viewButtons.length === 0) {
+                    throw new Error('No view buttons found');
+                }
+
+                let successCount = 0;
+                for (let i = 0; i < Math.min(viewButtons.length, 5); i++) {
+                    try {
+                        viewButtons[i].click();
+                        testStats.viewTests++;
+                        successCount++;
+                        
+                        // Close modal if it opened
+                        setTimeout(() => {
+                            const modal = document.getElementById('risk-detail-modal');
+                            if (modal) modal.remove();
+                        }, 1000);
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } catch (error) {
+                        console.error('View button test failed:', error);
+                    }
+                }
+                
+                updateStats();
+                showStatus(`Tested ${successCount}/${viewButtons.length} view buttons successfully`, 'success');
+                addTestResult('Test All View Buttons', 'success', `${successCount}/${viewButtons.length} buttons tested`);
+            } catch (error) {
+                showStatus(`Error testing view buttons: ${error.message}`, 'error');
+                addTestResult('Test All View Buttons', 'failed', error.message);
+            }
+        }
+
+        async function testRandomView() {
+            showStatus('Testing random view button...', 'info');
+            
+            try {
+                const viewButtons = document.querySelectorAll('.btn-view');
+                if (viewButtons.length === 0) {
+                    throw new Error('No view buttons found');
+                }
+
+                const randomIndex = Math.floor(Math.random() * viewButtons.length);
+                const randomButton = viewButtons[randomIndex];
+                
+                randomButton.click();
+                testStats.viewTests++;
+                updateStats();
+                
+                showStatus(`Random view button #${randomIndex + 1} clicked successfully`, 'success');
+                addTestResult('Test Random View', 'success', `Button #${randomIndex + 1} clicked`);
+            } catch (error) {
+                showStatus(`Error testing random view: ${error.message}`, 'error');
+                addTestResult('Test Random View', 'failed', error.message);
+            }
+        }
+
+        async function testApiEndpoints() {
+            showStatus('Testing API endpoints...', 'info');
+            
+            const endpoints = [
+                { url: '/api/risks/debug', name: 'Debug Endpoint' },
+                { url: '/api/master-data/work-units', name: 'Work Units' },
+                { url: '/api/master-data/risk-categories', name: 'Risk Categories' }
+            ];
+
+            let successCount = 0;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    testStats.apiCalls++;
+                    const response = await fetch(endpoint.url);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        successCount++;
+                        addTestResult(`API Test: ${endpoint.name}`, 'success', `Status: ${response.status}`);
+                    } else {
+                        addTestResult(`API Test: ${endpoint.name}`, 'failed', `Status: ${response.status}`);
+                    }
+                } catch (error) {
+                    addTestResult(`API Test: ${endpoint.name}`, 'failed', error.message);
+                }
+            }
+            
+            updateStats();
+            showStatus(`API tests completed: ${successCount}/${endpoints.length} successful`, successCount === endpoints.length ? 'success' : 'warning');
+        }
+
+        function clearResults() {
+            testResults = [];
+            testStats = { totalRisks: 0, activeRisks: 0, viewTests: 0, apiCalls: 0 };
+            updateStats();
+            updateTestResultsDisplay();
+            document.getElementById('status').style.display = 'none';
+            showStatus('Results cleared', 'info');
+        }
+
+        function exportTestResults() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                stats: testStats,
+                results: testResults
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `risk-input-test-results-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('Test results exported successfully', 'success');
+        }
+
+        // Monitor table changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    const tbody = document.getElementById('risk-input-tbody');
+                    if (tbody && tbody.children.length > 0) {
+                        const firstRow = tbody.children[0];
+                        if (firstRow.children.length > 1 && !firstRow.textContent.includes('Loading')) {
+                            // Update feature results
+                            const featuresEl = document.getElementById('feature-results');
+                            const viewButtons = tbody.querySelectorAll('.btn-view').length;
+                            const editButtons = tbody.querySelectorAll('.btn-edit').length;
+                            const deleteButtons = tbody.querySelectorAll('.btn-delete').length;
+                            
+                            featuresEl.innerHTML = `
+                                <div class="feature-item">✅ View Buttons: ${viewButtons}</div>
+                                <div class="feature-item">✅ Edit Buttons: ${editButtons}</div>
+                                <div class="feature-item">✅ Delete Buttons: ${deleteButtons}</div>
+                                <div class="feature-item">✅ Table Rows: ${tbody.children.length}</div>
+                            `;
+                        }
+                    }
+                }
+            });
+        });
+
+        const tbody = document.getElementById('risk-input-tbody');
+        if (tbody) {
+            observer.observe(tbody, { childList: true });
+        }
+
+        // Auto-load on page ready
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Auto-loading risk data for comprehensive test...');
+                loadRiskData();
+            }, 1000);
+        });
+
+        // Add CSS for test results
+        const style = document.createElement('style');
+        style.textContent = `
+            .test-result {
+                margin: 5px 0;
+                padding: 8px;
+                border-radius: 4px;
+                border-left: 4px solid #ccc;
+            }
+            .test-result.success {
+                background-color: #d4edda;
+                border-left-color: #28a745;
+            }
+            .test-result.failed {
+                background-color: #f8d7da;
+                border-left-color: #dc3545;
+            }
+            .result-status {
+                font-weight: bold;
+            }
+            .result-status.success {
+                color: #28a745;
+            }
+            .result-status.failed {
+                color: #dc3545;
+            }
+            .timestamp {
+                float: right;
+                color: #6c757d;
+            }
+            .feature-item {
+                margin: 5px 0;
+                padding: 5px;
+                background-color: #e9ecef;
+                border-radius: 3px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

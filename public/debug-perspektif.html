@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Perspektif Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-box { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Debug Perspektif Issue - Sasaran Strategi</h1>
+    
+    <div class="debug-box info">
+        <h3>Test Steps:</h3>
+        <ol>
+            <li>Test direct API call to /api/sasaran-strategi</li>
+            <li>Check data structure and perspektif field</li>
+            <li>Test rendering with mock data</li>
+        </ol>
+    </div>
+
+    <button class="btn btn-primary" onclick="testDirectAPI()">1. Test Direct API</button>
+    <button class="btn btn-primary" onclick="testMockData()">2. Test Mock Data</button>
+    <button class="btn btn-primary" onclick="testPerspektifRendering()">3. Test Perspektif Rendering</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function testDirectAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="debug-box info">Testing direct API call...</div>';
+            
+            try {
+                const response = await fetch('/api/sasaran-strategi');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="debug-box success">
+                            <h3>✅ API Call Successful</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Data Count:</strong> ${data.length}</p>
+                            <p><strong>First Item Perspektif:</strong> ${data[0]?.perspektif || 'MISSING!'}</p>
+                            <h4>Raw Data (first 3 items):</h4>
+                            <pre>${JSON.stringify(data.slice(0, 3), null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="debug-box error">
+                            <h3>❌ API Call Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong> ${JSON.stringify(data)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="debug-box error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testMockData() {
+            const mockData = [
+                {
+                    id: '1',
+                    sasaran: 'Test Sasaran 1',
+                    perspektif: 'ES',
+                    rencana_strategis: { nama_rencana: 'Test Rencana' },
+                    swot_tows_strategi: { tipe_strategi: 'SO', strategi: 'Test strategi SO' }
+                },
+                {
+                    id: '2',
+                    sasaran: 'Test Sasaran 2',
+                    perspektif: 'IBP',
+                    rencana_strategis: { nama_rencana: 'Test Rencana' },
+                    swot_tows_strategi: null
+                },
+                {
+                    id: '3',
+                    sasaran: 'Test Sasaran 3',
+                    perspektif: 'LG',
+                    rencana_strategis: { nama_rencana: 'Test Rencana' },
+                    swot_tows_strategi: { tipe_strategi: 'WT', strategi: 'Test strategi WT' }
+                }
+            ];
+
+            const html = renderMockTable(mockData);
+            
+            document.getElementById('results').innerHTML = `
+                <div class="debug-box success">
+                    <h3>✅ Mock Data Rendering Test</h3>
+                    <p>Testing with mock data to verify rendering logic:</p>
+                    ${html}
+                </div>
+            `;
+        }
+
+        function renderMockTable(data) {
+            return `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="border: 1px solid #ddd; padding: 8px;">Sasaran</th>
+                            <th style="border: 1px solid #ddd; padding: 8px;">Perspektif</th>
+                            <th style="border: 1px solid #ddd; padding: 8px;">TOWS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(item => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.sasaran}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">
+                                    ${item.perspektif ? `
+                                        <span style="
+                                            display: inline-block;
+                                            padding: 0.25rem 0.5rem;
+                                            font-size: 0.75rem;
+                                            font-weight: 600;
+                                            border-radius: 0.25rem;
+                                            ${getPerspektifStyle(item.perspektif)}
+                                        ">
+                                            ${getPerspektifLabel(item.perspektif)}
+                                        </span>
+                                    ` : '<em>No perspektif</em>'}
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">
+                                    ${item.swot_tows_strategi ? `
+                                        <span style="
+                                            padding: 0.2rem 0.4rem;
+                                            font-size: 0.7rem;
+                                            border-radius: 0.2rem;
+                                            ${getTowsStyle(item.swot_tows_strategi.tipe_strategi)}
+                                        ">${item.swot_tows_strategi.tipe_strategi}</span>
+                                    ` : '<em>No TOWS</em>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function getPerspektifLabel(perspektif) {
+            const labels = {
+                'ES': 'Eksternal Stakeholder',
+                'IBP': 'Internal Business Process',
+                'LG': 'Learning & Growth',
+                'Fin': 'Financial'
+            };
+            return labels[perspektif] || perspektif;
+        }
+
+        function getPerspektifStyle(perspektif) {
+            const styles = {
+                'ES': 'background-color: #17a2b8; color: white;',
+                'IBP': 'background-color: #28a745; color: white;',
+                'LG': 'background-color: #ffc107; color: #212529;',
+                'Fin': 'background-color: #dc3545; color: white;'
+            };
+            return styles[perspektif] || 'background-color: #6c757d; color: white;';
+        }
+
+        function getTowsStyle(tipeStrategi) {
+            const styles = {
+                'SO': 'background-color: #28a745; color: white;',
+                'WO': 'background-color: #17a2b8; color: white;',
+                'ST': 'background-color: #ffc107; color: #212529;',
+                'WT': 'background-color: #dc3545; color: white;'
+            };
+            return styles[tipeStrategi] || 'background-color: #6c757d; color: white;';
+        }
+
+        function testPerspektifRendering() {
+            const testCases = [
+                { perspektif: 'ES', expected: 'Eksternal Stakeholder' },
+                { perspektif: 'IBP', expected: 'Internal Business Process' },
+                { perspektif: 'LG', expected: 'Learning & Growth' },
+                { perspektif: 'Fin', expected: 'Financial' },
+                { perspektif: null, expected: 'No perspektif' },
+                { perspektif: undefined, expected: 'No perspektif' }
+            ];
+
+            const results = testCases.map(test => {
+                const label = getPerspektifLabel(test.perspektif);
+                const style = getPerspektifStyle(test.perspektif);
+                return {
+                    input: test.perspektif,
+                    expected: test.expected,
+                    actual: label,
+                    style: style,
+                    pass: label === test.expected || (test.perspektif && label !== test.perspektif)
+                };
+            });
+
+            document.getElementById('results').innerHTML = `
+                <div class="debug-box ${results.every(r => r.pass) ? 'success' : 'error'}">
+                    <h3>${results.every(r => r.pass) ? '✅' : '❌'} Perspektif Rendering Test</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="border: 1px solid #ddd; padding: 8px;">Input</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Expected</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Actual</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Rendered</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${results.map(r => `
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${r.input || 'null'}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${r.expected}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${r.actual}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">
+                                        ${r.input ? `<span style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; ${r.style}">${r.actual}</span>` : '<em>No badge</em>'}
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${r.pass ? '✅ Pass' : '❌ Fail'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Auto-run first test on page load
+        document.addEventListener('DOMContentLoaded', testDirectAPI);
+    </script>
+</body>
+</html>

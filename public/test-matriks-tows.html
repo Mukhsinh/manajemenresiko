@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Matriks TOWS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div style="padding: 2rem;">
+        <h1>Test Halaman Matriks TOWS</h1>
+        <div id="matriks-tows-content"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script>
+        // Mock current user for testing
+        window.currentUser = {
+            id: 'cc39ee53-4006-4b55-b383-a1ec5c40e676',
+            email: 'test@example.com'
+        };
+
+        // Mock API call function
+        window.apiCall = async function(url, options = {}) {
+            const baseUrl = window.location.origin;
+            const fullUrl = baseUrl + url;
+            
+            const config = {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer fake-token-for-test`
+                }
+            };
+            
+            if (options.body) {
+                config.body = JSON.stringify(options.body);
+            }
+            
+            try {
+                const response = await fetch(fullUrl, config);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        };
+    </script>
+    <script src="/js/matriks-tows.js"></script>
+    <script>
+        // Load the module when page is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('Loading Matriks TOWS module...');
+                if (window.MatriksTowsModule) {
+                    await window.MatriksTowsModule.load();
+                    console.log('Matriks TOWS module loaded successfully');
+                } else {
+                    console.error('MatriksTowsModule not found');
+                }
+            } catch (error) {
+                console.error('Error loading Matriks TOWS:', error);
+            }
+        });
+    </script>
+</body>
+</html>

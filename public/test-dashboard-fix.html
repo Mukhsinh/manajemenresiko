@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard Fix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .dashboard-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.stat-primary { border-left-color: #007bff; }
+        .stat-card.stat-success { border-left-color: #28a745; }
+        .stat-card.stat-warning { border-left-color: #ffc107; }
+        .stat-card.stat-danger { border-left-color: #dc3545; }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .stat-primary .stat-icon { background: linear-gradient(135deg, #007bff, #0056b3); }
+        .stat-success .stat-icon { background: linear-gradient(135deg, #28a745, #1e7e34); }
+        .stat-warning .stat-icon { background: linear-gradient(135deg, #ffc107, #e0a800); }
+        .stat-danger .stat-icon { background: linear-gradient(135deg, #dc3545, #c82333); }
+
+        .stat-content { flex: 1; }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            color: #2c3e50;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0.25rem 0;
+            color: #495057;
+        }
+
+        .stat-description {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .test-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Test Dashboard Fix</h1>
+            <p>Pengujian perbaikan dashboard dengan data dari database</p>
+        </div>
+
+        <div class="test-info">
+            <h3><i class="fas fa-info-circle"></i> Status Pengujian</h3>
+            <div id="test-status">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Memuat data dashboard...
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <button class="btn" onclick="testDashboard()">
+                    <i class="fas fa-sync"></i> Test Ulang
+                </button>
+                <button class="btn btn-success" onclick="window.open('/', '_blank')">
+                    <i class="fas fa-external-link-alt"></i> Buka Dashboard Utama
+                </button>
+            </div>
+        </div>
+
+        <div id="dashboard-content">
+            <!-- Dashboard content will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        let dashboardCharts = {};
+
+        async function testDashboard() {
+            const statusEl = document.getElementById('test-status');
+            const contentEl = document.getElementById('dashboard-content');
+            
+            statusEl.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat data dashboard...</div>';
+            contentEl.innerHTML = '';
+
+            try {
+                console.log('Testing dashboard endpoints...');
+                
+                // Test multiple endpoints
+                const endpoints = [
+                    '/api/dashboard/public',
+                    '/api/test-data/dashboard'
+                ];
+                
+                let data = null;
+                let usedEndpoint = '';
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        console.log(`Testing endpoint: ${endpoint}`);
+                        const response = await fetch(endpoint);
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            console.log(`Success from ${endpoint}:`, result);
+                            data = result;
+                            usedEndpoint = endpoint;
+                            break;
+                        } else {
+                            console.warn(`Failed ${endpoint}: ${response.status}`);
+                        }
+                    } catch (error) {
+                        console.warn(`Error ${endpoint}:`, error.message);
+                    }
+                }
+                
+                if (!data) {
+                    throw new Error('Semua endpoint dashboard gagal');
+                }
+                
+                // Show success status
+                statusEl.innerHTML = `
+                    <div class="success">
+                        <i class="fas fa-check-circle"></i> 
+                        <strong>Dashboard berhasil dimuat!</strong><br>
+                        <small>Endpoint: ${usedEndpoint}</small><br>
+                        <small>Total Risiko: ${data.total_risks || 0}</small><br>
+                        <small>Visi Misi: ${data.sample_data?.visi_misi?.length || 0}</small><br>
+                        <small>Rencana Strategis: ${data.sample_data?.rencana_strategis?.length || 0}</small>
+                    </div>
+                `;
+                
+                // Render dashboard
+                renderDashboard(data);
+                
+            } catch (error) {
+                console.error('Dashboard test error:', error);
+                statusEl.innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderDashboard(stats) {
+            const content = document.getElementById('dashboard-content');
+            
+            content.innerHTML = `
+                <div class="dashboard-stats-grid">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">${stats.total_risks || 0}</h3>
+                            <p class="stat-label">Total Risiko</p>
+                            <small class="stat-description">Data risiko terdaftar</small>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">${stats.loss_events || 0}</h3>
+                            <p class="stat-label">Loss Events</p>
+                            <small class="stat-description">Kejadian kerugian</small>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">${stats.sample_data?.visi_misi?.length || 0}</h3>
+                            <p class="stat-label">Visi Misi</p>
+                            <small class="stat-description">Visi misi aktif</small>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">${stats.sample_data?.rencana_strategis?.length || 0}</h3>
+                            <p class="stat-label">Rencana Strategis</p>
+                            <small class="stat-description">Rencana strategis</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4 class="chart-title">Inherent Risk Distribution</h4>
+                        <canvas id="inherent-risk-chart" width="300" height="300"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4 class="chart-title">Residual Risk Distribution</h4>
+                        <canvas id="residual-risk-chart" width="300" height="300"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4 class="chart-title">Key Risk Indicator Status</h4>
+                        <canvas id="kri-chart" width="300" height="300"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            // Wait for DOM to be ready then render charts
+            setTimeout(() => {
+                renderCharts(stats);
+            }, 100);
+        }
+
+        function renderCharts(stats) {
+            // Inherent Risk Chart
+            const inherentCtx = document.getElementById('inherent-risk-chart');
+            if (inherentCtx && typeof Chart !== 'undefined') {
+                if (dashboardCharts.inherent) {
+                    dashboardCharts.inherent.destroy();
+                }
+                
+                dashboardCharts.inherent = new Chart(inherentCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Extreme High', 'High', 'Medium', 'Low'],
+                        datasets: [{
+                            data: [
+                                stats.inherent_risks?.extreme_high || 0,
+                                stats.inherent_risks?.high || 0,
+                                stats.inherent_risks?.medium || 0,
+                                stats.inherent_risks?.low || 0
+                            ],
+                            backgroundColor: ['#dc2626', '#f97316', '#f59e0b', '#10b981']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+            }
+
+            // Residual Risk Chart
+            const residualCtx = document.getElementById('residual-risk-chart');
+            if (residualCtx && typeof Chart !== 'undefined') {
+                if (dashboardCharts.residual) {
+                    dashboardCharts.residual.destroy();
+                }
+                
+                dashboardCharts.residual = new Chart(residualCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Extreme High', 'High', 'Medium', 'Low'],
+                        datasets: [{
+                            data: [
+                                stats.residual_risks?.extreme_high || 0,
+                                stats.residual_risks?.high || 0,
+                                stats.residual_risks?.medium || 0,
+                                stats.residual_risks?.low || 0
+                            ],
+                            backgroundColor: ['#dc2626', '#f97316', '#f59e0b', '#10b981']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+            }
+
+            // KRI Chart
+            const kriCtx = document.getElementById('kri-chart');
+            if (kriCtx && typeof Chart !== 'undefined') {
+                if (dashboardCharts.kri) {
+                    dashboardCharts.kri.destroy();
+                }
+                
+                dashboardCharts.kri = new Chart(kriCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Aman', 'Hati-hati', 'Kritis'],
+                        datasets: [{
+                            data: [
+                                stats.kri?.aman || 0,
+                                stats.kri?.hati_hati || 0,
+                                stats.kri?.kritis || 0
+                            ],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+            }
+        }
+
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', testDashboard);
+    </script>
+</body>
+</html>

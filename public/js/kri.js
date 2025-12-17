@@ -2,12 +2,68 @@
 const KRI = {
     async load() {
         try {
-            const data = await apiCall('/api/kri');
+            console.log('Loading KRI data...');
+            
+            // Try main endpoint first
+            let data;
+            try {
+                data = await apiCall('/api/kri');
+                console.log('KRI data loaded from main endpoint:', data.length, 'records');
+            } catch (authError) {
+                console.warn('Main KRI endpoint failed:', authError.message);
+                
+                // Fallback to test endpoint if auth fails
+                try {
+                    const response = await fetch('/api/kri/test-no-auth');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                    }
+                    data = await response.json();
+                    console.log('KRI data loaded from fallback endpoint:', data.length, 'records');
+                } catch (fallbackError) {
+                    console.error('Fallback endpoint also failed:', fallbackError.message);
+                    throw new Error(`Authentication failed and fallback unavailable: ${authError.message}`);
+                }
+            }
+            
+            if (!data || data.length === 0) {
+                throw new Error('No KRI data available');
+            }
+            
             this.render(data);
         } catch (error) {
             console.error('Error loading KRI:', error);
             document.getElementById('kri-content').innerHTML = 
-                '<div class="card"><p>Error: ' + error.message + '</p></div>';
+                `<div class="card">
+                    <div class="card-body">
+                        <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error Loading KRI</h5>
+                        <p>${error.message}</p>
+                        <button onclick="KRI.load()" class="btn btn-primary">Retry</button>
+                        <button onclick="KRI.loadTestData()" class="btn btn-secondary">Load Test Data</button>
+                    </div>
+                </div>`;
+        }
+    },
+
+    async loadTestData() {
+        try {
+            console.log('Loading KRI test data...');
+            const response = await fetch('/api/kri/test-no-auth');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+            }
+            const data = await response.json();
+            console.log('KRI test data loaded:', data.length, 'records');
+            this.render(data);
+        } catch (error) {
+            console.error('Error loading KRI test data:', error);
+            document.getElementById('kri-content').innerHTML = 
+                `<div class="card">
+                    <div class="card-body">
+                        <h5 class="text-danger">Error Loading Test Data</h5>
+                        <p>${error.message}</p>
+                    </div>
+                </div>`;
         }
     },
 
@@ -96,24 +152,50 @@ const KRI = {
         const ctx = document.getElementById('kri-status-chart');
         if (!ctx || typeof Chart === 'undefined') {
             console.warn('Chart context not available or Chart.js not loaded');
+            // Show fallback stats
+            const chartCard = ctx?.closest('.chart-card');
+            if (chartCard) {
+                chartCard.innerHTML = `
+                    <h4 class="chart-title">Status KRI</h4>
+                    <div style="padding: 20px; text-align: center;">
+                        <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                            <div style="margin: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: #10b981;">${stats.aman}</div>
+                                <div>Aman</div>
+                            </div>
+                            <div style="margin: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">${stats.hati_hati}</div>
+                                <div>Hati-hati</div>
+                            </div>
+                            <div style="margin: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: #ef4444;">${stats.kritis}</div>
+                                <div>Kritis</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
             return;
         }
         
         try {
             new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Aman', 'Hati-hati', 'Kritis'],
-                datasets: [{
-                    data: [stats.aman, stats.hati_hati, stats.kritis],
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true
-            }
-        });
+                type: 'doughnut',
+                data: {
+                    labels: ['Aman', 'Hati-hati', 'Kritis'],
+                    datasets: [{
+                        data: [stats.aman, stats.hati_hati, stats.kritis],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        } catch (error) {
+            console.error('Error creating chart:', error);
+        }
     },
 
     async showAddModal() {

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Risk Fix Test</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            color: white;
+        }
+        .btn-primary { background: #3498db; }
+        .btn-success { background: #27ae60; }
+        .btn-warning { background: #f39c12; }
+        .btn:hover { opacity: 0.9; }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #cce7ff; color: #004085; }
+        .info { background: #e2e3e5; color: #383d41; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 300px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-tools"></i> Residual Risk Fix Test</h1>
+        
+        <div class="test-section">
+            <h3>Step 1: Setup Authentication</h3>
+            <button class="btn btn-primary" onclick="setupAuth()">
+                <i class="fas fa-key"></i> Setup Authentication
+            </button>
+            <div id="auth-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 2: Test Direct API Call</h3>
+            <button class="btn btn-success" onclick="testDirectAPI()">
+                <i class="fas fa-plug"></i> Test Direct API
+            </button>
+            <div id="api-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 3: Load Residual Risk Module</h3>
+            <button class="btn btn-warning" onclick="loadModule()">
+                <i class="fas fa-cogs"></i> Load Module
+            </button>
+            <div id="module-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 4: Residual Risk Content</h3>
+            <div id="residual-risk-content" style="min-height: 200px; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+        
+        <div id="debug-output"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/residual-risk.js"></script>
+
+    <script>
+        let testResults = {};
+
+        function showStatus(elementId, message, type = 'info') {
+            document.getElementById(elementId).innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showDebug(data) {
+            document.getElementById('debug-output').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function setupAuth() {
+            showStatus('auth-result', '<i class="fas fa-spinner fa-spin"></i> Setting up authentication...', 'loading');
+            
+            try {
+                // Method 1: Try localStorage token
+                let token = localStorage.getItem('authToken');
+                if (token) {
+                    testResults.auth = { method: 'localStorage', token: token.substring(0, 20) + '...' };
+                    showStatus('auth-result', '<i class="fas fa-check"></i> Using token from localStorage', 'success');
+                    return;
+                }
+
+                // Method 2: Try manual login
+                const loginCredentials = [
+                    { email: 'mukhsin9@gmail.com', password: 'admin123' },
+                    { email: 'amalinda.fajari@gmail.com', password: 'admin123' }
+                ];
+
+                for (const cred of loginCredentials) {
+                    try {
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(cred)
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.token) {
+                                localStorage.setItem('authToken', data.token);
+                                testResults.auth = { method: 'login', email: cred.email, token: data.token.substring(0, 20) + '...' };
+                                showStatus('auth-result', `<i class="fas fa-check"></i> Login successful with ${cred.email}`, 'success');
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`Login failed for ${cred.email}:`, e);
+                    }
+                }
+
+                throw new Error('All authentication methods failed');
+                
+            } catch (error) {
+                testResults.auth = { error: error.message };
+                showStatus('auth-result', `<i class="fas fa-times"></i> Authentication failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDirectAPI() {
+            showStatus('api-result', '<i class="fas fa-spinner fa-spin"></i> Testing direct API call...', 'loading');
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    throw new Error('No authentication token available');
+                }
+
+                // Test user info first
+                const userResponse = await fetch('/api/reports/user-debug', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let userInfo = null;
+                if (userResponse.ok) {
+                    userInfo = await userResponse.json();
+                    console.log('User info:', userInfo);
+                }
+
+                // Test main API
+                const response = await fetch('/api/reports/residual-risk', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let mainApiData = null;
+                let mainApiError = null;
+                
+                if (response.ok) {
+                    mainApiData = await response.json();
+                } else {
+                    const errorText = await response.text();
+                    mainApiError = `API Error ${response.status}: ${errorText}`;
+                }
+
+                // Test debug API
+                const debugResponse = await fetch('/api/reports/residual-risk-debug', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let debugData = null;
+                if (debugResponse.ok) {
+                    debugData = await debugResponse.json();
+                }
+                
+                testResults.api = {
+                    userInfo: userInfo,
+                    mainApi: {
+                        success: !!mainApiData,
+                        recordCount: mainApiData?.length || 0,
+                        error: mainApiError
+                    },
+                    debugApi: {
+                        success: !!debugData,
+                        recordCount: debugData?.recordCount || 0,
+                        sampleRecord: debugData?.sampleData?.[0] || null
+                    }
+                };
+                
+                const totalRecords = mainApiData?.length || debugData?.recordCount || 0;
+                showStatus('api-result', `<i class="fas fa-check"></i> API test completed! Found ${totalRecords} records`, totalRecords > 0 ? 'success' : 'error');
+                showDebug(testResults);
+                
+            } catch (error) {
+                testResults.api = { error: error.message };
+                showStatus('api-result', `<i class="fas fa-times"></i> API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadModule() {
+            showStatus('module-result', '<i class="fas fa-spinner fa-spin"></i> Loading ResidualRiskModule...', 'loading');
+            
+            try {
+                // Check if module exists
+                if (typeof ResidualRiskModule === 'undefined') {
+                    throw new Error('ResidualRiskModule not found');
+                }
+
+                // Check if load function exists
+                if (typeof ResidualRiskModule.load !== 'function') {
+                    throw new Error('ResidualRiskModule.load function not found');
+                }
+
+                // Try to load the module
+                await ResidualRiskModule.load();
+                
+                testResults.module = { success: true, loaded: true };
+                showStatus('module-result', '<i class="fas fa-check"></i> Module loaded successfully!', 'success');
+                
+            } catch (error) {
+                testResults.module = { error: error.message };
+                showStatus('module-result', `<i class="fas fa-times"></i> Module load failed: ${error.message}`, 'error');
+                console.error('Module load error:', error);
+            }
+        }
+
+        // Auto-run setup on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Starting residual risk fix test...');
+            
+            // Wait a bit for scripts to load
+            setTimeout(async () => {
+                await setupAuth();
+                
+                // If auth successful, continue with API test
+                if (testResults.auth && !testResults.auth.error) {
+                    setTimeout(async () => {
+                        await testDirectAPI();
+                        
+                        // If API successful, load module
+                        if (testResults.api && testResults.api.success) {
+                            setTimeout(loadModule, 1000);
+                        }
+                    }, 1000);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple IKU</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .error { background-color: #ffebee; }
+        .success { background-color: #e8f5e8; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Simple Indikator Kinerja Utama</h1>
+    
+    <button onclick="testDirectAPI()">Test Direct API</button>
+    <button onclick="testDebugAPI()">Test Debug API</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testDirectAPI() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const response = await fetch('/api/indikator-kinerja-utama/debug');
+                const data = await response.json();
+                
+                resultsDiv.innerHTML += `
+                    <div class="result success">
+                        <h3>Direct API Test - Success</h3>
+                        <p>Status: ${response.status}</p>
+                        <p>Count: ${data.count}</p>
+                        <p>Message: ${data.message}</p>
+                        <details>
+                            <summary>Raw Data</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>Direct API Test - Error</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testDebugAPI() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Test with mock auth header
+                const response = await fetch('/api/indikator-kinerja-utama', {
+                    headers: {
+                        'Authorization': 'Bearer mock-token',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += `
+                        <div class="result success">
+                            <h3>Auth API Test - Success</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Data Length: ${Array.isArray(data) ? data.length : 'Not array'}</p>
+                            <details>
+                                <summary>Sample Data</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.json();
+                    resultsDiv.innerHTML += `
+                        <div class="result error">
+                            <h3>Auth API Test - HTTP Error</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Error: ${errorData.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>Auth API Test - Network Error</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

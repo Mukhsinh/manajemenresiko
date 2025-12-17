@@ -46,9 +46,13 @@ function displayRiskRegister(data) {
     `;
 
     data.forEach((risk, index) => {
-        const inherent = risk.risk_inherent_analysis || {};
-        const residual = risk.risk_residual_analysis || {};
-        const appetite = risk.risk_appetite || {};
+        // Fix: Access first element of arrays since API returns arrays
+        const inherent = (risk.risk_inherent_analysis && risk.risk_inherent_analysis.length > 0) 
+            ? risk.risk_inherent_analysis[0] : {};
+        const residual = (risk.risk_residual_analysis && risk.risk_residual_analysis.length > 0) 
+            ? risk.risk_residual_analysis[0] : {};
+        const appetite = (risk.risk_appetite && risk.risk_appetite.length > 0) 
+            ? risk.risk_appetite[0] : {};
 
         html += `
             <tr>
@@ -81,6 +85,40 @@ function displayRiskRegister(data) {
     `;
 
     container.innerHTML = html;
+}
+
+// Helper function to truncate text
+function truncateText(text, maxLength) {
+    if (!text) return '-';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+// Helper function to format risk level with proper styling
+function formatRiskLevel(level) {
+    if (!level) return '-';
+    
+    const levelClass = level.toLowerCase().replace(/\s+/g, '-');
+    const colorMap = {
+        'low-risk': 'success',
+        'medium-risk': 'warning', 
+        'high-risk': 'danger',
+        'extreme-high': 'dark'
+    };
+    
+    const badgeClass = colorMap[levelClass] || 'secondary';
+    return `<span class="badge badge-${badgeClass}" style="font-size: 10px;">${level}</span>`;
+}
+
+// Helper function to format currency
+function formatCurrency(amount) {
+    if (!amount || amount === 0) return '-';
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
 }
 
 function formatDate(dateString) {

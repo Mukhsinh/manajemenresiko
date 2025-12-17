@@ -279,6 +279,45 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Test KRI direct (no auth, no filters)
+router.get('/kri-direct', async (req, res) => {
+  try {
+    console.log('Test KRI direct request (no auth, no filters)');
+    
+    const client = supabaseAdmin;
+    
+    if (!client) {
+      return res.status(500).json({ error: 'Database client not available' });
+    }
+
+    const { data, error } = await client
+      .from('key_risk_indicator')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        ),
+        master_work_units (
+          name,
+          code
+        ),
+        risk_inputs (
+          kode_risiko
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    console.log('Test KRI direct data:', data?.length || 0, 'records');
+    res.json(data || []);
+  } catch (error) {
+    console.error('Test KRI direct error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Test all tables data count
 router.get('/data-counts', async (req, res) => {
   try {
@@ -299,7 +338,8 @@ router.get('/data-counts', async (req, res) => {
       'organizations',
       'user_profiles',
       'visi_misi',
-      'rencana_strategis'
+      'rencana_strategis',
+      'key_risk_indicator'
     ];
 
     const counts = {};

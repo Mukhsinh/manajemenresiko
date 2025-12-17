@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Perspektif Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin: 4px; }
+        .btn-primary { background: #007bff; color: white; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .table th { background-color: #f8f9fa; font-weight: 600; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.25rem; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+        .debug { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Perspektif Fix - Direct Database Query</h1>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn btn-primary" onclick="testDebugEndpoint()">Test Debug Endpoint</button>
+            <button class="btn btn-primary" onclick="testWithAuth()">Test With Auth</button>
+        </div>
+
+        <div id="debug-info" class="debug"></div>
+        <div id="content">
+            <div class="loading">Click button to test</div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        async function testDebugEndpoint() {
+            document.getElementById('debug-info').innerHTML = 'Testing debug endpoint...';
+            document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch('/api/sasaran-strategi/debug');
+                const result = await response.json();
+                
+                document.getElementById('debug-info').innerHTML = `
+                    Status: ${response.status}<br>
+                    Success: ${result.success}<br>
+                    Count: ${result.count}<br>
+                    Sample Perspektif: ${result.sample?.perspektif || 'null'}<br>
+                    Sample TOWS: ${result.sample?.swot_tows_strategi?.tipe_strategi || 'null'}
+                `;
+                
+                if (result.success && result.data) {
+                    renderTable(result.data);
+                } else {
+                    document.getElementById('content').innerHTML = `<div style="color: red;">Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('content').innerHTML = `<div style="color: red;">Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testWithAuth() {
+            document.getElementById('debug-info').innerHTML = 'Testing with auth...';
+            
+            try {
+                // Wait for Supabase client
+                let retries = 0;
+                while (!window.supabaseClient && retries < 10) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    retries++;
+                }
+                
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                const token = session?.access_token;
+                
+                document.getElementById('debug-info').innerHTML = `Auth token available: ${!!token}`;
+                
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch('/api/sasaran-strategi', { headers });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('debug-info').innerHTML += `<br>Data count: ${data.length}`;
+                    renderTable(data);
+                } else {
+                    document.getElementById('content').innerHTML = `<div style="color: red;">Auth Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('content').innerHTML = `<div style="color: red;">Auth Test Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderTable(data) {
+            const html = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Sasaran</th>
+                            <th>Perspektif</th>
+                            <th>TOWS Strategi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map((item, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.sasaran}</td>
+                                <td>
+                                    ${item.perspektif ? `
+                                        <span class="badge" style="${getPerspektifStyle(item.perspektif)}">
+                                            ${getPerspektifLabel(item.perspektif)}
+                                        </span>
+                                    ` : '<em>No perspektif</em>'}
+                                </td>
+                                <td>
+                                    ${item.swot_tows_strategi ? `
+                                        <span class="badge" style="${getTowsStyle(item.swot_tows_strategi.tipe_strategi)}">
+                                            ${item.swot_tows_strategi.tipe_strategi}
+                                        </span><br>
+                                        <small>${item.swot_tows_strategi.strategi.substring(0, 50)}...</small>
+                                    ` : '<em>No TOWS</em>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function getPerspektifLabel(perspektif) {
+            const labels = {
+                'ES': 'Eksternal Stakeholder',
+                'IBP': 'Internal Business Process', 
+                'LG': 'Learning & Growth',
+                'Fin': 'Financial'
+            };
+            return labels[perspektif] || perspektif;
+        }
+
+        function getPerspektifStyle(perspektif) {
+            const styles = {
+                'ES': 'background-color: #17a2b8; color: white;',
+                'IBP': 'background-color: #28a745; color: white;',
+                'LG': 'background-color: #ffc107; color: #212529;',
+                'Fin': 'background-color: #dc3545; color: white;'
+            };
+            return styles[perspektif] || 'background-color: #6c757d; color: white;';
+        }
+
+        function getTowsStyle(tipeStrategi) {
+            const styles = {
+                'SO': 'background-color: #28a745; color: white;',
+                'WO': 'background-color: #17a2b8; color: white;',
+                'ST': 'background-color: #ffc107; color: #212529;',
+                'WT': 'background-color: #dc3545; color: white;'
+            };
+            return styles[tipeStrategi] || 'background-color: #6c757d; color: white;';
+        }
+    </script>
+</body>
+</html>

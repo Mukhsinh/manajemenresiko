@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Register - Clean Layout Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* Clean Table Styles - Like Original */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Risk Level Styles */
+        .risk-low-risk {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .risk-medium-risk {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .risk-high-risk {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .risk-extreme-high {
+            background-color: #f5c6cb;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Risk Register - Clean Layout</h1>
+            <p>Testing tampilan tabel sederhana tanpa overflow seperti desain awal</p>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn btn-success" onclick="loadCleanRiskRegister()">
+                🔄 Load Clean Risk Register
+            </button>
+            <button class="btn" onclick="checkTableLayout()">
+                📏 Check Layout
+            </button>
+        </div>
+
+        <div id="result-message"></div>
+
+        <div id="risk-register-table">
+            <p style="text-align: center; color: #666; padding: 50px;">
+                Click "Load Clean Risk Register" to display the table
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Load Clean Risk Register
+        async function loadCleanRiskRegister() {
+            const resultDiv = document.getElementById('result-message');
+            const tableDiv = document.getElementById('risk-register-table');
+            
+            resultDiv.innerHTML = '<div class="info">Loading clean risk register...</div>';
+            
+            try {
+                const response = await fetch('/api/reports/risk-register-debug');
+                const data = await response.json();
+                
+                if (response.ok && data.fullData) {
+                    displayRiskRegister(data.fullData);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Clean Risk Register loaded successfully!<br>
+                            📊 Total Records: ${data.recordCount}<br>
+                            📋 Layout: Simple table without overflow<br>
+                            🎨 Style: Clean like original design
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Failed to load risk register data</div>';
+                }
+            } catch (error) {
+                console.error('Error loading risk register:', error);
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Display Risk Register (Clean Version)
+        function displayRiskRegister(data) {
+            const container = document.getElementById('risk-register-table');
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Tidak ada data risk register.</p>';
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Kode Risiko</th>
+                            <th>Status</th>
+                            <th>Jenis</th>
+                            <th>Kategori</th>
+                            <th>Unit Kerja</th>
+                            <th>Sasaran</th>
+                            <th>Tanggal Registrasi</th>
+                            <th>Penyebab Risiko</th>
+                            <th>Dampak Risiko</th>
+                            <th>P Inheren</th>
+                            <th>D Inheren</th>
+                            <th>Nilai Inheren</th>
+                            <th>Tingkat Inheren</th>
+                            <th>P Residual</th>
+                            <th>D Residual</th>
+                            <th>Nilai Residual</th>
+                            <th>Tingkat Residual</th>
+                            <th>Risk Appetite</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach((risk, index) => {
+                // Access first element of arrays since API returns arrays
+                const inherent = (risk.risk_inherent_analysis && risk.risk_inherent_analysis.length > 0) 
+                    ? risk.risk_inherent_analysis[0] : {};
+                const residual = (risk.risk_residual_analysis && risk.risk_residual_analysis.length > 0) 
+                    ? risk.risk_residual_analysis[0] : {};
+                const appetite = (risk.risk_appetite && risk.risk_appetite.length > 0) 
+                    ? risk.risk_appetite[0] : {};
+
+                html += `
+                    <tr>
+                        <td>${risk.no || index + 1}</td>
+                        <td>${risk.kode_risiko || '-'}</td>
+                        <td>${risk.status_risiko || 'Active'}</td>
+                        <td>${risk.jenis_risiko || 'Threat'}</td>
+                        <td>${risk.master_risk_categories?.name || '-'}</td>
+                        <td>${risk.master_work_units?.name || '-'}</td>
+                        <td>${risk.sasaran ? risk.sasaran.substring(0, 50) + '...' : '-'}</td>
+                        <td>${formatDate(risk.tanggal_registrasi) || '-'}</td>
+                        <td>${risk.penyebab_risiko ? risk.penyebab_risiko.substring(0, 50) + '...' : '-'}</td>
+                        <td>${risk.dampak_risiko ? risk.dampak_risiko.substring(0, 50) + '...' : '-'}</td>
+                        <td>${inherent.probability || '-'}</td>
+                        <td>${inherent.impact || '-'}</td>
+                        <td>${inherent.risk_value || '-'}</td>
+                        <td><span class="risk-${(inherent.risk_level || '').toLowerCase().replace(' ', '-')}">${inherent.risk_level || '-'}</span></td>
+                        <td>${residual.probability || '-'}</td>
+                        <td>${residual.impact || '-'}</td>
+                        <td>${residual.risk_value || '-'}</td>
+                        <td><span class="risk-${(residual.risk_level || '').toLowerCase().replace(' ', '-')}">${residual.risk_level || '-'}</span></td>
+                        <td>${appetite.risk_appetite_level || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Check Table Layout
+        function checkTableLayout() {
+            const resultDiv = document.getElementById('result-message');
+            const table = document.querySelector('.data-table');
+            
+            if (!table) {
+                resultDiv.innerHTML = '<div class="error">❌ No table found. Load data first.</div>';
+                return;
+            }
+            
+            const tableWidth = table.offsetWidth;
+            const containerWidth = table.parentElement.offsetWidth;
+            const hasOverflow = tableWidth > containerWidth;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            const columns = table.querySelectorAll('thead th');
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    📏 Table Layout Analysis:<br>
+                    📊 Columns: ${columns.length}<br>
+                    📋 Rows: ${rows.length}<br>
+                    📐 Table Width: ${tableWidth}px<br>
+                    📦 Container Width: ${containerWidth}px<br>
+                    🚫 Has Overflow: ${hasOverflow ? 'Yes ❌' : 'No ✅'}<br>
+                    🎨 Style: ${hasOverflow ? 'Needs adjustment' : 'Clean and proper'}
+                </div>
+            `;
+        }
+
+        // Format Date
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID');
+        }
+
+        // Auto-load data on page load
+        window.addEventListener('load', function() {
+            console.log('Risk Register Clean Layout Test Page loaded');
+        });
+    </script>
+</body>
+</html>

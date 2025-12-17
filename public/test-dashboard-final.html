@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .test-results {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .test-status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .test-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-check-circle"></i> Test Dashboard Final</h1>
+            <p>Verifikasi perbaikan dashboard dengan data dari database</p>
+            
+            <div>
+                <button class="btn" onclick="runAllTests()">
+                    <i class="fas fa-play"></i> Run All Tests
+                </button>
+                <button class="btn btn-success" onclick="window.open('/', '_blank')">
+                    <i class="fas fa-external-link-alt"></i> Open Main Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="test-results">
+            <h3><i class="fas fa-clipboard-list"></i> Test Results</h3>
+            <div id="test-results">
+                <div class="test-status info">
+                    <i class="fas fa-info-circle"></i> Click "Run All Tests" to start verification
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard-content">
+            <!-- Dashboard content will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        function addTestResult(message, type = 'info') {
+            const resultsEl = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const statusEl = document.createElement('div');
+            statusEl.className = `test-status ${type}`;
+            statusEl.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            resultsEl.appendChild(statusEl);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        async function testEndpoint(endpoint) {
+            try {
+                addTestResult(`Testing endpoint: ${endpoint}`, 'info');
+                
+                const response = await fetch(endpoint);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const totalRisks = data.total_risks || 0;
+                    const visiMisi = data.sample_data?.visi_misi?.length || 0;
+                    const rencanaStrategis = data.sample_data?.rencana_strategis?.length || 0;
+                    
+                    addTestResult(`✅ ${endpoint} - Success! Risks: ${totalRisks}, Visi: ${visiMisi}, Rencana: ${rencanaStrategis}`, 'success');
+                    return data;
+                } else {
+                    const errorText = await response.text();
+                    addTestResult(`❌ ${endpoint} - HTTP ${response.status}: ${errorText}`, 'error');
+                    return null;
+                }
+            } catch (error) {
+                addTestResult(`❌ ${endpoint} - Exception: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testDashboardModule() {
+            addTestResult('Testing dashboard module loading...', 'info');
+            
+            return new Promise((resolve) => {
+                // Load dashboard.js
+                const script = document.createElement('script');
+                script.src = '/js/dashboard.js';
+                
+                script.onload = () => {
+                    addTestResult('✅ Dashboard.js loaded successfully', 'success');
+                    
+                    if (window.dashboardModule) {
+                        addTestResult('✅ Dashboard module available', 'success');
+                        
+                        if (window.dashboardModule.loadDashboard) {
+                            addTestResult('✅ loadDashboard function available', 'success');
+                            resolve(true);
+                        } else {
+                            addTestResult('❌ loadDashboard function not available', 'error');
+                            resolve(false);
+                        }
+                    } else {
+                        addTestResult('❌ Dashboard module not available', 'error');
+                        resolve(false);
+                    }
+                };
+                
+                script.onerror = () => {
+                    addTestResult('❌ Failed to load dashboard.js', 'error');
+                    resolve(false);
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+
+        async function testDashboardFunction() {
+            if (!window.dashboardModule || !window.dashboardModule.loadDashboard) {
+                addTestResult('❌ Dashboard module not available for function test', 'error');
+                return false;
+            }
+            
+            try {
+                addTestResult('Testing dashboard loadDashboard function...', 'info');
+                await window.dashboardModule.loadDashboard();
+                addTestResult('✅ Dashboard function executed successfully', 'success');
+                
+                // Check if content was rendered
+                const content = document.getElementById('dashboard-content');
+                if (content && content.innerHTML.includes('stat-card')) {
+                    addTestResult('✅ Dashboard content rendered successfully', 'success');
+                    return true;
+                } else {
+                    addTestResult('❌ Dashboard content not rendered properly', 'error');
+                    return false;
+                }
+            } catch (error) {
+                addTestResult(`❌ Dashboard function error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            // Clear previous results
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('dashboard-content').innerHTML = '';
+            
+            addTestResult('🚀 Starting comprehensive dashboard tests...', 'info');
+            
+            // Test 1: Endpoint tests
+            addTestResult('=== PHASE 1: ENDPOINT TESTS ===', 'info');
+            const endpoints = [
+                '/api/dashboard/public',
+                '/api/test-data/dashboard'
+            ];
+            
+            let workingEndpoint = null;
+            for (const endpoint of endpoints) {
+                const result = await testEndpoint(endpoint);
+                if (result) {
+                    workingEndpoint = endpoint;
+                    break;
+                }
+            }
+            
+            if (!workingEndpoint) {
+                addTestResult('❌ No working endpoints found!', 'error');
+                return;
+            }
+            
+            // Test 2: Module loading
+            addTestResult('=== PHASE 2: MODULE LOADING ===', 'info');
+            const moduleLoaded = await testDashboardModule();
+            
+            if (!moduleLoaded) {
+                addTestResult('❌ Dashboard module loading failed!', 'error');
+                return;
+            }
+            
+            // Test 3: Function execution
+            addTestResult('=== PHASE 3: FUNCTION EXECUTION ===', 'info');
+            const functionWorked = await testDashboardFunction();
+            
+            if (functionWorked) {
+                addTestResult('🎉 ALL TESTS PASSED! Dashboard is working correctly.', 'success');
+            } else {
+                addTestResult('❌ Dashboard function test failed!', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

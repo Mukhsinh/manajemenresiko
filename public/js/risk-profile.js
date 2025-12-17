@@ -38,15 +38,23 @@ const RiskProfileModule = (() => {
 
   async function fetchRiskProfile() {
     try {
+      console.log('=== FETCHING RISK PROFILE ===');
+      console.log('API function available:', typeof api());
+      
       const params = new URLSearchParams();
       if (state.filters.rencana_strategis_id) params.append('rencana_strategis_id', state.filters.rencana_strategis_id);
       if (state.filters.unit_kerja_id) params.append('unit_kerja_id', state.filters.unit_kerja_id);
       if (state.filters.kategori_risiko_id) params.append('kategori_risiko_id', state.filters.kategori_risiko_id);
       if (state.filters.risk_level) params.append('risk_level', state.filters.risk_level);
 
-      const data = await api()('/api/reports/risk-profile?' + params.toString());
+      console.log('Calling API endpoint: /api/risk-profile-real');
+      const data = await api()('/api/risk-profile-real');
+      console.log('Raw API response:', data);
+      
       state.data = data || [];
       console.log('Risk profile loaded:', state.data.length, 'items');
+      console.log('Sample data:', state.data[0]);
+      console.log('=== END FETCH ===');
     } catch (error) {
       console.error('Error fetching risk profile:', error);
       state.data = [];
@@ -54,8 +62,15 @@ const RiskProfileModule = (() => {
   }
 
   function render() {
+    console.log('=== RENDERING RISK PROFILE ===');
+    console.log('Data to render:', state.data.length, 'items');
+    
     const container = document.getElementById('risk-profile-content');
-    if (!container) return;
+    if (!container) {
+      console.error('Container #risk-profile-content not found!');
+      return;
+    }
+    console.log('Container found:', container);
 
     container.innerHTML = `
       <div class="card">
@@ -69,16 +84,32 @@ const RiskProfileModule = (() => {
           ${renderFilters()}
           ${renderStatistics()}
           <div class="row" style="margin-top: 2rem;">
-            <div class="col-md-8">
-              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h4 style="margin-bottom: 1rem;">Inherent Risk Matrix (5×5)</h4>
-                <div style="position: relative; height: 500px;">
-                  <canvas id="inherent-risk-matrix"></canvas>
+            <div class="col-md-12">
+              <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem;">
+                  <h4 style="color: #2c3e50; font-weight: 600; margin: 0;">
+                    <i class="fas fa-chart-scatter"></i> Inherent Risk Matrix (5×5) - ${state.data.length} Risiko
+                  </h4>
+                  <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-success" onclick="RiskProfileModule.downloadChart()" style="padding: 0.5rem 1rem;">
+                      <i class="fas fa-download"></i> Unduh Grafik
+                    </button>
+                    <button class="btn btn-primary" onclick="RiskProfileModule.downloadReport()" style="padding: 0.5rem 1rem;">
+                      <i class="fas fa-file-excel"></i> Unduh Laporan
+                    </button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-9">
+                    <div style="position: relative; height: 700px; background: #f8f9fa; border-radius: 8px; padding: 1rem;">
+                      <canvas id="inherent-risk-matrix"></canvas>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    ${renderLegend()}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="col-md-4">
-              ${renderLegend()}
             </div>
           </div>
           <div style="margin-top: 2rem;">
@@ -144,6 +175,9 @@ const RiskProfileModule = (() => {
   }
 
   function renderStatistics() {
+    console.log('=== RENDERING STATISTICS ===');
+    console.log('State data for stats:', state.data);
+    
     const stats = {
       total: state.data.length,
       extreme: state.data.filter(d => d.risk_level === 'EXTREME HIGH').length,
@@ -151,6 +185,8 @@ const RiskProfileModule = (() => {
       medium: state.data.filter(d => d.risk_level === 'MEDIUM RISK').length,
       low: state.data.filter(d => d.risk_level === 'LOW RISK').length
     };
+    
+    console.log('Calculated stats:', stats);
 
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
@@ -180,43 +216,54 @@ const RiskProfileModule = (() => {
 
   function renderLegend() {
     return `
-      <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 500px; overflow-y: auto;">
-        <h4 style="margin-bottom: 1rem;"><i class="fas fa-info-circle"></i> Legend</h4>
-        <div style="margin-bottom: 1.5rem;">
-          <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-            <div style="width: 20px; height: 20px; background: #F44336; border-radius: 4px; margin-right: 0.75rem;"></div>
+      <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); height: 700px; overflow-y: auto;">
+        <h4 style="margin-bottom: 1.5rem; color: #2c3e50; font-weight: 600;"><i class="fas fa-info-circle"></i> Legend</h4>
+        <div style="margin-bottom: 2rem;">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(231, 76, 60, 0.1);">
+            <div style="width: 24px; height: 24px; background: #e74c3c; border-radius: 6px; margin-right: 1rem; box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);"></div>
             <div>
-              <strong>Extreme High</strong><br>
+              <strong style="color: #e74c3c;">Extreme High</strong><br>
               <small style="color: #666;">Value ≥ 16</small>
             </div>
           </div>
-          <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-            <div style="width: 20px; height: 20px; background: #FF9800; border-radius: 4px; margin-right: 0.75rem;"></div>
+          <div style="display: flex; align-items: center; margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(243, 156, 18, 0.1);">
+            <div style="width: 24px; height: 24px; background: #f39c12; border-radius: 6px; margin-right: 1rem; box-shadow: 0 2px 4px rgba(243, 156, 18, 0.3);"></div>
             <div>
-              <strong>High Risk</strong><br>
+              <strong style="color: #f39c12;">High Risk</strong><br>
               <small style="color: #666;">10 ≤ Value < 16</small>
             </div>
           </div>
-          <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-            <div style="width: 20px; height: 20px; background: #FFC107; border-radius: 4px; margin-right: 0.75rem;"></div>
+          <div style="display: flex; align-items: center; margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(52, 152, 219, 0.1);">
+            <div style="width: 24px; height: 24px; background: #3498db; border-radius: 6px; margin-right: 1rem; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);"></div>
             <div>
-              <strong>Medium Risk</strong><br>
+              <strong style="color: #3498db;">Medium Risk</strong><br>
               <small style="color: #666;">5 ≤ Value < 10</small>
             </div>
           </div>
-          <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-            <div style="width: 20px; height: 20px; background: #4CAF50; border-radius: 4px; margin-right: 0.75rem;"></div>
+          <div style="display: flex; align-items: center; margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(39, 174, 96, 0.1);">
+            <div style="width: 24px; height: 24px; background: #27ae60; border-radius: 6px; margin-right: 1rem; box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);"></div>
             <div>
-              <strong>Low Risk</strong><br>
+              <strong style="color: #27ae60;">Low Risk</strong><br>
               <small style="color: #666;">Value < 5</small>
             </div>
           </div>
         </div>
         <hr>
-        <h5 style="margin-top: 1rem;">Matrix Guide</h5>
+        <h5 style="margin-top: 1rem;">Statistik Data</h5>
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.875rem;">
+            <div><strong>Total Risiko:</strong> ${state.data.length}</div>
+            <div><strong>Extreme High:</strong> ${state.data.filter(d => d.risk_level === 'EXTREME HIGH').length}</div>
+            <div><strong>High Risk:</strong> ${state.data.filter(d => d.risk_level === 'HIGH RISK').length}</div>
+            <div><strong>Medium Risk:</strong> ${state.data.filter(d => d.risk_level === 'MEDIUM RISK').length}</div>
+            <div><strong>Low Risk:</strong> ${state.data.filter(d => d.risk_level === 'LOW RISK').length}</div>
+            <div><strong>Unit Kerja:</strong> ${[...new Set(state.data.map(d => d.risk_inputs?.master_work_units?.name).filter(Boolean))].length}</div>
+          </div>
+        </div>
+        <h5>Matrix Guide</h5>
         <p style="font-size: 0.875rem; color: #666; line-height: 1.6;">
           Matrix menampilkan posisi risiko berdasarkan probabilitas (vertikal) dan dampak (horizontal). 
-          Semakin ke kanan atas, semakin tinggi risikonya.
+          Setiap titik mewakili satu risiko. Klik titik untuk melihat detail.
         </p>
       </div>
     `;
@@ -323,8 +370,8 @@ const RiskProfileModule = (() => {
           backgroundColor: points.map(p => p.color),
           borderColor: '#333',
           borderWidth: 2,
-          pointRadius: 12,
-          pointHoverRadius: 15
+          pointRadius: 8,
+          pointHoverRadius: 12
         }]
       },
       options: {
@@ -411,24 +458,24 @@ const RiskProfileModule = (() => {
           // Draw colored zones
           const zones = [
             // Extreme High (red) - top right
-            { xMin: 4, xMax: 5, yMin: 4, yMax: 5, color: 'rgba(244, 67, 54, 0.2)' },
-            { xMin: 3, xMax: 4, yMin: 5, yMax: 5, color: 'rgba(244, 67, 54, 0.2)' },
-            { xMin: 5, xMax: 5, yMin: 3, yMax: 4, color: 'rgba(244, 67, 54, 0.2)' },
-            { xMin: 4, xMax: 5, yMin: 3, yMax: 4, color: 'rgba(244, 67, 54, 0.2)' },
+            { xMin: 4, xMax: 5, yMin: 4, yMax: 5, color: 'rgba(231, 76, 60, 0.25)' },
+            { xMin: 3, xMax: 4, yMin: 5, yMax: 5, color: 'rgba(231, 76, 60, 0.25)' },
+            { xMin: 5, xMax: 5, yMin: 3, yMax: 4, color: 'rgba(231, 76, 60, 0.25)' },
+            { xMin: 4, xMax: 5, yMin: 3, yMax: 4, color: 'rgba(231, 76, 60, 0.25)' },
             
             // High Risk (orange)
-            { xMin: 3, xMax: 4, yMin: 3, yMax: 4, color: 'rgba(255, 152, 0, 0.2)' },
-            { xMin: 2, xMax: 3, yMin: 4, yMax: 5, color: 'rgba(255, 152, 0, 0.2)' },
-            { xMin: 4, xMax: 5, yMin: 2, yMax: 3, color: 'rgba(255, 152, 0, 0.2)' },
+            { xMin: 3, xMax: 4, yMin: 3, yMax: 4, color: 'rgba(243, 156, 18, 0.25)' },
+            { xMin: 2, xMax: 3, yMin: 4, yMax: 5, color: 'rgba(243, 156, 18, 0.25)' },
+            { xMin: 4, xMax: 5, yMin: 2, yMax: 3, color: 'rgba(243, 156, 18, 0.25)' },
             
-            // Medium Risk (yellow)
-            { xMin: 2, xMax: 3, yMin: 2, yMax: 3, color: 'rgba(255, 193, 7, 0.2)' },
-            { xMin: 1, xMax: 2, yMin: 3, yMax: 5, color: 'rgba(255, 193, 7, 0.2)' },
-            { xMin: 3, xMax: 5, yMin: 1, yMax: 2, color: 'rgba(255, 193, 7, 0.2)' },
+            // Medium Risk (blue)
+            { xMin: 2, xMax: 3, yMin: 2, yMax: 3, color: 'rgba(52, 152, 219, 0.25)' },
+            { xMin: 1, xMax: 2, yMin: 3, yMax: 5, color: 'rgba(52, 152, 219, 0.25)' },
+            { xMin: 3, xMax: 5, yMin: 1, yMax: 2, color: 'rgba(52, 152, 219, 0.25)' },
             
             // Low Risk (green) - bottom left
-            { xMin: 1, xMax: 2, yMin: 1, yMax: 3, color: 'rgba(76, 175, 80, 0.2)' },
-            { xMin: 2, xMax: 3, yMin: 1, yMax: 2, color: 'rgba(76, 175, 80, 0.2)' }
+            { xMin: 1, xMax: 2, yMin: 1, yMax: 3, color: 'rgba(39, 174, 96, 0.25)' },
+            { xMin: 2, xMax: 3, yMin: 1, yMax: 2, color: 'rgba(39, 174, 96, 0.25)' }
           ];
 
           zones.forEach(zone => {
@@ -449,12 +496,12 @@ const RiskProfileModule = (() => {
 
   function getRiskColor(level) {
     const colorMap = {
-      'EXTREME HIGH': '#F44336',
-      'HIGH RISK': '#FF9800',
-      'MEDIUM RISK': '#FFC107',
-      'LOW RISK': '#4CAF50'
+      'EXTREME HIGH': '#e74c3c',  // Solid red
+      'HIGH RISK': '#f39c12',     // Solid orange
+      'MEDIUM RISK': '#3498db',   // Solid blue
+      'LOW RISK': '#27ae60'       // Solid green
     };
-    return colorMap[level] || '#999';
+    return colorMap[level] || '#95a5a6';
   }
 
   function getRiskLevelColor(level) {
@@ -485,10 +532,75 @@ const RiskProfileModule = (() => {
     alert('Data risk profile berhasil di-refresh');
   }
 
+  function downloadChart() {
+    try {
+      const canvas = document.getElementById('inherent-risk-matrix');
+      if (!canvas) {
+        alert('Grafik tidak ditemukan');
+        return;
+      }
+
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `risk-profile-matrix-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('Chart downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading chart:', error);
+      alert('Gagal mengunduh grafik: ' + error.message);
+    }
+  }
+
+  async function downloadReport() {
+    try {
+      if (state.data.length === 0) {
+        alert('Tidak ada data untuk diunduh');
+        return;
+      }
+
+      // Show loading
+      const originalText = event.target.innerHTML;
+      event.target.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunduh...';
+      event.target.disabled = true;
+
+      // Download from server endpoint
+      const link = document.createElement('a');
+      link.href = '/api/risk-profile-excel';
+      link.download = `risk-profile-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Reset button
+      setTimeout(() => {
+        event.target.innerHTML = originalText;
+        event.target.disabled = false;
+      }, 2000);
+      
+      console.log('Report download initiated');
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      alert('Gagal mengunduh laporan: ' + error.message);
+      
+      // Reset button on error
+      event.target.innerHTML = '<i class="fas fa-file-excel"></i> Unduh Laporan';
+      event.target.disabled = false;
+    }
+  }
+
   return {
     load,
     applyFilter,
-    refresh
+    refresh,
+    downloadChart,
+    downloadReport
   };
 })();
 

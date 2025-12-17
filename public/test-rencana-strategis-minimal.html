@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Minimal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1>Test Rencana Strategis Minimal</h1>
+    
+    <button onclick="testManualRender()" style="padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 4px;">
+        Test Manual Render
+    </button>
+    
+    <button onclick="testModuleLoad()" style="padding: 10px 20px; margin: 10px; background: #28a745; color: white; border: none; border-radius: 4px;">
+        Test Module Load
+    </button>
+
+    <div id="rencana-strategis-content" style="border: 2px solid #ccc; padding: 20px; margin: 20px 0; min-height: 200px;">
+        <p style="text-align: center; color: #666;">Content will appear here...</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h4>Test Results</h4>
+        <div id="test-results"></div>
+    </div>
+
+    <!-- Mock functions -->
+    <script>
+        // Mock apiCall
+        window.apiCall = async function(url, options = {}) {
+            console.log('API Call:', url, options);
+            
+            if (url === '/api/rencana-strategis/public') {
+                return [
+                    {
+                        id: '1',
+                        kode: 'RS-2025-001',
+                        nama_rencana: 'Test Rencana',
+                        status: 'Draft',
+                        sasaran_strategis: [],
+                        indikator_kinerja_utama: []
+                    }
+                ];
+            }
+            
+            if (url === '/api/visi-misi/public') {
+                return [
+                    {
+                        id: '1',
+                        misi: 'Test Misi 1\nTest Misi 2\nTest Misi 3'
+                    }
+                ];
+            }
+            
+            if (url === '/api/rencana-strategis/generate/kode/public') {
+                return { kode: 'RS-2025-TEST' };
+            }
+            
+            return {};
+        };
+
+        window.app = { apiCall: window.apiCall };
+
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('test-results');
+            const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue';
+            results.innerHTML += `<div style="color: ${color}; margin: 5px 0;">${message}</div>`;
+        }
+
+        function testManualRender() {
+            addResult('Testing manual render...');
+            
+            const container = document.getElementById('rencana-strategis-content');
+            if (!container) {
+                addResult('Container not found!', 'error');
+                return;
+            }
+            
+            // Manual render of form
+            container.innerHTML = `
+                <div class="section-card">
+                    <div class="section-header">
+                        <div>
+                            <h3>Tambah Rencana Strategis</h3>
+                            <p class="text-muted">Test manual render</p>
+                        </div>
+                    </div>
+                    <form id="rs-form" class="form-grid two-column">
+                        <div class="form-group">
+                            <label>Kode Rencana</label>
+                            <input type="text" class="form-control" id="rs-kode" value="RS-2025-TEST" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Rencana</label>
+                            <input type="text" class="form-control" id="rs-nama" value="">
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            const form = document.getElementById('rs-form');
+            const inputs = container.querySelectorAll('input');
+            
+            addResult(`Manual render: Form ${form ? 'found' : 'not found'}, ${inputs.length} inputs`, 
+                     form && inputs.length > 0 ? 'success' : 'error');
+        }
+
+        async function testModuleLoad() {
+            addResult('Testing module load...');
+            
+            try {
+                if (typeof RencanaStrategisModule === 'undefined') {
+                    addResult('RencanaStrategisModule not defined', 'error');
+                    return;
+                }
+                
+                addResult('Module found, calling load...');
+                await RencanaStrategisModule.load();
+                
+                setTimeout(() => {
+                    const form = document.getElementById('rs-form');
+                    const inputs = document.querySelectorAll('#rencana-strategis-content input, #rencana-strategis-content select, #rencana-strategis-content textarea');
+                    
+                    addResult(`Module load: Form ${form ? 'found' : 'not found'}, ${inputs.length} inputs`, 
+                             form && inputs.length > 0 ? 'success' : 'error');
+                    
+                    if (inputs.length > 0) {
+                        addResult('Input details:', 'info');
+                        inputs.forEach((input, i) => {
+                            addResult(`  ${i+1}. ${input.tagName} - ID: ${input.id} - Type: ${input.type || 'N/A'}`, 'info');
+                        });
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                addResult(`Module load error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+
+    <!-- Load the actual module -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('Page loaded. Click buttons to test.');
+        });
+    </script>
+</body>
+</html>

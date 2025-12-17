@@ -113,22 +113,68 @@ router.post('/calculate', authenticateUser, async (req, res) => {
       unit_kerja_name = 'Rumah Sakit (Agregasi)';
     }
 
-    // Insert diagram data (allow multiple entries per year/unit)
-    const { data, error } = await clientToUse
+    // Check if diagram already exists for this combination
+    const existingQuery = clientToUse
       .from('swot_diagram_kartesius')
-      .insert({
-        user_id: req.user.id,
-        rencana_strategis_id: rencana_strategis_id || null,
-        unit_kerja_id: unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT' ? unit_kerja_id : null,
-        unit_kerja_name,
-        tahun: parseInt(tahun),
-        x_axis,
-        y_axis,
-        kuadran,
-        strategi
-      })
-      .select()
-      .single();
+      .select('id')
+      .eq('user_id', req.user.id)
+      .eq('tahun', parseInt(tahun));
+    
+    if (rencana_strategis_id) {
+      existingQuery.eq('rencana_strategis_id', rencana_strategis_id);
+    } else {
+      existingQuery.is('rencana_strategis_id', null);
+    }
+    
+    if (unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT') {
+      existingQuery.eq('unit_kerja_id', unit_kerja_id);
+    } else {
+      existingQuery.is('unit_kerja_id', null);
+    }
+
+    const { data: existing } = await existingQuery.single();
+
+    let data, error;
+    
+    if (existing) {
+      // Update existing record
+      const result = await clientToUse
+        .from('swot_diagram_kartesius')
+        .update({
+          x_axis,
+          y_axis,
+          kuadran,
+          strategi,
+          unit_kerja_name,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      
+      data = result.data;
+      error = result.error;
+    } else {
+      // Insert new record
+      const result = await clientToUse
+        .from('swot_diagram_kartesius')
+        .insert({
+          user_id: req.user.id,
+          rencana_strategis_id: rencana_strategis_id || null,
+          unit_kerja_id: unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT' ? unit_kerja_id : null,
+          unit_kerja_name,
+          tahun: parseInt(tahun),
+          x_axis,
+          y_axis,
+          kuadran,
+          strategi
+        })
+        .select()
+        .single();
+      
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) throw error;
     res.json({ message: 'Diagram berhasil dihitung', data });

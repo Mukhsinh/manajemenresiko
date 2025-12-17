@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test KRI Debug Detailed</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 KRI Debug Detailed Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Authentication Check</h2>
+        <button class="btn" onclick="testAuth()">Test Authentication</button>
+        <div id="auth-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. User Profile Check</h2>
+        <button class="btn" onclick="testUserProfile()">Test User Profile</button>
+        <div id="profile-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Direct KRI API Test</h2>
+        <button class="btn" onclick="testKRIAPI()">Test KRI API</button>
+        <div id="kri-api-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Frontend Module Test</h2>
+        <button class="btn" onclick="testKRIModule()">Test KRI Module</button>
+        <div id="kri-module-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Organization Filter Debug</h2>
+        <button class="btn" onclick="testOrgFilter()">Test Organization Filter</button>
+        <div id="org-filter-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Raw Database Query</h2>
+        <button class="btn" onclick="testRawQuery()">Test Raw Query</button>
+        <div id="raw-query-result" class="result"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/kri.js"></script>
+    <script>
+        async function testAuth() {
+            const resultDiv = document.getElementById('auth-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing authentication...</p>';
+                
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                
+                if (!token) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ No Token Found</h4>
+                            <p>Token tidak ditemukan di localStorage</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Test token validity
+                const response = await fetch('/api/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Authentication OK</h4>
+                            <p>Token valid dan dapat mengakses API</p>
+                            <p><strong>Token:</strong> ${token.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Authentication Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Token mungkin expired atau invalid</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Authentication Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testUserProfile() {
+            const resultDiv = document.getElementById('profile-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing user profile...</p>';
+                
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/auth/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const profile = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ User Profile OK</h4>
+                            <p><strong>User ID:</strong> ${profile.id}</p>
+                            <p><strong>Email:</strong> ${profile.email}</p>
+                            <p><strong>Organization ID:</strong> ${profile.organization_id || 'TIDAK ADA'}</p>
+                            <p><strong>Role:</strong> ${profile.role}</p>
+                            <details>
+                                <summary>Full Profile</summary>
+                                <pre>${JSON.stringify(profile, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Profile Error</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>${errorText}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Profile Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testKRIAPI() {
+            const resultDiv = document.getElementById('kri-api-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing KRI API...</p>';
+                
+                const data = await apiCall('/api/kri');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI API Success</h4>
+                        <p><strong>Total records:</strong> ${data.length}</p>
+                        <p><strong>Has organization_id:</strong> ${data.every(item => item.organization_id) ? '✅ Yes' : '❌ No'}</p>
+                        ${data.length > 0 ? `
+                            <p><strong>Sample record:</strong></p>
+                            <pre>${JSON.stringify(data[0], null, 2)}</pre>
+                        ` : '<p>⚠️ No data returned</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ KRI API Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testKRIModule() {
+            const resultDiv = document.getElementById('kri-module-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing KRI Module...</p>';
+                
+                // Check if module exists
+                if (typeof window.kriModule === 'undefined') {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ KRI Module Not Found</h4>
+                            <p>window.kriModule tidak tersedia</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Check if element exists
+                const element = document.getElementById('kri-content');
+                if (!element) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ KRI Content Element Not Found</h4>
+                            <p>Element #kri-content tidak ditemukan</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Create temporary element for testing
+                const testElement = document.createElement('div');
+                testElement.id = 'kri-content';
+                document.body.appendChild(testElement);
+                
+                // Test module load
+                await window.kriModule.load();
+                
+                const content = testElement.innerHTML;
+                document.body.removeChild(testElement);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI Module Success</h4>
+                        <p>Module loaded successfully</p>
+                        <p><strong>Generated content length:</strong> ${content.length} chars</p>
+                        <details>
+                            <summary>Generated HTML (first 500 chars)</summary>
+                            <pre>${content.substring(0, 500)}...</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ KRI Module Error</h4>
+                        <p>${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testOrgFilter() {
+            const resultDiv = document.getElementById('org-filter-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing organization filter...</p>';
+                
+                // Get user profile first
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const profileResponse = await fetch('/api/auth/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const profile = await profileResponse.json();
+                
+                // Get KRI data
+                const kriData = await apiCall('/api/kri');
+                
+                // Analyze organization filtering
+                const userOrgId = profile.organization_id;
+                const kriOrgIds = [...new Set(kriData.map(item => item.organization_id))];
+                const isFiltered = kriOrgIds.length === 1 && kriOrgIds[0] === userOrgId;
+                
+                resultDiv.innerHTML = `
+                    <div class="${isFiltered ? 'success' : 'warning'}">
+                        <h4>${isFiltered ? '✅' : '⚠️'} Organization Filter Analysis</h4>
+                        <p><strong>User Organization ID:</strong> ${userOrgId}</p>
+                        <p><strong>KRI Organization IDs:</strong> ${kriOrgIds.join(', ')}</p>
+                        <p><strong>Is Properly Filtered:</strong> ${isFiltered ? 'Yes' : 'No'}</p>
+                        <p><strong>KRI Records:</strong> ${kriData.length}</p>
+                        
+                        ${!isFiltered ? `
+                            <p style="color: #856404;">
+                                ⚠️ Data tidak difilter dengan benar berdasarkan organization_id
+                            </p>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Organization Filter Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRawQuery() {
+            const resultDiv = document.getElementById('raw-query-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing raw database query...</p>';
+                
+                // This would need a special endpoint for raw queries
+                // For now, just show what we expect
+                resultDiv.innerHTML = `
+                    <div class="warning">
+                        <h4>ℹ️ Raw Query Info</h4>
+                        <p>Untuk test raw query, gunakan MCP tools atau database client langsung</p>
+                        <p><strong>Expected query:</strong></p>
+                        <pre>SELECT * FROM key_risk_indicator 
+WHERE organization_id = 'e5a31a3d-7b84-4c32-9b63-0b40d6e1f0e7'
+LIMIT 5;</pre>
+                        <p><strong>Expected result:</strong> 100 records</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Raw Query Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto run basic tests on load
+        window.onload = function() {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (!token) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 50px;">
+                        <h2>⚠️ Token tidak ditemukan</h2>
+                        <p>Silakan login terlebih dahulu di <a href="/index.html">halaman utama</a></p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Auto run auth test
+            setTimeout(testAuth, 500);
+        };
+    </script>
+</body>
+</html>

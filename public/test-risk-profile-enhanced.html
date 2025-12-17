@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Enhanced</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        .test-header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1><i class="fas fa-chart-bar"></i> Test Risk Profile Enhanced</h1>
+            <p>Test fitur terbaru: Grafik diperbesar + Download laporan</p>
+            
+            <div class="test-controls">
+                <button class="btn" onclick="testAPI()">1. Test API (100 Data)</button>
+                <button class="btn" onclick="testDownloadExcel()">2. Test Download Excel</button>
+                <button class="btn btn-success" onclick="loadEnhancedRiskProfile()">3. Load Enhanced Risk Profile</button>
+                <button class="btn" onclick="clearAll()">Clear</button>
+            </div>
+            
+            <div id="test-result"></div>
+        </div>
+        
+        <!-- Container untuk Risk Profile -->
+        <div id="risk-profile-content"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    
+    <script>
+        // Test API endpoint
+        async function testAPI() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div class="info">Testing API endpoint...</div>';
+            
+            try {
+                const response = await fetch('/api/risk-profile-real');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Data:', data);
+                
+                if (data && data.length > 0) {
+                    const stats = {
+                        total: data.length,
+                        extreme: data.filter(d => d.risk_level === 'EXTREME HIGH').length,
+                        high: data.filter(d => d.risk_level === 'HIGH RISK').length,
+                        medium: data.filter(d => d.risk_level === 'MEDIUM RISK').length,
+                        low: data.filter(d => d.risk_level === 'LOW RISK').length,
+                        units: [...new Set(data.map(d => d.risk_inputs?.master_work_units?.name).filter(Boolean))].length
+                    };
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ API berhasil: ${data.length} records</div>
+                        <div class="info">Distribusi: Extreme High: ${stats.extreme}, High: ${stats.high}, Medium: ${stats.medium}, Low: ${stats.low}</div>
+                        <div class="info">Unit Kerja: ${stats.units} unit berbeda</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Tidak ada data ditemukan</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ API Error: ${error.message}</div>`;
+                console.error('API Test Error:', error);
+            }
+        }
+
+        // Test Download Excel
+        async function testDownloadExcel() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div class="info">Testing Excel download...</div>';
+            
+            try {
+                const response = await fetch('/api/risk-profile-excel');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                const contentLength = response.headers.get('content-length');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✓ Excel endpoint berhasil</div>
+                    <div class="info">Content-Type: ${contentType}</div>
+                    <div class="info">Size: ${contentLength} bytes</div>
+                    <div class="info">
+                        <a href="/api/risk-profile-excel" download="risk-profile-test.xlsx" class="btn btn-success">
+                            <i class="fas fa-download"></i> Download Test File
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Excel Error: ${error.message}</div>`;
+                console.error('Excel Test Error:', error);
+            }
+        }
+
+        // Load Enhanced Risk Profile
+        async function loadEnhancedRiskProfile() {
+            const resultDiv = document.getElementById('test-result');
+            const contentDiv = document.getElementById('risk-profile-content');
+            
+            resultDiv.innerHTML = '<div class="info">Loading Enhanced Risk Profile...</div>';
+            
+            try {
+                // Setup apiCall function
+                if (!window.apiCall) {
+                    window.apiCall = async function(endpoint) {
+                        console.log('Enhanced apiCall to:', endpoint);
+                        const response = await fetch(endpoint);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return await response.json();
+                    };
+                }
+                
+                if (typeof RiskProfileModule !== 'undefined') {
+                    console.log('Loading RiskProfileModule...');
+                    await RiskProfileModule.load();
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Enhanced Risk Profile berhasil dimuat!</div>
+                        <div class="info">Fitur baru:</div>
+                        <ul style="margin-left: 20px;">
+                            <li>✓ Grafik diperbesar (full width, height 700px)</li>
+                            <li>✓ 100 data points dengan distribusi realistis</li>
+                            <li>✓ Tombol "Unduh Grafik" (PNG format)</li>
+                            <li>✓ Tombol "Unduh Laporan" (Excel/CSV format)</li>
+                            <li>✓ Legend dengan statistik real-time</li>
+                            <li>✓ Point radius optimal untuk visibility</li>
+                        </ul>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ RiskProfileModule tidak ditemukan</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Load Error: ${error.message}</div>`;
+                console.error('Load Error:', error);
+            }
+        }
+
+        // Clear all
+        function clearAll() {
+            document.getElementById('test-result').innerHTML = '';
+            document.getElementById('risk-profile-content').innerHTML = '';
+        }
+
+        // Auto-test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Enhanced Risk Profile Test ready');
+            
+            // Auto-test API after 1 second
+            setTimeout(() => {
+                testAPI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

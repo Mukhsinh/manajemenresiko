@@ -2,12 +2,52 @@
 const Peluang = {
     async load() {
         try {
-            const data = await apiCall('/api/peluang');
+            console.log('=== LOADING PELUANG ===');
+            let data;
+            
+            try {
+                // Try authenticated endpoint first
+                data = await apiCall('/api/peluang');
+                console.log('Authenticated API success:', data?.length || 0);
+            } catch (authError) {
+                console.warn('Authenticated API failed, trying public endpoint:', authError.message);
+                
+                // Fallback to public endpoint
+                try {
+                    data = await apiCall('/api/peluang/public');
+                    console.log('Public API success:', data?.length || 0);
+                } catch (publicError) {
+                    console.warn('Public API failed, trying debug endpoint:', publicError.message);
+                    
+                    // Final fallback to debug endpoint
+                    try {
+                        const debugResponse = await apiCall('/api/peluang/debug');
+                        // Extract data from debug response structure
+                        if (debugResponse.fullQuery && debugResponse.fullQuery.data) {
+                            data = debugResponse.fullQuery.data;
+                        } else {
+                            data = debugResponse.data || [];
+                        }
+                        console.log('Debug API success:', data?.length || 0);
+                    } catch (debugError) {
+                        console.error('All APIs failed:', debugError.message);
+                        throw new Error('Tidak dapat memuat data peluang. Silakan refresh halaman.');
+                    }
+                }
+            }
+            
             this.render(data);
         } catch (error) {
             console.error('Error loading peluang:', error);
-            document.getElementById('peluang-content').innerHTML = 
-                '<div class="card"><p>Error: ' + error.message + '</p></div>';
+            document.getElementById('peluang-content').innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data</h5>
+                        <p>${error.message}</p>
+                        <button onclick="Peluang.load()" class="btn btn-primary">Coba Lagi</button>
+                    </div>
+                </div>
+            `;
         }
     },
 

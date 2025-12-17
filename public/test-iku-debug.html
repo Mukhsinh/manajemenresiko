@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IKU Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        .error { background-color: #ffebee; }
+        .success { background-color: #e8f5e8; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test Indikator Kinerja Utama Debug</h1>
+    
+    <button onclick="testDebugEndpoint()">Test Debug Endpoint</button>
+    <button onclick="testMainEndpoint()">Test Main Endpoint</button>
+    <button onclick="testWithAuth()">Test With Auth</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testDebugEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                console.log('Testing debug endpoint...');
+                const response = await fetch('/api/indikator-kinerja-utama/debug');
+                const data = await response.json();
+                
+                resultsDiv.innerHTML += `
+                    <div class="result success">
+                        <h3>Debug Endpoint - Success</h3>
+                        <p>Status: ${response.status}</p>
+                        <p>Count: ${data.count}</p>
+                        <p>Message: ${data.message}</p>
+                        <details>
+                            <summary>Raw Data (First 2 items)</summary>
+                            <pre>${JSON.stringify(data.data?.slice(0, 2), null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>Debug Endpoint - Error</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testMainEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                console.log('Testing main endpoint without auth...');
+                const response = await fetch('/api/indikator-kinerja-utama');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += `
+                        <div class="result success">
+                            <h3>Main Endpoint (No Auth) - Success</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Data Length: ${Array.isArray(data) ? data.length : 'Not array'}</p>
+                            <details>
+                                <summary>Sample Data</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.json();
+                    resultsDiv.innerHTML += `
+                        <div class="result error">
+                            <h3>Main Endpoint (No Auth) - HTTP Error</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Error: ${errorData.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>Main Endpoint (No Auth) - Network Error</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testWithAuth() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                console.log('Testing with mock auth...');
+                const response = await fetch('/api/indikator-kinerja-utama', {
+                    headers: {
+                        'Authorization': 'Bearer mock-token',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += `
+                        <div class="result success">
+                            <h3>Main Endpoint (With Auth) - Success</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Data Length: ${Array.isArray(data) ? data.length : 'Not array'}</p>
+                            <details>
+                                <summary>Sample Data</summary>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.json();
+                    resultsDiv.innerHTML += `
+                        <div class="result error">
+                            <h3>Main Endpoint (With Auth) - HTTP Error</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Error: ${errorData.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>Main Endpoint (With Auth) - Network Error</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

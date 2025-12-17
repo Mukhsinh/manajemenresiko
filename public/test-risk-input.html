@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Input</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; border: none; }
+        .btn-secondary { background-color: #6c757d; color: white; border: none; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Risk Input Data</h1>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="testDebugEndpoint()">Test Debug Endpoint</button>
+            <button class="btn btn-secondary" onclick="testAuthEndpoint()">Test Auth Endpoint</button>
+            <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="results">
+            <h2>Results</h2>
+            <div id="data-info"></div>
+            <table id="data-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Kode Risiko</th>
+                        <th>Status</th>
+                        <th>Jenis</th>
+                        <th>Sasaran</th>
+                        <th>Pemilik</th>
+                    </tr>
+                </thead>
+                <tbody id="data-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function clearResults() {
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('data-info').innerHTML = '';
+            document.getElementById('data-table').style.display = 'none';
+            document.getElementById('data-tbody').innerHTML = '';
+        }
+
+        function displayData(data, source) {
+            const infoEl = document.getElementById('data-info');
+            const tableEl = document.getElementById('data-table');
+            const tbodyEl = document.getElementById('data-tbody');
+
+            if (!data || data.length === 0) {
+                infoEl.innerHTML = `<p>No data found from ${source}</p>`;
+                tableEl.style.display = 'none';
+                return;
+            }
+
+            infoEl.innerHTML = `<p>Found ${data.length} records from ${source}</p>`;
+            
+            tbodyEl.innerHTML = data.map(risk => `
+                <tr>
+                    <td>${risk.no || '-'}</td>
+                    <td>${risk.kode_risiko || '-'}</td>
+                    <td>${risk.status_risiko || '-'}</td>
+                    <td>${risk.jenis_risiko || '-'}</td>
+                    <td>${(risk.sasaran || '').substring(0, 50)}${risk.sasaran && risk.sasaran.length > 50 ? '...' : ''}</td>
+                    <td>${risk.pemilik_risiko_nama || '-'}</td>
+                </tr>
+            `).join('');
+            
+            tableEl.style.display = 'table';
+        }
+
+        async function testDebugEndpoint() {
+            showStatus('Testing debug endpoint...', 'info');
+            
+            try {
+                const response = await fetch('/api/risks/debug');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus(`Debug endpoint success: ${result.count} records`, 'success');
+                    displayData(result.data, 'debug endpoint');
+                } else {
+                    showStatus(`Debug endpoint error: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Debug endpoint failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAuthEndpoint() {
+            showStatus('Testing authenticated endpoint...', 'info');
+            
+            try {
+                const response = await fetch('/api/risks');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus(`Auth endpoint success: ${Array.isArray(result) ? result.length : 'Unknown count'} records`, 'success');
+                    displayData(Array.isArray(result) ? result : [], 'authenticated endpoint');
+                } else {
+                    showStatus(`Auth endpoint error: ${result.error || 'Authentication required'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Auth endpoint failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test debug endpoint on load
+        window.addEventListener('load', () => {
+            setTimeout(testDebugEndpoint, 500);
+        });
+    </script>
+</body>
+</html>

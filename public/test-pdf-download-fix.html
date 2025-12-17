@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Download Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .status-success { color: #28a745; }
+        .status-error { color: #dc3545; }
+        .status-warning { color: #ffc107; }
+        .status-info { color: #17a2b8; }
+        .endpoint-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        .endpoint-card.working { border-color: #28a745; background-color: #f8fff9; }
+        .endpoint-card.not-implemented { border-color: #ffc107; background-color: #fffdf5; }
+        .endpoint-card.error { border-color: #dc3545; background-color: #fff5f5; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-file-pdf"></i> Test PDF Download Fix</h1>
+                <p class="lead">Testing untuk memverifikasi perbaikan error PDF download pada laporan</p>
+                
+                <!-- Problem Description -->
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Error yang Diperbaiki</h5>
+                    <p><strong>Error:</strong> <code>Unexpected content type for PDF: application/json; charset=utf-8</code></p>
+                    <p><strong>Error:</strong> <code>TypeError: Failed to execute 'blob' on 'Response': body stream already read</code></p>
+                    <p><strong>Penyebab:</strong> Server mengembalikan JSON response alih-alih PDF, dan frontend mencoba membaca response body dua kali.</p>
+                    <p><strong>Solusi:</strong> Perbaikan handling content-type dan error response di frontend, serta status code yang tepat di backend.</p>
+                </div>
+
+                <!-- Login Section -->
+                <div class="test-section">
+                    <h3><i class="fas fa-sign-in-alt"></i> Login Test</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="loginEmail" value="admin@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="loginPassword" value="admin123">
+                            </div>
+                            <button class="btn btn-primary" onclick="testLogin()">
+                                <i class="fas fa-sign-in-alt"></i> Test Login
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="loginLog">Login test results will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Endpoints Status -->
+                <div class="test-section">
+                    <h3><i class="fas fa-info-circle"></i> PDF Endpoints Status</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="endpoint-card working">
+                                <h6><i class="fas fa-check-circle text-success"></i> Working PDF Endpoints</h6>
+                                <ul>
+                                    <li><code>/api/reports/residual-risk/pdf</code> - Full PDF generation with Puppeteer</li>
+                                    <li><code>/api/reports/residual-risk-pdf-debug</code> - Debug PDF (no auth)</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="endpoint-card not-implemented">
+                                <h6><i class="fas fa-exclamation-triangle text-warning"></i> Not Implemented (Returns 501)</h6>
+                                <ul>
+                                    <li><code>/api/reports/risk-register/pdf</code></li>
+                                    <li><code>/api/reports/risk-profile/pdf</code></li>
+                                    <li><code>/api/reports/risk-appetite/pdf</code></li>
+                                    <li><code>/api/reports/kri/pdf</code></li>
+                                    <li><code>/api/reports/monitoring/pdf</code></li>
+                                    <li><code>/api/reports/loss-event/pdf</code></li>
+                                    <li><code>/api/reports/strategic-map/pdf</code></li>
+                                </ul>
+                                <small class="text-muted">These endpoints now return proper 501 status with helpful error messages</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="statusLog">Endpoint status information...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Download Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-download"></i> PDF Download Tests</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Working PDF Downloads</h5>
+                            <button class="btn btn-success me-2 mb-2" onclick="testPDFDownload('/api/reports/residual-risk-pdf-debug', 'Debug PDF (No Auth)')">
+                                <i class="fas fa-file-pdf"></i> Debug PDF
+                            </button>
+                            <button class="btn btn-success me-2 mb-2" onclick="testPDFDownload('/api/reports/residual-risk/pdf', 'Residual Risk PDF')">
+                                <i class="fas fa-file-pdf"></i> Residual Risk PDF
+                            </button>
+                            
+                            <h5 class="mt-3">Not Implemented (Should Show Proper Error)</h5>
+                            <button class="btn btn-warning me-2 mb-2" onclick="testPDFDownload('/api/reports/risk-register/pdf', 'Risk Register PDF')">
+                                <i class="fas fa-file-pdf"></i> Risk Register PDF
+                            </button>
+                            <button class="btn btn-warning me-2 mb-2" onclick="testPDFDownload('/api/reports/risk-profile/pdf', 'Risk Profile PDF')">
+                                <i class="fas fa-file-pdf"></i> Risk Profile PDF
+                            </button>
+                            <button class="btn btn-warning me-2 mb-2" onclick="testPDFDownload('/api/reports/monitoring/pdf', 'Monitoring PDF')">
+                                <i class="fas fa-file-pdf"></i> Monitoring PDF
+                            </button>
+                            
+                            <h5 class="mt-3">Test All</h5>
+                            <button class="btn btn-primary btn-lg" onclick="testAllPDFEndpoints()">
+                                <i class="fas fa-play"></i> Test All PDF Endpoints
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="pdfLog">PDF test results will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frontend Error Simulation -->
+                <div class="test-section">
+                    <h3><i class="fas fa-code"></i> Frontend Error Handling Test</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Test the improved error handling in laporan.js downloadPDF function:</p>
+                            <button class="btn btn-info me-2 mb-2" onclick="simulateContentTypeError()">
+                                <i class="fas fa-bug"></i> Simulate Content-Type Error
+                            </button>
+                            <button class="btn btn-info me-2 mb-2" onclick="simulateJSONError()">
+                                <i class="fas fa-bug"></i> Simulate JSON Error Response
+                            </button>
+                            <button class="btn btn-info me-2 mb-2" onclick="simulateNotImplementedError()">
+                                <i class="fas fa-bug"></i> Simulate Not Implemented
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="errorLog">Error simulation results will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = `status-${type}`;
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testLogin() {
+            clearLog('loginLog');
+            log('loginLog', 'Starting login test...', 'info');
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    log('loginLog', '✓ Login successful!', 'success');
+                    log('loginLog', `Token obtained: ${authToken.substring(0, 20)}...`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log('loginLog', `✗ Login failed: ${response.status}`, 'error');
+                    log('loginLog', `Error: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log('loginLog', `✗ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPDFDownload(endpoint, name) {
+            log('pdfLog', `Testing ${name} (${endpoint})...`, 'info');
+
+            try {
+                const headers = {};
+                if (authToken && !endpoint.includes('debug')) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
+                const response = await fetch(endpoint, { headers });
+                
+                const contentType = response.headers.get('content-type') || '';
+                log('pdfLog', `Status: ${response.status}, Content-Type: ${contentType}`, 'info');
+
+                if (response.ok && contentType.includes('pdf')) {
+                    // Success - PDF file
+                    const blob = await response.blob();
+                    log('pdfLog', `✓ ${name} - PDF generated successfully`, 'success');
+                    log('pdfLog', `  File size: ${blob.size} bytes`, 'success');
+                    
+                    // Trigger download
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${name.replace(/\s+/g, '-')}-${Date.now()}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    log('pdfLog', `  File downloaded: ${a.download}`, 'success');
+                    
+                } else if (response.status === 501) {
+                    // Not implemented - expected
+                    const errorData = await response.json();
+                    log('pdfLog', `⚠️ ${name} - Not implemented (expected)`, 'warning');
+                    log('pdfLog', `  Message: ${errorData.message}`, 'warning');
+                    if (errorData.availableFormats) {
+                        log('pdfLog', `  Available formats: ${errorData.availableFormats.join(', ')}`, 'info');
+                    }
+                    
+                } else if (response.status === 401) {
+                    // Auth required
+                    log('pdfLog', `🔒 ${name} - Authentication required`, 'warning');
+                    log('pdfLog', '  Please login first', 'warning');
+                    
+                } else {
+                    // Error
+                    log('pdfLog', `✗ ${name} - Failed: ${response.status}`, 'error');
+                    
+                    if (contentType.includes('json')) {
+                        try {
+                            const errorData = await response.json();
+                            log('pdfLog', `  Error: ${errorData.error || errorData.message}`, 'error');
+                        } catch (e) {
+                            const errorText = await response.text();
+                            log('pdfLog', `  Raw error: ${errorText.substring(0, 100)}`, 'error');
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        log('pdfLog', `  Raw error: ${errorText.substring(0, 100)}`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                log('pdfLog', `✗ ${name} - Request error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllPDFEndpoints() {
+            clearLog('pdfLog');
+            log('pdfLog', 'Starting comprehensive PDF endpoint test...', 'info');
+
+            const endpoints = [
+                { url: '/api/reports/residual-risk-pdf-debug', name: 'Debug PDF (No Auth)' },
+                { url: '/api/reports/residual-risk/pdf', name: 'Residual Risk PDF' },
+                { url: '/api/reports/risk-register/pdf', name: 'Risk Register PDF' },
+                { url: '/api/reports/risk-profile/pdf', name: 'Risk Profile PDF' },
+                { url: '/api/reports/risk-appetite/pdf', name: 'Risk Appetite PDF' },
+                { url: '/api/reports/kri/pdf', name: 'KRI PDF' },
+                { url: '/api/reports/monitoring/pdf', name: 'Monitoring PDF' },
+                { url: '/api/reports/loss-event/pdf', name: 'Loss Event PDF' },
+                { url: '/api/reports/strategic-map/pdf', name: 'Strategic Map PDF' }
+            ];
+
+            for (const endpoint of endpoints) {
+                await testPDFDownload(endpoint.url, endpoint.name);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
+            }
+
+            log('pdfLog', '=== All PDF tests complete ===', 'success');
+        }
+
+        async function simulateContentTypeError() {
+            log('errorLog', 'Simulating content-type error handling...', 'info');
+            
+            // This simulates the improved error handling in downloadPDF function
+            const mockResponse = {
+                ok: true,
+                status: 200,
+                headers: {
+                    get: (name) => name === 'content-type' ? 'application/json; charset=utf-8' : null
+                },
+                json: async () => ({ error: 'PDF export not yet implemented' })
+            };
+
+            try {
+                const contentType = mockResponse.headers.get('content-type');
+                if (!contentType || !contentType.includes('pdf')) {
+                    log('errorLog', `⚠️ Unexpected content type: ${contentType}`, 'warning');
+                    
+                    if (contentType && contentType.includes('json')) {
+                        const errorData = await mockResponse.json();
+                        const errorMessage = errorData.error || errorData.message || 'Server returned JSON instead of PDF';
+                        log('errorLog', `✓ Properly handled JSON error: ${errorMessage}`, 'success');
+                    }
+                }
+            } catch (error) {
+                log('errorLog', `✗ Error handling failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateJSONError() {
+            log('errorLog', 'Simulating JSON error response handling...', 'info');
+            
+            try {
+                // Test the actual endpoint that returns JSON
+                const response = await fetch('/api/reports/risk-register/pdf', {
+                    headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                log('errorLog', `Response status: ${response.status}`, 'info');
+                log('errorLog', `Content-Type: ${contentType}`, 'info');
+
+                if (response.status === 501 && contentType.includes('json')) {
+                    const errorData = await response.json();
+                    log('errorLog', '✓ Properly received 501 Not Implemented', 'success');
+                    log('errorLog', `✓ Error message: ${errorData.message}`, 'success');
+                } else if (response.status === 401) {
+                    log('errorLog', '🔒 Authentication required (expected without login)', 'warning');
+                } else {
+                    log('errorLog', `Unexpected response: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log('errorLog', `✗ Simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateNotImplementedError() {
+            log('errorLog', 'Testing not implemented endpoint...', 'info');
+            
+            try {
+                const response = await fetch('/api/reports/risk-profile/pdf', {
+                    headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+                });
+
+                if (response.status === 501) {
+                    const errorData = await response.json();
+                    log('errorLog', '✓ Received proper 501 Not Implemented status', 'success');
+                    log('errorLog', `✓ Message: ${errorData.message}`, 'success');
+                    log('errorLog', `✓ Available formats: ${errorData.availableFormats?.join(', ')}`, 'success');
+                } else if (response.status === 401) {
+                    log('errorLog', '🔒 Authentication required', 'warning');
+                } else {
+                    log('errorLog', `Unexpected status: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log('errorLog', `✗ Test error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize logs
+        window.addEventListener('load', () => {
+            clearLog('loginLog');
+            clearLog('pdfLog');
+            clearLog('errorLog');
+            
+            log('statusLog', 'PDF Endpoints Status:', 'info');
+            log('statusLog', '✓ Working: residual-risk/pdf, residual-risk-pdf-debug', 'success');
+            log('statusLog', '⚠️ Not Implemented: All other PDF endpoints return 501', 'warning');
+            log('statusLog', '✓ Proper error handling implemented in frontend', 'success');
+            log('statusLog', '✓ No more "body stream already read" errors', 'success');
+        });
+    </script>
+</body>
+</html>

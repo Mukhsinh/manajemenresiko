@@ -606,6 +606,10 @@ async function handleLogout() {
 }
 
 function navigateToPage(pageName) {
+    console.log(`=== NAVIGATE TO PAGE: ${pageName} ===`);
+    console.log('Current user:', window.currentUser);
+    console.log('Dashboard module available:', !!window.dashboardModule);
+    
     // Check role-based access for pengaturan page
     if (pageName === 'pengaturan') {
         const user = window.currentUser || currentUser;
@@ -719,7 +723,9 @@ function navigateToPage(pageName) {
     }
 
     // Load page-specific data
+    console.log(`About to call loadPageData for: ${pageName}`);
     loadPageData(pageName);
+    console.log(`=== NAVIGATE TO PAGE COMPLETE: ${pageName} ===`);
 }
 
 function switchTab(tabName) {
@@ -742,9 +748,53 @@ function switchTab(tabName) {
 }
 
 function loadPageData(pageName) {
+    console.log(`Loading page data for: ${pageName}`);
+    
     switch(pageName) {
         case 'dashboard':
-            window.dashboardModule?.loadDashboard?.();
+            console.log('Loading dashboard...');
+            console.log('Dashboard module available:', !!window.dashboardModule);
+            console.log('Dashboard module ready flag:', !!window.dashboardModuleReady);
+            console.log('LoadDashboard function available:', !!window.dashboardModule?.loadDashboard);
+            
+            if (window.dashboardModuleReady && window.dashboardModule && window.dashboardModule.loadDashboard) {
+                console.log('Calling dashboard loadDashboard function...');
+                window.dashboardModule.loadDashboard();
+            } else {
+                console.error('Dashboard module or loadDashboard function not available!');
+                // Fallback: try multiple times with increasing delays
+                let retryCount = 0;
+                const maxRetries = 5;
+                
+                const retryDashboard = () => {
+                    retryCount++;
+                    console.log(`Retrying dashboard load (attempt ${retryCount}/${maxRetries})...`);
+                    
+                    if (window.dashboardModule && window.dashboardModule.loadDashboard) {
+                        console.log('Dashboard module found on retry, loading...');
+                        window.dashboardModule.loadDashboard();
+                    } else if (retryCount < maxRetries) {
+                        setTimeout(retryDashboard, retryCount * 200);
+                    } else {
+                        console.error('Dashboard module still not available after all retries');
+                        // Last resort: show error message
+                        const content = document.getElementById('dashboard-content');
+                        if (content) {
+                            content.innerHTML = `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error Loading Dashboard</h5>
+                                        <p>Dashboard module tidak dapat dimuat. Silakan refresh halaman.</p>
+                                        <button onclick="location.reload()" class="btn btn-primary">Refresh Halaman</button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                };
+                
+                setTimeout(retryDashboard, 100);
+            }
             break;
         case 'visi-misi':
             window.visiMisiModule?.loadVisiMisi?.();
@@ -795,9 +845,17 @@ function loadPageData(pageName) {
             window.pengaturanModule?.load?.();
             break;
         case 'risk-input':
+            window.riskInputModule?.load?.();
+            break;
         case 'risk-profile':
+            window.RiskProfileModule?.load?.();
+            break;
         case 'residual-risk':
+            window.ResidualRiskModule?.load?.();
+            break;
         case 'risk-register':
+            window.loadRiskRegister?.();
+            break;
         case 'risk-appetite':
         case 'risk-register-graph':
         case 'master-data':

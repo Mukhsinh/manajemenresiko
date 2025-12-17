@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Strategic Map</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, button { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .data { background: #f8f9fa; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Strategic Map</h1>
+        
+        <div class="form-group">
+            <label for="rencana-select">Pilih Rencana Strategis:</label>
+            <select id="rencana-select">
+                <option value="">Loading...</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <button id="load-btn" onclick="loadStrategicMap()">Load Strategic Map</button>
+            <button id="generate-btn" onclick="generateStrategicMap()" disabled>Generate Strategic Map</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let rencanaStrategis = [];
+        
+        // Get token from localStorage or use test token
+        const mockToken = localStorage.getItem('supabase.auth.token') || 'test-token-for-development';
+        
+        async function apiCall(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${mockToken}`,
+                    ...options.headers
+                },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(`HTTP ${response.status}: ${error}`);
+            }
+            
+            return response.json();
+        }
+        
+        async function loadRencanaStrategis() {
+            try {
+                rencanaStrategis = await apiCall('/api/rencana-strategis');
+                const select = document.getElementById('rencana-select');
+                select.innerHTML = '<option value="">Pilih Rencana Strategis</option>';
+                
+                rencanaStrategis.forEach(rencana => {
+                    const option = document.createElement('option');
+                    option.value = rencana.id;
+                    option.textContent = rencana.nama_rencana;
+                    select.appendChild(option);
+                });
+                
+                select.addEventListener('change', function() {
+                    const generateBtn = document.getElementById('generate-btn');
+                    generateBtn.disabled = !this.value;
+                });
+                
+                showResult('Rencana strategis berhasil dimuat', 'success');
+            } catch (error) {
+                showResult('Error loading rencana strategis: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadStrategicMap() {
+            const rencanaId = document.getElementById('rencana-select').value;
+            
+            try {
+                const url = rencanaId ? 
+                    `/api/strategic-map?rencana_strategis_id=${rencanaId}` : 
+                    '/api/strategic-map';
+                    
+                const data = await apiCall(url);
+                showResult('Strategic Map Data:\n' + JSON.stringify(data, null, 2), 'data');
+            } catch (error) {
+                showResult('Error loading strategic map: ' + error.message, 'error');
+            }
+        }
+        
+        async function generateStrategicMap() {
+            const rencanaId = document.getElementById('rencana-select').value;
+            
+            if (!rencanaId) {
+                showResult('Pilih rencana strategis terlebih dahulu', 'error');
+                return;
+            }
+            
+            if (!confirm('Generate strategic map dari sasaran strategi?\nData yang sudah ada akan diganti dengan data terbaru.')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall('/api/strategic-map/generate', {
+                    method: 'POST',
+                    body: { rencana_strategis_id: rencanaId }
+                });
+                
+                showResult('Generate Result:\n' + JSON.stringify(result, null, 2), 'success');
+                
+                // Auto load after generate
+                setTimeout(loadStrategicMap, 1000);
+            } catch (error) {
+                showResult('Error generating strategic map: ' + error.message, 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.className = `result ${type}`;
+            result.innerHTML = `<pre>${message}</pre>`;
+            result.style.display = 'block';
+        }
+        
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadRencanaStrategis);
+    </script>
+</body>
+</html>

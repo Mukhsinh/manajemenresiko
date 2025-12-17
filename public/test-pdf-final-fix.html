@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Final Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .status-success { color: #28a745; }
+        .status-error { color: #dc3545; }
+        .status-warning { color: #ffc107; }
+        .status-info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-file-pdf"></i> Test PDF Final Fix</h1>
+                <p class="lead">Testing final fix untuk error PDF download di halaman laporan</p>
+                
+                <!-- Problem & Solution -->
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Error yang Diperbaiki</h5>
+                    <p><strong>Error:</strong> <code>Unexpected content type for PDF: application/json; charset=utf-8</code></p>
+                    <p><strong>Error:</strong> <code>PDF Download error: Error: Server returned JSON response instead of PDF file</code></p>
+                    <p><strong>Solusi:</strong> Enhanced error handling dengan pesan yang lebih user-friendly dan guidance untuk menggunakan Excel export.</p>
+                </div>
+
+                <!-- Test Working PDF -->
+                <div class="test-section">
+                    <h3><i class="fas fa-check-circle text-success"></i> Test Working PDF Endpoint</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Test endpoint PDF yang sudah diimplementasi dan berfungsi:</p>
+                            <button class="btn btn-success me-2 mb-2" onclick="testWorkingPDF()">
+                                <i class="fas fa-file-pdf"></i> Test Debug PDF (No Auth)
+                            </button>
+                            <button class="btn btn-success me-2 mb-2" onclick="testWorkingPDFWithAuth()">
+                                <i class="fas fa-file-pdf"></i> Test Residual Risk PDF (With Auth)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="workingLog">Working PDF test results...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Not Implemented PDF -->
+                <div class="test-section">
+                    <h3><i class="fas fa-exclamation-triangle text-warning"></i> Test Not Implemented PDF Endpoints</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Test endpoint PDF yang belum diimplementasi (should show proper error message):</p>
+                            <button class="btn btn-warning me-2 mb-2" onclick="testNotImplementedPDF('/api/reports/risk-register/pdf', 'Risk Register PDF')">
+                                <i class="fas fa-file-pdf"></i> Risk Register PDF
+                            </button>
+                            <button class="btn btn-warning me-2 mb-2" onclick="testNotImplementedPDF('/api/reports/risk-profile/pdf', 'Risk Profile PDF')">
+                                <i class="fas fa-file-pdf"></i> Risk Profile PDF
+                            </button>
+                            <button class="btn btn-warning me-2 mb-2" onclick="testNotImplementedPDF('/api/reports/monitoring/pdf', 'Monitoring PDF')">
+                                <i class="fas fa-file-pdf"></i> Monitoring PDF
+                            </button>
+                            <button class="btn btn-info me-2 mb-2" onclick="testAllNotImplemented()">
+                                <i class="fas fa-play"></i> Test All Not Implemented
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="notImplementedLog">Not implemented PDF test results...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Error Handling -->
+                <div class="test-section">
+                    <h3><i class="fas fa-code"></i> Test Error Handling Logic</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Test improved error handling logic in downloadPDF function:</p>
+                            <button class="btn btn-info me-2 mb-2" onclick="simulateJSONResponse()">
+                                <i class="fas fa-bug"></i> Simulate JSON Response
+                            </button>
+                            <button class="btn btn-info me-2 mb-2" onclick="simulateNotImplementedResponse()">
+                                <i class="fas fa-bug"></i> Simulate Not Implemented
+                            </button>
+                            <button class="btn btn-info me-2 mb-2" onclick="simulateUnexpectedContentType()">
+                                <i class="fas fa-bug"></i> Simulate Unexpected Content-Type
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="errorHandlingLog">Error handling test results...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login Section -->
+                <div class="test-section">
+                    <h3><i class="fas fa-sign-in-alt"></i> Login for Auth Tests</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="loginEmail" value="admin@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="loginPassword" value="admin123">
+                            </div>
+                            <button class="btn btn-primary" onclick="testLogin()">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="log-output" id="loginLog">Login results...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = `status-${type}`;
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testLogin() {
+            clearLog('loginLog');
+            log('loginLog', 'Testing login...', 'info');
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    log('loginLog', '✓ Login successful!', 'success');
+                    log('loginLog', `Token: ${authToken.substring(0, 20)}...`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log('loginLog', `✗ Login failed: ${response.status}`, 'error');
+                    log('loginLog', `Error: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log('loginLog', `✗ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWorkingPDF() {
+            clearLog('workingLog');
+            log('workingLog', 'Testing working PDF endpoint (debug)...', 'info');
+
+            try {
+                const response = await fetch('/api/reports/residual-risk-pdf-debug');
+                
+                const contentType = response.headers.get('content-type') || '';
+                log('workingLog', `Status: ${response.status}`, 'info');
+                log('workingLog', `Content-Type: ${contentType}`, 'info');
+
+                if (response.ok && contentType.includes('pdf')) {
+                    const blob = await response.blob();
+                    log('workingLog', '✓ PDF generated successfully!', 'success');
+                    log('workingLog', `✓ File size: ${blob.size} bytes`, 'success');
+                    
+                    // Trigger download
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `debug-pdf-${Date.now()}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    log('workingLog', `✓ File downloaded: ${a.download}`, 'success');
+                } else {
+                    log('workingLog', '✗ PDF generation failed', 'error');
+                    const errorText = await response.text();
+                    log('workingLog', `Error: ${errorText.substring(0, 100)}`, 'error');
+                }
+            } catch (error) {
+                log('workingLog', `✗ Test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWorkingPDFWithAuth() {
+            if (!authToken) {
+                log('workingLog', '⚠️ Please login first', 'warning');
+                return;
+            }
+
+            log('workingLog', 'Testing residual risk PDF with auth...', 'info');
+
+            try {
+                const response = await fetch('/api/reports/residual-risk/pdf', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                log('workingLog', `Status: ${response.status}`, 'info');
+                log('workingLog', `Content-Type: ${contentType}`, 'info');
+
+                if (response.ok && contentType.includes('pdf')) {
+                    const blob = await response.blob();
+                    log('workingLog', '✓ Residual Risk PDF generated successfully!', 'success');
+                    log('workingLog', `✓ File size: ${blob.size} bytes`, 'success');
+                    
+                    // Trigger download
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `residual-risk-${Date.now()}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    log('workingLog', `✓ File downloaded: ${a.download}`, 'success');
+                } else {
+                    log('workingLog', '✗ Residual Risk PDF failed', 'error');
+                    if (contentType.includes('json')) {
+                        const errorData = await response.json();
+                        log('workingLog', `Error: ${errorData.error || errorData.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log('workingLog', `✗ Test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNotImplementedPDF(endpoint, name) {
+            log('notImplementedLog', `Testing ${name} (${endpoint})...`, 'info');
+
+            try {
+                const headers = {};
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
+                const response = await fetch(endpoint, { headers });
+                
+                const contentType = response.headers.get('content-type') || '';
+                log('notImplementedLog', `Status: ${response.status}`, 'info');
+                log('notImplementedLog', `Content-Type: ${contentType}`, 'info');
+
+                if (response.status === 501 && contentType.includes('json')) {
+                    const errorData = await response.json();
+                    log('notImplementedLog', `✓ ${name} - Proper 501 Not Implemented`, 'success');
+                    log('notImplementedLog', `✓ Message: ${errorData.message}`, 'success');
+                    log('notImplementedLog', `✓ Available formats: ${errorData.availableFormats?.join(', ')}`, 'success');
+                } else if (response.status === 401) {
+                    log('notImplementedLog', `🔒 ${name} - Authentication required`, 'warning');
+                    log('notImplementedLog', '  Please login to test properly', 'warning');
+                } else {
+                    log('notImplementedLog', `⚠️ ${name} - Unexpected response: ${response.status}`, 'warning');
+                    if (contentType.includes('json')) {
+                        const errorData = await response.json();
+                        log('notImplementedLog', `  Message: ${errorData.error || errorData.message}`, 'info');
+                    }
+                }
+            } catch (error) {
+                log('notImplementedLog', `✗ ${name} - Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllNotImplemented() {
+            clearLog('notImplementedLog');
+            log('notImplementedLog', 'Testing all not implemented PDF endpoints...', 'info');
+
+            const endpoints = [
+                { url: '/api/reports/risk-register/pdf', name: 'Risk Register PDF' },
+                { url: '/api/reports/risk-profile/pdf', name: 'Risk Profile PDF' },
+                { url: '/api/reports/risk-appetite/pdf', name: 'Risk Appetite PDF' },
+                { url: '/api/reports/kri/pdf', name: 'KRI PDF' },
+                { url: '/api/reports/monitoring/pdf', name: 'Monitoring PDF' },
+                { url: '/api/reports/loss-event/pdf', name: 'Loss Event PDF' },
+                { url: '/api/reports/strategic-map/pdf', name: 'Strategic Map PDF' }
+            ];
+
+            for (const endpoint of endpoints) {
+                await testNotImplementedPDF(endpoint.url, endpoint.name);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            log('notImplementedLog', '=== All not implemented tests complete ===', 'success');
+        }
+
+        async function simulateJSONResponse() {
+            clearLog('errorHandlingLog');
+            log('errorHandlingLog', 'Simulating JSON response handling...', 'info');
+
+            // Simulate the improved error handling logic
+            const mockResponse = {
+                ok: true,
+                status: 200,
+                headers: new Map([['content-type', 'application/json; charset=utf-8']]),
+                json: async () => ({ error: 'PDF export not yet implemented', message: 'PDF export belum diimplementasikan' })
+            };
+
+            try {
+                const contentType = mockResponse.headers.get('content-type') || '';
+                log('errorHandlingLog', `Mock Content-Type: ${contentType}`, 'info');
+
+                if (!contentType.includes('pdf')) {
+                    log('errorHandlingLog', '⚠️ Content type is not PDF', 'warning');
+                    
+                    if (contentType.includes('json')) {
+                        const errorData = await mockResponse.json();
+                        const errorMessage = errorData.error || errorData.message || 'Server returned JSON instead of PDF';
+                        
+                        if (errorMessage.includes('not yet implemented') || errorMessage.includes('belum diimplementasikan')) {
+                            log('errorHandlingLog', '✓ Detected "not implemented" message', 'success');
+                            log('errorHandlingLog', '✓ Would show: Export PDF belum diimplementasikan untuk laporan ini. Silakan gunakan Excel export.', 'success');
+                        } else {
+                            log('errorHandlingLog', `✓ Would show: ${errorMessage}`, 'success');
+                        }
+                    }
+                }
+            } catch (error) {
+                log('errorHandlingLog', `✗ Simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateNotImplementedResponse() {
+            log('errorHandlingLog', 'Simulating not implemented response...', 'info');
+
+            try {
+                // Test actual not implemented endpoint
+                const response = await fetch('/api/reports/risk-profile/pdf', {
+                    headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                log('errorHandlingLog', `Actual response status: ${response.status}`, 'info');
+                log('errorHandlingLog', `Actual content-type: ${contentType}`, 'info');
+
+                if (response.status === 501 && contentType.includes('json')) {
+                    const errorData = await response.json();
+                    log('errorHandlingLog', '✓ Received proper 501 Not Implemented', 'success');
+                    log('errorHandlingLog', `✓ Frontend would show: ${errorData.message}`, 'success');
+                } else if (response.status === 401) {
+                    log('errorHandlingLog', '🔒 Authentication required (login first)', 'warning');
+                } else {
+                    log('errorHandlingLog', `Unexpected response: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log('errorHandlingLog', `✗ Test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateUnexpectedContentType() {
+            log('errorHandlingLog', 'Simulating unexpected content type...', 'info');
+
+            // Simulate unexpected content type handling
+            const mockResponse = {
+                ok: true,
+                status: 200,
+                headers: new Map([['content-type', 'text/html']]),
+                text: async () => '<html><body>Error page</body></html>'
+            };
+
+            try {
+                const contentType = mockResponse.headers.get('content-type') || '';
+                log('errorHandlingLog', `Mock Content-Type: ${contentType}`, 'info');
+
+                if (!contentType.includes('pdf')) {
+                    if (!contentType.includes('json')) {
+                        log('errorHandlingLog', '⚠️ Unexpected content type (not JSON or PDF)', 'warning');
+                        log('errorHandlingLog', '✓ Would show: Format response tidak sesuai. Diharapkan PDF tapi mendapat: text/html', 'success');
+                    }
+                }
+            } catch (error) {
+                log('errorHandlingLog', `✗ Simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            clearLog('workingLog');
+            clearLog('notImplementedLog');
+            clearLog('errorHandlingLog');
+            clearLog('loginLog');
+            
+            log('workingLog', 'Ready to test working PDF endpoints...', 'info');
+            log('notImplementedLog', 'Ready to test not implemented PDF endpoints...', 'info');
+            log('errorHandlingLog', 'Ready to test error handling logic...', 'info');
+            log('loginLog', 'Ready to login for auth tests...', 'info');
+        });
+    </script>
+</body>
+</html>

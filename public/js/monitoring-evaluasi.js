@@ -2,12 +2,47 @@
 const MonitoringEvaluasi = {
     async load() {
         try {
-            const data = await apiCall('/api/monitoring-evaluasi');
+            console.log('=== LOADING MONITORING EVALUASI ===');
+            let data;
+            
+            try {
+                // Try authenticated endpoint first
+                data = await apiCall('/api/monitoring-evaluasi');
+                console.log('Authenticated API success:', data?.length || 0);
+            } catch (authError) {
+                console.warn('Authenticated API failed, trying test endpoint:', authError.message);
+                
+                // Fallback to test endpoint
+                try {
+                    data = await apiCall('/api/monitoring-evaluasi/test');
+                    console.log('Test API success:', data?.length || 0);
+                } catch (testError) {
+                    console.warn('Test API failed, trying debug endpoint:', testError.message);
+                    
+                    // Final fallback to debug endpoint
+                    try {
+                        const debugResponse = await apiCall('/api/debug-monitoring');
+                        data = debugResponse.data || [];
+                        console.log('Debug API success:', data?.length || 0);
+                    } catch (debugError) {
+                        console.error('All APIs failed:', debugError.message);
+                        throw new Error('Tidak dapat memuat data monitoring evaluasi. Silakan refresh halaman.');
+                    }
+                }
+            }
+            
             this.render(data);
         } catch (error) {
             console.error('Error loading monitoring evaluasi:', error);
-            document.getElementById('monitoring-evaluasi-content').innerHTML =
-                '<div class="card"><p>Error: ' + error.message + '</p></div>';
+            document.getElementById('monitoring-evaluasi-content').innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data</h5>
+                        <p>${error.message}</p>
+                        <button onclick="MonitoringEvaluasi.load()" class="btn btn-primary">Coba Lagi</button>
+                    </div>
+                </div>
+            `;
         }
     },
 
@@ -25,40 +60,40 @@ const MonitoringEvaluasi = {
         
         content.innerHTML = `
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-tasks"></i> Monitoring & Evaluasi Risiko</h3>
-                    <div class="action-buttons">
-                        <button class="btn btn-warning" onclick="MonitoringEvaluasi.downloadTemplate()">
-                            <i class="fas fa-download"></i> Unduh Template
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <h3 class="card-title" style="margin: 0;"><i class="fas fa-tasks"></i> Monitoring & Evaluasi Risiko</h3>
+                    <div class="action-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-warning btn-sm" onclick="MonitoringEvaluasi.downloadTemplate()" title="Unduh Template">
+                            <i class="fas fa-download"></i> <span class="btn-text">Template</span>
                         </button>
-                        <button class="btn btn-success" onclick="MonitoringEvaluasi.showImportModal()">
-                            <i class="fas fa-upload"></i> Import Data
+                        <button class="btn btn-success btn-sm" onclick="MonitoringEvaluasi.showImportModal()" title="Import Data">
+                            <i class="fas fa-upload"></i> <span class="btn-text">Import</span>
                         </button>
-                        <button class="btn btn-primary" onclick="MonitoringEvaluasi.showAddModal()">
-                            <i class="fas fa-plus"></i> Tambah Monitoring
+                        <button class="btn btn-primary btn-sm" onclick="MonitoringEvaluasi.showAddModal()" title="Tambah Monitoring">
+                            <i class="fas fa-plus"></i> <span class="btn-text">Tambah</span>
                         </button>
-                        <button class="btn btn-info" onclick="MonitoringEvaluasi.downloadReport()">
-                            <i class="fas fa-file-pdf"></i> Unduh Laporan
+                        <button class="btn btn-info btn-sm" onclick="MonitoringEvaluasi.downloadReport()" title="Unduh Laporan">
+                            <i class="fas fa-file-pdf"></i> <span class="btn-text">Laporan</span>
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
                     <!-- Statistics -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white;">
-                            <div style="font-size: 2rem; font-weight: bold;">${stats.total}</div>
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.total}</div>
                             <div style="font-size: 0.875rem; opacity: 0.9;">Total Monitoring</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.5rem; border-radius: 8px; color: white;">
-                            <div style="font-size: 2rem; font-weight: bold;">${stats.completed}</div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.completed}</div>
                             <div style="font-size: 0.875rem; opacity: 0.9;">Completed (100%)</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 8px; color: white;">
-                            <div style="font-size: 2rem; font-weight: bold;">${stats.inProgress}</div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.inProgress}</div>
                             <div style="font-size: 0.875rem; opacity: 0.9;">In Progress</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.5rem; border-radius: 8px; color: white;">
-                            <div style="font-size: 2rem; font-weight: bold;">${stats.avgProgress}%</div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.avgProgress}%</div>
                             <div style="font-size: 0.875rem; opacity: 0.9;">Avg Progress</div>
                         </div>
                     </div>
@@ -75,7 +110,7 @@ const MonitoringEvaluasi = {
                     
                     <!-- Table -->
                     <div class="table-container">
-                        <table class="table">
+                        <table class="table monitoring-table">
                             <thead>
                                 <tr>
                                     <th>Tanggal</th>
@@ -93,28 +128,33 @@ const MonitoringEvaluasi = {
                                     const progressColor = item.progress_mitigasi >= 75 ? '#27ae60' : 
                                                         item.progress_mitigasi >= 50 ? '#3498db' :
                                                         item.progress_mitigasi >= 25 ? '#f39c12' : '#e74c3c';
+                                    const evaluasiText = item.evaluasi || '-';
+                                    const shortEvaluasi = evaluasiText.length > 100 ? evaluasiText.substring(0, 100) + '...' : evaluasiText;
+                                    
                                     return `
                                     <tr>
                                         <td>${item.tanggal_monitoring || '-'}</td>
                                         <td><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
                                         <td><span class="badge-status badge-${getStatusColor(item.status_risiko)}">${item.status_risiko || '-'}</span></td>
-                                        <td>${item.nilai_risiko || '-'}</td>
+                                        <td style="text-align: center;">${item.nilai_risiko || '-'}</td>
                                         <td>
-                                            <div style="display:flex;align-items:center;gap:0.5rem;">
-                                                <div style="flex:1;height:10px;background:#e5e7eb;border-radius:9999px;overflow:hidden;">
-                                                    <div style="width:${item.progress_mitigasi || 0}%;height:100%;background:${progressColor};border-radius:9999px;transition:width 0.3s;"></div>
+                                            <div class="progress-container">
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width:${item.progress_mitigasi || 0}%;background:${progressColor};"></div>
                                                 </div>
-                                                <span style="font-weight:bold;color:${progressColor};">${item.progress_mitigasi || 0}%</span>
+                                                <span class="progress-text" style="color:${progressColor};">${item.progress_mitigasi || 0}%</span>
                                             </div>
                                         </td>
-                                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.evaluasi || '-'}">${item.evaluasi || '-'}</td>
+                                        <td class="evaluasi-cell" title="${evaluasiText}">${shortEvaluasi}</td>
                                         <td>
-                                            <button class="btn btn-edit btn-sm" onclick="MonitoringEvaluasi.edit('${item.id}')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-delete btn-sm" onclick="MonitoringEvaluasi.delete('${item.id}')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            <div style="display: flex; gap: 0.25rem;">
+                                                <button class="btn btn-edit btn-sm" onclick="MonitoringEvaluasi.edit('${item.id}')" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-delete btn-sm" onclick="MonitoringEvaluasi.delete('${item.id}')" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 `;

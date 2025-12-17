@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test KRI with Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Test KRI with Login</h1>
+    
+    <div class="test-section">
+        <h2>1. Login Test</h2>
+        <div>
+            <input type="email" id="email" placeholder="Email" value="mukhsin9@gmail.com">
+            <input type="password" id="password" placeholder="Password" value="password">
+            <button class="btn" onclick="testLogin()">Login</button>
+        </div>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. KRI Test (After Login)</h2>
+        <button class="btn" onclick="testKRIWithAuth()">Test KRI with Auth</button>
+        <button class="btn" onclick="testKRIFallback()">Test KRI Fallback</button>
+        <div id="kri-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Token Info</h2>
+        <button class="btn" onclick="showTokenInfo()">Show Token Info</button>
+        <div id="token-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. KRI Module Test</h2>
+        <button class="btn" onclick="testKRIModule()">Test KRI Module</button>
+        <div id="kri-content"></div>
+    </div>
+
+    <script>
+        let currentToken = null;
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                resultDiv.innerHTML = '<p>Logging in...</p>';
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                currentToken = data.session?.access_token;
+                
+                // Store token in localStorage for other tests
+                if (currentToken) {
+                    localStorage.setItem('token', currentToken);
+                    localStorage.setItem('authToken', currentToken);
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Login berhasil!</h4>
+                        <p><strong>User:</strong> ${data.user?.email}</p>
+                        <p><strong>Token:</strong> ${currentToken ? 'Available' : 'Not available'}</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Login gagal</h4>
+                        <p>${error.message}</p>
+                        <p><strong>Coba dengan:</strong></p>
+                        <ul>
+                            <li>mukhsin9@gmail.com / password</li>
+                            <li>amalinda.fajari@gmail.com / password</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        async function testKRIWithAuth() {
+            const resultDiv = document.getElementById('kri-result');
+            
+            if (!currentToken) {
+                currentToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+            }
+            
+            if (!currentToken) {
+                resultDiv.innerHTML = `
+                    <div class="warning">
+                        <h4>⚠️ No token available</h4>
+                        <p>Please login first</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<p>Testing KRI with auth...</p>';
+                
+                const response = await fetch('/api/kri', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        ${data.length > 0 ? `
+                            <p><strong>Sample:</strong> ${data[0].kode} - ${data[0].nama_indikator}</p>
+                        ` : ''}
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ KRI API gagal</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testKRIFallback() {
+            const resultDiv = document.getElementById('kri-result');
+            
+            try {
+                resultDiv.innerHTML = '<p>Testing KRI fallback...</p>';
+                
+                const response = await fetch('/api/kri/test-no-auth');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI Fallback berhasil!</h4>
+                        <p><strong>Total data:</strong> ${data.length}</p>
+                        ${data.length > 0 ? `
+                            <p><strong>Sample:</strong> ${data[0].kode} - ${data[0].nama_indikator}</p>
+                        ` : ''}
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ KRI Fallback gagal</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showTokenInfo() {
+            const resultDiv = document.getElementById('token-result');
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            
+            resultDiv.innerHTML = `
+                <div class="${token ? 'success' : 'warning'}">
+                    <h4>Token Information</h4>
+                    <p><strong>Current Token:</strong> ${currentToken ? 'Available' : 'Not set'}</p>
+                    <p><strong>LocalStorage token:</strong> ${token ? 'Available' : 'Not found'}</p>
+                    <p><strong>Token preview:</strong> ${token ? token.substring(0, 50) + '...' : 'N/A'}</p>
+                </div>
+            `;
+        }
+
+        async function testKRIModule() {
+            const contentDiv = document.getElementById('kri-content');
+            
+            try {
+                // Mock apiCall function
+                window.apiCall = async function(endpoint, options = {}) {
+                    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                    const response = await fetch(endpoint, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token && { 'Authorization': `Bearer ${token}` })
+                        },
+                        ...options
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                    }
+                    
+                    return response.json();
+                };
+                
+                // Load KRI script if not loaded
+                if (typeof window.kriModule === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = '/js/kri.js';
+                    document.head.appendChild(script);
+                    
+                    await new Promise((resolve, reject) => {
+                        script.onload = resolve;
+                        script.onerror = reject;
+                    });
+                }
+                
+                // Load KRI module
+                if (window.kriModule && window.kriModule.load) {
+                    await window.kriModule.load();
+                } else {
+                    throw new Error('KRI module not available');
+                }
+                
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ KRI Module Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-load token info on page load
+        window.onload = function() {
+            showTokenInfo();
+        };
+    </script>
+</body>
+</html>

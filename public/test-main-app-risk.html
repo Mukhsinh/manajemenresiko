@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Main App Risk Input</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+        .btn { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Main App Risk Input</h1>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="testRiskInputModule()">Test Risk Input Module</button>
+            <button class="btn btn-primary" onclick="testDirectLoad()">Test Direct Load</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <!-- Simulate the main app structure -->
+        <div id="risk-input" class="page-content">
+            <div class="page-header">
+                <h1 class="page-title"><i class="page-title-icon fas fa-pen-to-square"></i> Input Data Risiko</h1>
+                <p class="page-subtitle">Kelola identifikasi risiko hingga analisis residual secara terpadu</p>
+            </div>
+
+            <section class="section-card">
+                <div class="section-header">
+                    <h3>Daftar Risiko</h3>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Kode Risiko</th>
+                                <th>Unit Kerja</th>
+                                <th>Rencana Strategis</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="risk-input-tbody">
+                            <tr>
+                                <td colspan="6" class="text-center">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="/js/risk-input.js"></script>
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        async function testRiskInputModule() {
+            showStatus('Testing Risk Input Module...', 'info');
+            
+            try {
+                if (window.RiskInputModule) {
+                    await window.RiskInputModule.load();
+                    showStatus('Risk Input Module loaded successfully', 'success');
+                } else {
+                    showStatus('Risk Input Module not available', 'error');
+                }
+            } catch (error) {
+                showStatus(`Risk Input Module error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDirectLoad() {
+            showStatus('Testing direct load function...', 'info');
+            
+            try {
+                if (window.loadRiskInputData) {
+                    await window.loadRiskInputData();
+                    showStatus('Direct load function executed successfully', 'success');
+                } else {
+                    showStatus('loadRiskInputData function not available', 'error');
+                }
+            } catch (error) {
+                showStatus(`Direct load error: ${error.message}`, 'error');
+            }
+        }
+
+        // Monitor table changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    const tbody = document.getElementById('risk-input-tbody');
+                    if (tbody && tbody.children.length > 0) {
+                        const firstRow = tbody.children[0];
+                        if (firstRow.children.length > 1) {
+                            showStatus(`Table updated with ${tbody.children.length} rows`, 'success');
+                        }
+                    }
+                }
+            });
+        });
+
+        const tbody = document.getElementById('risk-input-tbody');
+        if (tbody) {
+            observer.observe(tbody, { childList: true });
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Auto-testing Risk Input Module...');
+                testRiskInputModule();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

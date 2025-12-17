@@ -28,11 +28,23 @@ const authenticateUser = async (req, res, next) => {
       isSuperAdmin(user)
     ]);
 
+    // Filter out any invalid organization IDs
+    const validOrganizations = (organizations || []).filter(id => {
+      return id && 
+             typeof id === 'string' && 
+             id.trim() !== '' && 
+             id !== 'undefined' && 
+             id !== 'null' &&
+             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    });
+
     // Attach user info with organizations and role
     req.user = user;
-    req.user.organizations = organizations || [];
+    req.user.organizations = validOrganizations;
     req.user.role = role;
     req.user.isSuperAdmin = isSuper;
+
+    logger.info(`User authenticated: ${user.email}, Organizations: ${validOrganizations.length}, Role: ${role}, SuperAdmin: ${isSuper}`);
 
     next();
   } catch (error) {

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Risk Debug - Browser Test</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f6fa;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            color: white;
+        }
+        .btn-primary { background: #3498db; }
+        .btn-success { background: #27ae60; }
+        .btn-warning { background: #f39c12; }
+        .btn:hover { opacity: 0.9; }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #cce7ff; color: #004085; }
+        .info { background: #e2e3e5; color: #383d41; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+            font-size: 12px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bug"></i> Residual Risk Debug - Browser Test</h1>
+        
+        <div class="section">
+            <h3>Step 1: Authentication Test</h3>
+            <button class="btn btn-primary" onclick="testAuth()">
+                <i class="fas fa-sign-in-alt"></i> Test Authentication
+            </button>
+            <div id="auth-status"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 2: API Test</h3>
+            <button class="btn btn-success" onclick="testAPI()">
+                <i class="fas fa-chart-pie"></i> Test Residual Risk API
+            </button>
+            <div id="api-status"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 3: Data Analysis</h3>
+            <button class="btn btn-warning" onclick="analyzeData()">
+                <i class="fas fa-chart-bar"></i> Analyze Data Structure
+            </button>
+            <div id="analysis-status"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 4: Frontend Module Test</h3>
+            <button class="btn btn-primary" onclick="testFrontendModule()">
+                <i class="fas fa-code"></i> Test ResidualRiskModule
+            </button>
+            <div id="module-status"></div>
+        </div>
+        
+        <div id="debug-output"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let apiData = null;
+
+        function showStatus(elementId, message, type = 'info') {
+            document.getElementById(elementId).innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showOutput(data) {
+            document.getElementById('debug-output').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function testAuth() {
+            showStatus('auth-status', '<i class="fas fa-spinner fa-spin"></i> Testing authentication...', 'loading');
+            
+            try {
+                // Check if already logged in
+                const existingToken = localStorage.getItem('authToken');
+                if (existingToken) {
+                    authToken = existingToken;
+                    showStatus('auth-status', '<i class="fas fa-check"></i> Using existing token from localStorage', 'success');
+                    return;
+                }
+
+                // Try to get session from Supabase if available
+                if (window.supabaseClient) {
+                    const { data: { session } } = await window.supabaseClient.auth.getSession();
+                    if (session) {
+                        authToken = session.access_token;
+                        localStorage.setItem('authToken', authToken);
+                        showStatus('auth-status', '<i class="fas fa-check"></i> Using Supabase session token', 'success');
+                        return;
+                    }
+                }
+
+                // Try login with known credentials
+                const credentials = [
+                    { email: 'mukhsin9@gmail.com', password: 'admin123' },
+                    { email: 'amalinda.fajari@gmail.com', password: 'admin123' },
+                    { email: 'admin@example.com', password: 'admin123' }
+                ];
+
+                for (const cred of credentials) {
+                    try {
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(cred)
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.token) {
+                                authToken = data.token;
+                                localStorage.setItem('authToken', authToken);
+                                showStatus('auth-status', `<i class="fas fa-check"></i> Login successful with ${cred.email}`, 'success');
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`Failed login attempt with ${cred.email}:`, e);
+                    }
+                }
+
+                throw new Error('All login attempts failed');
+                
+            } catch (error) {
+                console.error('Auth test error:', error);
+                showStatus('auth-status', `<i class="fas fa-times"></i> Authentication failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAPI() {
+            if (!authToken) {
+                showStatus('api-status', '<i class="fas fa-exclamation-triangle"></i> Please authenticate first', 'error');
+                return;
+            }
+
+            showStatus('api-status', '<i class="fas fa-spinner fa-spin"></i> Testing API endpoint...', 'loading');
+            
+            try {
+                const response = await fetch('/api/reports/residual-risk', {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API Error ${response.status}: ${errorText}`);
+                }
+                
+                apiData = await response.json();
+                showStatus('api-status', `<i class="fas fa-check"></i> API test successful! Found ${apiData.length} records`, 'success');
+                showOutput({ 
+                    message: 'API Response', 
+                    recordCount: apiData.length,
+                    sampleRecord: apiData[0] || null
+                });
+                
+            } catch (error) {
+                console.error('API test error:', error);
+                showStatus('api-status', `<i class="fas fa-times"></i> API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function analyzeData() {
+            if (!apiData) {
+                showStatus('analysis-status', '<i class="fas fa-exclamation-triangle"></i> Please test API first', 'error');
+                return;
+            }
+
+            showStatus('analysis-status', '<i class="fas fa-spinner fa-spin"></i> Analyzing data structure...', 'loading');
+            
+            try {
+                const analysis = {
+                    totalRecords: apiData.length,
+                    recordsWithRiskInputs: apiData.filter(d => d.risk_inputs).length,
+                    recordsWithInherentAnalysis: apiData.filter(d => d.risk_inputs?.risk_inherent_analysis?.length > 0).length,
+                    sampleDataStructure: {},
+                    calculatedStats: {}
+                };
+
+                if (apiData.length > 0) {
+                    const sample = apiData[0];
+                    analysis.sampleDataStructure = {
+                        hasId: !!sample.id,
+                        hasRiskInputId: !!sample.risk_input_id,
+                        hasProbability: !!sample.probability,
+                        hasImpact: !!sample.impact,
+                        hasRiskValue: !!sample.risk_value,
+                        hasRiskLevel: !!sample.risk_level,
+                        hasRiskInputs: !!sample.risk_inputs,
+                        riskInputsStructure: sample.risk_inputs ? {
+                            hasKodeRisiko: !!sample.risk_inputs.kode_risiko,
+                            hasSasaran: !!sample.risk_inputs.sasaran,
+                            hasWorkUnit: !!sample.risk_inputs.master_work_units,
+                            hasInherentAnalysis: !!sample.risk_inputs.risk_inherent_analysis,
+                            inherentAnalysisLength: sample.risk_inputs.risk_inherent_analysis?.length || 0
+                        } : null
+                    };
+
+                    // Calculate stats like frontend does
+                    const stats = {
+                        total: apiData.length,
+                        avgInherent: apiData.reduce((sum, d) => sum + (d.risk_inputs?.risk_inherent_analysis?.[0]?.risk_value || 0), 0) / (apiData.length || 1),
+                        avgResidual: apiData.reduce((sum, d) => sum + (d.risk_value || 0), 0) / (apiData.length || 1)
+                    };
+                    stats.reduction = stats.avgInherent > 0 ? ((stats.avgInherent - stats.avgResidual) / stats.avgInherent * 100).toFixed(1) : 0;
+                    
+                    analysis.calculatedStats = stats;
+                }
+
+                showStatus('analysis-status', '<i class="fas fa-check"></i> Data analysis complete', 'success');
+                showOutput(analysis);
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showStatus('analysis-status', `<i class="fas fa-times"></i> Analysis failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFrontendModule() {
+            showStatus('module-status', '<i class="fas fa-spinner fa-spin"></i> Testing frontend module...', 'loading');
+            
+            try {
+                const moduleTest = {
+                    ResidualRiskModuleExists: typeof window.ResidualRiskModule !== 'undefined',
+                    loadFunctionExists: typeof window.ResidualRiskModule?.load === 'function',
+                    loadResidualRiskExists: typeof window.loadResidualRisk === 'function',
+                    chartJsLoaded: typeof Chart !== 'undefined',
+                    supabaseClientExists: typeof window.supabaseClient !== 'undefined',
+                    authServiceExists: typeof window.authService !== 'undefined'
+                };
+
+                // Try to call the module load function
+                if (window.ResidualRiskModule?.load) {
+                    try {
+                        await window.ResidualRiskModule.load();
+                        moduleTest.moduleLoadSuccess = true;
+                        moduleTest.moduleLoadError = null;
+                    } catch (error) {
+                        moduleTest.moduleLoadSuccess = false;
+                        moduleTest.moduleLoadError = error.message;
+                    }
+                }
+
+                showStatus('module-status', '<i class="fas fa-check"></i> Frontend module test complete', 'success');
+                showOutput(moduleTest);
+                
+            } catch (error) {
+                console.error('Module test error:', error);
+                showStatus('module-status', `<i class="fas fa-times"></i> Module test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run authentication test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(testAuth, 1000);
+        });
+    </script>
+</body>
+</html>

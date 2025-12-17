@@ -1,0 +1,70 @@
+{
+  "backend": {
+    "Risk Register Debug": {
+      "status": "OK",
+      "count": 10
+    },
+    "Risk Profile Debug": {
+      "status": "OK",
+      "count": 2
+    },
+    "Residual Risk Simple": {
+      "status": "OK",
+      "count": 100
+    },
+    "Test Excel Download": {
+      "status": "OK",
+      "size": 16589,
+      "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "type": "binary"
+    }
+  },
+  "frontend": {
+    "laporan.js": {
+      "status": "OK",
+      "size": 20010,
+      "exists": true
+    },
+    "index.html": {
+      "status": "OK",
+      "size": 70267,
+      "exists": true
+    },
+    "test-laporan-download.html": {
+      "status": "OK",
+      "size": 15389,
+      "exists": true
+    }
+  },
+  "downloads": {
+    "excel": {
+      "status": "OK",
+      "size": 16589,
+      "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "isExcel": true
+    }
+  },
+  "issues": [],
+  "dependencies": {
+    "xlsx": {
+      "status": "OK",
+      "version": "^0.18.5"
+    },
+    "puppeteer": {
+      "status": "OK",
+      "version": "^24.33.0"
+    },
+    "express": {
+      "status": "OK",
+      "version": "^4.18.2"
+    },
+    "@supabase/supabase-js": {
+      "status": "OK",
+      "version": "^2.38.4"
+    }
+  },
+  "routes": {
+    "status": "OK",
+    "registered": true
+  }
+}

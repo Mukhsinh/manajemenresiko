@@ -28,61 +28,92 @@ function waitForChartJs(callback, maxAttempts = 50) {
 
 async function loadDashboard() {
     try {
-        console.log('Loading dashboard data...');
+        console.log('=== DASHBOARD LOADING START ===');
+        console.log('Current URL:', window.location.href);
+        console.log('User authenticated:', !!window.currentUser);
         
         // Show loading state
         const content = document.getElementById('dashboard-content');
         if (content) {
             content.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Memuat data dashboard...</div>';
+        } else {
+            console.error('Dashboard content element not found!');
+            return;
         }
         
-        // Try authenticated endpoint first
+        // Try public endpoint first for better reliability
         let stats;
-        try {
-            console.log('Trying authenticated dashboard endpoint...');
-            stats = await apiCall('/api/dashboard');
-            console.log('Dashboard data loaded from authenticated endpoint:', stats);
-        } catch (authError) {
-            console.warn('Authenticated dashboard failed:', authError.message);
-            
-            // Try fallback endpoints
-            const fallbackEndpoints = [
-                '/api/simple/dashboard', 
-                '/api/debug-data/dashboard',
-                '/api/test-data/dashboard'
-            ];
-            
-            for (const endpoint of fallbackEndpoints) {
-                try {
-                    console.log(`Trying fallback endpoint: ${endpoint}`);
-                    const response = await apiCall(endpoint);
-                    console.log(`Dashboard response from ${endpoint}:`, response);
+        const endpoints = [
+            '/api/dashboard/public',
+            '/api/test-data/dashboard',
+            '/api/dashboard',
+            '/api/simple/dashboard', 
+            '/api/debug-data/dashboard'
+        ];
+        
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`Trying endpoint: ${endpoint}`);
+                
+                let response, data;
+                
+                if (endpoint === '/api/dashboard') {
+                    // Use apiCall for authenticated endpoint
+                    try {
+                        data = await apiCall(endpoint);
+                        console.log(`Dashboard data from authenticated endpoint:`, data);
+                    } catch (authError) {
+                        console.warn(`Authenticated endpoint failed: ${authError.message}`);
+                        continue;
+                    }
+                } else {
+                    // Use direct fetch for public endpoints
+                    response = await fetch(`${window.location.origin}${endpoint}`);
                     
-                    // Handle different response formats
-                    if (response && response.success && response.data) {
-                        stats = response.data;
-                    } else if (response && typeof response === 'object') {
-                        stats = response;
-                    } else {
-                        throw new Error('Invalid response format');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                     
-                    console.log(`Dashboard data processed from ${endpoint}:`, stats);
+                    data = await response.json();
+                    console.log(`Dashboard response from ${endpoint}:`, data);
+                }
+                
+                // Handle different response formats
+                if (data && data.success && data.data) {
+                    stats = data.data;
+                } else if (data && typeof data === 'object') {
+                    stats = data;
+                } else {
+                    throw new Error('Invalid response format');
+                }
+                
+                console.log(`Dashboard data processed from ${endpoint}:`, stats);
+                
+                // Validate that we have meaningful data
+                if (stats && (stats.total_risks > 0 || stats.sample_data)) {
+                    console.log(`Successfully loaded data from ${endpoint}`);
                     break;
-                } catch (error) {
-                    console.warn(`Endpoint ${endpoint} failed:`, error.message);
+                } else {
+                    console.warn(`${endpoint} returned empty data, trying next endpoint`);
+                    stats = null;
                     continue;
                 }
+                
+            } catch (error) {
+                console.warn(`Endpoint ${endpoint} failed:`, error.message);
+                continue;
             }
-            
-            if (!stats) {
-                throw new Error('Tidak dapat memuat data dashboard. Silakan login terlebih dahulu atau hubungi administrator.');
-            }
+        }
+        
+        if (!stats) {
+            throw new Error('Tidak dapat memuat data dashboard dari semua endpoint yang tersedia.');
         }
         
         renderDashboard(stats);
         
         // Add debug info for troubleshooting
+        console.log('=== DASHBOARD LOADING SUCCESS ===');
+        console.log('Final stats object:', stats);
         console.log('Dashboard rendered successfully with data:', {
             totalRisks: stats?.total_risks || 0,
             visiMisiCount: stats?.sample_data?.visi_misi?.length || 0,
@@ -91,6 +122,7 @@ async function loadDashboard() {
             hasResidualRisks: !!(stats?.residual_risks),
             hasKRI: !!(stats?.kri)
         });
+        console.log('=== DASHBOARD LOADING END ===');
     } catch (error) {
         console.error('Error loading dashboard:', error);
         const content = document.getElementById('dashboard-content');
@@ -129,6 +161,9 @@ async function loadTestData() {
 }
 
 function renderDashboard(stats) {
+    console.log('=== RENDER DASHBOARD START ===');
+    console.log('Received stats:', stats);
+    
     const content = document.getElementById('dashboard-content');
     if (!content) {
         console.error('Dashboard content element not found');
@@ -137,44 +172,51 @@ function renderDashboard(stats) {
     
     // Ensure stats is an object
     const safeStats = stats || {};
+    console.log('Safe stats:', safeStats);
+    console.log('Total risks from safeStats:', safeStats.total_risks);
+    console.log('Sample data from safeStats:', safeStats.sample_data);
     
     content.innerHTML = `
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3 class="chart-title">Total Risiko</h3>
-                <div style="font-size: 2rem; font-weight: 700; color: #007bff; text-align: center;">
-                    ${safeStats.total_risks || 0}
+        <div class="dashboard-stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-                <p style="text-align: center; color: #6c757d; font-size: 0.875rem;">
-                    Data risiko terdaftar
-                </p>
+                <div class="stat-content">
+                    <h3 class="stat-number">${safeStats.total_risks || 0}</h3>
+                    <p class="stat-label">Total Risiko</p>
+                    <small class="stat-description">Data risiko terdaftar</small>
+                </div>
             </div>
-            <div class="chart-card">
-                <h3 class="chart-title">Loss Events</h3>
-                <div style="font-size: 2rem; font-weight: 700; color: #dc3545; text-align: center;">
-                    ${safeStats.loss_events || 0}
+            <div class="stat-card stat-danger">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p style="text-align: center; color: #6c757d; font-size: 0.875rem;">
-                    Kejadian kerugian
-                </p>
+                <div class="stat-content">
+                    <h3 class="stat-number">${safeStats.loss_events || 0}</h3>
+                    <p class="stat-label">Loss Events</p>
+                    <small class="stat-description">Kejadian kerugian</small>
+                </div>
             </div>
-            <div class="chart-card">
-                <h3 class="chart-title">Visi Misi</h3>
-                <div style="font-size: 2rem; font-weight: 700; color: #28a745; text-align: center;">
-                    ${safeStats.sample_data?.visi_misi?.length || 0}
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="fas fa-bullseye"></i>
                 </div>
-                <p style="text-align: center; color: #6c757d; font-size: 0.875rem;">
-                    Visi misi aktif
-                </p>
+                <div class="stat-content">
+                    <h3 class="stat-number">${safeStats.sample_data?.visi_misi?.length || 0}</h3>
+                    <p class="stat-label">Visi Misi</p>
+                    <small class="stat-description">Visi misi aktif</small>
+                </div>
             </div>
-            <div class="chart-card">
-                <h3 class="chart-title">Rencana Strategis</h3>
-                <div style="font-size: 2rem; font-weight: 700; color: #ffc107; text-align: center;">
-                    ${safeStats.sample_data?.rencana_strategis?.length || 0}
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <p style="text-align: center; color: #6c757d; font-size: 0.875rem;">
-                    Rencana strategis
-                </p>
+                <div class="stat-content">
+                    <h3 class="stat-number">${safeStats.sample_data?.rencana_strategis?.length || 0}</h3>
+                    <p class="stat-label">Rencana Strategis</p>
+                    <small class="stat-description">Rencana strategis</small>
+                </div>
             </div>
         </div>
         
@@ -211,42 +253,42 @@ function renderDashboard(stats) {
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h5>Visi Misi Terbaru</h5>
+                        <h5><i class="fas fa-bullseye"></i> Visi Misi Terbaru</h5>
                         ${safeStats.sample_data?.visi_misi?.length > 0 ? 
                             safeStats.sample_data.visi_misi.slice(0, 3).map(item => `
-                                <div style="padding: 0.5rem; border-left: 3px solid #007bff; margin-bottom: 0.5rem; background: #f8f9fa;">
-                                    <strong>Tahun ${item.tahun || 'N/A'}</strong><br>
-                                    <small>${item.visi?.substring(0, 100) || 'Tidak ada deskripsi'}${item.visi?.length > 100 ? '...' : ''}</small>
+                                <div class="data-item">
+                                    <strong>Tahun ${item.tahun || 'N/A'}</strong>
+                                    <small>${item.visi?.substring(0, 120) || 'Tidak ada deskripsi'}${item.visi?.length > 120 ? '...' : ''}</small>
                                 </div>
                             `).join('') : 
-                            `<div style="padding: 1rem; text-align: center; background: #f8f9fa; border-radius: 4px;">
-                                <i class="fas fa-info-circle" style="color: #6c757d; margin-bottom: 0.5rem;"></i>
-                                <p class="text-muted" style="margin: 0;">Belum ada data visi misi. <a href="#" onclick="window.app?.navigateToPage?.('visi-misi')">Tambah data visi misi</a></p>
+                            `<div class="empty-state">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Belum ada data visi misi. <a href="#" onclick="navigateToPage('visi-misi')">Tambah data visi misi</a></p>
                             </div>`
                         }
                     </div>
                     <div class="col-md-6">
-                        <h5>Rencana Strategis Terbaru</h5>
+                        <h5><i class="fas fa-chart-line"></i> Rencana Strategis Terbaru</h5>
                         ${safeStats.sample_data?.rencana_strategis?.length > 0 ? 
                             safeStats.sample_data.rencana_strategis.slice(0, 3).map(item => `
-                                <div style="padding: 0.5rem; border-left: 3px solid #28a745; margin-bottom: 0.5rem; background: #f8f9fa;">
-                                    <strong>${item.nama_rencana || 'Rencana Strategis'}</strong><br>
-                                    <small>${item.deskripsi?.substring(0, 100) || 'Tidak ada deskripsi'}${item.deskripsi?.length > 100 ? '...' : ''}</small>
+                                <div class="data-item" style="border-left-color: #28a745;">
+                                    <strong>${item.nama_rencana || 'Rencana Strategis'}</strong>
+                                    <small>${item.deskripsi?.substring(0, 120) || 'Tidak ada deskripsi'}${item.deskripsi?.length > 120 ? '...' : ''}</small>
                                 </div>
                             `).join('') : 
-                            `<div style="padding: 1rem; text-align: center; background: #f8f9fa; border-radius: 4px;">
-                                <i class="fas fa-info-circle" style="color: #6c757d; margin-bottom: 0.5rem;"></i>
-                                <p class="text-muted" style="margin: 0;">Belum ada data rencana strategis. <a href="#" onclick="window.app?.navigateToPage?.('rencana-strategis')">Tambah rencana strategis</a></p>
+                            `<div class="empty-state">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Belum ada data rencana strategis. <a href="#" onclick="navigateToPage('rencana-strategis')">Tambah rencana strategis</a></p>
                             </div>`
                         }
                     </div>
                 </div>
                 
                 ${safeStats.total_risks === 0 ? `
-                <div style="margin-top: 1rem; padding: 1rem; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
-                    <h6 style="color: #856404; margin-bottom: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> Mulai Kelola Risiko</h6>
-                    <p style="color: #856404; margin: 0; font-size: 0.875rem;">
-                        Belum ada data risiko yang terdaftar. <a href="#" onclick="window.app?.navigateToPage?.('risk-input')" style="color: #856404; font-weight: 600;">Mulai input data risiko</a> untuk memulai manajemen risiko organisasi Anda.
+                <div class="alert-info">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Mulai Kelola Risiko</h6>
+                    <p>
+                        Belum ada data risiko yang terdaftar. <a href="#" onclick="navigateToPage('risk-input')">Mulai input data risiko</a> untuk memulai manajemen risiko organisasi Anda.
                     </p>
                 </div>
                 ` : ''}
@@ -395,4 +437,8 @@ window.dashboardModule = {
     loadDashboard,
     loadTestData
 };
+
+// Set flag to indicate dashboard module is ready
+window.dashboardModuleReady = true;
+console.log('Dashboard module exported and ready');
 

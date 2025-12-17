@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Debug Endpoint</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Test Debug Endpoint</h1>
+    
+    <button class="btn" onclick="testDebugEndpoint()">Test /api/sasaran-strategi/debug</button>
+    <button class="btn" onclick="testMainEndpoint()">Test /api/sasaran-strategi (with auth)</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testDebugEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="result">Testing debug endpoint...</div>';
+            
+            try {
+                const response = await fetch('/api/sasaran-strategi/debug');
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="result ${response.ok ? 'success' : 'error'}">
+                        <h3>${response.ok ? '✅' : '❌'} Debug Endpoint Test</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Success:</strong> ${data.success}</p>
+                        <p><strong>Count:</strong> ${data.count}</p>
+                        ${data.sample ? `
+                            <p><strong>Sample Perspektif:</strong> ${data.sample.perspektif}</p>
+                            <p><strong>Sample TOWS ID:</strong> ${data.sample.tows_strategi_id}</p>
+                        ` : ''}
+                        <h4>Full Response:</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testMainEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="result">Testing main endpoint...</div>';
+            
+            try {
+                const response = await fetch('/api/sasaran-strategi');
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="result ${response.ok ? 'success' : 'error'}">
+                        <h3>${response.ok ? '✅' : '❌'} Main Endpoint Test</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        ${response.ok ? `
+                            <p><strong>Count:</strong> ${data.length}</p>
+                            ${data[0] ? `
+                                <p><strong>First Item Perspektif:</strong> ${data[0].perspektif}</p>
+                                <p><strong>First Item TOWS:</strong> ${data[0].swot_tows_strategi?.tipe_strategi || 'null'}</p>
+                            ` : ''}
+                        ` : `
+                            <p><strong>Error:</strong> ${data.error || JSON.stringify(data)}</p>
+                        `}
+                        <h4>Response:</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run debug test
+        document.addEventListener('DOMContentLoaded', testDebugEndpoint);
+    </script>
+</body>
+</html>

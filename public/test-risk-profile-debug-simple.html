@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Debug Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Risk Profile Debug Simple</h1>
+    
+    <button class="btn" onclick="testDirectAPI()">Test Direct API</button>
+    <button class="btn" onclick="testWithApiCall()">Test with apiCall</button>
+    <button class="btn" onclick="testRiskProfileModule()">Test Risk Profile Module</button>
+    
+    <div id="result"></div>
+    <div id="risk-profile-content"></div>
+
+    <script>
+        // Test direct API call
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Testing direct API...</div>';
+            
+            try {
+                const response = await fetch('/api/debug-risk-profile');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Direct API result:', data);
+                
+                resultDiv.innerHTML = `<div class="success">✓ Direct API: ${data.length} items</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Direct API Error: ${error.message}</div>`;
+                console.error('Direct API Error:', error);
+            }
+        }
+
+        // Test with apiCall function
+        async function testWithApiCall() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Testing with apiCall...</div>';
+            
+            try {
+                // Define simple apiCall function
+                window.apiCall = async function(endpoint) {
+                    const response = await fetch(endpoint);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return await response.json();
+                };
+                
+                const data = await window.apiCall('/api/debug-risk-profile');
+                console.log('apiCall result:', data);
+                
+                resultDiv.innerHTML = `<div class="success">✓ apiCall: ${data.length} items</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ apiCall Error: ${error.message}</div>`;
+                console.error('apiCall Error:', error);
+            }
+        }
+
+        // Test Risk Profile Module
+        async function testRiskProfileModule() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Testing Risk Profile Module...</div>';
+            
+            try {
+                // Setup apiCall if not exists
+                if (!window.apiCall && !window.app) {
+                    window.apiCall = async function(endpoint) {
+                        const response = await fetch(endpoint);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return await response.json();
+                    };
+                }
+                
+                // Load the script
+                const script = document.createElement('script');
+                script.src = '/js/risk-profile.js';
+                script.onload = async function() {
+                    try {
+                        if (typeof RiskProfileModule !== 'undefined') {
+                            await RiskProfileModule.load();
+                            resultDiv.innerHTML = `<div class="success">✓ Risk Profile Module loaded successfully!</div>`;
+                        } else {
+                            resultDiv.innerHTML = `<div class="error">❌ RiskProfileModule not found</div>`;
+                        }
+                    } catch (moduleError) {
+                        resultDiv.innerHTML = `<div class="error">❌ Module Error: ${moduleError.message}</div>`;
+                        console.error('Module Error:', moduleError);
+                    }
+                };
+                script.onerror = function() {
+                    resultDiv.innerHTML = `<div class="error">❌ Failed to load risk-profile.js</div>`;
+                };
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Setup Error: ${error.message}</div>`;
+                console.error('Setup Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard Simple</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>Test Dashboard Simple</h1>
+        <button onclick="testDashboard()" style="padding: 10px 20px; margin: 10px;">Test Dashboard</button>
+        <button onclick="testEndpoint()" style="padding: 10px 20px; margin: 10px;">Test Endpoint</button>
+        
+        <div id="debug" style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; white-space: pre-wrap;"></div>
+        
+        <div id="dashboard-content" style="margin-top: 20px;">
+            <!-- Dashboard content will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        function log(msg) {
+            const debug = document.getElementById('debug');
+            debug.textContent += new Date().toLocaleTimeString() + ': ' + msg + '\n';
+            console.log(msg);
+        }
+
+        async function testEndpoint() {
+            log('Testing endpoint /api/dashboard/public');
+            try {
+                const response = await fetch('/api/dashboard/public');
+                log('Response status: ' + response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Data received: ' + JSON.stringify(data, null, 2));
+                } else {
+                    const error = await response.text();
+                    log('Error: ' + error);
+                }
+            } catch (error) {
+                log('Exception: ' + error.message);
+            }
+        }
+
+        async function testDashboard() {
+            log('Testing dashboard function...');
+            
+            // Load dashboard.js manually
+            const script = document.createElement('script');
+            script.src = '/js/dashboard.js';
+            script.onload = async () => {
+                log('Dashboard.js loaded');
+                log('Dashboard module available: ' + !!window.dashboardModule);
+                
+                if (window.dashboardModule && window.dashboardModule.loadDashboard) {
+                    log('Calling loadDashboard...');
+                    try {
+                        await window.dashboardModule.loadDashboard();
+                        log('Dashboard loaded successfully!');
+                    } catch (error) {
+                        log('Error loading dashboard: ' + error.message);
+                    }
+                } else {
+                    log('Dashboard module not available');
+                }
+            };
+            script.onerror = () => {
+                log('Failed to load dashboard.js');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>

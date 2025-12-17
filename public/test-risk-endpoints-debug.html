@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Management Endpoints - Debug</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .endpoint-test {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .endpoint-test h3 {
+            margin: 0 0 10px 0;
+            color: #8B0000;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .btn {
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 12px;
+        }
+        .btn:hover {
+            background-color: #6B0000;
+        }
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+        .data-preview {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bug"></i> Test Risk Management Endpoints - Debug Mode</h1>
+        <p>Testing semua endpoint API risk management untuk debugging.</p>
+
+        <button class="btn" onclick="testAllEndpoints()">Test All Endpoints</button>
+        <button class="btn" onclick="clearResults()">Clear Results</button>
+
+        <!-- Risk Profile Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-chart-bar"></i> Risk Profile Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/reports/risk-profile</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/reports/risk-profile', 'risk-profile')">Test</button>
+            <div id="risk-profile-result"></div>
+        </div>
+
+        <!-- Residual Risk Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-chart-pie"></i> Residual Risk Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/reports/residual-risk</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/reports/residual-risk', 'residual-risk')">Test</button>
+            <div id="residual-risk-result"></div>
+        </div>
+
+        <!-- KRI Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-gauge-high"></i> KRI Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/kri</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/kri', 'kri')">Test</button>
+            <div id="kri-result"></div>
+        </div>
+
+        <!-- Loss Event Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-exclamation-triangle"></i> Loss Event Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/loss-event</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/loss-event', 'loss-event')">Test</button>
+            <div id="loss-event-result"></div>
+        </div>
+
+        <!-- EWS Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-triangle-exclamation"></i> EWS Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/ews</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/ews', 'ews')">Test</button>
+            <div id="ews-result"></div>
+        </div>
+
+        <!-- Risk Register Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-table-list"></i> Risk Register Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/reports/risk-register</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/reports/risk-register', 'risk-register')">Test</button>
+            <div id="risk-register-result"></div>
+        </div>
+
+        <!-- Debug Endpoint -->
+        <div class="endpoint-test">
+            <h3><i class="fas fa-bug"></i> Debug Risk Endpoint</h3>
+            <p><strong>Endpoint:</strong> <code>/api/risks/debug</code></p>
+            <button class="btn btn-small" onclick="testEndpoint('/api/risks/debug', 'debug')">Test</button>
+            <div id="debug-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test individual endpoint
+        async function testEndpoint(endpoint, resultId) {
+            const resultDiv = document.getElementById(resultId + '-result');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing endpoint: ' + endpoint + '</div>';
+                
+                const startTime = Date.now();
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                let resultHtml = `<div class="success">✓ SUCCESS (${responseTime}ms)</div>`;
+                resultHtml += `<div class="info">Status: ${response.status} ${response.statusText}</div>`;
+                resultHtml += `<div class="info">Data Count: ${Array.isArray(data) ? data.length : (data ? 1 : 0)}</div>`;
+                
+                if (data && (Array.isArray(data) ? data.length > 0 : true)) {
+                    const preview = Array.isArray(data) ? data.slice(0, 2) : data;
+                    resultHtml += `<div class="data-preview">${JSON.stringify(preview, null, 2)}</div>`;
+                }
+                
+                resultDiv.innerHTML = resultHtml;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">✗ ERROR: ${error.message}</div>
+                    <div class="info">Endpoint: ${endpoint}</div>
+                `;
+            }
+        }
+
+        // Test all endpoints
+        async function testAllEndpoints() {
+            const endpoints = [
+                { url: '/api/reports/risk-profile', id: 'risk-profile' },
+                { url: '/api/reports/residual-risk', id: 'residual-risk' },
+                { url: '/api/kri', id: 'kri' },
+                { url: '/api/loss-event', id: 'loss-event' },
+                { url: '/api/ews', id: 'ews' },
+                { url: '/api/reports/risk-register', id: 'risk-register' },
+                { url: '/api/risks/debug', id: 'debug' }
+            ];
+
+            for (const endpoint of endpoints) {
+                await testEndpoint(endpoint.url, endpoint.id);
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+
+        // Clear all results
+        function clearResults() {
+            const resultDivs = document.querySelectorAll('[id$="-result"]');
+            resultDivs.forEach(div => {
+                div.innerHTML = '';
+            });
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('Risk Management Endpoints Debug Tool loaded');
+        });
+    </script>
+</body>
+</html>

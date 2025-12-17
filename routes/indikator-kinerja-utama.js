@@ -4,44 +4,167 @@ const { supabase } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
-// Get all indikator kinerja utama
-router.get('/', authenticateUser, async (req, res) => {
+// Public endpoint for testing (no auth required) - MUST BE FIRST
+router.get('/public', async (req, res) => {
   try {
-    const { rencana_strategis_id, sasaran_strategi_id } = req.query;
+    console.log('=== INDIKATOR KINERJA UTAMA PUBLIC ENDPOINT ===');
     
-    let query = supabase
+    // Import supabaseAdmin directly
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    // Use the same query structure as the main endpoint
+    let query = client
       .from('indikator_kinerja_utama')
-      .select('*, rencana_strategis(nama_rencana, organization_id), sasaran_strategi(sasaran, perspektif)')
+      .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
       .order('created_at', { ascending: false });
-
-    // Apply organization filter through rencana_strategis relationship
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      // Get accessible rencana_strategis IDs first
-      let rsQuery = supabase
-        .from('rencana_strategis')
-        .select('id');
-      rsQuery = buildOrganizationFilter(rsQuery, req.user);
-      const { data: accessibleRS } = await rsQuery;
-      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
-      
-      if (accessibleRSIds.length > 0) {
-        query = query.in('rencana_strategis_id', accessibleRSIds);
-      } else {
-        // No accessible rencana strategis, return empty
-        return res.json([]);
-      }
-    }
-
-    if (rencana_strategis_id) {
-      query = query.eq('rencana_strategis_id', rencana_strategis_id);
-    }
-    if (sasaran_strategi_id) {
-      query = query.eq('sasaran_strategi_id', sasaran_strategi_id);
-    }
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Indikator kinerja utama public query error:', error);
+      throw error;
+    }
+
+    console.log('Public query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0
+    });
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Public endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Debug endpoint - temporary (no auth required) - MUST BE SECOND
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('=== INDIKATOR KINERJA UTAMA DEBUG ENDPOINT ===');
+    
+    // Import supabaseAdmin directly
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    // Use the same query structure as the main endpoint
+    let query = client
+      .from('indikator_kinerja_utama')
+      .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
+      .order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Indikator kinerja utama debug query error:', error);
+      throw error;
+    }
+
+    console.log('Debug query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      firstItem: data && data.length > 0 ? {
+        id: data[0].id,
+        indikator: data[0].indikator,
+        organization_id: data[0].organization_id
+      } : null
+    });
+
+    res.json({
+      success: true,
+      count: data?.length || 0,
+      data: data || [],
+      message: 'Indikator kinerja utama debug data retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get all indikator kinerja utama
+router.get('/', authenticateUser, async (req, res) => {
+  try {
+    const { rencana_strategis_id, sasaran_strategi_id, tahun } = req.query;
+    
+    console.log('=== INDIKATOR KINERJA UTAMA REQUEST ===');
+    console.log('User info:', {
+      id: req.user.id,
+      email: req.user.email,
+      isSuperAdmin: req.user.isSuperAdmin,
+      role: req.user.role,
+      organizations: req.user.organizations
+    });
+    console.log('Query params:', { rencana_strategis_id, sasaran_strategi_id, tahun });
+
+    // Use supabaseAdmin for better reliability
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+
+    let query = client
+      .from('indikator_kinerja_utama')
+      .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
+      .order('created_at', { ascending: false });
+
+    // NEW APPROACH: Filter by organization_id only, ignore user_id
+    // This allows showing all data within the organization regardless of who created it
+    const isAdminOrSuper = req.user.isSuperAdmin || 
+                          req.user.role === 'superadmin' || 
+                          req.user.role === 'admin';
+
+    if (isAdminOrSuper) {
+      console.log('Admin/Super admin - showing all data (no filter)');
+      // Admin can see all data, no filter needed
+    } else {
+      // Regular users - filter by organization_id instead of user_id
+      if (req.user.organizations && req.user.organizations.length > 0) {
+        console.log('Regular user - filtering by organization_id:', req.user.organizations);
+        query = query.in('organization_id', req.user.organizations);
+      } else {
+        console.log('Regular user - no organizations, showing all data');
+        // If no organization info, show all data (fallback)
+      }
+    }
+
+    // Apply additional filters
+    if (rencana_strategis_id) {
+      query = query.eq('rencana_strategis_id', rencana_strategis_id);
+      console.log('Applied rencana_strategis filter:', rencana_strategis_id);
+    }
+    if (sasaran_strategi_id) {
+      query = query.eq('sasaran_strategi_id', sasaran_strategi_id);
+      console.log('Applied sasaran_strategi filter:', sasaran_strategi_id);
+    }
+    if (tahun) {
+      query = query.or(`baseline_tahun.eq.${tahun},target_tahun.eq.${tahun}`);
+      console.log('Applied tahun filter:', tahun);
+    }
+
+    console.log('Executing query...');
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Supabase query error:', error);
+      throw error;
+    }
+    
+    console.log('Query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      firstItem: data && data.length > 0 ? {
+        id: data[0].id,
+        indikator: data[0].indikator,
+        organization_id: data[0].organization_id,
+        rencana_strategis: data[0].rencana_strategis?.nama_rencana
+      } : null
+    });
+    console.log('=== END REQUEST ===');
+    
     res.json(data || []);
   } catch (error) {
     console.error('Indikator kinerja utama error:', error);
@@ -217,6 +340,8 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 module.exports = router;
 

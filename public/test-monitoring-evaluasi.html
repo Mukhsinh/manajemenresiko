@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Monitoring & Evaluasi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-tasks"></i> Test Monitoring & Evaluasi</h1>
+        
+        <div class="test-buttons" style="margin-bottom: 2rem;">
+            <button onclick="testDebugEndpoint()" class="btn btn-info">
+                <i class="fas fa-bug"></i> Test Debug Endpoint
+            </button>
+            <button onclick="testMainEndpoint()" class="btn btn-primary">
+                <i class="fas fa-database"></i> Test Main Endpoint
+            </button>
+            <button onclick="loadMonitoringEvaluasi()" class="btn btn-success">
+                <i class="fas fa-play"></i> Load Full Module
+            </button>
+        </div>
+
+        <div id="test-results" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3>Test Results:</h3>
+            <pre id="results-content">Click a test button to see results...</pre>
+        </div>
+
+        <div id="monitoring-evaluasi-content">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/monitoring-evaluasi.js"></script>
+
+    <script>
+        async function testDebugEndpoint() {
+            try {
+                document.getElementById('results-content').textContent = 'Testing debug endpoint...';
+                
+                const response = await fetch('/api/debug-monitoring');
+                const data = await response.json();
+                
+                document.getElementById('results-content').textContent = 
+                    `Debug Endpoint Result:\n${JSON.stringify(data, null, 2)}`;
+                    
+                console.log('Debug endpoint result:', data);
+            } catch (error) {
+                document.getElementById('results-content').textContent = 
+                    `Debug Endpoint Error:\n${error.message}`;
+                console.error('Debug endpoint error:', error);
+            }
+        }
+
+        async function testMainEndpoint() {
+            try {
+                document.getElementById('results-content').textContent = 'Testing main endpoint...';
+                
+                const data = await apiCall('/api/monitoring-evaluasi');
+                
+                document.getElementById('results-content').textContent = 
+                    `Main Endpoint Result:\n${JSON.stringify(data, null, 2)}`;
+                    
+                console.log('Main endpoint result:', data);
+            } catch (error) {
+                document.getElementById('results-content').textContent = 
+                    `Main Endpoint Error:\n${error.message}`;
+                console.error('Main endpoint error:', error);
+            }
+        }
+
+        async function loadMonitoringEvaluasi() {
+            try {
+                document.getElementById('results-content').textContent = 'Loading monitoring evaluasi module...';
+                
+                await MonitoringEvaluasi.load();
+                
+                document.getElementById('results-content').textContent = 
+                    'Monitoring evaluasi module loaded successfully!';
+                    
+                console.log('Module loaded successfully');
+            } catch (error) {
+                document.getElementById('results-content').textContent = 
+                    `Module Load Error:\n${error.message}`;
+                console.error('Module load error:', error);
+            }
+        }
+
+        // Auto-load on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, ready for testing');
+        });
+    </script>
+</body>
+</html>

@@ -8,6 +8,12 @@ const logger = require('./logger');
  */
 async function getUserOrganizations(userId) {
   try {
+    // Validate userId
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+      logger.warn('getUserOrganizations: Invalid userId provided');
+      return [];
+    }
+
     const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('organization_users')
@@ -19,7 +25,20 @@ async function getUserOrganizations(userId) {
       return [];
     }
 
-    return (data || []).map(item => item.organization_id);
+    // Filter out any invalid organization IDs
+    const validOrgIds = (data || [])
+      .map(item => item.organization_id)
+      .filter(id => {
+        return id && 
+               typeof id === 'string' && 
+               id.trim() !== '' && 
+               id !== 'undefined' && 
+               id !== 'null' &&
+               /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      });
+
+    logger.info(`getUserOrganizations: Found ${validOrgIds.length} valid organizations for user ${userId}`);
+    return validOrgIds;
   } catch (error) {
     logger.error('Error in getUserOrganizations:', error);
     return [];
@@ -106,21 +125,52 @@ async function getUserRole(user) {
  * @param {object} query - Supabase query builder
  * @param {object} user - User object from req.user (must have isSuperAdmin, role and organizations)
  * @param {string} organizationIdColumn - Column name for organization_id (default: 'organization_id')
- * @returns {object} Query with organization filter applied (or original query if superadmin/admin)
+ * @returns {object} Query with organization filter applied
  */
 function buildOrganizationFilter(query, user, organizationIdColumn = 'organization_id') {
-  // Superadmin and admin can see everything
-  if (user.isSuperAdmin || user.role === 'superadmin' || user.role === 'admin') {
-    return query;
-  }
+  try {
+    // Validate user object
+    if (!user) {
+      logger.warn('buildOrganizationFilter: No user provided');
+      return query.eq(organizationIdColumn, '00000000-0000-0000-0000-000000000000');
+    }
 
-  // If user has organizations, filter by them
-  if (user.organizations && user.organizations.length > 0) {
-    return query.in(organizationIdColumn, user.organizations);
-  }
+    // Only superadmin can see everything (not regular admin)
+    if (user.isSuperAdmin || user.role === 'superadmin') {
+      logger.info('buildOrganizationFilter: Superadmin access, no filter applied');
+      return query;
+    }
 
-  // User has no organizations, return query that will return empty result
-  return query.eq(organizationIdColumn, '00000000-0000-0000-0000-000000000000'); // Non-existent UUID
+    // All other users (including admin) must be filtered by their organizations
+    if (user.organizations && Array.isArray(user.organizations) && user.organizations.length > 0) {
+      // Filter out any undefined, null, or empty values
+      const validOrgIds = user.organizations.filter(id => {
+        return id && 
+               typeof id === 'string' && 
+               id.trim() !== '' && 
+               id !== 'undefined' && 
+               id !== 'null' &&
+               /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      });
+
+      if (validOrgIds.length > 0) {
+        logger.info(`buildOrganizationFilter: Applying filter for ${validOrgIds.length} organizations`);
+        return query.in(organizationIdColumn, validOrgIds);
+      } else {
+        logger.warn('buildOrganizationFilter: User has organizations but none are valid UUIDs');
+      }
+    } else {
+      logger.warn('buildOrganizationFilter: User has no organizations or invalid organizations array');
+    }
+
+    // User has no valid organizations, return query that will return empty result
+    logger.info('buildOrganizationFilter: No valid organizations, returning empty filter');
+    return query.eq(organizationIdColumn, '00000000-0000-0000-0000-000000000000'); // Non-existent UUID
+  } catch (error) {
+    logger.error('buildOrganizationFilter error:', error);
+    // Return safe empty filter on error
+    return query.eq(organizationIdColumn, '00000000-0000-0000-0000-000000000000');
+  }
 }
 
 module.exports = {

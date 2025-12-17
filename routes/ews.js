@@ -33,7 +33,7 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('early_warning_system')
       .select(`
         *,
@@ -41,9 +41,10 @@ router.get('/:id', authenticateUser, async (req, res) => {
           name
         )
       `)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
-      .single();
+      .eq('id', req.params.id);
+    
+    query = buildOrganizationFilter(query, req.user);
+    const { data, error } = await query.single();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'EWS tidak ditemukan' });
@@ -104,6 +105,7 @@ router.post('/', authenticateUser, async (req, res) => {
       .from('early_warning_system')
       .insert({
         user_id: req.user.id,
+        organization_id: req.user.organization_id,
         kode: finalKode,
         nama_sistem,
         kategori_risiko_id,
@@ -158,7 +160,7 @@ router.put('/:id', authenticateUser, async (req, res) => {
       }
     }
 
-    const { data, error } = await supabase
+    let updateQuery = supabase
       .from('early_warning_system')
       .update({
         nama_sistem,
@@ -173,8 +175,10 @@ router.put('/:id', authenticateUser, async (req, res) => {
         notifikasi_email,
         updated_at: new Date().toISOString()
       })
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('id', req.params.id);
+    
+    updateQuery = buildOrganizationFilter(updateQuery, req.user);
+    const { data, error } = await updateQuery
       .select()
       .single();
 
@@ -190,11 +194,13 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    let deleteQuery = supabase
       .from('early_warning_system')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('id', req.params.id);
+    
+    deleteQuery = buildOrganizationFilter(deleteQuery, req.user);
+    const { error } = await deleteQuery;
 
     if (error) throw error;
     res.json({ message: 'EWS berhasil dihapus' });

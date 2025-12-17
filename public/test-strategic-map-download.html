@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Strategic Map Download</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-section h3 { margin-top: 0; color: #333; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .result { margin-top: 15px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        
+        /* Strategic Map Mock */
+        .strategic-map-mock {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 20px 0;
+        }
+        
+        .perspektif-group {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .perspektif-group h4 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sasaran-node {
+            padding: 1rem;
+            margin: 0.5rem;
+            border-radius: 8px;
+            color: white;
+            display: inline-block;
+            min-width: 200px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Strategic Map Download Features</h1>
+        
+        <div class="test-section">
+            <h3>Mock Strategic Map Visualization</h3>
+            <div id="strategic-map-visualization" class="strategic-map-mock">
+                <div class="perspektif-group">
+                    <h4 style="color: #3498db;">
+                        <i class="fas fa-layer-group"></i> Eksternal Stakeholder
+                    </h4>
+                    <div class="sasaran-node" style="background: #3498db;">
+                        Meningkatkan keselamatan pasien untuk RS-2025-001
+                    </div>
+                </div>
+                
+                <div class="perspektif-group">
+                    <h4 style="color: #f39c12;">
+                        <i class="fas fa-layer-group"></i> Learning & Growth
+                    </h4>
+                    <div class="sasaran-node" style="background: #f39c12;">
+                        Meningkatkan kepuasan pasien untuk RS-2025-001
+                    </div>
+                    <div class="sasaran-node" style="background: #f39c12;">
+                        Mengoptimalkan sumber daya untuk RS-2025-001
+                    </div>
+                </div>
+                
+                <div class="perspektif-group">
+                    <h4 style="color: #27ae60;">
+                        <i class="fas fa-layer-group"></i> Financial
+                    </h4>
+                    <div class="sasaran-node" style="background: #27ae60;">
+                        Meningkatkan keselamatan pasien untuk RS-2025-001
+                    </div>
+                    <div class="sasaran-node" style="background: #27ae60;">
+                        Mengoptimalkan sumber daya untuk RS-2025-001
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Download Options</h3>
+            <div class="dropdown" style="position: relative; display: inline-block;">
+                <button class="btn btn-primary dropdown-toggle" onclick="toggleDownloadMenu()">
+                    <i class="fas fa-download"></i> Unduh Map
+                </button>
+                <div class="dropdown-menu" id="download-menu" style="display: none;">
+                    <a class="dropdown-item" href="#" onclick="testDownloadExcel()">
+                        <i class="fas fa-file-excel" style="color: #28a745;"></i> Download Excel
+                    </a>
+                    <a class="dropdown-item" href="#" onclick="testDownloadImage()">
+                        <i class="fas fa-image" style="color: #007bff;"></i> Download Gambar
+                    </a>
+                    <a class="dropdown-item" href="#" onclick="testDownloadPDF()">
+                        <i class="fas fa-file-pdf" style="color: #dc3545;"></i> Download PDF
+                    </a>
+                </div>
+            </div>
+            <div id="result-download" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDownloadMenu() {
+            const menu = document.getElementById('download-menu');
+            if (menu) {
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('download-menu');
+            const button = event.target.closest('.dropdown');
+            if (menu && !button) {
+                menu.style.display = 'none';
+            }
+        });
+
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result-download');
+            result.className = `result ${type}`;
+            result.textContent = message;
+            result.style.display = 'block';
+        }
+
+        async function testDownloadExcel() {
+            try {
+                showResult('Testing Excel download...', 'info');
+                
+                // Test the backend endpoint directly
+                const response = await fetch('/api/strategic-map/actions/test-export/b3d6295f-4d6e-431b-9e0c-ca0ed7599177');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `strategic-map-test-${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                toggleDownloadMenu();
+                showResult('Excel file berhasil diunduh!', 'success');
+            } catch (error) {
+                console.error('Download Excel error:', error);
+                showResult('Error downloading Excel: ' + error.message, 'error');
+            }
+        }
+
+        async function testDownloadImage() {
+            try {
+                showResult('Testing Image download...', 'info');
+                
+                const visualization = document.getElementById('strategic-map-visualization');
+                if (!visualization) {
+                    throw new Error('Visualization not found');
+                }
+
+                if (window.html2canvas) {
+                    const canvas = await html2canvas(visualization, {
+                        backgroundColor: '#ffffff',
+                        scale: 2,
+                        logging: false
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = `strategic-map-${new Date().toISOString().split('T')[0]}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                    
+                    toggleDownloadMenu();
+                    showResult('Image berhasil diunduh!', 'success');
+                } else {
+                    throw new Error('html2canvas library not loaded');
+                }
+            } catch (error) {
+                console.error('Download Image error:', error);
+                showResult('Error downloading image: ' + error.message, 'error');
+            }
+        }
+
+        async function testDownloadPDF() {
+            try {
+                showResult('Testing PDF download...', 'info');
+                
+                if (window.jsPDF) {
+                    const { jsPDF } = window.jsPDF;
+                    const doc = new jsPDF();
+                    
+                    // Add title
+                    doc.setFontSize(20);
+                    doc.text('Strategic Map', 20, 30);
+                    
+                    // Add date
+                    doc.setFontSize(12);
+                    doc.text(`Generated: ${new Date().toLocaleDateString('id-ID')}`, 20, 45);
+                    
+                    // Add content
+                    doc.text('Rencana Strategis: Peningkatan Kualitas Pelayanan Medis', 20, 60);
+                    
+                    let yPosition = 80;
+                    
+                    // Add perspektif sections
+                    const perspektifs = [
+                        { name: 'Eksternal Stakeholder', items: ['Meningkatkan keselamatan pasien untuk RS-2025-001'] },
+                        { name: 'Learning & Growth', items: ['Meningkatkan kepuasan pasien untuk RS-2025-001', 'Mengoptimalkan sumber daya untuk RS-2025-001'] },
+                        { name: 'Financial', items: ['Meningkatkan keselamatan pasien untuk RS-2025-001', 'Mengoptimalkan sumber daya untuk RS-2025-001'] }
+                    ];
+                    
+                    perspektifs.forEach(perspektif => {
+                        // Add perspektif header
+                        doc.setFontSize(14);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(perspektif.name, 20, yPosition);
+                        yPosition += 10;
+                        
+                        // Add sasaran items
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+                        perspektif.items.forEach((item, index) => {
+                            const wrappedText = doc.splitTextToSize(`${index + 1}. ${item}`, 160);
+                            doc.text(wrappedText, 25, yPosition);
+                            yPosition += wrappedText.length * 5 + 5;
+                        });
+                        
+                        yPosition += 10;
+                    });
+                    
+                    // Save the PDF
+                    doc.save(`strategic-map-test-${new Date().toISOString().split('T')[0]}.pdf`);
+                    
+                    toggleDownloadMenu();
+                    showResult('PDF berhasil diunduh!', 'success');
+                } else {
+                    throw new Error('jsPDF library not loaded');
+                }
+            } catch (error) {
+                console.error('Download PDF error:', error);
+                showResult('Error downloading PDF: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

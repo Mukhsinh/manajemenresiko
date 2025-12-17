@@ -60,17 +60,31 @@ const AIAssistant = {
 
     async checkAvailability() {
         try {
-            const api = window.app ? window.app.apiCall : window.apiCall;
+            const api = window.apiCall;
+            if (typeof api !== 'function') {
+                console.warn('API function not available for availability check');
+                this.state.isAvailable = false;
+                this.setStatus('API tidak tersedia', 'warning');
+                return;
+            }
+
             const response = await api('/api/ai-assistant/status');
-            this.state.isAvailable = response.available || false;
+            this.state.isAvailable = response?.available || false;
             
             if (!this.state.isAvailable) {
                 this.setStatus('Layanan AI belum tersedia', 'warning');
+            } else {
+                this.setStatus('');
             }
         } catch (error) {
             console.error('AI availability check error:', error);
             this.state.isAvailable = false;
-            this.setStatus('Tidak dapat memeriksa ketersediaan AI', 'error');
+            
+            if (error.message.includes('401') || error.message.includes('403')) {
+                this.setStatus('Silakan login untuk menggunakan AI', 'warning');
+            } else {
+                this.setStatus('Tidak dapat memeriksa ketersediaan AI', 'error');
+            }
         }
     },
 
@@ -116,7 +130,12 @@ const AIAssistant = {
         this.setStatus('AI sedang memproses...', 'loading');
 
         try {
-            const api = window.app ? window.app.apiCall : window.apiCall;
+            // Check if apiCall function is available
+            const api = window.apiCall;
+            if (typeof api !== 'function') {
+                throw new Error('API function tidak tersedia. Silakan refresh halaman.');
+            }
+
             const response = await api('/api/ai-assistant/chat', {
                 method: 'POST',
                 body: {
@@ -125,7 +144,7 @@ const AIAssistant = {
                 }
             });
 
-            if (response.success && response.message) {
+            if (response && response.success && response.message) {
                 // Add AI response to UI
                 this.addMessage('assistant', response.message);
 
@@ -142,11 +161,25 @@ const AIAssistant = {
 
                 this.setStatus('');
             } else {
-                throw new Error(response.error || 'Tidak ada respons dari AI');
+                const errorMsg = response?.error || 'Tidak ada respons dari AI';
+                throw new Error(errorMsg);
             }
         } catch (error) {
             console.error('AI chat error:', error);
-            this.addMessage('assistant', `Maaf, terjadi kesalahan: ${error.message || 'Tidak dapat memproses permintaan Anda'}`);
+            
+            let userMessage = 'Maaf, terjadi kesalahan saat memproses permintaan Anda.';
+            
+            if (error.message.includes('500')) {
+                userMessage = 'Terjadi kesalahan server. Silakan coba lagi dalam beberapa saat.';
+            } else if (error.message.includes('401') || error.message.includes('403')) {
+                userMessage = 'Sesi Anda telah berakhir. Silakan login kembali.';
+            } else if (error.message.includes('API function')) {
+                userMessage = error.message;
+            } else {
+                userMessage = `Kesalahan: ${error.message}`;
+            }
+            
+            this.addMessage('assistant', userMessage);
             this.setStatus('Gagal mengirim pesan', 'error');
         } finally {
             this.setLoading(false);

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Direct</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1>Test Rencana Strategis Direct</h1>
+    
+    <div style="background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h3>Test Status</h3>
+        <div id="test-status">Loading...</div>
+    </div>
+
+    <div id="rencana-strategis-content" style="border: 2px dashed #ccc; padding: 20px; margin: 20px 0;">
+        <p style="text-align: center; color: #666;">Form akan muncul di sini...</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 4px; max-height: 300px; overflow-y: auto;">
+        <h4>Console Log</h4>
+        <div id="console-log" style="font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <!-- Load scripts in correct order -->
+    <script>
+        // Mock window.app and apiCall for testing
+        window.apiCall = async function(url, options = {}) {
+            const method = options.method || 'GET';
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            const fetchOptions = {
+                method,
+                headers
+            };
+            
+            if (options.body) {
+                fetchOptions.body = JSON.stringify(options.body);
+            }
+            
+            const response = await fetch(url, fetchOptions);
+            return await response.json();
+        };
+
+        window.app = {
+            apiCall: window.apiCall
+        };
+
+        // Console logging
+        let logs = [];
+        function addLog(type, ...args) {
+            const message = `${new Date().toLocaleTimeString()} [${type}]: ${args.join(' ')}`;
+            logs.push(message);
+            const logElement = document.getElementById('console-log');
+            if (logElement) {
+                logElement.innerHTML = logs.slice(-20).join('\n');
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            addLog('LOG', ...args);
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addLog('ERROR', ...args);
+            originalError.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            addLog('WARN', ...args);
+            originalWarn.apply(console, args);
+        };
+
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('test-status');
+            if (statusElement) {
+                statusElement.innerHTML = `<span style="color: ${type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue'}">${message}</span>`;
+            }
+        }
+
+        async function testDirect() {
+            try {
+                updateStatus('Testing API endpoints...');
+                
+                // Test API endpoints first
+                const rencanaResponse = await fetch('/api/rencana-strategis/public');
+                const rencanaData = await rencanaResponse.json();
+                console.log('Rencana data:', rencanaData.length, 'records');
+                
+                const visiMisiResponse = await fetch('/api/visi-misi/public');
+                const visiMisiData = await visiMisiResponse.json();
+                console.log('Visi misi data:', visiMisiData.length, 'records');
+                
+                const kodeResponse = await fetch('/api/rencana-strategis/generate/kode/public');
+                const kodeData = await kodeResponse.json();
+                console.log('Generated kode:', kodeData.kode);
+                
+                updateStatus('API endpoints working. Loading module...');
+                
+                // Check if module is available
+                if (typeof RencanaStrategisModule === 'undefined') {
+                    throw new Error('RencanaStrategisModule not defined');
+                }
+                
+                console.log('Module found, calling load...');
+                await RencanaStrategisModule.load();
+                
+                updateStatus('Module loaded. Checking form...', 'success');
+                
+                // Check if form was rendered
+                setTimeout(() => {
+                    const form = document.getElementById('rs-form');
+                    const inputs = document.querySelectorAll('#rencana-strategis-content input, #rencana-strategis-content select, #rencana-strategis-content textarea');
+                    
+                    if (form && inputs.length > 0) {
+                        updateStatus(`SUCCESS: Form rendered with ${inputs.length} inputs!`, 'success');
+                        console.log('Form elements found:', inputs.length);
+                        
+                        // List all inputs
+                        inputs.forEach((input, index) => {
+                            console.log(`Input ${index + 1}: ${input.tagName} - ID: ${input.id} - Type: ${input.type || 'N/A'}`);
+                        });
+                    } else {
+                        updateStatus('ERROR: Form not rendered properly', 'error');
+                        console.log('Form check failed:', {
+                            formFound: !!form,
+                            inputCount: inputs.length,
+                            containerContent: document.getElementById('rencana-strategis-content').innerHTML.length
+                        });
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                updateStatus(`ERROR: ${error.message}`, 'error');
+                console.error('Test failed:', error);
+            }
+        }
+    </script>
+
+    <!-- Load the actual module -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        // Start test after scripts load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, starting test...');
+            setTimeout(testDirect, 500);
+        });
+    </script>
+</body>
+</html>

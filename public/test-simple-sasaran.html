@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple Sasaran Strategi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin: 4px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .table th { background-color: #f8f9fa; font-weight: 600; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.25rem; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bullseye"></i> Test Sasaran Strategi - Perspektif Display</h1>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn btn-primary" onclick="loadData()">
+                <i class="fas fa-sync"></i> Load Data
+            </button>
+            <button class="btn btn-success" onclick="testPerspektifRendering()">
+                <i class="fas fa-eye"></i> Test Perspektif Rendering
+            </button>
+        </div>
+
+        <div id="status"></div>
+        <div id="content">
+            <div class="loading">Click "Load Data" to start</div>
+        </div>
+    </div>
+
+    <script>
+        let sasaranData = [];
+
+        async function loadData() {
+            const statusDiv = document.getElementById('status');
+            const contentDiv = document.getElementById('content');
+            
+            statusDiv.innerHTML = '<div class="status">Loading data from /api/sasaran-strategi/simple...</div>';
+            contentDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            
+            try {
+                const response = await fetch('/api/sasaran-strategi/simple');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                sasaranData = data || [];
+                
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        <i class="fas fa-check-circle"></i> 
+                        Successfully loaded ${sasaranData.length} sasaran strategi
+                    </div>
+                `;
+                
+                renderTable();
+                
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Error loading data: ${error.message}
+                    </div>
+                `;
+                contentDiv.innerHTML = `<div style="color: red; text-align: center;">Failed to load data</div>`;
+            }
+        }
+
+        function renderTable() {
+            const contentDiv = document.getElementById('content');
+            
+            if (sasaranData.length === 0) {
+                contentDiv.innerHTML = '<div class="loading">No data available</div>';
+                return;
+            }
+            
+            const html = `
+                <h3>Data Sasaran Strategi (${sasaranData.length} items)</h3>
+                <div style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">No</th>
+                                <th style="width: 25%;">Rencana Strategis</th>
+                                <th style="width: 35%;">Sasaran</th>
+                                <th style="width: 15%;">Perspektif</th>
+                                <th style="width: 20%;">TOWS Strategi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sasaranData.map((item, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.rencana_strategis?.nama_rencana || '-'}</td>
+                                    <td>${item.sasaran}</td>
+                                    <td>
+                                        ${renderPerspektif(item.perspektif)}
+                                    </td>
+                                    <td>
+                                        ${renderTows(item.swot_tows_strategi)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            contentDiv.innerHTML = html;
+        }
+
+        function renderPerspektif(perspektif) {
+            if (!perspektif) {
+                return '<span style="color: #999; font-style: italic;">Tidak ada perspektif</span>';
+            }
+            
+            const label = getPerspektifLabel(perspektif);
+            const style = getPerspektifStyle(perspektif);
+            
+            return `
+                <span class="badge" style="${style}">
+                    ${label}
+                </span>
+            `;
+        }
+
+        function renderTows(towsData) {
+            if (!towsData || !towsData.tipe_strategi) {
+                return '<span style="color: #999; font-style: italic;">Tidak terkait TOWS</span>';
+            }
+            
+            const style = getTowsStyle(towsData.tipe_strategi);
+            const strategi = towsData.strategi || '';
+            
+            return `
+                <div>
+                    <span class="badge" style="${style}">
+                        ${towsData.tipe_strategi}
+                    </span><br>
+                    <small style="color: #666;">
+                        ${strategi.length > 60 ? strategi.substring(0, 60) + '...' : strategi}
+                    </small>
+                </div>
+            `;
+        }
+
+        function getPerspektifLabel(perspektif) {
+            const labels = {
+                'ES': 'Eksternal Stakeholder',
+                'IBP': 'Internal Business Process',
+                'LG': 'Learning & Growth',
+                'Fin': 'Financial'
+            };
+            return labels[perspektif] || perspektif;
+        }
+
+        function getPerspektifStyle(perspektif) {
+            const styles = {
+                'ES': 'background-color: #17a2b8; color: white;',
+                'IBP': 'background-color: #28a745; color: white;',
+                'LG': 'background-color: #ffc107; color: #212529;',
+                'Fin': 'background-color: #dc3545; color: white;'
+            };
+            return styles[perspektif] || 'background-color: #6c757d; color: white;';
+        }
+
+        function getTowsStyle(tipeStrategi) {
+            const styles = {
+                'SO': 'background-color: #28a745; color: white;',
+                'WO': 'background-color: #17a2b8; color: white;',
+                'ST': 'background-color: #ffc107; color: #212529;',
+                'WT': 'background-color: #dc3545; color: white;'
+            };
+            return styles[tipeStrategi] || 'background-color: #6c757d; color: white;';
+        }
+
+        function testPerspektifRendering() {
+            const testData = [
+                { perspektif: 'ES', label: 'Eksternal Stakeholder' },
+                { perspektif: 'IBP', label: 'Internal Business Process' },
+                { perspektif: 'LG', label: 'Learning & Growth' },
+                { perspektif: 'Fin', label: 'Financial' },
+                { perspektif: null, label: 'No perspektif' }
+            ];
+            
+            const html = `
+                <h3>Perspektif Rendering Test</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Input</th>
+                            <th>Expected Label</th>
+                            <th>Rendered Badge</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${testData.map(test => `
+                            <tr>
+                                <td><code>${test.perspektif || 'null'}</code></td>
+                                <td>${test.label}</td>
+                                <td>${renderPerspektif(test.perspektif)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
+        }
+
+        // Auto-load on page ready
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis - Simple Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .chip {
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .chip-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 0;
+            font-size: 10px;
+        }
+        .input-with-button {
+            display: flex;
+            gap: 10px;
+        }
+        .input-with-button input {
+            flex: 1;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis - Form Input</h1>
+        
+        <div class="debug-info">
+            <h3>Debug Information</h3>
+            <div id="debug-output">Loading...</div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Tambah Rencana Strategis</h3>
+                <p>Hubungkan sasaran strategis dengan indikator kinerja utama</p>
+            </div>
+            
+            <form id="rs-form" class="form-grid">
+                <div class="form-group">
+                    <label>Kode Rencana</label>
+                    <input type="text" id="rs-kode" value="" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>Misi Strategis</label>
+                    <select id="rs-misi">
+                        <option value="">Pilih salah satu</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nama Rencana Strategis</label>
+                    <input type="text" id="rs-nama" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label>Periode Mulai</label>
+                    <input type="date" id="rs-mulai" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label>Periode Selesai</label>
+                    <input type="date" id="rs-selesai" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label>Status</label>
+                    <input type="text" id="rs-status" value="Draft">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Deskripsi Rencana</label>
+                    <textarea id="rs-deskripsi" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Target</label>
+                    <textarea id="rs-target" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Indikator Kinerja</label>
+                    <input type="text" id="rs-indikator" value="">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Tambah Sasaran Strategis</label>
+                    <div class="input-with-button">
+                        <input type="text" id="rs-sasaran-input" placeholder="Masukkan sasaran">
+                        <button type="button" class="btn btn-primary btn-sm" id="rs-sasaran-add">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="chip-group" id="rs-sasaran-list">
+                        <p style="color: #666; font-style: italic;">Belum ada data</p>
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Tambah Indikator Kinerja Utama</label>
+                    <div class="input-with-button">
+                        <input type="text" id="rs-indikator-input" placeholder="Masukkan indikator">
+                        <button type="button" class="btn btn-primary btn-sm" id="rs-indikator-add">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="chip-group" id="rs-indikator-list">
+                        <p style="color: #666; font-style: italic;">Belum ada data</p>
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <button type="submit" class="btn btn-primary">Simpan Rencana</button>
+                    <button type="button" id="rs-reset-btn" class="btn btn-secondary">Reset</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-card">
+            <h3>Daftar Rencana Strategis</h3>
+            <div class="table-container">
+                <table id="rs-table">
+                    <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Rencana</th>
+                            <th>Misi</th>
+                            <th>Sasaran</th>
+                            <th>Indikator</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rs-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let debugInfo = [];
+        let rencanaData = [];
+        let visiMisiData = [];
+        let sasaranList = [];
+        let indikatorList = [];
+        
+        function addDebugInfo(message) {
+            debugInfo.push(`${new Date().toLocaleTimeString()}: ${message}`);
+            document.getElementById('debug-output').innerHTML = debugInfo.map(info => `<div>${info}</div>`).join('');
+        }
+
+        async function loadData() {
+            try {
+                addDebugInfo('Loading data...');
+                
+                // Load visi misi
+                const visiMisiResponse = await fetch('/api/visi-misi');
+                visiMisiData = await visiMisiResponse.json();
+                addDebugInfo(`Loaded ${visiMisiData.length} visi misi records`);
+                
+                // Load rencana strategis
+                const rencanaResponse = await fetch('/api/rencana-strategis/public');
+                rencanaData = await rencanaResponse.json();
+                addDebugInfo(`Loaded ${rencanaData.length} rencana strategis records`);
+                
+                // Generate kode
+                const kodeResponse = await fetch('/api/rencana-strategis/generate/kode');
+                const kodeData = await kodeResponse.json();
+                document.getElementById('rs-kode').value = kodeData.kode;
+                addDebugInfo(`Generated kode: ${kodeData.kode}`);
+                
+                // Populate misi dropdown
+                populateMisiDropdown();
+                
+                // Populate table
+                populateTable();
+                
+                addDebugInfo('Data loading completed');
+                
+            } catch (error) {
+                addDebugInfo(`ERROR loading data: ${error.message}`);
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function populateMisiDropdown() {
+            const select = document.getElementById('rs-misi');
+            select.innerHTML = '<option value="">Pilih salah satu</option>';
+            
+            visiMisiData.forEach(visiMisi => {
+                if (visiMisi.misi) {
+                    const misiArray = visiMisi.misi.split('\n').filter(m => m.trim());
+                    misiArray.forEach((misi, index) => {
+                        let cleanMisi = misi.trim().replace(/^\d+\.\s*/, '');
+                        const value = `${visiMisi.id}|${index}|${encodeURIComponent(cleanMisi)}`;
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = cleanMisi;
+                        select.appendChild(option);
+                    });
+                }
+            });
+            
+            addDebugInfo(`Populated ${select.options.length - 1} misi options`);
+        }
+
+        function populateTable() {
+            const tbody = document.getElementById('rs-table-body');
+            
+            if (rencanaData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Belum ada rencana strategis</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = rencanaData.map(item => {
+                const sasaran = Array.isArray(item.sasaran_strategis) ? 
+                    item.sasaran_strategis.slice(0, 3).join(', ') : '-';
+                const indikator = Array.isArray(item.indikator_kinerja_utama) ? 
+                    item.indikator_kinerja_utama.slice(0, 3).join(', ') : '-';
+                
+                return `
+                    <tr>
+                        <td>${item.kode}</td>
+                        <td>${item.nama_rencana || '-'}</td>
+                        <td>${item.nama_rencana || '-'}</td>
+                        <td>${sasaran}</td>
+                        <td>${indikator}</td>
+                        <td><span class="badge badge-${item.status === 'Aktif' ? 'success' : 'warning'}">${item.status || 'Draft'}</span></td>
+                        <td>
+                            <button class="btn btn-edit btn-sm" onclick="editItem('${item.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-delete btn-sm" onclick="deleteItem('${item.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function addSasaran() {
+            const input = document.getElementById('rs-sasaran-input');
+            const value = input.value.trim();
+            if (value) {
+                sasaranList.push(value);
+                input.value = '';
+                updateSasaranList();
+                addDebugInfo(`Added sasaran: ${value}`);
+            }
+        }
+
+        function addIndikator() {
+            const input = document.getElementById('rs-indikator-input');
+            const value = input.value.trim();
+            if (value) {
+                indikatorList.push(value);
+                input.value = '';
+                updateIndikatorList();
+                addDebugInfo(`Added indikator: ${value}`);
+            }
+        }
+
+        function updateSasaranList() {
+            const container = document.getElementById('rs-sasaran-list');
+            if (sasaranList.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-style: italic;">Belum ada data</p>';
+            } else {
+                container.innerHTML = sasaranList.map((item, index) => `
+                    <span class="chip">
+                        ${item}
+                        <button type="button" class="chip-remove" onclick="removeSasaran(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function updateIndikatorList() {
+            const container = document.getElementById('rs-indikator-list');
+            if (indikatorList.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-style: italic;">Belum ada data</p>';
+            } else {
+                container.innerHTML = indikatorList.map((item, index) => `
+                    <span class="chip">
+                        ${item}
+                        <button type="button" class="chip-remove" onclick="removeIndikator(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function removeSasaran(index) {
+            sasaranList.splice(index, 1);
+            updateSasaranList();
+            addDebugInfo(`Removed sasaran at index ${index}`);
+        }
+
+        function removeIndikator(index) {
+            indikatorList.splice(index, 1);
+            updateIndikatorList();
+            addDebugInfo(`Removed indikator at index ${index}`);
+        }
+
+        function resetForm() {
+            document.getElementById('rs-form').reset();
+            sasaranList = [];
+            indikatorList = [];
+            updateSasaranList();
+            updateIndikatorList();
+            loadData(); // Reload to get new kode
+            addDebugInfo('Form reset');
+        }
+
+        function editItem(id) {
+            addDebugInfo(`Edit item: ${id}`);
+            alert(`Edit functionality not implemented in this test. ID: ${id}`);
+        }
+
+        function deleteItem(id) {
+            addDebugInfo(`Delete item: ${id}`);
+            alert(`Delete functionality not implemented in this test. ID: ${id}`);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugInfo('DOM loaded, initializing...');
+            
+            // Add event listeners
+            document.getElementById('rs-sasaran-add').addEventListener('click', addSasaran);
+            document.getElementById('rs-indikator-add').addEventListener('click', addIndikator);
+            document.getElementById('rs-reset-btn').addEventListener('click', resetForm);
+            
+            document.getElementById('rs-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addDebugInfo('Form submitted (test mode - not saving)');
+                
+                // Get form data
+                const formData = {
+                    kode: document.getElementById('rs-kode').value,
+                    misi: document.getElementById('rs-misi').value,
+                    nama: document.getElementById('rs-nama').value,
+                    mulai: document.getElementById('rs-mulai').value,
+                    selesai: document.getElementById('rs-selesai').value,
+                    status: document.getElementById('rs-status').value,
+                    deskripsi: document.getElementById('rs-deskripsi').value,
+                    target: document.getElementById('rs-target').value,
+                    indikator: document.getElementById('rs-indikator').value,
+                    sasaran: sasaranList,
+                    indikatorUtama: indikatorList
+                };
+                
+                addDebugInfo(`Form data: ${JSON.stringify(formData, null, 2)}`);
+                alert('Form submitted successfully (test mode)');
+            });
+            
+            // Load initial data
+            loadData();
+        });
+    </script>
+</body>
+</html>

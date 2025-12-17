@@ -133,25 +133,37 @@ const RiskInputModule = (() => {
   async function loadRisks() {
     try {
       console.log('Loading risks data...');
-      const api = getApi();
       
-      // Try authenticated endpoint first, fallback to test endpoint
+      // Try debug endpoint first since it's working (no auth required)
       let risks;
       try {
-        risks = await api('/api/risks');
-        console.log('Risks loaded from authenticated endpoint:', risks?.length || 0);
-      } catch (authError) {
-        console.warn('Authenticated risks endpoint failed, trying test endpoint:', authError.message);
+        console.log('Trying debug endpoint...');
+        const response = await fetch('/api/risks/debug');
+        const debugResponse = await response.json();
+        console.log('Debug response:', debugResponse);
+        risks = debugResponse.data || [];
+        console.log('Risks loaded from debug endpoint:', risks?.length || 0);
+      } catch (debugError) {
+        console.warn('Debug endpoint failed, trying authenticated endpoint:', debugError.message);
         try {
-          risks = await api('/api/test-data/risks');
-          console.log('Risks loaded from test endpoint:', risks?.length || 0);
-        } catch (testError) {
-          console.error('Both risks endpoints failed:', testError.message);
-          throw new Error('Tidak dapat memuat data risiko. Silakan login terlebih dahulu.');
+          const api = getApi();
+          risks = await api('/api/risks');
+          console.log('Risks loaded from authenticated endpoint:', risks?.length || 0);
+        } catch (authError) {
+          console.warn('Authenticated endpoint failed, trying test endpoint:', authError.message);
+          try {
+            const api = getApi();
+            risks = await api('/api/test-data/risks');
+            console.log('Risks loaded from test endpoint:', risks?.length || 0);
+          } catch (testError) {
+            console.error('All risks endpoints failed:', testError.message);
+            throw new Error('Tidak dapat memuat data risiko. Silakan refresh halaman atau hubungi administrator.');
+          }
         }
       }
       
       state.risks = Array.isArray(risks) ? risks : [];
+      console.log('Final risks state:', state.risks.length);
       renderRiskTable();
     } catch (error) {
       console.error('Error loading risks:', error);
@@ -163,7 +175,7 @@ const RiskInputModule = (() => {
       if (tbody) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center text-danger">
+            <td colspan="8" class="text-center text-danger">
               <i class="fas fa-exclamation-triangle"></i> Error memuat data: ${error.message}
               <br><button onclick="window.RiskInputModule?.loadRisks?.()" class="btn btn-sm btn-primary mt-2">Coba Lagi</button>
             </td>
@@ -174,26 +186,38 @@ const RiskInputModule = (() => {
   }
 
   function renderRiskTable() {
+    console.log('renderRiskTable called with', state.risks.length, 'risks');
     const tbody = getEl('risk-input-tbody');
-    if (!tbody) return;
-    if (!state.risks.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data risiko</td></tr>';
+    if (!tbody) {
+      console.error('risk-input-tbody element not found');
       return;
     }
+    if (!state.risks.length) {
+      console.log('No risks to display');
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada data risiko</td></tr>';
+      return;
+    }
+    console.log('Rendering', state.risks.length, 'risks to table');
     tbody.innerHTML = state.risks
       .map((risk) => {
-        const planName = risk.rencana_strategis?.nama_rencana || '-';
         const unitName = risk.master_work_units?.name || '-';
+        const categoryName = risk.master_risk_categories?.name || '-';
+        const ownerName = risk.pemilik_risiko_nama || '-';
+        const riskType = risk.jenis_risiko || 'Threat';
+        
         return `
       <tr>
         <td>${risk.no || '-'}</td>
         <td>${risk.kode_risiko || '-'}</td>
+        <td><span class="risk-type ${riskType.toLowerCase()}">${riskType}</span></td>
         <td>${unitName}</td>
-        <td>${planName}</td>
+        <td>${categoryName}</td>
+        <td>${ownerName}</td>
         <td><span class="status-badge ${risk.status_risiko?.toLowerCase() || 'active'}">${risk.status_risiko || 'Active'}</span></td>
         <td class="table-actions">
-          <button class="btn btn-edit btn-sm" onclick="RiskInputModule.edit('${risk.id}')"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-delete btn-sm" onclick="RiskInputModule.remove('${risk.id}')"><i class="fas fa-trash"></i></button>
+          <button class="btn btn-view btn-sm" onclick="RiskInputModule.view('${risk.id}')" title="Lihat Detail"><i class="fas fa-eye"></i></button>
+          <button class="btn btn-edit btn-sm" onclick="RiskInputModule.edit('${risk.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-delete btn-sm" onclick="RiskInputModule.remove('${risk.id}')" title="Hapus"><i class="fas fa-trash"></i></button>
         </td>
       </tr>`;
       })
@@ -556,10 +580,569 @@ const RiskInputModule = (() => {
     return item ? item.id : null;
   }
 
+  function view(id) {
+    const risk = state.risks.find((item) => item.id === id);
+    if (!risk) {
+      alert('Data risiko tidak ditemukan');
+      return;
+    }
+    showRiskDetailModal(risk);
+  }
+
+  function showRiskDetailModal(risk) {
+    // Create modal HTML
+    const modalHtml = `
+      <div id="risk-detail-modal" class="modal-overlay" onclick="closeRiskDetailModal(event)">
+        <div class="modal-content risk-detail-modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="fas fa-eye"></i> Detail Data Risiko</h3>
+            <button class="modal-close" onclick="closeRiskDetailModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            ${generateRiskDetailContent(risk)}
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeRiskDetailModal()">Tutup</button>
+            <button class="btn btn-primary" onclick="RiskInputModule.edit('${risk.id}'); closeRiskDetailModal();">Edit Data</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('risk-detail-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Add modal styles if not exists
+    addModalStyles();
+  }
+
+  function generateRiskDetailContent(risk) {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '-';
+      try {
+        return new Date(dateStr).toLocaleDateString('id-ID');
+      } catch {
+        return dateStr;
+      }
+    };
+
+    const formatCurrency = (amount) => {
+      if (!amount) return '-';
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR'
+      }).format(amount);
+    };
+
+    const formatArray = (arr) => {
+      if (!Array.isArray(arr) || arr.length === 0) return '-';
+      return arr.join(', ');
+    };
+
+    return `
+      <div class="risk-detail-sections">
+        <!-- Informasi Dasar -->
+        <div class="detail-section">
+          <h4><i class="fas fa-info-circle"></i> Informasi Dasar</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>No. Risiko:</label>
+              <span>${risk.no || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Kode Risiko:</label>
+              <span>${risk.kode_risiko || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Status Risiko:</label>
+              <span class="status-badge ${risk.status_risiko?.toLowerCase() || 'active'}">${risk.status_risiko || 'Active'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Jenis Risiko:</label>
+              <span class="risk-type ${risk.jenis_risiko?.toLowerCase() || 'threat'}">${risk.jenis_risiko || 'Threat'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Unit Kerja:</label>
+              <span>${risk.master_work_units?.name || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Kategori Risiko:</label>
+              <span>${risk.master_risk_categories?.name || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Rencana Strategis:</label>
+              <span>${risk.rencana_strategis?.nama_rencana || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Tanggal Registrasi:</label>
+              <span>${formatDate(risk.tanggal_registrasi)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deskripsi Risiko -->
+        <div class="detail-section">
+          <h4><i class="fas fa-file-text"></i> Deskripsi Risiko</h4>
+          <div class="detail-grid">
+            <div class="detail-item full-width">
+              <label>Sasaran:</label>
+              <span>${risk.sasaran || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Penyebab Risiko:</label>
+              <span>${risk.penyebab_risiko || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Dampak Risiko:</label>
+              <span>${risk.dampak_risiko || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Pihak Terkait:</label>
+              <span>${risk.pihak_terkait || '-'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Identifikasi Risiko -->
+        <div class="detail-section">
+          <h4><i class="fas fa-search"></i> Identifikasi Risiko</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Tanggal Identifikasi:</label>
+              <span>${formatDate(risk.identifikasi_tanggal)}</span>
+            </div>
+            <div class="detail-item">
+              <label>Indikator Risiko:</label>
+              <span>${risk.identifikasi_indikator || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Deskripsi Identifikasi:</label>
+              <span>${risk.identifikasi_deskripsi || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Akar Penyebab:</label>
+              <span>${risk.identifikasi_akar_penyebab || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Faktor Positif/Kontrol:</label>
+              <span>${risk.identifikasi_faktor_positif || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Deskripsi Dampak:</label>
+              <span>${risk.identifikasi_deskripsi_dampak || '-'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pemilik Risiko -->
+        <div class="detail-section">
+          <h4><i class="fas fa-user"></i> Pemilik Risiko</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Nama:</label>
+              <span>${risk.pemilik_risiko_nama || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Jabatan:</label>
+              <span>${risk.pemilik_risiko_jabatan || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>No. HP:</label>
+              <span>${risk.pemilik_risiko_no_hp || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Email:</label>
+              <span>${risk.pemilik_risiko_email || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Strategi Mitigasi:</label>
+              <span>${risk.pemilik_risiko_strategi || '-'}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Rencana Penanganan:</label>
+              <span>${risk.pemilik_risiko_penanganan || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Estimasi Biaya:</label>
+              <span>${formatCurrency(risk.pemilik_risiko_biaya)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keterkaitan Strategis -->
+        <div class="detail-section">
+          <h4><i class="fas fa-link"></i> Keterkaitan Strategis</h4>
+          <div class="detail-grid">
+            <div class="detail-item full-width">
+              <label>Sasaran Strategis:</label>
+              <span>${formatArray(risk.sasaran_strategis_refs)}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Indikator Kinerja Utama:</label>
+              <span>${formatArray(risk.indikator_kinerja_refs)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analisis Risiko -->
+        ${risk.risk_inherent_analysis || risk.risk_residual_analysis ? `
+        <div class="detail-section">
+          <h4><i class="fas fa-chart-bar"></i> Analisis Risiko</h4>
+          <div class="analysis-grid">
+            ${risk.risk_inherent_analysis ? `
+            <div class="analysis-card">
+              <h5>Analisis Inheren</h5>
+              <div class="analysis-details">
+                <div class="analysis-item">
+                  <label>Probabilitas:</label>
+                  <span>${risk.risk_inherent_analysis.probability || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Dampak:</label>
+                  <span>${risk.risk_inherent_analysis.impact || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Nilai Risiko:</label>
+                  <span>${risk.risk_inherent_analysis.risk_value || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Level Risiko:</label>
+                  <span class="risk-level ${risk.risk_inherent_analysis.risk_level?.toLowerCase().replace(' ', '-') || ''}">${risk.risk_inherent_analysis.risk_level || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Dampak Finansial:</label>
+                  <span>${formatCurrency(risk.risk_inherent_analysis.financial_impact)}</span>
+                </div>
+              </div>
+            </div>
+            ` : ''}
+            ${risk.risk_residual_analysis ? `
+            <div class="analysis-card">
+              <h5>Analisis Residual</h5>
+              <div class="analysis-details">
+                <div class="analysis-item">
+                  <label>Probabilitas:</label>
+                  <span>${risk.risk_residual_analysis.probability || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Dampak:</label>
+                  <span>${risk.risk_residual_analysis.impact || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Nilai Risiko:</label>
+                  <span>${risk.risk_residual_analysis.risk_value || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Level Risiko:</label>
+                  <span class="risk-level ${risk.risk_residual_analysis.risk_level?.toLowerCase().replace(' ', '-') || ''}">${risk.risk_residual_analysis.risk_level || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Dampak Finansial:</label>
+                  <span>${formatCurrency(risk.risk_residual_analysis.financial_impact)}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Departemen:</label>
+                  <span>${risk.risk_residual_analysis.department || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Status Review:</label>
+                  <span>${risk.risk_residual_analysis.review_status || '-'}</span>
+                </div>
+                <div class="analysis-item">
+                  <label>Review Berikutnya:</label>
+                  <span>${formatDate(risk.risk_residual_analysis.next_review_date)}</span>
+                </div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Metadata -->
+        <div class="detail-section">
+          <h4><i class="fas fa-info"></i> Metadata</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Dibuat:</label>
+              <span>${formatDate(risk.created_at)}</span>
+            </div>
+            <div class="detail-item">
+              <label>Diperbarui:</label>
+              <span>${formatDate(risk.updated_at)}</span>
+            </div>
+            <div class="detail-item">
+              <label>ID Organisasi:</label>
+              <span>${risk.organization_id || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>ID User:</label>
+              <span>${risk.user_id || '-'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function addModalStyles() {
+    // Check if styles already exist
+    if (document.getElementById('risk-detail-modal-styles')) return;
+
+    const styles = `
+      <style id="risk-detail-modal-styles">
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        .risk-detail-modal {
+          background: white;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 1000px;
+          max-height: 90vh;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+          padding: 20px;
+          border-bottom: 1px solid #eee;
+          display: flex;
+          justify-content: between;
+          align-items: center;
+          background-color: #f8f9fa;
+        }
+
+        .modal-header h3 {
+          margin: 0;
+          color: #333;
+          font-size: 1.25rem;
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: #666;
+          margin-left: auto;
+        }
+
+        .modal-close:hover {
+          color: #333;
+        }
+
+        .modal-body {
+          padding: 20px;
+          max-height: calc(90vh - 140px);
+          overflow-y: auto;
+        }
+
+        .modal-footer {
+          padding: 15px 20px;
+          border-top: 1px solid #eee;
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          background-color: #f8f9fa;
+        }
+
+        .detail-section {
+          margin-bottom: 25px;
+          border: 1px solid #e9ecef;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+
+        .detail-section h4 {
+          margin: 0;
+          padding: 12px 15px;
+          background-color: #f1f3f4;
+          color: #495057;
+          font-size: 1rem;
+          border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-grid {
+          padding: 15px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+
+        .detail-item {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .detail-item.full-width {
+          grid-column: 1 / -1;
+        }
+
+        .detail-item label {
+          font-weight: 600;
+          color: #495057;
+          margin-bottom: 4px;
+          font-size: 0.875rem;
+        }
+
+        .detail-item span {
+          color: #212529;
+          padding: 6px 0;
+          word-wrap: break-word;
+        }
+
+        .status-badge {
+          display: inline-block;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+
+        .status-badge.active {
+          background-color: #d4edda;
+          color: #155724;
+        }
+
+        .status-badge.inactive {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+
+        .risk-type.threat {
+          color: #dc3545;
+          font-weight: 500;
+        }
+
+        .risk-type.opportunity {
+          color: #28a745;
+          font-weight: 500;
+        }
+
+        .analysis-grid {
+          padding: 15px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+
+        .analysis-card {
+          border: 1px solid #dee2e6;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+
+        .analysis-card h5 {
+          margin: 0;
+          padding: 10px 15px;
+          background-color: #e9ecef;
+          color: #495057;
+          font-size: 0.9rem;
+        }
+
+        .analysis-details {
+          padding: 15px;
+        }
+
+        .analysis-item {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #f1f3f4;
+        }
+
+        .analysis-item:last-child {
+          margin-bottom: 0;
+          padding-bottom: 0;
+          border-bottom: none;
+        }
+
+        .analysis-item label {
+          font-weight: 500;
+          color: #6c757d;
+          font-size: 0.875rem;
+        }
+
+        .risk-level {
+          font-weight: 600;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 0.75rem;
+        }
+
+        .risk-level.low-risk {
+          background-color: #d4edda;
+          color: #155724;
+        }
+
+        .risk-level.medium-risk {
+          background-color: #fff3cd;
+          color: #856404;
+        }
+
+        .risk-level.high-risk {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+
+        .risk-level.extreme-high {
+          background-color: #721c24;
+          color: white;
+        }
+
+        @media (max-width: 768px) {
+          .risk-detail-modal {
+            width: 95%;
+            margin: 10px;
+          }
+
+          .detail-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .analysis-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      </style>
+    `;
+
+    document.head.insertAdjacentHTML('beforeend', styles);
+  }
+
+  // Global function to close modal
+  window.closeRiskDetailModal = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('risk-detail-modal');
+    if (modal) {
+      modal.remove();
+    }
+  };
+
   return {
     load,
     edit,
-    remove
+    remove,
+    view
   };
 })();
 
@@ -579,7 +1162,7 @@ async function loadRiskInputData() {
             <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data risiko</h5>
             <p>${error.message}</p>
             <button onclick="loadRiskInputData()" class="btn btn-primary">Coba Lagi</button>
-            <button onclick="window.open('/test-auth-fix.html', '_blank')" class="btn btn-secondary">Test Auth</button>
+            <button onclick="window.open('/test-risk-input-simple.html', '_blank')" class="btn btn-secondary">Test Risk Input</button>
           </div>
         </div>
       `;
@@ -587,6 +1170,24 @@ async function loadRiskInputData() {
   }
 }
 
+// Make functions available globally
 window.loadRiskInputData = loadRiskInputData;
 window.RiskInputModule = RiskInputModule;
+
+// Auto-load when page is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Check if we're on the risk-input page
+    if (document.getElementById('risk-input-tbody')) {
+      console.log('Risk input page detected, auto-loading data...');
+      setTimeout(() => loadRiskInputData(), 1000);
+    }
+  });
+} else {
+  // DOM already loaded
+  if (document.getElementById('risk-input-tbody')) {
+    console.log('Risk input page detected, auto-loading data...');
+    setTimeout(() => loadRiskInputData(), 1000);
+  }
+}
 

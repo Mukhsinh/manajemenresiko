@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test KRI Frontend Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .kri-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .kri-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .kri-code { font-weight: bold; color: #007bff; }
+        .kri-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-aman { background: #d4edda; color: #155724; }
+        .status-peringatan { background: #fff3cd; color: #856404; }
+        .status-kritis { background: #f8d7da; color: #721c24; }
+        .kri-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .chart-container { width: 300px; height: 300px; margin: 20px auto; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Test KRI Frontend - Simple</h1>
+    
+    <div class="test-section">
+        <h2>1. Test KRI API (No Auth)</h2>
+        <button class="btn" onclick="testKRIAPI()">Load KRI Data</button>
+        <div id="kri-api-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. KRI Cards Display</h2>
+        <div id="kri-cards-container"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. KRI Status Chart</h2>
+        <div class="chart-container">
+            <canvas id="kri-status-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let kriData = [];
+
+        async function testKRIAPI() {
+            const resultDiv = document.getElementById('kri-api-result');
+            try {
+                resultDiv.innerHTML = '<p>Loading...</p>';
+                
+                const response = await fetch(`${API_BASE}/api/kri/test-no-auth`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+                kriData = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI API berhasil!</h4>
+                        <p><strong>Total data:</strong> ${kriData.length}</p>
+                    </div>
+                `;
+                
+                // Render cards and chart
+                renderKRICards();
+                renderKRIChart();
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error KRI API</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderKRICards() {
+            const container = document.getElementById('kri-cards-container');
+            
+            if (kriData.length === 0) {
+                container.innerHTML = '<p>Tidak ada data KRI</p>';
+                return;
+            }
+            
+            const cardsHTML = kriData.map(item => {
+                const statusClass = getStatusClass(item.status_indikator);
+                
+                return `
+                    <div class="kri-card">
+                        <div class="kri-header">
+                            <span class="kri-code">${item.kode || '-'}</span>
+                            <span class="kri-status ${statusClass}">${item.status_indikator || '-'}</span>
+                        </div>
+                        <h4>${item.nama_indikator || 'Nama tidak tersedia'}</h4>
+                        <p><strong>Kategori:</strong> ${item.master_risk_categories?.name || '-'}</p>
+                        <p><strong>Unit Kerja:</strong> ${item.master_work_units?.name || '-'}</p>
+                        <p><strong>Nilai Aktual:</strong> ${item.nilai_aktual || '-'}</p>
+                        <p><strong>Target:</strong> ${item.target_nilai || '-'}</p>
+                        <div style="display: flex; gap: 10px; font-size: 12px; margin-top: 10px;">
+                            <span>Aman: ${item.batas_aman || '-'}</span>
+                            <span>Peringatan: ${item.batas_peringatan || '-'}</span>
+                            <span>Kritis: ${item.batas_kritis || '-'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = `<div class="kri-grid">${cardsHTML}</div>`;
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Aman': return 'status-aman';
+                case 'Peringatan': 
+                case 'Hati-hati': return 'status-peringatan';
+                case 'Kritis': return 'status-kritis';
+                default: return '';
+            }
+        }
+
+        function renderKRIChart() {
+            const ctx = document.getElementById('kri-status-chart');
+            if (!ctx) return;
+            
+            // Calculate status distribution
+            const statusCount = {
+                'Aman': 0,
+                'Peringatan': 0,
+                'Kritis': 0
+            };
+            
+            kriData.forEach(item => {
+                const status = item.status_indikator;
+                if (status === 'Aman') {
+                    statusCount.Aman++;
+                } else if (status === 'Peringatan' || status === 'Hati-hati') {
+                    statusCount.Peringatan++;
+                } else if (status === 'Kritis') {
+                    statusCount.Kritis++;
+                }
+            });
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aman', 'Peringatan', 'Kritis'],
+                    datasets: [{
+                        data: [statusCount.Aman, statusCount.Peringatan, statusCount.Kritis],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribusi Status KRI'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Auto load on page load
+        window.onload = function() {
+            testKRIAPI();
+        };
+    </script>
+</body>
+</html>

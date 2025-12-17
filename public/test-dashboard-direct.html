@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard Direct</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .test-buttons {
+            margin: 1rem 0;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bug"></i> Test Dashboard Direct</h1>
+            <p>Test langsung fungsi dashboard tanpa app.js</p>
+            
+            <div class="test-buttons">
+                <button class="btn" onclick="testDirectDashboard()">
+                    <i class="fas fa-play"></i> Test Dashboard Function
+                </button>
+                <button class="btn" onclick="testEndpoints()">
+                    <i class="fas fa-network-wired"></i> Test All Endpoints
+                </button>
+                <button class="btn" onclick="clearDebug()">
+                    <i class="fas fa-trash"></i> Clear Debug
+                </button>
+            </div>
+        </div>
+
+        <div id="debug-info" class="debug-info">
+            Debug info akan muncul di sini...
+        </div>
+
+        <div id="dashboard-content">
+            <!-- Dashboard content will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Load dashboard.js directly -->
+    <script src="/js/dashboard.js"></script>
+    
+    <script>
+        function log(message) {
+            const debugEl = document.getElementById('debug-info');
+            const timestamp = new Date().toLocaleTimeString();
+            debugEl.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+
+        function clearDebug() {
+            document.getElementById('debug-info').textContent = '';
+            document.getElementById('dashboard-content').innerHTML = '';
+        }
+
+        async function testEndpoints() {
+            log('=== TESTING ALL ENDPOINTS ===');
+            
+            const endpoints = [
+                '/api/dashboard/public',
+                '/api/test-data/dashboard',
+                '/api/dashboard',
+                '/api/simple/dashboard'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    log(`Testing: ${endpoint}`);
+                    const response = await fetch(endpoint);
+                    log(`Status: ${response.status} ${response.statusText}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`Success! Total risks: ${data.total_risks || 0}`);
+                        log(`Visi Misi: ${data.sample_data?.visi_misi?.length || 0}`);
+                        log(`Rencana Strategis: ${data.sample_data?.rencana_strategis?.length || 0}`);
+                    } else {
+                        const errorText = await response.text();
+                        log(`Error: ${errorText}`);
+                    }
+                } catch (error) {
+                    log(`Exception: ${error.message}`);
+                }
+                log('---');
+            }
+        }
+
+        async function testDirectDashboard() {
+            log('=== TESTING DASHBOARD FUNCTION ===');
+            
+            try {
+                // Check if dashboard module is available
+                if (typeof window.dashboardModule === 'undefined') {
+                    log('ERROR: dashboardModule not found!');
+                    return;
+                }
+                
+                log('Dashboard module found, calling loadDashboard...');
+                
+                // Call dashboard function directly
+                await window.dashboardModule.loadDashboard();
+                
+                log('Dashboard function completed successfully!');
+                
+            } catch (error) {
+                log(`ERROR in dashboard function: ${error.message}`);
+                log(`Stack: ${error.stack}`);
+            }
+        }
+
+        // Auto-run endpoint test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded, running initial tests...');
+            testEndpoints();
+        });
+    </script>
+</body>
+</html>

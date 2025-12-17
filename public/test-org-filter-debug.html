@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Organization Filter Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Organization Filter Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test KRI Organization Filter</h2>
+        <button class="btn" onclick="testKRIFilter()">Test KRI Filter</button>
+        <div id="kri-filter-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Loss Event Organization Filter</h2>
+        <button class="btn" onclick="testLossEventFilter()">Test Loss Event Filter</button>
+        <div id="loss-event-filter-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test EWS Organization Filter</h2>
+        <button class="btn" onclick="testEWSFilter()">Test EWS Filter</button>
+        <div id="ews-filter-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Risk Register Organization Filter</h2>
+        <button class="btn" onclick="testRiskRegisterFilter()">Test Risk Register Filter</button>
+        <div id="risk-register-filter-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Compare All Filters</h2>
+        <button class="btn" onclick="compareAllFilters()">Compare All</button>
+        <div id="compare-result" class="result"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        async function testKRIFilter() {
+            const resultDiv = document.getElementById('kri-filter-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing KRI organization filter...</p>';
+                
+                const data = await apiCall('/api/test-org-filter/kri');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ KRI Filter Test Result</h4>
+                        <p><strong>User ID:</strong> ${data.user.id}</p>
+                        <p><strong>User Email:</strong> ${data.user.email}</p>
+                        <p><strong>User Role:</strong> ${data.user.role}</p>
+                        <p><strong>Is SuperAdmin:</strong> ${data.user.isSuperAdmin}</p>
+                        <p><strong>User Organizations:</strong> ${JSON.stringify(data.user.organizations)}</p>
+                        <p><strong>Data Count:</strong> ${data.count}</p>
+                        
+                        ${data.data.length > 0 ? `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Kode</th>
+                                        <th>Nama Indikator</th>
+                                        <th>Organization ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.data.map(item => `
+                                        <tr>
+                                            <td>${item.id}</td>
+                                            <td>${item.kode}</td>
+                                            <td>${item.nama_indikator}</td>
+                                            <td>${item.organization_id}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        ` : '<p>⚠️ No data returned</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ KRI Filter Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testLossEventFilter() {
+            const resultDiv = document.getElementById('loss-event-filter-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing Loss Event organization filter...</p>';
+                
+                const data = await apiCall('/api/test-org-filter/loss-event');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Loss Event Filter Test Result</h4>
+                        <p><strong>User Organizations:</strong> ${JSON.stringify(data.user.organizations)}</p>
+                        <p><strong>Data Count:</strong> ${data.count}</p>
+                        
+                        ${data.data.length > 0 ? `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Kode</th>
+                                        <th>Deskripsi</th>
+                                        <th>Organization ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.data.map(item => `
+                                        <tr>
+                                            <td>${item.id}</td>
+                                            <td>${item.kode}</td>
+                                            <td>${item.deskripsi_kejadian?.substring(0, 50)}...</td>
+                                            <td>${item.organization_id}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        ` : '<p>⚠️ No data returned</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Loss Event Filter Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testEWSFilter() {
+            const resultDiv = document.getElementById('ews-filter-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing EWS organization filter...</p>';
+                
+                const data = await apiCall('/api/test-org-filter/ews');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ EWS Filter Test Result</h4>
+                        <p><strong>User Organizations:</strong> ${JSON.stringify(data.user.organizations)}</p>
+                        <p><strong>Data Count:</strong> ${data.count}</p>
+                        
+                        ${data.data.length > 0 ? `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Kode</th>
+                                        <th>Nama Sistem</th>
+                                        <th>Organization ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.data.map(item => `
+                                        <tr>
+                                            <td>${item.id}</td>
+                                            <td>${item.kode}</td>
+                                            <td>${item.nama_sistem}</td>
+                                            <td>${item.organization_id}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        ` : '<p>⚠️ No data returned</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ EWS Filter Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRiskRegisterFilter() {
+            const resultDiv = document.getElementById('risk-register-filter-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Testing Risk Register organization filter...</p>';
+                
+                const data = await apiCall('/api/test-org-filter/risk-register');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Risk Register Filter Test Result</h4>
+                        <p><strong>User Organizations:</strong> ${JSON.stringify(data.user.organizations)}</p>
+                        <p><strong>Data Count:</strong> ${data.count}</p>
+                        
+                        ${data.data.length > 0 ? `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Kode Risiko</th>
+                                        <th>Sasaran</th>
+                                        <th>Organization ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.data.map(item => `
+                                        <tr>
+                                            <td>${item.id}</td>
+                                            <td>${item.kode_risiko}</td>
+                                            <td>${item.sasaran?.substring(0, 50)}...</td>
+                                            <td>${item.organization_id}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        ` : '<p>⚠️ No data returned</p>'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Risk Register Filter Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function compareAllFilters() {
+            const resultDiv = document.getElementById('compare-result');
+            try {
+                resultDiv.innerHTML = '<p>🔄 Comparing all organization filters...</p>';
+                
+                const [kriData, lossEventData, ewsData, riskRegisterData] = await Promise.all([
+                    apiCall('/api/test-org-filter/kri'),
+                    apiCall('/api/test-org-filter/loss-event'),
+                    apiCall('/api/test-org-filter/ews'),
+                    apiCall('/api/test-org-filter/risk-register')
+                ]);
+                
+                const results = [
+                    { name: 'KRI', count: kriData.count, orgIds: [...new Set(kriData.data.map(d => d.organization_id))] },
+                    { name: 'Loss Event', count: lossEventData.count, orgIds: [...new Set(lossEventData.data.map(d => d.organization_id))] },
+                    { name: 'EWS', count: ewsData.count, orgIds: [...new Set(ewsData.data.map(d => d.organization_id))] },
+                    { name: 'Risk Register', count: riskRegisterData.count, orgIds: [...new Set(riskRegisterData.data.map(d => d.organization_id))] }
+                ];
+                
+                const userOrgs = kriData.user.organizations;
+                const allFiltered = results.every(r => 
+                    r.orgIds.length <= userOrgs.length && 
+                    r.orgIds.every(orgId => userOrgs.includes(orgId))
+                );
+                
+                resultDiv.innerHTML = `
+                    <div class="${allFiltered ? 'success' : 'warning'}">
+                        <h4>${allFiltered ? '✅' : '⚠️'} Organization Filter Comparison</h4>
+                        <p><strong>User Organizations:</strong> ${JSON.stringify(userOrgs)}</p>
+                        <p><strong>All Properly Filtered:</strong> ${allFiltered ? 'Yes' : 'No'}</p>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Data Count</th>
+                                    <th>Organization IDs</th>
+                                    <th>Properly Filtered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(r => {
+                                    const isFiltered = r.orgIds.length <= userOrgs.length && 
+                                                     r.orgIds.every(orgId => userOrgs.includes(orgId));
+                                    return `
+                                        <tr>
+                                            <td>${r.name}</td>
+                                            <td>${r.count}</td>
+                                            <td>${r.orgIds.join(', ')}</td>
+                                            <td>${isFiltered ? '✅' : '❌'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        
+                        ${!allFiltered ? `
+                            <p style="color: #856404; margin-top: 10px;">
+                                ⚠️ Beberapa endpoint tidak difilter dengan benar berdasarkan organization_id
+                            </p>
+                        ` : `
+                            <p style="color: #155724; margin-top: 10px;">
+                                🎉 Semua endpoint sudah difilter dengan benar berdasarkan organization_id!
+                            </p>
+                        `}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Comparison Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto test on load
+        window.onload = function() {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (!token) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 50px;">
+                        <h2>⚠️ Token tidak ditemukan</h2>
+                        <p>Silakan login terlebih dahulu di <a href="/index.html">halaman utama</a></p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Auto run comparison test
+            setTimeout(compareAllFilters, 1000);
+        };
+    </script>
+</body>
+</html>

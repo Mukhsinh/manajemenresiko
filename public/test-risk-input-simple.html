@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Input Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; border: none; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Risk Input Module</h1>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadRiskInputModule()">Load Risk Input Module</button>
+            <button class="btn btn-primary" onclick="testDirectFetch()">Test Direct Fetch</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="results">
+            <h2>Risk Input Table</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Kode Risiko</th>
+                        <th>Unit Kerja</th>
+                        <th>Rencana Strategis</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="risk-input-tbody">
+                    <tr>
+                        <td colspan="6" class="text-center">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/js/risk-input.js"></script>
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        async function testDirectFetch() {
+            showStatus('Testing direct fetch...', 'info');
+            
+            try {
+                const response = await fetch('/api/risks/debug');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showStatus(`Direct fetch success: ${result.count} records`, 'success');
+                    
+                    const tbody = document.getElementById('risk-input-tbody');
+                    if (result.data && result.data.length > 0) {
+                        tbody.innerHTML = result.data.map(risk => `
+                            <tr>
+                                <td>${risk.no || '-'}</td>
+                                <td>${risk.kode_risiko || '-'}</td>
+                                <td>${risk.master_work_units?.name || '-'}</td>
+                                <td>${risk.rencana_strategis?.nama_rencana || '-'}</td>
+                                <td><span class="status-badge ${risk.status_risiko?.toLowerCase() || 'active'}">${risk.status_risiko || 'Active'}</span></td>
+                                <td class="table-actions">
+                                    <button class="btn btn-view btn-sm" onclick="alert('View feature - ID: ${risk.id}')"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-edit btn-sm"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-delete btn-sm"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data risiko</td></tr>';
+                    }
+                } else {
+                    showStatus(`Direct fetch error: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Direct fetch failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadRiskInputModule() {
+            showStatus('Loading Risk Input Module...', 'info');
+            
+            try {
+                if (window.RiskInputModule) {
+                    await window.RiskInputModule.load();
+                    showStatus('Risk Input Module loaded successfully', 'success');
+                } else {
+                    showStatus('Risk Input Module not available', 'error');
+                }
+            } catch (error) {
+                showStatus(`Risk Input Module error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testDirectFetch, 500);
+        });
+    </script>
+</body>
+</html>

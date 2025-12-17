@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Final</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .test-header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        #risk-profile-content { margin-top: 20px; }
+        .test-controls { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1><i class="fas fa-chart-bar"></i> Test Risk Profile Final</h1>
+            <p>Test lengkap untuk halaman Risk Profile dengan data dari database</p>
+            
+            <div class="test-controls">
+                <button class="btn" onclick="testAPI()">1. Test API</button>
+                <button class="btn" onclick="testModule()">2. Test Module</button>
+                <button class="btn" onclick="loadFullRiskProfile()">3. Load Full Risk Profile</button>
+                <button class="btn" onclick="clearContent()">Clear</button>
+            </div>
+            
+            <div id="test-result"></div>
+        </div>
+        
+        <!-- Container untuk Risk Profile -->
+        <div id="risk-profile-content"></div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    <script>
+        // Test API endpoint
+        async function testAPI() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div class="info">Testing API endpoint...</div>';
+            
+            try {
+                const response = await fetch('/api/debug-risk-profile');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Data:', data);
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ API berhasil: ${data.length} records</div>
+                        <div class="info">Sample data: ${data[0].risk_inputs?.kode_risiko} - ${data[0].risk_level}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Tidak ada data ditemukan</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ API Error: ${error.message}</div>`;
+                console.error('API Test Error:', error);
+            }
+        }
+
+        // Test Risk Profile Module
+        async function testModule() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div class="info">Testing RiskProfileModule...</div>';
+            
+            try {
+                if (typeof RiskProfileModule === 'undefined') {
+                    throw new Error('RiskProfileModule tidak ditemukan');
+                }
+                
+                resultDiv.innerHTML = '<div class="success">✓ RiskProfileModule tersedia</div>';
+                
+                // Test module functions
+                if (typeof RiskProfileModule.load === 'function') {
+                    resultDiv.innerHTML += '<div class="success">✓ load() function tersedia</div>';
+                } else {
+                    resultDiv.innerHTML += '<div class="error">❌ load() function tidak ditemukan</div>';
+                }
+                
+                if (typeof RiskProfileModule.refresh === 'function') {
+                    resultDiv.innerHTML += '<div class="success">✓ refresh() function tersedia</div>';
+                } else {
+                    resultDiv.innerHTML += '<div class="error">❌ refresh() function tidak ditemukan</div>';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Module Error: ${error.message}</div>`;
+                console.error('Module Test Error:', error);
+            }
+        }
+
+        // Load full Risk Profile
+        async function loadFullRiskProfile() {
+            const resultDiv = document.getElementById('test-result');
+            const contentDiv = document.getElementById('risk-profile-content');
+            
+            resultDiv.innerHTML = '<div class="info">Loading full Risk Profile...</div>';
+            
+            try {
+                if (typeof RiskProfileModule === 'undefined') {
+                    throw new Error('RiskProfileModule tidak ditemukan');
+                }
+                
+                // Temporarily use debug endpoint
+                const originalFetch = RiskProfileModule.fetchRiskProfile;
+                
+                // Load the module
+                await RiskProfileModule.load();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✓ Risk Profile berhasil dimuat!</div>
+                    <div class="info">Periksa konten di bawah untuk melihat grafik dan tabel</div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Load Error: ${error.message}</div>`;
+                console.error('Load Error:', error);
+            }
+        }
+
+        // Clear content
+        function clearContent() {
+            document.getElementById('test-result').innerHTML = '';
+            document.getElementById('risk-profile-content').innerHTML = '';
+        }
+
+        // Auto-test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Risk Profile Final Test ready');
+            
+            // Auto-test API after 1 second
+            setTimeout(() => {
+                testAPI();
+            }, 1000);
+        });
+
+        // Override API call to use debug endpoint temporarily
+        if (typeof window.app === 'undefined') {
+            window.app = {};
+        }
+        
+        window.app.apiCall = async function(endpoint) {
+            if (endpoint.includes('/api/reports/risk-profile')) {
+                // Use debug endpoint instead
+                const response = await fetch('/api/debug-risk-profile');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            }
+            
+            // For other endpoints, use normal fetch
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return await response.json();
+        };
+    </script>
+</body>
+</html>

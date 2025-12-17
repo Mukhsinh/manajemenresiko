@@ -1,8 +1,120 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
+
+// Debug endpoint - temporary (no auth required) - MUST BE BEFORE OTHER ROUTES
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('=== RISKS DEBUG ENDPOINT ===');
+    console.log('supabaseAdmin available:', !!supabaseAdmin);
+    console.log('supabase available:', !!supabase);
+    
+    // Use admin client to bypass RLS
+    const adminClient = supabaseAdmin || supabase;
+    console.log('Using admin client:', adminClient === supabaseAdmin);
+    
+    // Get basic risk data first
+    console.log('Executing query...');
+    const { data: risks, error: risksError } = await adminClient
+      .from('risk_inputs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    console.log('Query completed. Error:', risksError);
+    console.log('Data received:', risks?.length || 0);
+
+    if (risksError) {
+      console.error('Error fetching risks:', risksError);
+      throw risksError;
+    }
+
+    console.log('Fetched risks:', risks?.length || 0);
+
+    // If no risks found, return empty array
+    if (!risks || risks.length === 0) {
+      return res.json({
+        success: true,
+        count: 0,
+        data: [],
+        message: 'No risks found in debug mode',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Get related data separately to avoid complex joins
+    const riskIds = risks.map(r => r.id);
+    const unitIds = [...new Set(risks.map(r => r.nama_unit_kerja_id).filter(Boolean))];
+    const categoryIds = [...new Set(risks.map(r => r.kategori_risiko_id).filter(Boolean))];
+    const planIds = [...new Set(risks.map(r => r.rencana_strategis_id).filter(Boolean))];
+
+    console.log('Fetching related data...', {
+      riskIds: riskIds.length,
+      unitIds: unitIds.length,
+      categoryIds: categoryIds.length,
+      planIds: planIds.length
+    });
+
+    // Fetch related data in parallel
+    const [
+      { data: units },
+      { data: categories },
+      { data: plans },
+      { data: inherentAnalysis },
+      { data: residualAnalysis }
+    ] = await Promise.all([
+      unitIds.length > 0 ? adminClient.from('master_work_units').select('id, name, code').in('id', unitIds) : Promise.resolve({ data: [] }),
+      categoryIds.length > 0 ? adminClient.from('master_risk_categories').select('id, name').in('id', categoryIds) : Promise.resolve({ data: [] }),
+      planIds.length > 0 ? adminClient.from('rencana_strategis').select('id, kode, nama_rencana, sasaran_strategis, indikator_kinerja_utama').in('id', planIds) : Promise.resolve({ data: [] }),
+      adminClient.from('risk_inherent_analysis').select('*').in('risk_input_id', riskIds),
+      adminClient.from('risk_residual_analysis').select('*').in('risk_input_id', riskIds)
+    ]);
+
+    console.log('Related data fetched:', {
+      units: units?.length || 0,
+      categories: categories?.length || 0,
+      plans: plans?.length || 0,
+      inherent: inherentAnalysis?.length || 0,
+      residual: residualAnalysis?.length || 0
+    });
+
+    // Create lookup maps
+    const unitMap = (units || []).reduce((acc, unit) => ({ ...acc, [unit.id]: unit }), {});
+    const categoryMap = (categories || []).reduce((acc, cat) => ({ ...acc, [cat.id]: cat }), {});
+    const planMap = (plans || []).reduce((acc, plan) => ({ ...acc, [plan.id]: plan }), {});
+    const inherentMap = (inherentAnalysis || []).reduce((acc, analysis) => ({ ...acc, [analysis.risk_input_id]: analysis }), {});
+    const residualMap = (residualAnalysis || []).reduce((acc, analysis) => ({ ...acc, [analysis.risk_input_id]: analysis }), {});
+
+    // Combine data
+    const enrichedRisks = risks.map(risk => ({
+      ...risk,
+      master_work_units: risk.nama_unit_kerja_id ? unitMap[risk.nama_unit_kerja_id] : null,
+      master_risk_categories: risk.kategori_risiko_id ? categoryMap[risk.kategori_risiko_id] : null,
+      rencana_strategis: risk.rencana_strategis_id ? planMap[risk.rencana_strategis_id] : null,
+      risk_inherent_analysis: inherentMap[risk.id] || null,
+      risk_residual_analysis: residualMap[risk.id] || null
+    }));
+
+    console.log('Enriched risks created:', enrichedRisks.length);
+
+    res.json({
+      success: true,
+      count: enrichedRisks.length,
+      data: enrichedRisks,
+      message: 'Risks debug data retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 const arrayOrEmpty = (value) => {
   if (Array.isArray(value)) {

@@ -6,6 +6,50 @@ const { generateKodeRencanaStrategis } = require('../utils/codeGenerator');
 const { exportToExcel, generateTemplate } = require('../utils/exportHelper');
 const { buildOrganizationFilter } = require('../utils/organization');
 
+// Public endpoint for testing (no auth required) - MUST BE FIRST
+router.get('/public', async (req, res) => {
+  try {
+    console.log('=== RENCANA STRATEGIS PUBLIC ENDPOINT ===');
+    
+    const clientToUse = supabaseAdmin || supabase;
+    
+    let query = clientToUse
+      .from('rencana_strategis')
+      .select('id, kode, nama_rencana, deskripsi, periode_mulai, periode_selesai, target, indikator_kinerja, status, visi_misi_id, user_id, organization_id, sasaran_strategis, indikator_kinerja_utama, created_at, updated_at, visi_misi(id, visi, misi, tahun)')
+      .order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Rencana strategis public query error:', error);
+      throw error;
+    }
+
+    console.log('Public query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0
+    });
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Public endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public generate kode endpoint (no auth required)
+router.get('/generate/kode/public', async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    const kode = `RS-${year}-${random}`;
+    res.json({ kode });
+  } catch (error) {
+    console.error('Generate kode public error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 function sendExcel(res, buffer, filename) {
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   res.setHeader(

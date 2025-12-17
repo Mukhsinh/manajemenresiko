@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sasaran Strategi Simple</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin: 4px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .table th { background-color: #f8f9fa; font-weight: 600; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.25rem; }
+        .badge-info { background-color: #17a2b8; color: white; }
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-warning { background-color: #ffc107; color: #212529; }
+        .badge-danger { background-color: #dc3545; color: white; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Sasaran Strategi - Perspektif & TOWS</h1>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn btn-primary" onclick="loadData()">Load Data</button>
+            <button class="btn btn-info" onclick="testAutoCorrelate()">Test Auto Correlate</button>
+            <button class="btn btn-success" onclick="downloadReport()">Download Report</button>
+        </div>
+
+        <div id="content">
+            <div class="loading">Click "Load Data" to start</div>
+        </div>
+    </div>
+
+    <script>
+        let sasaranData = [];
+        let towsData = [];
+
+        async function apiCall(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        async function loadData() {
+            document.getElementById('content').innerHTML = '<div class="loading">Loading data...</div>';
+            
+            try {
+                const [sasaran, tows] = await Promise.all([
+                    apiCall('/api/sasaran-strategi'),
+                    apiCall('/api/matriks-tows')
+                ]);
+                
+                sasaranData = sasaran || [];
+                towsData = tows || [];
+                
+                console.log('Loaded sasaran data:', sasaranData);
+                console.log('Loaded TOWS data:', towsData);
+                
+                renderTable();
+            } catch (error) {
+                document.getElementById('content').innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderTable() {
+            const html = `
+                <h3>Data Sasaran Strategi (${sasaranData.length} items)</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Sasaran</th>
+                            <th>Perspektif</th>
+                            <th>TOWS Strategi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sasaranData.map((item, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.sasaran}</td>
+                                <td>
+                                    ${item.perspektif ? `
+                                        <span class="badge badge-${getPerspektifColor(item.perspektif)}">
+                                            ${getPerspektifLabel(item.perspektif)}
+                                        </span>
+                                    ` : '<em>No perspektif</em>'}
+                                </td>
+                                <td>
+                                    ${item.swot_tows_strategi ? `
+                                        <div>
+                                            <span class="badge badge-${getTowsColor(item.swot_tows_strategi.tipe_strategi)}">
+                                                ${item.swot_tows_strategi.tipe_strategi}
+                                            </span><br>
+                                            <small>${item.swot_tows_strategi.strategi.substring(0, 80)}...</small>
+                                        </div>
+                                    ` : '<em>No TOWS correlation</em>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function getPerspektifLabel(perspektif) {
+            const labels = {
+                'ES': 'Eksternal Stakeholder',
+                'IBP': 'Internal Business Process',
+                'LG': 'Learning & Growth',
+                'Fin': 'Financial'
+            };
+            return labels[perspektif] || perspektif;
+        }
+
+        function getPerspektifColor(perspektif) {
+            const colors = {
+                'ES': 'info',
+                'IBP': 'success',
+                'LG': 'warning',
+                'Fin': 'danger'
+            };
+            return colors[perspektif] || 'secondary';
+        }
+
+        function getTowsColor(tipeStrategi) {
+            const colors = {
+                'SO': 'success',
+                'WO': 'info',
+                'ST': 'warning',
+                'WT': 'danger'
+            };
+            return colors[tipeStrategi] || 'secondary';
+        }
+
+        async function testAutoCorrelate() {
+            try {
+                const result = await apiCall('/api/sasaran-strategi/auto-correlate', { method: 'POST' });
+                alert(`Auto correlate result: ${result.message}`);
+                if (result.correlations && result.correlations.length > 0) {
+                    loadData(); // Reload to show updated data
+                }
+            } catch (error) {
+                alert(`Auto correlate error: ${error.message}`);
+            }
+        }
+
+        async function downloadReport() {
+            try {
+                const reportData = await apiCall('/api/sasaran-strategi/report');
+                
+                if (!reportData || reportData.length === 0) {
+                    alert('No data to download');
+                    return;
+                }
+
+                // Create Excel file
+                const excelData = reportData.map(item => ({
+                    'No': item.no,
+                    'Rencana Strategis': item.rencana_strategis,
+                    'Sasaran': item.sasaran,
+                    'Perspektif': getPerspektifLabel(item.perspektif),
+                    'Tipe TOWS': item.tipe_tows,
+                    'Strategi TOWS': item.strategi_tows
+                }));
+
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                XLSX.utils.book_append_sheet(wb, ws, 'Sasaran Strategi');
+                
+                const filename = `Sasaran_Strategi_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                alert('Report downloaded successfully!');
+            } catch (error) {
+                alert(`Download error: ${error.message}`);
+            }
+        }
+
+        // Auto load on page ready
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

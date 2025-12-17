@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Management - Complete</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #8B0000;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .btn {
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #6B0000;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-shield-alt"></i> Test Risk Management - Complete</h1>
+        <p>Testing semua halaman risk management untuk memastikan data tampil dengan benar.</p>
+
+        <!-- Test 1: Risk Profile -->
+        <div class="test-section">
+            <h2><i class="fas fa-chart-bar"></i> Test 1: Risk Profile (Inherent Risk)</h2>
+            <button class="btn" onclick="testRiskProfile()">Test Risk Profile</button>
+            <div id="risk-profile-result"></div>
+            <div id="risk-profile-data"></div>
+        </div>
+
+        <!-- Test 2: Residual Risk -->
+        <div class="test-section">
+            <h2><i class="fas fa-chart-pie"></i> Test 2: Residual Risk</h2>
+            <button class="btn" onclick="testResidualRisk()">Test Residual Risk</button>
+            <div id="residual-risk-result"></div>
+            <div id="residual-risk-data"></div>
+        </div>
+
+        <!-- Test 3: Key Risk Indicator -->
+        <div class="test-section">
+            <h2><i class="fas fa-gauge-high"></i> Test 3: Key Risk Indicator</h2>
+            <button class="btn" onclick="testKRI()">Test KRI</button>
+            <div id="kri-result"></div>
+            <div id="kri-data"></div>
+        </div>
+
+        <!-- Test 4: Loss Event -->
+        <div class="test-section">
+            <h2><i class="fas fa-exclamation-triangle"></i> Test 4: Loss Event</h2>
+            <button class="btn" onclick="testLossEvent()">Test Loss Event</button>
+            <div id="loss-event-result"></div>
+            <div id="loss-event-data"></div>
+        </div>
+
+        <!-- Test 5: Early Warning System -->
+        <div class="test-section">
+            <h2><i class="fas fa-triangle-exclamation"></i> Test 5: Early Warning System</h2>
+            <button class="btn" onclick="testEWS()">Test EWS</button>
+            <div id="ews-result"></div>
+            <div id="ews-data"></div>
+        </div>
+
+        <!-- Test 6: Risk Register -->
+        <div class="test-section">
+            <h2><i class="fas fa-table-list"></i> Test 6: Risk Register</h2>
+            <button class="btn" onclick="testRiskRegister()">Test Risk Register</button>
+            <div id="risk-register-result"></div>
+            <div id="risk-register-data"></div>
+        </div>
+
+        <!-- Test All -->
+        <div class="test-section">
+            <h2><i class="fas fa-play-circle"></i> Test All</h2>
+            <button class="btn" onclick="testAll()">Test Semua Halaman</button>
+            <div id="test-all-result"></div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        let supabaseClient;
+
+        // Initialize Supabase
+        async function initSupabase() {
+            try {
+                if (typeof window.supabase === 'undefined') {
+                    throw new Error('Supabase library not loaded');
+                }
+
+                // Wait for config
+                let retries = 0;
+                while (!window.supabaseConfig && retries < 10) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    retries++;
+                }
+
+                if (!window.supabaseConfig) {
+                    throw new Error('Supabase config not loaded');
+                }
+
+                supabaseClient = window.supabase.createClient(
+                    window.supabaseConfig.url,
+                    window.supabaseConfig.anonKey
+                );
+
+                console.log('Supabase initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                return false;
+            }
+        }
+
+        // API Call helper
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const token = localStorage.getItem('supabase.auth.token');
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                };
+
+                if (options.body && typeof options.body === 'object') {
+                    options.body = JSON.stringify(options.body);
+                }
+
+                const response = await fetch(endpoint, {
+                    ...options,
+                    headers: { ...headers, ...options.headers }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Test Risk Profile
+        async function testRiskProfile() {
+            const resultDiv = document.getElementById('risk-profile-result');
+            const dataDiv = document.getElementById('risk-profile-data');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing Risk Profile...</div>';
+                
+                const data = await apiCall('/api/reports/risk-profile');
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ Risk Profile berhasil dimuat: ${data.length} data</div>`;
+                    
+                    let tableHtml = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode Risiko</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Probabilitas</th>
+                                    <th>Dampak</th>
+                                    <th>Risk Value</th>
+                                    <th>Risk Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.slice(0, 5).forEach(item => {
+                        const risk = item.risk_inputs || {};
+                        tableHtml += `
+                            <tr>
+                                <td>${risk.kode_risiko || '-'}</td>
+                                <td>${risk.master_work_units?.name || '-'}</td>
+                                <td>${item.probability || '-'}</td>
+                                <td>${item.impact || '-'}</td>
+                                <td>${item.risk_value || '-'}</td>
+                                <td><span class="badge-status badge-${getRiskLevelColor(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    dataDiv.innerHTML = tableHtml;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ Risk Profile: Tidak ada data</div>';
+                    dataDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Risk Profile Error: ${error.message}</div>`;
+                dataDiv.innerHTML = '';
+            }
+        }
+
+        // Test Residual Risk
+        async function testResidualRisk() {
+            const resultDiv = document.getElementById('residual-risk-result');
+            const dataDiv = document.getElementById('residual-risk-data');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing Residual Risk...</div>';
+                
+                const data = await apiCall('/api/reports/residual-risk');
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ Residual Risk berhasil dimuat: ${data.length} data</div>`;
+                    
+                    let tableHtml = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode Risiko</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Probabilitas</th>
+                                    <th>Dampak</th>
+                                    <th>Risk Value</th>
+                                    <th>Risk Level</th>
+                                    <th>Review Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.slice(0, 5).forEach(item => {
+                        const risk = item.risk_inputs || {};
+                        tableHtml += `
+                            <tr>
+                                <td>${risk.kode_risiko || '-'}</td>
+                                <td>${risk.master_work_units?.name || '-'}</td>
+                                <td>${item.probability || '-'}</td>
+                                <td>${item.impact || '-'}</td>
+                                <td>${item.risk_value || '-'}</td>
+                                <td><span class="badge-status badge-${getRiskLevelColor(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                                <td>${item.review_status || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    dataDiv.innerHTML = tableHtml;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ Residual Risk: Tidak ada data</div>';
+                    dataDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Residual Risk Error: ${error.message}</div>`;
+                dataDiv.innerHTML = '';
+            }
+        }
+
+        // Test KRI
+        async function testKRI() {
+            const resultDiv = document.getElementById('kri-result');
+            const dataDiv = document.getElementById('kri-data');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing KRI...</div>';
+                
+                const data = await apiCall('/api/kri');
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ KRI berhasil dimuat: ${data.length} data</div>`;
+                    
+                    let tableHtml = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Indikator</th>
+                                    <th>Kategori</th>
+                                    <th>Nilai Aktual</th>
+                                    <th>Status</th>
+                                    <th>Periode</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.slice(0, 5).forEach(item => {
+                        tableHtml += `
+                            <tr>
+                                <td>${item.kode || '-'}</td>
+                                <td>${item.nama_indikator || '-'}</td>
+                                <td>${item.master_risk_categories?.name || '-'}</td>
+                                <td>${item.nilai_aktual || '-'}</td>
+                                <td><span class="badge-status badge-${getKRIStatusColor(item.status_indikator)}">${item.status_indikator || '-'}</span></td>
+                                <td>${item.periode_pengukuran || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    dataDiv.innerHTML = tableHtml;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ KRI: Tidak ada data</div>';
+                    dataDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ KRI Error: ${error.message}</div>`;
+                dataDiv.innerHTML = '';
+            }
+        }
+
+        // Test Loss Event
+        async function testLossEvent() {
+            const resultDiv = document.getElementById('loss-event-result');
+            const dataDiv = document.getElementById('loss-event-data');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing Loss Event...</div>';
+                
+                const data = await apiCall('/api/loss-event');
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ Loss Event berhasil dimuat: ${data.length} data</div>`;
+                    
+                    let tableHtml = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Tanggal Kejadian</th>
+                                    <th>Deskripsi</th>
+                                    <th>Dampak Finansial</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.slice(0, 5).forEach(item => {
+                        tableHtml += `
+                            <tr>
+                                <td>${item.kode || '-'}</td>
+                                <td>${item.tanggal_kejadian || '-'}</td>
+                                <td>${(item.deskripsi_kejadian || '').substring(0, 50)}...</td>
+                                <td>Rp ${formatNumber(item.dampak_finansial || 0)}</td>
+                                <td><span class="badge-status badge-${getLossEventStatusColor(item.status_penanganan)}">${item.status_penanganan || '-'}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    dataDiv.innerHTML = tableHtml;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ Loss Event: Tidak ada data</div>';
+                    dataDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Loss Event Error: ${error.message}</div>`;
+                dataDiv.innerHTML = '';
+            }
+        }
+
+        // Test EWS
+        async function testEWS() {
+            const resultDiv = document.getElementById('ews-result');
+            const dataDiv = document.getElementById('ews-data');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing EWS...</div>';
+                
+                const data = await apiCall('/api/ews');
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ EWS berhasil dimuat: ${data.length} data</div>`;
+                    
+                    let tableHtml = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Sistem</th>
+                                    <th>Nilai Aktual</th>
+                                    <th>Level Peringatan</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.slice(0, 5).forEach(item => {
+                        tableHtml += `
+                            <tr>
+                                <td>${item.kode || '-'}</td>
+                                <td>${item.nama_sistem || '-'}</td>
+                                <td>${item.nilai_aktual || '-'}</td>
+                                <td><span class="badge-status badge-${getEWSLevelColor(item.level_peringatan)}">${item.level_peringatan || '-'}</span></td>
+                                <td><span class="badge-status badge-${item.status_aktif ? 'aman' : 'secondary'}">${item.status_aktif ? 'Aktif' : 'Tidak Aktif'}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    dataDiv.innerHTML = tableHtml;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ EWS: Tidak ada data</div>';
+                    dataDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ EWS Error: ${error.message}</div>`;
+                dataDiv.innerHTML = '';
+            }
+        }
+
+        // Test Risk Register
+        async function testRiskRegister() {
+            const resultDiv = document.getElementById('risk-register-result');
+            const dataDiv = document.getElementById('risk-register-data');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Testing Risk Register...</div>';
+                
+                const data = await apiCall('/api/reports/risk-register');
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `<div class="success">✓ Risk Register berhasil dimuat: ${data.length} data</div>`;
+                    
+                    let tableHtml = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode Risiko</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Kategori</th>
+                                    <th>Status</th>
+                                    <th>Inherent Level</th>
+                                    <th>Residual Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.slice(0, 5).forEach(item => {
+                        const inherent = item.risk_inherent_analysis || {};
+                        const residual = item.risk_residual_analysis || {};
+                        tableHtml += `
+                            <tr>
+                                <td>${item.kode_risiko || '-'}</td>
+                                <td>${item.master_work_units?.name || '-'}</td>
+                                <td>${item.master_risk_categories?.name || '-'}</td>
+                                <td>${item.status_risiko || '-'}</td>
+                                <td><span class="badge-status badge-${getRiskLevelColor(inherent.risk_level)}">${inherent.risk_level || '-'}</span></td>
+                                <td><span class="badge-status badge-${getRiskLevelColor(residual.risk_level)}">${residual.risk_level || '-'}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    dataDiv.innerHTML = tableHtml;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ Risk Register: Tidak ada data</div>';
+                    dataDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Risk Register Error: ${error.message}</div>`;
+                dataDiv.innerHTML = '';
+            }
+        }
+
+        // Test All
+        async function testAll() {
+            const resultDiv = document.getElementById('test-all-result');
+            resultDiv.innerHTML = '<div class="info">Testing semua halaman...</div>';
+            
+            await testRiskProfile();
+            await testResidualRisk();
+            await testKRI();
+            await testLossEvent();
+            await testEWS();
+            await testRiskRegister();
+            
+            resultDiv.innerHTML = '<div class="success">✓ Semua test selesai! Periksa hasil di atas.</div>';
+        }
+
+        // Helper functions
+        function getRiskLevelColor(level) {
+            const colorMap = {
+                'EXTREME HIGH': 'kritis',
+                'HIGH RISK': 'hati-hati',
+                'MEDIUM RISK': 'normal',
+                'LOW RISK': 'aman'
+            };
+            return colorMap[level] || 'secondary';
+        }
+
+        function getKRIStatusColor(status) {
+            const colorMap = {
+                'Aman': 'aman',
+                'Hati-hati': 'hati-hati',
+                'Peringatan': 'hati-hati',
+                'Kritis': 'kritis'
+            };
+            return colorMap[status] || 'secondary';
+        }
+
+        function getLossEventStatusColor(status) {
+            const colorMap = {
+                'Sudah Ditangani': 'aman',
+                'Selesai': 'aman',
+                'Sedang Ditangani': 'hati-hati',
+                'Dalam Proses': 'hati-hati',
+                'Belum Ditangani': 'kritis'
+            };
+            return colorMap[status] || 'secondary';
+        }
+
+        function getEWSLevelColor(level) {
+            const colorMap = {
+                'Normal': 'aman',
+                'Peringatan': 'hati-hati',
+                'Waspada': 'waspada',
+                'Darurat': 'kritis'
+            };
+            return colorMap[level] || 'secondary';
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(num || 0);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', async () => {
+            const initialized = await initSupabase();
+            if (!initialized) {
+                document.body.innerHTML = '<div style="padding: 20px; color: red;">Failed to initialize Supabase. Please check configuration.</div>';
+            }
+        });
+    </script>
+</body>
+</html>
