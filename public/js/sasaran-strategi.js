@@ -26,9 +26,9 @@ const SasaranStrategiModule = (() => {
         api()('/api/matriks-tows')
       ]);
       
-      console.log('Sasaran Strategi Data:', sasaran);
-      console.log('Rencana Strategis Data:', rencana);
-      console.log('TOWS Data:', tows);
+      // console.log('Sasaran Strategi Data:', sasaran);
+      // console.log('Rencana Strategis Data:', rencana);
+      // console.log('TOWS Data:', tows);
       
       state.data = sasaran || [];
       state.rencanaStrategis = rencana || [];
@@ -36,9 +36,9 @@ const SasaranStrategiModule = (() => {
       
       // Debug: Check first item
       if (state.data.length > 0) {
-        console.log('First sasaran item:', state.data[0]);
-        console.log('Perspektif value:', state.data[0].perspektif);
-        console.log('TOWS relation:', state.data[0].swot_tows_strategi);
+        // console.log('First sasaran item:', state.data[0]);
+        // console.log('Perspektif value:', state.data[0].perspektif);
+        // console.log('TOWS relation:', state.data[0].swot_tows_strategi);
       }
     } catch (error) {
       console.error('Error fetching data:', error);

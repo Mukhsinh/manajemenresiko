@@ -95,12 +95,12 @@ async function loadMasterDataContent(type) {
     let data;
     try {
       data = await getMasterApi()(`/api/master-data/${config.endpoint}`);
-      console.log(`Master data loaded from authenticated endpoint (${type}):`, data?.length || 0, 'records');
+      // console.log(`Master data loaded from authenticated endpoint (${type}):`, data?.length || 0, 'records');
     } catch (authError) {
       console.warn(`Authenticated endpoint failed for ${type}, trying test endpoint:`, authError.message);
       try {
         data = await getMasterApi()(`/api/test-data/master/${config.endpoint}`);
-        console.log(`Master data loaded from test endpoint (${type}):`, data?.length || 0, 'records');
+        // console.log(`Master data loaded from test endpoint (${type}):`, data?.length || 0, 'records');
       } catch (testError) {
         console.error(`Both endpoints failed for ${type}:`, testError.message);
         throw new Error('Tidak dapat memuat data. Silakan login terlebih dahulu.');

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Buku Pedoman Fix - Sistem Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/buku-pedoman.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f6fa;
+            color: #333;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .test-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .test-content {
+            padding: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-weight: 600;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .result-area {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        .handbook-demo {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-tools"></i> Test Buku Pedoman Fix</h1>
+            <p>Testing perbaikan error apiService dan dependency loading</p>
+        </div>
+        
+        <div class="test-content">
+            <!-- Dependency Check -->
+            <div class="test-section">
+                <h3><i class="fas fa-check-circle"></i> Dependency Check</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-primary" onclick="checkDependencies()">
+                        <i class="fas fa-search"></i> Check Dependencies
+                    </button>
+                    <button class="btn btn-info" onclick="checkScriptOrder()">
+                        <i class="fas fa-list-ol"></i> Check Script Order
+                    </button>
+                </div>
+                <div id="dependency-result" class="result-area">
+                    <p>Klik tombol di atas untuk check dependencies</p>
+                </div>
+            </div>
+
+            <!-- API Service Test -->
+            <div class="test-section">
+                <h3><i class="fas fa-plug"></i> API Service Test</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-success" onclick="testApiService()">
+                        <i class="fas fa-server"></i> Test API Service
+                    </button>
+                    <button class="btn btn-warning" onclick="testDirectFetch()">
+                        <i class="fas fa-download"></i> Test Direct Fetch
+                    </button>
+                </div>
+                <div id="api-result" class="result-area">
+                    <p>Klik tombol di atas untuk test API service</p>
+                </div>
+            </div>
+
+            <!-- Buku Pedoman Manager Test -->
+            <div class="test-section">
+                <h3><i class="fas fa-book"></i> Buku Pedoman Manager Test</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-primary" onclick="testBukuPedomanManager()">
+                        <i class="fas fa-cogs"></i> Test Manager
+                    </button>
+                    <button class="btn btn-success" onclick="initializeBukuPedoman()">
+                        <i class="fas fa-rocket"></i> Initialize
+                    </button>
+                    <button class="btn btn-info" onclick="testMockData()">
+                        <i class="fas fa-database"></i> Test Mock Data
+                    </button>
+                </div>
+                <div id="manager-result" class="result-area">
+                    <p>Klik tombol di atas untuk test Buku Pedoman Manager</p>
+                </div>
+            </div>
+
+            <!-- Live Demo -->
+            <div class="test-section">
+                <h3><i class="fas fa-eye"></i> Live Demo</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-success" onclick="showLiveDemo()">
+                        <i class="fas fa-play"></i> Show Demo
+                    </button>
+                    <button class="btn btn-warning" onclick="hideLiveDemo()">
+                        <i class="fas fa-eye-slash"></i> Hide Demo
+                    </button>
+                    <button class="btn btn-info" onclick="testPDFGeneration()">
+                        <i class="fas fa-file-pdf"></i> Test PDF
+                    </button>
+                </div>
+                <div id="demo-result" class="result-area">
+                    <p>Klik tombol di atas untuk show live demo</p>
+                </div>
+                <div id="handbook-demo" class="handbook-demo" style="display: none;">
+                    <div id="buku-pedoman-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required scripts in correct order -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/buku-pedoman.js"></script>
+
+    <script>
+        // Test functions
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            container.appendChild(logEntry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearResult(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+        }
+
+        function checkDependencies() {
+            clearResult('dependency-result');
+            logResult('dependency-result', 'Checking dependencies...', 'info');
+
+            const dependencies = [
+                { name: 'window.supabase', check: () => typeof window.supabase !== 'undefined' },
+                { name: 'window.supabaseClient', check: () => typeof window.supabaseClient !== 'undefined' },
+                { name: 'window.apiService', check: () => typeof window.apiService !== 'undefined' },
+                { name: 'window.jspdf', check: () => typeof window.jspdf !== 'undefined' },
+                { name: 'html2canvas', check: () => typeof html2canvas !== 'undefined' },
+                { name: 'BukuPedomanManager', check: () => typeof BukuPedomanManager !== 'undefined' },
+                { name: 'window.initializeBukuPedoman', check: () => typeof window.initializeBukuPedoman !== 'undefined' }
+            ];
+
+            dependencies.forEach(dep => {
+                const status = dep.check();
+                logResult('dependency-result', `${dep.name}: ${status ? 'AVAILABLE' : 'MISSING'}`, status ? 'success' : 'error');
+            });
+
+            logResult('dependency-result', 'Dependency check completed', 'info');
+        }
+
+        function checkScriptOrder() {
+            logResult('dependency-result', 'Checking script loading order...', 'info');
+            
+            const scripts = Array.from(document.querySelectorAll('script[src]')).map(script => script.src);
+            scripts.forEach((script, index) => {
+                const filename = script.split('/').pop();
+                logResult('dependency-result', `${index + 1}. ${filename}`, 'info');
+            });
+        }
+
+        async function testApiService() {
+            clearResult('api-result');
+            logResult('api-result', 'Testing API Service...', 'info');
+
+            try {
+                if (!window.apiService) {
+                    logResult('api-result', 'API Service not available', 'error');
+                    return;
+                }
+
+                logResult('api-result', 'API Service available', 'success');
+                
+                // Test getAuthToken
+                try {
+                    const token = await window.apiService.getAuthToken();
+                    logResult('api-result', `Auth token: ${token ? 'Available' : 'Not available'}`, token ? 'success' : 'warning');
+                } catch (error) {
+                    logResult('api-result', `Auth token error: ${error.message}`, 'error');
+                }
+
+                // Test API call to config
+                try {
+                    const config = await window.apiService.get('/api/config');
+                    logResult('api-result', 'Config API call: SUCCESS', 'success');
+                    logResult('api-result', `Supabase URL: ${config.supabaseUrl ? 'Available' : 'Missing'}`, config.supabaseUrl ? 'success' : 'error');
+                } catch (error) {
+                    logResult('api-result', `Config API error: ${error.message}`, 'error');
+                }
+
+            } catch (error) {
+                logResult('api-result', `API Service test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDirectFetch() {
+            logResult('api-result', 'Testing direct fetch...', 'info');
+
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    logResult('api-result', 'Direct fetch: SUCCESS', 'success');
+                    logResult('api-result', `Response data: ${JSON.stringify(data).substring(0, 100)}...`, 'info');
+                } else {
+                    logResult('api-result', `Direct fetch failed: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                logResult('api-result', `Direct fetch error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBukuPedomanManager() {
+            clearResult('manager-result');
+            logResult('manager-result', 'Testing Buku Pedoman Manager...', 'info');
+
+            try {
+                if (typeof BukuPedomanManager === 'undefined') {
+                    logResult('manager-result', 'BukuPedomanManager class not available', 'error');
+                    return;
+                }
+
+                logResult('manager-result', 'BukuPedomanManager class available', 'success');
+
+                // Test initialization
+                const manager = new BukuPedomanManager();
+                logResult('manager-result', 'Manager instance created', 'success');
+
+                // Test methods
+                const methods = ['loadHandbookData', 'renderHandbook', 'showFlowchart', 'downloadPDF'];
+                methods.forEach(method => {
+                    const available = typeof manager[method] === 'function';
+                    logResult('manager-result', `Method ${method}: ${available ? 'AVAILABLE' : 'MISSING'}`, available ? 'success' : 'error');
+                });
+
+            } catch (error) {
+                logResult('manager-result', `Manager test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function initializeBukuPedoman() {
+            logResult('manager-result', 'Initializing Buku Pedoman...', 'info');
+
+            try {
+                if (typeof window.initializeBukuPedoman !== 'function') {
+                    logResult('manager-result', 'initializeBukuPedoman function not available', 'error');
+                    return;
+                }
+
+                const manager = await window.initializeBukuPedoman();
+                logResult('manager-result', 'Buku Pedoman initialized successfully', 'success');
+                logResult('manager-result', `Manager instance: ${!!manager}`, manager ? 'success' : 'error');
+                
+                if (manager && manager.handbookData) {
+                    logResult('manager-result', `Handbook data loaded: ${!!manager.handbookData}`, 'success');
+                    logResult('manager-result', `Chapters: ${manager.handbookData.chapters?.length || 0}`, 'info');
+                }
+
+            } catch (error) {
+                logResult('manager-result', `Initialization error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMockData() {
+            logResult('manager-result', 'Testing mock data...', 'info');
+
+            try {
+                const manager = new BukuPedomanManager();
+                const mockData = manager.getMockHandbookData();
+                
+                logResult('manager-result', 'Mock data generated', 'success');
+                logResult('manager-result', `Title: ${mockData.title}`, 'info');
+                logResult('manager-result', `Author: ${mockData.author}`, 'info');
+                logResult('manager-result', `Chapters: ${mockData.chapters.length}`, 'info');
+                logResult('manager-result', `Flowchart processes: ${mockData.flowchart.processes.length}`, 'info');
+
+            } catch (error) {
+                logResult('manager-result', `Mock data error: ${error.message}`, 'error');
+            }
+        }
+
+        async function showLiveDemo() {
+            clearResult('demo-result');
+            logResult('demo-result', 'Showing live demo...', 'info');
+
+            try {
+                const demoContainer = document.getElementById('handbook-demo');
+                demoContainer.style.display = 'block';
+
+                // Initialize manager if not exists
+                if (!window.bukuPedomanManager) {
+                    if (window.initializeBukuPedoman) {
+                        await window.initializeBukuPedoman();
+                    } else {
+                        window.bukuPedomanManager = new BukuPedomanManager();
+                    }
+                }
+
+                logResult('demo-result', 'Demo container shown', 'success');
+                logResult('demo-result', 'Buku Pedoman should be visible below', 'info');
+
+            } catch (error) {
+                logResult('demo-result', `Demo error: ${error.message}`, 'error');
+            }
+        }
+
+        function hideLiveDemo() {
+            const demoContainer = document.getElementById('handbook-demo');
+            demoContainer.style.display = 'none';
+            logResult('demo-result', 'Demo hidden', 'info');
+        }
+
+        async function testPDFGeneration() {
+            logResult('demo-result', 'Testing PDF generation...', 'info');
+
+            try {
+                if (!window.bukuPedomanManager) {
+                    logResult('demo-result', 'Manager not initialized, creating new instance...', 'warning');
+                    window.bukuPedomanManager = new BukuPedomanManager();
+                }
+
+                // Test client-side PDF generation
+                await window.bukuPedomanManager.generateClientSidePDF();
+                logResult('demo-result', 'PDF generation test completed', 'success');
+
+            } catch (error) {
+                logResult('demo-result', `PDF generation error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Test page loaded');
+            setTimeout(() => {
+                checkDependencies();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="6" failures="6" errors="0" time="1.598">
+  <testsuite name="Property Tests - Authentication" errors="0" failures="6" skipped="0" timestamp="2025-12-19T06:06:14" time="1.365" tests="6">
+    <testcase classname="Property Tests - Authentication Property 1: Valid credentials create session" name="Property Tests - Authentication Property 1: Valid credentials create session" time="0.003">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Authentication Property 2: Invalid credentials are rejected" name="Property Tests - Authentication Property 2: Invalid credentials are rejected" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Authentication Property 3: Logout invalidates session" name="Property Tests - Authentication Property 3: Logout invalidates session" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Authentication Property 4: Registration creates complete user" name="Property Tests - Authentication Property 4: Registration creates complete user" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Authentication Property: Session token validation" name="Property Tests - Authentication Property: Session token validation" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Authentication Property: Password strength validation" name="Property Tests - Authentication Property: Password strength validation" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

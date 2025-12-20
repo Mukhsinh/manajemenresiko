@@ -128,11 +128,11 @@ const ResidualRiskModule = (() => {
       state.unitKerja = Array.isArray(units) ? units : [];
       state.categories = Array.isArray(categories) ? categories : [];
       
-      console.log('ResidualRiskModule: Master data loaded:', {
-        rencanaStrategis: state.rencanaStrategis.length,
-        unitKerja: state.unitKerja.length,
-        categories: state.categories.length
-      });
+      // console.log('ResidualRiskModule: Master data loaded:', {
+      //   rencanaStrategis: state.rencanaStrategis.length,
+      //   unitKerja: state.unitKerja.length,
+      //   categories: state.categories.length
+      // });
       
     } catch (error) {
       console.error('ResidualRiskModule: Error fetching master data:', error);
@@ -364,7 +364,7 @@ const ResidualRiskModule = (() => {
       stats.reduction = '0.0';
     }
 
-    console.log('ResidualRiskModule: Calculated statistics:', stats);
+    // console.log('ResidualRiskModule: Calculated statistics:', stats);
     console.log('ResidualRiskModule: Valid inherent count:', validInherentCount);
 
     return `

@@ -109,8 +109,23 @@ function showLogin() {
 }
 
 function showApp() {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
+    console.log('🚀 Showing app screen...');
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    
+    if (loginScreen) {
+        loginScreen.style.display = 'none';
+        console.log('✅ Login screen hidden');
+    } else {
+        console.warn('⚠️ Login screen element not found');
+    }
+    
+    if (appScreen) {
+        appScreen.style.display = 'block';
+        console.log('✅ App screen shown');
+    } else {
+        console.warn('⚠️ App screen element not found');
+    }
 }
 
 async function loadUserData() {
@@ -467,9 +482,17 @@ function initTooltips() {
 
 async function handleLogin(e) {
     e.preventDefault();
+    console.log('🔐 Login form submitted');
+    
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const messageEl = document.getElementById('auth-message');
+
+    console.log('Login attempt:', { email, passwordLength: password.length });
+
+    // Clear previous messages
+    messageEl.textContent = '';
+    messageEl.className = 'message';
 
     // Disable form during submission
     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -479,11 +502,16 @@ async function handleLogin(e) {
     }
 
     try {
+        console.log('Checking authService availability...');
+        
         // Use authService if available
         let result;
         if (window.authService) {
+            console.log('Using authService for login');
             result = await window.authService.login(email, password);
+            console.log('AuthService login result:', result);
         } else {
+            console.log('AuthService not available, using direct Supabase call');
             // Fallback to direct Supabase call
             const supabaseClient = window.supabaseClient;
             if (!supabaseClient) {
@@ -495,20 +523,32 @@ async function handleLogin(e) {
             });
             if (error) throw error;
             result = { success: true, user: data.user };
+            console.log('Direct Supabase login result:', result);
         }
 
         if (result.success) {
-            messageEl.textContent = 'Login berhasil!';
+            console.log('✅ Login successful, showing success message');
+            messageEl.textContent = 'Login berhasil! Mengalihkan ke dashboard...';
             messageEl.className = 'message success';
+            
             currentUser = result.user;
-            showApp();
-            await loadUserData();
-            await loadKopHeader();
+            console.log('Current user set:', currentUser.email);
+            
+            // Add small delay to show success message
+            setTimeout(async () => {
+                console.log('Showing app and loading data...');
+                showApp();
+                await loadUserData();
+                await loadKopHeader();
+                navigateToPage('dashboard');
+                console.log('✅ Login flow completed');
+            }, 1000);
+            
         } else {
             throw new Error(result.error || 'Login failed');
         }
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
         messageEl.textContent = error.message || 'Login gagal. Silakan coba lagi.';
         messageEl.className = 'message error';
     } finally {
@@ -707,6 +747,7 @@ function navigateToPage(pageName) {
         'risk-register': { title: 'Risk Register', icon: 'fa-table-list' },
         'laporan': { title: 'Laporan', icon: 'fa-file-pdf' },
         'master-data': { title: 'Master Data', icon: 'fa-database' },
+        'buku-pedoman': { title: 'Buku Pedoman', icon: 'fa-book' },
         'pengaturan': { title: 'Pengaturan', icon: 'fa-cog' }
     };
 
@@ -916,6 +957,72 @@ function loadPageData(pageName) {
             break;
         case 'laporan':
             window.laporanModule?.load?.();
+            break;
+        case 'buku-pedoman':
+            console.log('Loading Buku Pedoman page...');
+            if (window.bukuPedomanManager) {
+                console.log('Buku Pedoman manager already initialized');
+                // Re-render if needed
+                if (window.bukuPedomanManager.renderHandbook) {
+                    window.bukuPedomanManager.renderHandbook();
+                }
+            } else {
+                console.log('Initializing Buku Pedoman manager...');
+                if (window.initializeBukuPedoman) {
+                    try {
+                        await window.initializeBukuPedoman();
+                        console.log('Buku Pedoman manager initialized successfully');
+                    } catch (error) {
+                        console.error('Failed to initialize Buku Pedoman manager:', error);
+                        // Show error in content area
+                        const container = document.getElementById('buku-pedoman-content');
+                        if (container) {
+                            container.innerHTML = `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error Loading Buku Pedoman</h5>
+                                        <p>Terjadi kesalahan saat memuat buku pedoman:</p>
+                                        <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 0.9rem;">${error.message}</pre>
+                                        <div style="margin-top: 15px;">
+                                            <button onclick="location.reload()" class="btn btn-primary">
+                                                <i class="fas fa-refresh"></i> Refresh Halaman
+                                            </button>
+                                            <button onclick="console.log('Debug info:', {apiService: !!window.apiService, supabaseClient: !!window.supabaseClient, container: !!document.getElementById('buku-pedoman-content')})" class="btn btn-info">
+                                                <i class="fas fa-bug"></i> Debug Info
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    console.error('initializeBukuPedoman function not available');
+                    // Fallback: try direct initialization
+                    try {
+                        if (typeof BukuPedomanManager !== 'undefined') {
+                            window.bukuPedomanManager = new BukuPedomanManager();
+                        } else {
+                            throw new Error('BukuPedomanManager class not available');
+                        }
+                    } catch (fallbackError) {
+                        console.error('Fallback initialization failed:', fallbackError);
+                        const container = document.getElementById('buku-pedoman-content');
+                        if (container) {
+                            container.innerHTML = `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Buku Pedoman Tidak Tersedia</h5>
+                                        <p>Buku pedoman sedang dalam tahap pengembangan atau terjadi masalah teknis.</p>
+                                        <p>Silakan hubungi administrator atau coba lagi nanti.</p>
+                                        <button onclick="location.reload()" class="btn btn-primary">Refresh Halaman</button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+            }
             break;
         case 'pengaturan':
             window.pengaturanModule?.load?.();

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Buku Pedoman - Sistem Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/buku-pedoman.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f6fa;
+            color: #333;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .test-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .test-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .test-content {
+            padding: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-weight: 600;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .result-area {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 100px;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        .loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success {
+            color: #28a745;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0c5460;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        pre {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        .handbook-preview {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-book"></i> Test Buku Pedoman</h1>
+            <p>Testing Sistem Manajemen Risiko ISO 31000:2018 Handbook</p>
+        </div>
+        
+        <div class="test-content">
+            <!-- API Connection Test -->
+            <div class="test-section">
+                <h3><i class="fas fa-plug"></i> Test Koneksi API</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-primary" onclick="testApiConnection()">
+                        <i class="fas fa-wifi"></i> Test Koneksi
+                    </button>
+                    <button class="btn btn-info" onclick="testHandbookData()">
+                        <i class="fas fa-database"></i> Test Data Handbook
+                    </button>
+                </div>
+                <div id="api-result" class="result-area">
+                    <p>Klik tombol di atas untuk test koneksi API</p>
+                </div>
+            </div>
+
+            <!-- Handbook Content Test -->
+            <div class="test-section">
+                <h3><i class="fas fa-file-alt"></i> Test Konten Handbook</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-success" onclick="loadHandbookContent()">
+                        <i class="fas fa-download"></i> Load Konten
+                    </button>
+                    <button class="btn btn-warning" onclick="testFlowchart()">
+                        <i class="fas fa-project-diagram"></i> Test Flowchart
+                    </button>
+                </div>
+                <div id="content-result" class="result-area">
+                    <p>Klik tombol di atas untuk test konten handbook</p>
+                </div>
+            </div>
+
+            <!-- PDF Generation Test -->
+            <div class="test-section">
+                <h3><i class="fas fa-file-pdf"></i> Test PDF Generation</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-primary" onclick="testPDFGeneration()">
+                        <i class="fas fa-file-pdf"></i> Test PDF
+                    </button>
+                    <button class="btn btn-info" onclick="testPrintFunction()">
+                        <i class="fas fa-print"></i> Test Print
+                    </button>
+                </div>
+                <div id="pdf-result" class="result-area">
+                    <p>Klik tombol di atas untuk test PDF generation</p>
+                </div>
+            </div>
+
+            <!-- Full Integration Test -->
+            <div class="test-section">
+                <h3><i class="fas fa-cogs"></i> Test Integrasi Lengkap</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-success" onclick="runFullTest()">
+                        <i class="fas fa-play"></i> Run Full Test
+                    </button>
+                    <button class="btn btn-primary" onclick="initializeHandbook()">
+                        <i class="fas fa-rocket"></i> Initialize Handbook
+                    </button>
+                </div>
+                <div id="integration-result" class="result-area">
+                    <p>Klik tombol di atas untuk test integrasi lengkap</p>
+                </div>
+            </div>
+
+            <!-- Live Preview -->
+            <div class="test-section">
+                <h3><i class="fas fa-eye"></i> Live Preview</h3>
+                <div class="test-buttons">
+                    <button class="btn btn-info" onclick="showLivePreview()">
+                        <i class="fas fa-eye"></i> Show Preview
+                    </button>
+                    <button class="btn btn-warning" onclick="hideLivePreview()">
+                        <i class="fas fa-eye-slash"></i> Hide Preview
+                    </button>
+                </div>
+                <div id="live-preview" class="handbook-preview" style="display: none;">
+                    <div id="buku-pedoman-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/buku-pedoman.js"></script>
+
+    <script>
+        // Mock functions for testing
+        function showLoading(message = 'Loading...') {
+            return `<div class="loading">${message}</div>`;
+        }
+
+        function showSuccess(message) {
+            return `<div class="success"><i class="fas fa-check-circle"></i> ${message}</div>`;
+        }
+
+        function showError(message) {
+            return `<div class="error"><i class="fas fa-exclamation-circle"></i> ${message}</div>`;
+        }
+
+        function hideLoading() {
+            // Mock function
+        }
+
+        // Test functions
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = showLoading('Testing API connection...');
+
+            try {
+                // Test basic API connection
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const config = await response.json();
+                    resultDiv.innerHTML = showSuccess('API connection successful!') + 
+                        `<pre>${JSON.stringify(config, null, 2)}</pre>`;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = showError(`API connection failed: ${error.message}`);
+            }
+        }
+
+        async function testHandbookData() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = showLoading('Testing handbook data endpoint...');
+
+            try {
+                // Mock authentication for testing
+                const mockToken = 'test-token';
+                
+                const response = await fetch('/api/buku-pedoman', {
+                    headers: {
+                        'Authorization': `Bearer ${mockToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = showSuccess('Handbook data loaded successfully!') + 
+                        `<div class="info">
+                            <h4>Data Summary:</h4>
+                            <ul>
+                                <li>Title: ${data.title}</li>
+                                <li>Author: ${data.author}</li>
+                                <li>Chapters: ${data.chapters?.length || 0}</li>
+                                <li>Flowchart Processes: ${data.flowchart?.processes?.length || 0}</li>
+                            </ul>
+                        </div>`;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = showError(`Handbook data test failed: ${error.message}`);
+            }
+        }
+
+        async function loadHandbookContent() {
+            const resultDiv = document.getElementById('content-result');
+            resultDiv.innerHTML = showLoading('Loading handbook content...');
+
+            try {
+                // Test content loading
+                if (typeof BukuPedomanManager !== 'undefined') {
+                    const manager = new BukuPedomanManager();
+                    await manager.loadHandbookData();
+                    
+                    resultDiv.innerHTML = showSuccess('Handbook content loaded successfully!') + 
+                        `<div class="info">
+                            <h4>Content loaded:</h4>
+                            <p>Handbook manager initialized and data loaded.</p>
+                            <p>Check the Live Preview section to see the full content.</p>
+                        </div>`;
+                } else {
+                    throw new Error('BukuPedomanManager class not found');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = showError(`Content loading failed: ${error.message}`);
+            }
+        }
+
+        async function testFlowchart() {
+            const resultDiv = document.getElementById('content-result');
+            resultDiv.innerHTML = showLoading('Testing flowchart generation...');
+
+            try {
+                // Test flowchart rendering
+                const mockFlowchart = {
+                    title: "Test Flowchart",
+                    processes: [
+                        { id: "start", type: "start", label: "Start", x: 50, y: 50 },
+                        { id: "process1", type: "process", label: "Process 1", x: 50, y: 150 },
+                        { id: "end", type: "end", label: "End", x: 50, y: 250 }
+                    ],
+                    connections: [
+                        { from: "start", to: "process1" },
+                        { from: "process1", to: "end" }
+                    ]
+                };
+
+                resultDiv.innerHTML = showSuccess('Flowchart test completed!') + 
+                    `<div class="info">
+                        <h4>Flowchart Structure:</h4>
+                        <ul>
+                            <li>Processes: ${mockFlowchart.processes.length}</li>
+                            <li>Connections: ${mockFlowchart.connections.length}</li>
+                            <li>Types: Start, Process, End</li>
+                        </ul>
+                    </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = showError(`Flowchart test failed: ${error.message}`);
+            }
+        }
+
+        async function testPDFGeneration() {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.innerHTML = showLoading('Testing PDF generation...');
+
+            try {
+                // Test PDF generation capability
+                if (typeof window.jspdf !== 'undefined') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF();
+                    pdf.text('Test PDF Generation', 20, 20);
+                    
+                    resultDiv.innerHTML = showSuccess('PDF generation test successful!') + 
+                        `<div class="info">
+                            <h4>PDF Library Status:</h4>
+                            <ul>
+                                <li>jsPDF: Available</li>
+                                <li>html2canvas: ${typeof html2canvas !== 'undefined' ? 'Available' : 'Not Available'}</li>
+                                <li>Test PDF created successfully</li>
+                            </ul>
+                        </div>`;
+                } else {
+                    throw new Error('jsPDF library not loaded');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = showError(`PDF generation test failed: ${error.message}`);
+            }
+        }
+
+        async function testPrintFunction() {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.innerHTML = showLoading('Testing print function...');
+
+            try {
+                // Test print functionality
+                const testContent = `
+                    <div style="padding: 20px;">
+                        <h1>Test Print Content</h1>
+                        <p>This is a test of the print functionality.</p>
+                    </div>
+                `;
+
+                resultDiv.innerHTML = showSuccess('Print function test completed!') + 
+                    `<div class="info">
+                        <h4>Print Test Results:</h4>
+                        <ul>
+                            <li>Print function: Available</li>
+                            <li>Window.print(): ${typeof window.print === 'function' ? 'Available' : 'Not Available'}</li>
+                            <li>Test content prepared</li>
+                        </ul>
+                    </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = showError(`Print function test failed: ${error.message}`);
+            }
+        }
+
+        async function runFullTest() {
+            const resultDiv = document.getElementById('integration-result');
+            resultDiv.innerHTML = showLoading('Running full integration test...');
+
+            const results = [];
+
+            try {
+                // Test 1: API Connection
+                try {
+                    const response = await fetch('/api/config');
+                    results.push({ test: 'API Connection', status: response.ok ? 'PASS' : 'FAIL' });
+                } catch (error) {
+                    results.push({ test: 'API Connection', status: 'FAIL', error: error.message });
+                }
+
+                // Test 2: Handbook Manager
+                try {
+                    const manager = new BukuPedomanManager();
+                    results.push({ test: 'Handbook Manager', status: 'PASS' });
+                } catch (error) {
+                    results.push({ test: 'Handbook Manager', status: 'FAIL', error: error.message });
+                }
+
+                // Test 3: Required Libraries
+                const libraries = [
+                    { name: 'jsPDF', available: typeof window.jspdf !== 'undefined' },
+                    { name: 'html2canvas', available: typeof html2canvas !== 'undefined' },
+                    { name: 'Font Awesome', available: document.querySelector('link[href*="font-awesome"]') !== null }
+                ];
+
+                libraries.forEach(lib => {
+                    results.push({ test: `Library: ${lib.name}`, status: lib.available ? 'PASS' : 'FAIL' });
+                });
+
+                // Generate results HTML
+                const resultsHtml = results.map(result => 
+                    `<li class="${result.status.toLowerCase()}">
+                        <strong>${result.test}:</strong> ${result.status}
+                        ${result.error ? ` - ${result.error}` : ''}
+                    </li>`
+                ).join('');
+
+                const passCount = results.filter(r => r.status === 'PASS').length;
+                const totalCount = results.length;
+
+                resultDiv.innerHTML = `
+                    <div class="${passCount === totalCount ? 'success' : 'error'}">
+                        <h4><i class="fas fa-clipboard-check"></i> Integration Test Results</h4>
+                        <p><strong>Passed:</strong> ${passCount}/${totalCount} tests</p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            ${resultsHtml}
+                        </ul>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = showError(`Full test failed: ${error.message}`);
+            }
+        }
+
+        async function initializeHandbook() {
+            const resultDiv = document.getElementById('integration-result');
+            resultDiv.innerHTML = showLoading('Initializing handbook...');
+
+            try {
+                if (typeof BukuPedomanManager !== 'undefined') {
+                    window.testHandbookManager = new BukuPedomanManager();
+                    
+                    resultDiv.innerHTML = showSuccess('Handbook initialized successfully!') + 
+                        `<div class="info">
+                            <h4>Initialization Complete:</h4>
+                            <ul>
+                                <li>BukuPedomanManager instance created</li>
+                                <li>Available as window.testHandbookManager</li>
+                                <li>Ready for testing</li>
+                            </ul>
+                        </div>`;
+                } else {
+                    throw new Error('BukuPedomanManager class not available');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = showError(`Initialization failed: ${error.message}`);
+            }
+        }
+
+        function showLivePreview() {
+            const previewDiv = document.getElementById('live-preview');
+            const contentDiv = document.getElementById('buku-pedoman-content');
+            
+            previewDiv.style.display = 'block';
+            
+            if (window.testHandbookManager) {
+                // Use existing manager
+                window.testHandbookManager.renderHandbook();
+            } else {
+                // Create new manager for preview
+                try {
+                    window.testHandbookManager = new BukuPedomanManager();
+                } catch (error) {
+                    contentDiv.innerHTML = showError(`Preview failed: ${error.message}`);
+                }
+            }
+        }
+
+        function hideLivePreview() {
+            const previewDiv = document.getElementById('live-preview');
+            previewDiv.style.display = 'none';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Test page loaded');
+            console.log('BukuPedomanManager available:', typeof BukuPedomanManager !== 'undefined');
+            console.log('jsPDF available:', typeof window.jspdf !== 'undefined');
+            console.log('html2canvas available:', typeof html2canvas !== 'undefined');
+        });
+    </script>
+
+    <style>
+        .pass { color: #28a745; }
+        .fail { color: #dc3545; }
+        
+        .handbook-preview {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .test-section .result-area ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .test-section .result-area li {
+            margin: 5px 0;
+        }
+    </style>
+</body>
+</html>

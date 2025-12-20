@@ -94,6 +94,7 @@ app.get('/api/risk-profile-excel', async (req, res) => {
   }
 });
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
 app.use('/api/risks', require('./routes/risks'));
 app.use('/api/master-data', require('./routes/master-data'));
 app.use('/api/reports', require('./routes/reports'));
@@ -117,6 +118,7 @@ app.use('/api/strategic-map', require('./routes/strategic-map'));
 app.use('/api/indikator-kinerja-utama', require('./routes/indikator-kinerja-utama'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/test-org-filter', require('./routes/test-org-filter'));
+app.use('/api/buku-pedoman', require('./routes/buku-pedoman'));
 
 // Serve index.html for all routes (SPA) - must be last
 app.get('*', (req, res) => {

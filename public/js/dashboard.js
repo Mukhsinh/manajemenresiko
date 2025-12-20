@@ -397,7 +397,19 @@ function renderResidualRiskChart(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false,
+            aspectRatio: 1,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
         }
     });
     } catch (error) {
@@ -436,7 +448,19 @@ function renderKRIChart(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false,
+            aspectRatio: 1,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
         }
     });
     } catch (error) {

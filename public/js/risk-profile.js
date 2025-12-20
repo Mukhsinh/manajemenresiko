@@ -49,11 +49,11 @@ const RiskProfileModule = (() => {
 
       console.log('Calling API endpoint: /api/risk-profile-real');
       const data = await api()('/api/risk-profile-real');
-      console.log('Raw API response:', data);
+      // console.log('Raw API response:', data);
       
       state.data = data || [];
       console.log('Risk profile loaded:', state.data.length, 'items');
-      console.log('Sample data:', state.data[0]);
+      // console.log('Sample data:', state.data[0]);
       console.log('=== END FETCH ===');
     } catch (error) {
       console.error('Error fetching risk profile:', error);
@@ -176,7 +176,7 @@ const RiskProfileModule = (() => {
 
   function renderStatistics() {
     console.log('=== RENDERING STATISTICS ===');
-    console.log('State data for stats:', state.data);
+    // console.log('State data for stats:', state.data);
     
     const stats = {
       total: state.data.length,
@@ -186,7 +186,7 @@ const RiskProfileModule = (() => {
       low: state.data.filter(d => d.risk_level === 'LOW RISK').length
     };
     
-    console.log('Calculated stats:', stats);
+    // console.log('Calculated stats:', stats);
 
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">

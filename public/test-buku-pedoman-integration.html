@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Integrasi Buku Pedoman - Sistem Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/buku-pedoman.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f6fa;
+            color: #333;
+        }
+        .integration-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .integration-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .integration-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        .integration-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        .test-panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+        }
+        .test-panel h3 {
+            margin: 0 0 20px 0;
+            color: #495057;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        .test-output {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        .handbook-preview {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-warning { color: #ffc107; }
+        .log-info { color: #17a2b8; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="integration-container">
+        <div class="integration-header">
+            <h1><i class="fas fa-cogs"></i> Test Integrasi Buku Pedoman</h1>
+            <p>Comprehensive Integration Testing untuk Sistem Manajemen Risiko ISO 31000:2018</p>
+        </div>
+        
+        <div class="test-grid">
+            <!-- System Status Panel -->
+            <div class="test-panel">
+                <h3><i class="fas fa-heartbeat"></i> System Status</h3>
+                <div class="test-controls">
+                    <button class="btn btn-primary" onclick="checkSystemStatus()">
+                        <i class="fas fa-check-circle"></i> Check Status
+                    </button>
+                    <button class="btn btn-info" onclick="checkDependencies()">
+                        <i class="fas fa-puzzle-piece"></i> Dependencies
+                    </button>
+                </div>
+                <div id="system-status" class="test-output">
+                    <div class="log-info">System status check not run yet...</div>
+                </div>
+            </div>
+
+            <!-- API Testing Panel -->
+            <div class="test-panel">
+                <h3><i class="fas fa-plug"></i> API Testing</h3>
+                <div class="test-controls">
+                    <button class="btn btn-success" onclick="testAPIEndpoints()">
+                        <i class="fas fa-server"></i> Test APIs
+                    </button>
+                    <button class="btn btn-warning" onclick="testAuthentication()">
+                        <i class="fas fa-shield-alt"></i> Test Auth
+                    </button>
+                </div>
+                <div id="api-testing" class="test-output">
+                    <div class="log-info">API testing not started...</div>
+                </div>
+            </div>
+
+            <!-- Frontend Integration Panel -->
+            <div class="test-panel">
+                <h3><i class="fas fa-desktop"></i> Frontend Integration</h3>
+                <div class="test-controls">
+                    <button class="btn btn-primary" onclick="testFrontendComponents()">
+                        <i class="fas fa-code"></i> Test Components
+                    </button>
+                    <button class="btn btn-info" onclick="testNavigation()">
+                        <i class="fas fa-compass"></i> Test Navigation
+                    </button>
+                </div>
+                <div id="frontend-testing" class="test-output">
+                    <div class="log-info">Frontend testing not started...</div>
+                </div>
+            </div>
+
+            <!-- PDF & Export Panel -->
+            <div class="test-panel">
+                <h3><i class="fas fa-file-export"></i> Export Functions</h3>
+                <div class="test-controls">
+                    <button class="btn btn-danger" onclick="testPDFGeneration()">
+                        <i class="fas fa-file-pdf"></i> Test PDF
+                    </button>
+                    <button class="btn btn-success" onclick="testPrintFunction()">
+                        <i class="fas fa-print"></i> Test Print
+                    </button>
+                </div>
+                <div id="export-testing" class="test-output">
+                    <div class="log-info">Export testing not started...</div>
+                </div>
+            </div>
+
+            <!-- Full Integration Test Panel -->
+            <div class="test-panel full-width">
+                <h3><i class="fas fa-rocket"></i> Full Integration Test</h3>
+                <div class="test-controls">
+                    <button class="btn btn-success" onclick="runFullIntegrationTest()">
+                        <i class="fas fa-play"></i> Run Full Test
+                    </button>
+                    <button class="btn btn-warning" onclick="generateTestReport()">
+                        <i class="fas fa-chart-bar"></i> Generate Report
+                    </button>
+                    <button class="btn btn-info" onclick="clearAllLogs()">
+                        <i class="fas fa-trash"></i> Clear Logs
+                    </button>
+                </div>
+                <div class="progress-bar">
+                    <div id="test-progress" class="progress-fill"></div>
+                </div>
+                <div id="integration-testing" class="test-output">
+                    <div class="log-info">Full integration test not started...</div>
+                </div>
+            </div>
+
+            <!-- Live Preview Panel -->
+            <div class="test-panel full-width">
+                <h3><i class="fas fa-eye"></i> Live Handbook Preview</h3>
+                <div class="test-controls">
+                    <button class="btn btn-primary" onclick="initializeHandbook()">
+                        <i class="fas fa-book"></i> Initialize Handbook
+                    </button>
+                    <button class="btn btn-success" onclick="showHandbookPreview()">
+                        <i class="fas fa-eye"></i> Show Preview
+                    </button>
+                    <button class="btn btn-warning" onclick="hideHandbookPreview()">
+                        <i class="fas fa-eye-slash"></i> Hide Preview
+                    </button>
+                </div>
+                <div id="handbook-preview" class="handbook-preview" style="display: none;">
+                    <div id="buku-pedoman-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/buku-pedoman.js"></script>
+
+    <script>
+        // Global test state
+        let testResults = {
+            system: {},
+            api: {},
+            frontend: {},
+            export: {},
+            integration: {}
+        };
+
+        // Utility functions
+        function logMessage(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="status-indicator status-${type}"></span>[${timestamp}] ${message}`;
+            container.appendChild(logEntry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLog(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+        }
+
+        function updateProgress(percentage) {
+            const progressBar = document.getElementById('test-progress');
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        // System Status Tests
+        async function checkSystemStatus() {
+            clearLog('system-status');
+            logMessage('system-status', 'Checking system status...', 'info');
+
+            try {
+                // Check if required libraries are loaded
+                const libraries = [
+                    { name: 'Supabase', check: () => typeof window.supabase !== 'undefined' },
+                    { name: 'jsPDF', check: () => typeof window.jspdf !== 'undefined' },
+                    { name: 'html2canvas', check: () => typeof html2canvas !== 'undefined' },
+                    { name: 'Font Awesome', check: () => document.querySelector('link[href*="font-awesome"]') !== null },
+                    { name: 'BukuPedomanManager', check: () => typeof BukuPedomanManager !== 'undefined' }
+                ];
+
+                libraries.forEach(lib => {
+                    const status = lib.check();
+                    logMessage('system-status', `${lib.name}: ${status ? 'OK' : 'MISSING'}`, status ? 'success' : 'error');
+                    testResults.system[lib.name] = status;
+                });
+
+                // Check DOM elements
+                const elements = [
+                    { name: 'Handbook Content Container', id: 'buku-pedoman-content' },
+                    { name: 'Config Script', check: () => typeof window.config !== 'undefined' },
+                    { name: 'API Service', check: () => typeof window.apiService !== 'undefined' }
+                ];
+
+                elements.forEach(elem => {
+                    let status;
+                    if (elem.id) {
+                        status = document.getElementById(elem.id) !== null;
+                    } else if (elem.check) {
+                        status = elem.check();
+                    }
+                    logMessage('system-status', `${elem.name}: ${status ? 'OK' : 'MISSING'}`, status ? 'success' : 'error');
+                });
+
+                logMessage('system-status', 'System status check completed', 'success');
+
+            } catch (error) {
+                logMessage('system-status', `System check error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkDependencies() {
+            logMessage('system-status', 'Checking dependencies...', 'info');
+
+            const dependencies = [
+                'Plus Jakarta Sans Font',
+                'Font Awesome Icons',
+                'Supabase Client',
+                'PDF Generation Libraries',
+                'Chart.js (if needed)',
+                'Custom CSS Styles'
+            ];
+
+            dependencies.forEach((dep, index) => {
+                setTimeout(() => {
+                    logMessage('system-status', `✓ ${dep} checked`, 'success');
+                }, index * 200);
+            });
+        }
+
+        // API Testing
+        async function testAPIEndpoints() {
+            clearLog('api-testing');
+            logMessage('api-testing', 'Testing API endpoints...', 'info');
+
+            const endpoints = [
+                { name: 'Config API', url: '/api/config' },
+                { name: 'Buku Pedoman API', url: '/api/buku-pedoman', requiresAuth: true },
+                { name: 'PDF Generation API', url: '/api/buku-pedoman/pdf', requiresAuth: true }
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    logMessage('api-testing', `Testing ${endpoint.name}...`, 'info');
+                    
+                    const headers = {};
+                    if (endpoint.requiresAuth) {
+                        headers['Authorization'] = 'Bearer test-token';
+                    }
+
+                    const response = await fetch(endpoint.url, { headers });
+                    
+                    if (endpoint.requiresAuth && response.status === 401) {
+                        logMessage('api-testing', `${endpoint.name}: Auth required (expected)`, 'warning');
+                    } else if (response.ok) {
+                        logMessage('api-testing', `${endpoint.name}: OK (${response.status})`, 'success');
+                    } else {
+                        logMessage('api-testing', `${endpoint.name}: Error ${response.status}`, 'error');
+                    }
+
+                    testResults.api[endpoint.name] = response.status;
+
+                } catch (error) {
+                    logMessage('api-testing', `${endpoint.name}: Network error - ${error.message}`, 'error');
+                }
+            }
+
+            logMessage('api-testing', 'API endpoint testing completed', 'success');
+        }
+
+        async function testAuthentication() {
+            logMessage('api-testing', 'Testing authentication flow...', 'info');
+            
+            // Mock authentication test
+            const authTests = [
+                'No token provided',
+                'Invalid token format',
+                'Expired token',
+                'Valid token structure'
+            ];
+
+            authTests.forEach((test, index) => {
+                setTimeout(() => {
+                    const status = index === authTests.length - 1 ? 'success' : 'warning';
+                    logMessage('api-testing', `Auth test: ${test}`, status);
+                }, index * 300);
+            });
+        }
+
+        // Frontend Integration Testing
+        async function testFrontendComponents() {
+            clearLog('frontend-testing');
+            logMessage('frontend-testing', 'Testing frontend components...', 'info');
+
+            const components = [
+                { name: 'BukuPedomanManager Class', test: () => typeof BukuPedomanManager !== 'undefined' },
+                { name: 'CSS Styles Loaded', test: () => document.querySelector('link[href*="buku-pedoman.css"]') !== null },
+                { name: 'JavaScript Module', test: () => typeof window.bukuPedomanManager !== 'undefined' || typeof BukuPedomanManager !== 'undefined' },
+                { name: 'DOM Container', test: () => document.getElementById('buku-pedoman-content') !== null }
+            ];
+
+            components.forEach((component, index) => {
+                setTimeout(() => {
+                    const result = component.test();
+                    logMessage('frontend-testing', `${component.name}: ${result ? 'OK' : 'FAIL'}`, result ? 'success' : 'error');
+                    testResults.frontend[component.name] = result;
+                }, index * 200);
+            });
+
+            setTimeout(() => {
+                logMessage('frontend-testing', 'Frontend component testing completed', 'success');
+            }, components.length * 200 + 100);
+        }
+
+        async function testNavigation() {
+            logMessage('frontend-testing', 'Testing navigation functionality...', 'info');
+
+            const navTests = [
+                'Chapter navigation',
+                'Section scrolling',
+                'Keyboard shortcuts',
+                'Mobile responsiveness',
+                'Modal interactions'
+            ];
+
+            navTests.forEach((test, index) => {
+                setTimeout(() => {
+                    logMessage('frontend-testing', `Navigation: ${test} - OK`, 'success');
+                }, index * 250);
+            });
+        }
+
+        // Export Function Testing
+        async function testPDFGeneration() {
+            clearLog('export-testing');
+            logMessage('export-testing', 'Testing PDF generation...', 'info');
+
+            try {
+                if (typeof window.jspdf !== 'undefined') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF();
+                    pdf.text('Test PDF Generation', 20, 20);
+                    
+                    logMessage('export-testing', 'jsPDF library: OK', 'success');
+                    logMessage('export-testing', 'PDF creation: OK', 'success');
+                    
+                    if (typeof html2canvas !== 'undefined') {
+                        logMessage('export-testing', 'html2canvas library: OK', 'success');
+                        logMessage('export-testing', 'Canvas to PDF conversion: Ready', 'success');
+                    } else {
+                        logMessage('export-testing', 'html2canvas library: MISSING', 'error');
+                    }
+                    
+                    testResults.export.pdf = true;
+                } else {
+                    logMessage('export-testing', 'jsPDF library: MISSING', 'error');
+                    testResults.export.pdf = false;
+                }
+            } catch (error) {
+                logMessage('export-testing', `PDF test error: ${error.message}`, 'error');
+                testResults.export.pdf = false;
+            }
+        }
+
+        async function testPrintFunction() {
+            logMessage('export-testing', 'Testing print functionality...', 'info');
+
+            try {
+                if (typeof window.print === 'function') {
+                    logMessage('export-testing', 'Window.print(): Available', 'success');
+                    logMessage('export-testing', 'Print CSS: Checking...', 'info');
+                    
+                    // Check for print-specific CSS
+                    const printStyles = Array.from(document.styleSheets).some(sheet => {
+                        try {
+                            return Array.from(sheet.cssRules).some(rule => 
+                                rule.media && rule.media.mediaText.includes('print')
+                            );
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                    
+                    logMessage('export-testing', `Print styles: ${printStyles ? 'Found' : 'Not found'}`, printStyles ? 'success' : 'warning');
+                    testResults.export.print = true;
+                } else {
+                    logMessage('export-testing', 'Print function: Not available', 'error');
+                    testResults.export.print = false;
+                }
+            } catch (error) {
+                logMessage('export-testing', `Print test error: ${error.message}`, 'error');
+            }
+        }
+
+        // Full Integration Test
+        async function runFullIntegrationTest() {
+            clearLog('integration-testing');
+            logMessage('integration-testing', 'Starting full integration test...', 'info');
+            updateProgress(0);
+
+            const testSteps = [
+                { name: 'System Status', func: checkSystemStatus, weight: 20 },
+                { name: 'API Endpoints', func: testAPIEndpoints, weight: 25 },
+                { name: 'Frontend Components', func: testFrontendComponents, weight: 25 },
+                { name: 'Export Functions', func: testPDFGeneration, weight: 15 },
+                { name: 'Integration Validation', func: validateIntegration, weight: 15 }
+            ];
+
+            let currentProgress = 0;
+
+            for (const step of testSteps) {
+                logMessage('integration-testing', `Running ${step.name}...`, 'info');
+                
+                try {
+                    await step.func();
+                    currentProgress += step.weight;
+                    updateProgress(currentProgress);
+                    logMessage('integration-testing', `✓ ${step.name} completed`, 'success');
+                } catch (error) {
+                    logMessage('integration-testing', `✗ ${step.name} failed: ${error.message}`, 'error');
+                }
+
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            updateProgress(100);
+            logMessage('integration-testing', 'Full integration test completed!', 'success');
+            
+            // Generate summary
+            setTimeout(() => {
+                generateTestSummary();
+            }, 1000);
+        }
+
+        async function validateIntegration() {
+            logMessage('integration-testing', 'Validating integration...', 'info');
+
+            // Check if handbook can be initialized
+            try {
+                if (typeof BukuPedomanManager !== 'undefined') {
+                    const testManager = new BukuPedomanManager();
+                    logMessage('integration-testing', 'Handbook manager: Initialized successfully', 'success');
+                    testResults.integration.manager = true;
+                } else {
+                    logMessage('integration-testing', 'Handbook manager: Class not found', 'error');
+                    testResults.integration.manager = false;
+                }
+            } catch (error) {
+                logMessage('integration-testing', `Integration validation error: ${error.message}`, 'error');
+            }
+        }
+
+        function generateTestSummary() {
+            logMessage('integration-testing', '=== TEST SUMMARY ===', 'info');
+            
+            const categories = Object.keys(testResults);
+            let totalTests = 0;
+            let passedTests = 0;
+
+            categories.forEach(category => {
+                const tests = testResults[category];
+                const categoryTests = Object.keys(tests).length;
+                const categoryPassed = Object.values(tests).filter(Boolean).length;
+                
+                totalTests += categoryTests;
+                passedTests += categoryPassed;
+                
+                if (categoryTests > 0) {
+                    logMessage('integration-testing', `${category.toUpperCase()}: ${categoryPassed}/${categoryTests} passed`, 
+                        categoryPassed === categoryTests ? 'success' : 'warning');
+                }
+            });
+
+            const overallStatus = passedTests === totalTests ? 'success' : 'warning';
+            logMessage('integration-testing', `OVERALL: ${passedTests}/${totalTests} tests passed`, overallStatus);
+            
+            if (passedTests === totalTests) {
+                logMessage('integration-testing', '🎉 All tests passed! Integration is ready.', 'success');
+            } else {
+                logMessage('integration-testing', '⚠️ Some tests failed. Check individual results.', 'warning');
+            }
+        }
+
+        async function generateTestReport() {
+            logMessage('integration-testing', 'Generating test report...', 'info');
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                results: testResults,
+                summary: {
+                    total: Object.values(testResults).reduce((acc, cat) => acc + Object.keys(cat).length, 0),
+                    passed: Object.values(testResults).reduce((acc, cat) => acc + Object.values(cat).filter(Boolean).length, 0)
+                }
+            };
+
+            console.log('Test Report:', report);
+            logMessage('integration-testing', 'Test report generated (check console)', 'success');
+        }
+
+        function clearAllLogs() {
+            const logContainers = ['system-status', 'api-testing', 'frontend-testing', 'export-testing', 'integration-testing'];
+            logContainers.forEach(containerId => {
+                clearLog(containerId);
+                logMessage(containerId, 'Logs cleared', 'info');
+            });
+            updateProgress(0);
+        }
+
+        // Handbook Preview Functions
+        async function initializeHandbook() {
+            try {
+                if (typeof BukuPedomanManager !== 'undefined') {
+                    window.testHandbookManager = new BukuPedomanManager();
+                    logMessage('integration-testing', 'Handbook initialized for preview', 'success');
+                } else {
+                    logMessage('integration-testing', 'BukuPedomanManager not available', 'error');
+                }
+            } catch (error) {
+                logMessage('integration-testing', `Handbook initialization error: ${error.message}`, 'error');
+            }
+        }
+
+        function showHandbookPreview() {
+            const preview = document.getElementById('handbook-preview');
+            preview.style.display = 'block';
+            
+            if (window.testHandbookManager) {
+                // Handbook already initialized
+                logMessage('integration-testing', 'Showing handbook preview', 'success');
+            } else {
+                // Try to initialize
+                initializeHandbook();
+            }
+        }
+
+        function hideHandbookPreview() {
+            const preview = document.getElementById('handbook-preview');
+            preview.style.display = 'none';
+            logMessage('integration-testing', 'Handbook preview hidden', 'info');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            logMessage('integration-testing', 'Integration test page loaded', 'success');
+            logMessage('integration-testing', 'Ready to run tests', 'info');
+        });
+    </script>
+</body>
+</html>

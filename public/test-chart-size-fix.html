@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chart Size Fix</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .before-after {
+            text-align: center;
+        }
+        .chart-demo {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .old-chart {
+            background: #ffebee;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid #f44336;
+        }
+        .new-chart {
+            background: #e8f5e8;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid #4caf50;
+        }
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        .status.fixed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.issue {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Perbaikan Ukuran Grafik</h1>
+    
+    <div class="test-section">
+        <h2>📊 Perbandingan Ukuran Grafik</h2>
+        <p>Grafik sekarang sudah disesuaikan agar tidak terlalu besar dan lebih proporsional.</p>
+        
+        <div class="comparison-grid">
+            <div class="before-after">
+                <h3>❌ Sebelum (Terlalu Besar)</h3>
+                <div class="old-chart">
+                    <div class="chart-demo">
+                        <canvas id="old-chart" width="400" height="400"></canvas>
+                    </div>
+                    <p><small>maintainAspectRatio: true<br>Tidak ada pembatasan ukuran</small></p>
+                </div>
+            </div>
+            
+            <div class="before-after">
+                <h3>✅ Sesudah (Proporsional)</h3>
+                <div class="new-chart">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h4 class="chart-title">Status KRI</h4>
+                            <canvas id="new-chart"></canvas>
+                        </div>
+                    </div>
+                    <p><small>maintainAspectRatio: false<br>aspectRatio: 1<br>max-height: 300px</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Perbaikan yang Diterapkan</h2>
+        <div class="status fixed">
+            ✅ CSS: Menambahkan pembatasan ukuran maksimum untuk chart-card dan canvas
+        </div>
+        <div class="status fixed">
+            ✅ Chart.js: Mengubah maintainAspectRatio dari true ke false
+        </div>
+        <div class="status fixed">
+            ✅ Chart.js: Menambahkan aspectRatio: 1 untuk rasio 1:1
+        </div>
+        <div class="status fixed">
+            ✅ Chart.js: Memindahkan legend ke bawah untuk menghemat ruang
+        </div>
+        <div class="status fixed">
+            ✅ Responsive: Grafik menyesuaikan ukuran layar dengan baik
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Test Responsivitas</h2>
+        <p>Coba ubah ukuran browser untuk melihat bagaimana grafik menyesuaikan:</p>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h4 class="chart-title">KRI Status</h4>
+                <canvas id="responsive-chart-1"></canvas>
+            </div>
+            <div class="chart-card">
+                <h4 class="chart-title">Risk Profile</h4>
+                <canvas id="responsive-chart-2"></canvas>
+            </div>
+            <div class="chart-card">
+                <h4 class="chart-title">Monitoring</h4>
+                <canvas id="responsive-chart-3"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 File yang Diperbaiki</h2>
+        <ul>
+            <li><strong>public/css/style.css</strong> - Menambahkan styling untuk chart-card dan chart-container</li>
+            <li><strong>public/js/kri.js</strong> - Memperbaiki konfigurasi Chart.js</li>
+            <li><strong>public/js/dashboard.js</strong> - Memperbaiki grafik dashboard</li>
+            <li><strong>public/js/ews.js</strong> - Memperbaiki grafik Early Warning System</li>
+        </ul>
+    </div>
+
+    <script>
+        // Sample data untuk demo
+        const sampleData = {
+            labels: ['Aman', 'Hati-hati', 'Kritis'],
+            datasets: [{
+                data: [15, 8, 3],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+
+        // Chart lama (terlalu besar)
+        new Chart(document.getElementById('old-chart'), {
+            type: 'doughnut',
+            data: sampleData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true, // Ini yang menyebabkan masalah
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Chart baru (proporsional)
+        new Chart(document.getElementById('new-chart'), {
+            type: 'doughnut',
+            data: sampleData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Diperbaiki
+                aspectRatio: 1,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Charts responsif
+        const responsiveOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            aspectRatio: 1,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        };
+
+        new Chart(document.getElementById('responsive-chart-1'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Aman', 'Hati-hati', 'Kritis'],
+                datasets: [{
+                    data: [15, 8, 3],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                }]
+            },
+            options: responsiveOptions
+        });
+
+        new Chart(document.getElementById('responsive-chart-2'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi'],
+                datasets: [{
+                    data: [12, 18, 7, 2],
+                    backgroundColor: ['#4CAF50', '#FFC107', '#FF9800', '#F44336']
+                }]
+            },
+            options: responsiveOptions
+        });
+
+        new Chart(document.getElementById('responsive-chart-3'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Selesai', 'Dalam Progress', 'Tertunda'],
+                datasets: [{
+                    data: [20, 12, 5],
+                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107']
+                }]
+            },
+            options: responsiveOptions
+        });
+
+        // Test resize
+        window.addEventListener('resize', function() {
+            console.log('Window resized - charts should adapt automatically');
+        });
+    </script>
+</body>
+</html>

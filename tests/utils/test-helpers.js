@@ -245,6 +245,33 @@ const assertions = {
   }
 };
 
+/**
+ * Custom Jest matchers
+ */
+const customMatchers = {
+  toBeValidUUID(received) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const pass = typeof received === 'string' && uuidRegex.test(received);
+    
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be a valid UUID`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be a valid UUID`,
+        pass: false,
+      };
+    }
+  }
+};
+
+// Extend Jest matchers
+if (typeof expect !== 'undefined' && expect.extend) {
+  expect.extend(customMatchers);
+}
+
 module.exports = {
   apiRequest,
   dbHelpers,

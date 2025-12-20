@@ -43,11 +43,11 @@ async function testResidualAPI() {
       req.end();
     });
     
-    if (!loginResult.data.token) {
+    const token = loginResult.data.session?.access_token || loginResult.data.token;
+    
+    if (!token) {
       throw new Error('No token received from login');
     }
-    
-    const token = loginResult.data.token;
     console.log('✅ Login successful, token received');
     
     // Test 2: Residual Risk API

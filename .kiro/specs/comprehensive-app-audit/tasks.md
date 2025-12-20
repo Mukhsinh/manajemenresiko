@@ -122,37 +122,63 @@
   - Tests verify CRUD operations and multi-user consistency ✓
   - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
-- [ ]* 14. Write property tests for authentication
-  - **Property 1: Valid credentials create session** - Test that any valid email/password creates a session
-  - **Property 2: Invalid credentials are rejected** - Test that any invalid credentials are rejected
-  - **Property 3: Logout invalidates session** - Test that logout invalidates any session token
-  - **Property 4: Registration creates complete user** - Test that registration creates both auth user and user_profile
+- [x] 14. Write property tests for authentication
+  - **Property 1: Valid credentials create session** - Test that any valid email/password creates a session ✓
+  - **Property 2: Invalid credentials are rejected** - Test that any invalid credentials are rejected ✓
+  - **Property 3: Logout invalidates session** - Test that logout invalidates any session token ✓
+  - **Property 4: Registration creates complete user** - Test that registration creates both auth user and user_profile ✓
+  - Created comprehensive property-based tests for authentication endpoints ✓
+  - Verified authentication endpoints are working correctly ✓
+  - Tests validate login, registration, logout, and token verification ✓
   - _Requirements: 1.1, 1.2, 1.4, 1.5_
 
-- [ ]* 15. Write property tests for user management
-  - **Property 5: User updates persist and reflect** - Test that any user update persists correctly
-  - **Property 6: User deletion revokes access** - Test that deleting any user revokes their access
-  - **Property 7: Organization filtering in user lists** - Test that users only see their organization's users
+- [x] 15. Write property tests for user management
+  - **Property 5: User updates persist and reflect** - Test that any user update persists correctly ✓
+  - **Property 6: User deletion revokes access** - Test that deleting any user revokes their access ✓
+  - **Property 7: Organization filtering in user lists** - Test that users only see their organization's users ✓
+  - Created comprehensive user management routes with CRUD operations ✓
+  - Implemented organization-based filtering for multi-tenant isolation ✓
+  - Created property-based tests for user management functionality ✓
+  - Fixed column name issues (name -> full_name) ✓
+  - Authentication and authorization working correctly ✓
   - _Requirements: 2.2, 2.3, 2.4_
 
-- [ ]* 16. Write property tests for data import/export
-  - **Property 8: Valid form data saves correctly** - Test that any valid form data saves to database
-  - **Property 9: Excel import parses and validates** - Test that Excel import correctly parses and validates data
-  - **Property 10: Import success shows count** - Test that successful imports display correct record count
-  - **Property 11: Data associates with organization** - Test that created data is associated with user's organization
-  - **Property 12: Reports filter by organization** - Test that reports only include user's organization data
+- [x] 16. Write property tests for data import/export
+  - **Property 8: Valid form data saves correctly** - Test that any valid form data saves to database ✓
+  - **Property 9: Excel import parses and validates** - Test that Excel import correctly parses and validates data ✓
+  - **Property 10: Import success shows count** - Test that successful imports display correct record count ✓
+  - **Property 11: Data associates with organization** - Test that created data is associated with user's organization ✓
+  - **Property 12: Reports filter by organization** - Test that reports only include user's organization data ✓
+  - Created comprehensive property-based tests for data import/export functionality ✓
+  - Implemented Excel file creation and validation testing ✓
+  - Added template download and file upload testing ✓
+  - Verified organization-based data filtering in reports ✓
+  - Tests cover form validation, file parsing, and data association ✓
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.3_
 
-- [ ]* 17. Write property tests for navigation and authorization
-  - **Property 13: Menu navigation loads correct data** - Test that navigating to any page loads correct data
-  - **Property 14: Authentication persists across navigation** - Test that auth state persists during navigation
-  - **Property 15: Restricted page authorization** - Test that restricted pages verify user permissions
-  - **Property 16: Chart filtering updates all charts** - Test that applying filters updates all charts
+- [x] 17. Write property tests for navigation and authorization
+  - **Property 13: Menu navigation loads correct data** - Test that navigating to any page loads correct data ✓
+  - **Property 14: Authentication persists across navigation** - Test that auth state persists during navigation ✓
+  - **Property 15: Restricted page authorization** - Test that restricted pages verify user permissions ✓
+  - **Property 16: Chart filtering updates all charts** - Test that applying filters updates all charts ✓
+  - Created comprehensive property-based tests for navigation and authorization ✓
+  - Verified authentication persistence across multiple requests ✓
+  - Tested restricted endpoint access control with invalid tokens ✓
+  - Validated chart filtering and dashboard functionality ✓
+  - Confirmed CORS and security headers are properly set ✓
+  - Tested session timeout and expired token handling ✓
   - _Requirements: 6.1, 6.2, 6.3, 6.5, 5.5_
 
-- [ ]* 18. Write property tests for multi-tenant isolation
-  - **Property 17: Automatic organization filtering** - Test that queries automatically filter by organization
-  - **Property 18: Organization association on create** - Test that new records are associated with organization
+- [x] 18. Write property tests for multi-tenant isolation
+  - **Property 17: Automatic organization filtering** - Test that queries automatically filter by organization ✓
+  - **Property 18: Organization association on create** - Test that new records are associated with organization ✓
+  - Created comprehensive property-based tests for multi-tenant isolation ✓
+  - Verified automatic organization filtering across all data endpoints ✓
+  - Tested organization association when creating new records ✓
+  - Confirmed cross-organization data isolation prevents data leakage ✓
+  - Validated user filtering by organization boundaries ✓
+  - Tested dashboard and report data isolation ✓
+  - All data queries properly filter by user's organization ✓
   - _Requirements: 7.1, 7.2, 7.3_
 
 - [ ]* 19. Write property tests for error handling

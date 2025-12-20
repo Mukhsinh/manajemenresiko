@@ -10,7 +10,7 @@ async function testRiskRegisterColumns() {
             password: 'admin123'
         });
         
-        const token = loginResponse.data.token;
+        const token = loginResponse.data.session?.access_token || loginResponse.data.token;
         console.log('✅ Login successful');
         
         // Get risk register data

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .debug {
+            background: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Simple Login Test</h1>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="login-email" value="admin@test.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" value="admin123" required>
+            </div>
+            <button type="submit" id="login-btn">Login</button>
+        </form>
+        
+        <div id="auth-message" class="message"></div>
+        <div id="debug-log" class="message debug" style="display: block;"></div>
+    </div>
+
+    <!-- Load required scripts in correct order -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/services/authService.js"></script>
+
+    <script>
+        let debugLog = '';
+        
+        function log(message) {
+            console.log(message);
+            debugLog += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            document.getElementById('debug-log').textContent = debugLog;
+        }
+        
+        function showMessage(text, type = 'error') {
+            const messageEl = document.getElementById('auth-message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 DOM loaded, initializing...');
+            
+            // Wait for dependencies
+            let retries = 0;
+            while ((!window.supabaseClient || !window.authService) && retries < 30) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retries++;
+                if (retries % 5 === 0) {
+                    log(`Waiting for dependencies... attempt ${retries}`);
+                }
+            }
+            
+            if (!window.supabaseClient) {
+                log('❌ Supabase client not available');
+                showMessage('Supabase client not available');
+                return;
+            }
+            
+            if (!window.authService) {
+                log('❌ AuthService not available');
+                showMessage('AuthService not available');
+                return;
+            }
+            
+            log('✅ All dependencies loaded');
+            
+            // Setup form handler
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            log('✅ Form handler attached');
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            log('🔐 Login form submitted');
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const submitBtn = document.getElementById('login-btn');
+            
+            log(`Attempting login for: ${email}`);
+            
+            // Clear previous messages
+            showMessage('', 'error');
+            
+            // Disable form
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            
+            try {
+                log('Calling authService.login...');
+                const result = await window.authService.login(email, password);
+                log(`Login result: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    log('✅ Login successful!');
+                    showMessage('Login berhasil! ✅', 'success');
+                    
+                    // Simulate redirect to dashboard
+                    setTimeout(() => {
+                        showMessage('Redirecting to dashboard... 🚀', 'success');
+                        log('Would redirect to dashboard now');
+                    }, 1000);
+                    
+                } else {
+                    log('❌ Login failed: ' + result.error);
+                    showMessage('Login gagal: ' + result.error, 'error');
+                }
+                
+            } catch (error) {
+                log('❌ Login error: ' + error.message);
+                showMessage('Login error: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
+        }
+    </script>
+</body>
+</html>
