@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation Fix - PINTAR MR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .navigation-test {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .nav-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+        }
+        .nav-button:hover {
+            background: #218838;
+        }
+        .nav-button.active {
+            background: #dc3545;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Navigation Fix - PINTAR MR</h1>
+        <p>Test untuk memverifikasi perbaikan navigasi tanpa refresh</p>
+
+        <!-- Router Status -->
+        <div class="test-section">
+            <h3>📊 Router Status</h3>
+            <div id="router-status">
+                <div id="router-availability">
+                    <span class="status-indicator status-info"></span>
+                    Checking router availability...
+                </div>
+                <div id="router-manager-status">
+                    <span class="status-indicator status-info"></span>
+                    Checking RouterManager status...
+                </div>
+                <div id="navigation-function-status">
+                    <span class="status-indicator status-info"></span>
+                    Checking navigateToPage function...
+                </div>
+                <div id="route-config-status">
+                    <span class="status-indicator status-info"></span>
+                    Checking route configuration...
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tests -->
+        <div class="test-section">
+            <h3>🧭 Navigation Tests</h3>
+            <p>Klik tombol di bawah untuk test navigasi tanpa refresh:</p>
+            
+            <div class="navigation-test">
+                <button class="nav-button" onclick="testNavigation('dashboard')">Dashboard</button>
+                <button class="nav-button" onclick="testNavigation('visi-misi')">Visi & Misi</button>
+                <button class="nav-button" onclick="testNavigation('rencana-strategis')">Rencana Strategis</button>
+                <button class="nav-button" onclick="testNavigation('analisis-swot')">Analisis SWOT</button>
+                <button class="nav-button" onclick="testNavigation('diagram-kartesius')">Diagram Kartesius</button>
+                <button class="nav-button" onclick="testNavigation('matriks-tows')">Matriks TOWS</button>
+                <button class="nav-button" onclick="testNavigation('sasaran-strategi')">Sasaran Strategi</button>
+                <button class="nav-button" onclick="testNavigation('strategic-map')">Strategic Map</button>
+                <button class="nav-button" onclick="testNavigation('indikator-kinerja-utama')">IKU</button>
+                <button class="nav-button" onclick="testNavigation('risk-input')">Risk Input</button>
+                <button class="nav-button" onclick="testNavigation('risk-profile')">Risk Profile</button>
+                <button class="nav-button" onclick="testNavigation('residual-risk')">Residual Risk</button>
+                <button class="nav-button" onclick="testNavigation('monitoring-evaluasi')">Monitoring</button>
+                <button class="nav-button" onclick="testNavigation('peluang')">Peluang</button>
+                <button class="nav-button" onclick="testNavigation('kri')">KRI</button>
+                <button class="nav-button" onclick="testNavigation('ews')">EWS</button>
+                <button class="nav-button" onclick="testNavigation('risk-register')">Risk Register</button>
+                <button class="nav-button" onclick="testNavigation('laporan')">Laporan</button>
+                <button class="nav-button" onclick="testNavigation('master-data')">Master Data</button>
+                <button class="nav-button" onclick="testNavigation('buku-pedoman')">Buku Pedoman</button>
+            </div>
+            
+            <div id="navigation-results" class="test-result info" style="margin-top: 20px;">
+                Klik tombol navigasi untuk melihat hasil test...
+            </div>
+        </div>
+
+        <!-- URL Tests -->
+        <div class="test-section">
+            <h3>🔗 URL Navigation Tests</h3>
+            <p>Test navigasi menggunakan URL langsung:</p>
+            
+            <div style="margin: 10px 0;">
+                <input type="text" id="url-input" placeholder="/dashboard" style="padding: 8px; width: 300px; margin-right: 10px;">
+                <button class="test-button" onclick="testUrlNavigation()">Navigate to URL</button>
+            </div>
+            
+            <div id="url-results" class="test-result info">
+                Masukkan URL dan klik Navigate to URL untuk test...
+            </div>
+        </div>
+
+        <!-- Performance Tests -->
+        <div class="test-section">
+            <h3>⚡ Performance Tests</h3>
+            <button class="test-button" onclick="testNavigationSpeed()">Test Navigation Speed</button>
+            <button class="test-button" onclick="testRapidNavigation()">Test Rapid Navigation</button>
+            
+            <div id="performance-results" class="test-result info">
+                Klik tombol test untuk melihat hasil performance...
+            </div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="test-section">
+            <h3>📝 Console Log</h3>
+            <div id="console-log" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;">
+                Console log akan muncul di sini...
+            </div>
+            <button class="test-button" onclick="clearConsoleLog()" style="margin-top: 10px;">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        // Override console.log to capture logs
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        
+        function addToConsoleLog(message, type = 'log') {
+            const consoleDiv = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'warn' ? '#ffc107' : '#333';
+            
+            consoleDiv.innerHTML += `<div style="color: ${color}; margin-bottom: 2px;">[${timestamp}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addToConsoleLog(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addToConsoleLog(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addToConsoleLog(args.join(' '), 'warn');
+        };
+        
+        function clearConsoleLog() {
+            document.getElementById('console-log').innerHTML = 'Console log cleared...';
+        }
+        
+        // Check router status
+        function checkRouterStatus() {
+            console.log('🔍 Checking router status...');
+            
+            // Check router availability
+            const routerAvailable = typeof window.SPARouter !== 'undefined' && typeof window.appRouter !== 'undefined';
+            updateStatus('router-availability', routerAvailable, 
+                routerAvailable ? 'Router available' : 'Router not available');
+            
+            // Check RouterManager
+            const routerManagerAvailable = typeof window.RouterManager !== 'undefined';
+            updateStatus('router-manager-status', routerManagerAvailable,
+                routerManagerAvailable ? 'RouterManager available' : 'RouterManager not available');
+            
+            // Check navigateToPage function
+            const navigateFunctionAvailable = typeof window.navigateToPage === 'function';
+            updateStatus('navigation-function-status', navigateFunctionAvailable,
+                navigateFunctionAvailable ? 'navigateToPage function available' : 'navigateToPage function not available');
+            
+            // Check route config
+            const routeConfigAvailable = typeof window.routeConfig !== 'undefined' || typeof window.ROUTE_CONFIG !== 'undefined';
+            updateStatus('route-config-status', routeConfigAvailable,
+                routeConfigAvailable ? 'Route configuration available' : 'Route configuration not available');
+        }
+        
+        function updateStatus(elementId, success, message) {
+            const element = document.getElementById(elementId);
+            const indicator = element.querySelector('.status-indicator');
+            
+            if (success) {
+                indicator.className = 'status-indicator status-success';
+            } else {
+                indicator.className = 'status-indicator status-error';
+            }
+            
+            element.innerHTML = `<span class="${indicator.className}"></span>${message}`;
+        }
+        
+        // Test navigation
+        function testNavigation(pageName) {
+            console.log(`🧪 Testing navigation to: ${pageName}`);
+            
+            const startTime = Date.now();
+            const resultsDiv = document.getElementById('navigation-results');
+            
+            try {
+                // Mark button as active
+                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                // Test navigation
+                if (typeof window.navigateToPage === 'function') {
+                    window.navigateToPage(pageName);
+                    
+                    const endTime = Date.now();
+                    const duration = endTime - startTime;
+                    
+                    resultsDiv.className = 'test-result success';
+                    resultsDiv.innerHTML = `✅ Navigation to ${pageName} completed in ${duration}ms`;
+                    
+                    // Check if page is actually visible
+                    setTimeout(() => {
+                        const pageElement = document.getElementById(pageName);
+                        const isVisible = pageElement && pageElement.classList.contains('active');
+                        
+                        if (isVisible) {
+                            resultsDiv.innerHTML += `<br>✅ Page ${pageName} is visible`;
+                        } else {
+                            resultsDiv.className = 'test-result error';
+                            resultsDiv.innerHTML += `<br>❌ Page ${pageName} is not visible`;
+                        }
+                    }, 100);
+                    
+                } else {
+                    throw new Error('navigateToPage function not available');
+                }
+                
+            } catch (error) {
+                console.error('❌ Navigation test failed:', error);
+                resultsDiv.className = 'test-result error';
+                resultsDiv.innerHTML = `❌ Navigation failed: ${error.message}`;
+            }
+        }
+        
+        // Test URL navigation
+        function testUrlNavigation() {
+            const url = document.getElementById('url-input').value.trim();
+            const resultsDiv = document.getElementById('url-results');
+            
+            if (!url) {
+                resultsDiv.className = 'test-result error';
+                resultsDiv.innerHTML = '❌ Please enter a URL';
+                return;
+            }
+            
+            console.log(`🧪 Testing URL navigation to: ${url}`);
+            
+            try {
+                if (window.appRouter) {
+                    window.appRouter.navigate(url);
+                    resultsDiv.className = 'test-result success';
+                    resultsDiv.innerHTML = `✅ URL navigation to ${url} initiated`;
+                } else {
+                    throw new Error('Router not available');
+                }
+            } catch (error) {
+                console.error('❌ URL navigation test failed:', error);
+                resultsDiv.className = 'test-result error';
+                resultsDiv.innerHTML = `❌ URL navigation failed: ${error.message}`;
+            }
+        }
+        
+        // Test navigation speed
+        function testNavigationSpeed() {
+            console.log('🧪 Testing navigation speed...');
+            
+            const pages = ['dashboard', 'visi-misi', 'rencana-strategis', 'analisis-swot'];
+            const results = [];
+            const resultsDiv = document.getElementById('performance-results');
+            
+            let currentIndex = 0;
+            
+            function testNextPage() {
+                if (currentIndex >= pages.length) {
+                    // Calculate average
+                    const average = results.reduce((sum, time) => sum + time, 0) / results.length;
+                    
+                    resultsDiv.className = 'test-result success';
+                    resultsDiv.innerHTML = `✅ Speed test completed:<br>
+                        Average navigation time: ${average.toFixed(2)}ms<br>
+                        Individual times: ${results.map(t => t.toFixed(2) + 'ms').join(', ')}`;
+                    return;
+                }
+                
+                const pageName = pages[currentIndex];
+                const startTime = Date.now();
+                
+                if (typeof window.navigateToPage === 'function') {
+                    window.navigateToPage(pageName);
+                    
+                    setTimeout(() => {
+                        const endTime = Date.now();
+                        const duration = endTime - startTime;
+                        results.push(duration);
+                        
+                        console.log(`Navigation to ${pageName}: ${duration}ms`);
+                        currentIndex++;
+                        
+                        // Test next page after a short delay
+                        setTimeout(testNextPage, 200);
+                    }, 50);
+                } else {
+                    resultsDiv.className = 'test-result error';
+                    resultsDiv.innerHTML = '❌ navigateToPage function not available';
+                }
+            }
+            
+            resultsDiv.className = 'test-result info';
+            resultsDiv.innerHTML = '⏳ Running speed test...';
+            
+            testNextPage();
+        }
+        
+        // Test rapid navigation
+        function testRapidNavigation() {
+            console.log('🧪 Testing rapid navigation...');
+            
+            const resultsDiv = document.getElementById('performance-results');
+            resultsDiv.className = 'test-result info';
+            resultsDiv.innerHTML = '⏳ Testing rapid navigation...';
+            
+            try {
+                // Rapid fire navigation
+                if (typeof window.navigateToPage === 'function') {
+                    window.navigateToPage('dashboard');
+                    window.navigateToPage('visi-misi');
+                    window.navigateToPage('rencana-strategis');
+                    window.navigateToPage('dashboard');
+                    
+                    setTimeout(() => {
+                        const activePage = document.querySelector('.page-content.active');
+                        const activePageId = activePage ? activePage.id : 'none';
+                        
+                        resultsDiv.className = 'test-result success';
+                        resultsDiv.innerHTML = `✅ Rapid navigation test completed<br>Final active page: ${activePageId}`;
+                    }, 500);
+                } else {
+                    throw new Error('navigateToPage function not available');
+                }
+            } catch (error) {
+                console.error('❌ Rapid navigation test failed:', error);
+                resultsDiv.className = 'test-result error';
+                resultsDiv.innerHTML = `❌ Rapid navigation test failed: ${error.message}`;
+            }
+        }
+        
+        // Initialize tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Navigation test page loaded');
+            
+            // Wait a bit for other scripts to load
+            setTimeout(() => {
+                checkRouterStatus();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -15,7 +15,8 @@ router.get('/', authenticateUser, async (req, res) => {
       .from('swot_analisis')
       .select(`
         *,
-        master_work_units(id, name, code)
+        master_work_units(id, name, code),
+        rencana_strategis(id, kode, nama_rencana)
       `)
       .order('tahun', { ascending: false })
       .order('kategori', { ascending: true })
@@ -119,9 +120,9 @@ router.get('/summary', authenticateUser, async (req, res) => {
       Threat: { totalScore: 0, totalBobot: 0, items: [] }
     };
 
-    // If RUMAH_SAKIT selected, aggregate with highest values
+    // If RUMAH_SAKIT selected, aggregate by summing all values from all units per category
     if (unit_kerja_id === 'RUMAH_SAKIT') {
-      // Group by category and get max score and bobot
+      // Group by category and sum all values from all units
       const grouped = {};
       (data || []).forEach(item => {
         const key = item.kategori;
@@ -131,22 +132,16 @@ router.get('/summary', authenticateUser, async (req, res) => {
         grouped[key].push(item);
       });
 
-      // For each category, get items with highest score and bobot
+      // For each category (perspektif), sum all values from all units
       Object.keys(grouped).forEach(kategori => {
         const items = grouped[kategori];
-        // Sort by score desc, then bobot desc
-        items.sort((a, b) => {
-          if (b.score !== a.score) return b.score - a.score;
-          return b.bobot - a.bobot;
-        });
         
-        // Take top items based on kuantitas
-        const totalKuantitas = items.reduce((sum, item) => sum + (item.kuantitas || 1), 0);
-        const topItems = items.slice(0, Math.min(5, totalKuantitas)); // Max 5 items or total kuantitas
+        // Sum all scores and bobot from all units for this category
+        summary[kategori].items = items;
+        summary[kategori].totalScore = items.reduce((sum, item) => sum + (item.score || 0), 0);
+        summary[kategori].totalBobot = items.reduce((sum, item) => sum + (item.bobot || 0), 0);
         
-        summary[kategori].items = topItems;
-        summary[kategori].totalScore = topItems.reduce((sum, item) => sum + (item.score || 0), 0);
-        summary[kategori].totalBobot = topItems.reduce((sum, item) => sum + (item.bobot || 0), 0);
+        console.log(`RUMAH_SAKIT aggregation - ${kategori}: ${items.length} items, total score: ${summary[kategori].totalScore}, total bobot: ${summary[kategori].totalBobot}`);
       });
     } else {
       (data || []).forEach(item => {
@@ -173,6 +168,45 @@ router.get('/summary', authenticateUser, async (req, res) => {
   } catch (error) {
     console.error('Analisis SWOT summary error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Debug endpoint without authentication for testing
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('🔍 Debug endpoint accessed for analisis-swot');
+    
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
+      .from('swot_analisis')
+      .select(`
+        *,
+        master_work_units(id, name, code),
+        rencana_strategis(id, kode, nama_rencana)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Debug query error:', error);
+      throw error;
+    }
+
+    console.log(`✅ Debug query successful, returning ${data?.length || 0} items`);
+    res.json({ 
+      success: true, 
+      data: data || [], 
+      count: data?.length || 0,
+      message: 'Debug data retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message, 
+      data: [],
+      message: 'Debug endpoint failed'
+    });
   }
 });
 

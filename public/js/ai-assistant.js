@@ -10,7 +10,7 @@ const AIAssistant = {
         isAvailable: false
     },
 
-    init() {
+    async init() {
         this.cacheDom();
 
         if (!this.elements.widget) {
@@ -23,7 +23,67 @@ const AIAssistant = {
         }
 
         this.elements.widget.classList.add('ready');
-        this.checkAvailability();
+        
+        // ✅ Wait for auth to be ready before making API calls
+        if (window.waitForAuthReady) {
+            const authReady = await window.waitForAuthReady(3000);
+            if (!authReady) {
+                // Check if user is actually authenticated (might be a timing issue)
+                if (window.isAuthenticated && window.currentSession && window.currentSession.access_token) {
+                    console.log('[AUTH] AI Assistant: Auth not ready but session exists, retrying waitForReady...');
+                    // Retry with longer timeout
+                    const retryReady = await window.waitForAuthReady(2000);
+                    if (retryReady) {
+                        console.log('[AUTH] AI Assistant: Auth ready after retry, proceeding with availability check');
+                        // Continue to checkAvailability() below
+                    } else {
+                        console.log('[AUTH] AI Assistant: Auth still not ready after retry, but session exists - proceeding anyway');
+                        // Session exists, proceed anyway to checkAvailability() below
+                    }
+                } else {
+                    console.log('[AUTH] AI Assistant: Auth not ready yet, setting up listener');
+                    this.setStatus('Silakan login untuk menggunakan AI', 'info');
+                    
+                    // Listen for authentication state changes
+                    if (window.authStateManager) {
+                        window.authStateManager.addListener((state) => {
+                            if (state.isAuthenticated) {
+                                console.log('[AUTH] AI Assistant: User authenticated, checking availability...');
+                                this.checkAvailability().catch(err => {
+                                    console.warn('[AUTH] AI Assistant: Availability check failed after login:', err);
+                                });
+                            }
+                        });
+                    }
+                    return;
+                }
+            }
+        } else if (!window.isAuthenticated) {
+            // Fallback if waitForAuthReady is not available
+            console.log('[AUTH] AI Assistant: User not authenticated yet, skipping availability check');
+            this.setStatus('Silakan login untuk menggunakan AI', 'info');
+            
+            // Listen for authentication state changes
+            if (window.authStateManager) {
+                window.authStateManager.addListener((state) => {
+                    if (state.isAuthenticated) {
+                        console.log('[AUTH] AI Assistant: User authenticated, checking availability...');
+                        this.checkAvailability().catch(err => {
+                            console.warn('[AUTH] AI Assistant: Availability check failed after login:', err);
+                        });
+                    }
+                });
+            }
+            return;
+        }
+        
+        // Auth is ready, check availability
+        try {
+            await this.checkAvailability();
+        } catch (error) {
+            console.warn('[AUTH] AI Assistant: Availability check failed:', error);
+            this.setStatus('Layanan AI belum tersedia', 'warning');
+        }
     },
 
     cacheDom() {
@@ -60,12 +120,40 @@ const AIAssistant = {
 
     async checkAvailability() {
         try {
-            const api = window.apiCall;
-            if (typeof api !== 'function') {
-                console.warn('API function not available for availability check');
+            // ✅ Wait for auth to be ready before making API call
+            if (window.waitForAuthReady) {
+                const authReady = await window.waitForAuthReady(3000);
+                if (!authReady) {
+                    // Check if user is actually authenticated (might be a timing issue)
+                    if (window.isAuthenticated && window.currentSession && window.currentSession.access_token) {
+                        console.log('[AUTH] AI Assistant: Auth not ready but session exists, retrying waitForReady...');
+                        // Retry with longer timeout
+                        const retryReady = await window.waitForAuthReady(2000);
+                        if (retryReady) {
+                            console.log('[AUTH] AI Assistant: Auth ready after retry, proceeding with availability check');
+                            // Continue to availability check below
+                        } else {
+                            console.log('[AUTH] AI Assistant: Auth still not ready after retry, but session exists - proceeding anyway');
+                            // Session exists, proceed anyway to availability check below
+                        }
+                    } else {
+                        console.log('[AUTH] AI Assistant: Skipping availability check - auth not ready');
+                        this.state.isAvailable = false;
+                        this.setStatus('Silakan login untuk menggunakan AI', 'info');
+                        return;
+                    }
+                }
+            } else if (!window.isAuthenticated) {
+                console.log('[AUTH] AI Assistant: Skipping availability check - user not authenticated');
                 this.state.isAvailable = false;
-                this.setStatus('API tidak tersedia', 'warning');
+                this.setStatus('Silakan login untuk menggunakan AI', 'info');
                 return;
+            }
+
+            // ✅ Use apiService instead of direct apiCall (waitForAuthReady already called in apiCall)
+            const api = window.apiService?.apiCall || window.apiCall;
+            if (typeof api !== 'function') {
+                throw new Error('API service tidak tersedia');
             }
 
             const response = await api('/api/ai-assistant/status');
@@ -77,13 +165,29 @@ const AIAssistant = {
                 this.setStatus('');
             }
         } catch (error) {
-            console.error('AI availability check error:', error);
+            // Don't log as error if it's just authentication issue
+            const isAuthError = error.message && (
+                error.message.includes('login') || 
+                error.message.includes('401') || 
+                error.message.includes('403') ||
+                error.message.includes('Sesi Anda telah berakhir') ||
+                error.message.includes('harus login')
+            );
+            
+            if (isAuthError) {
+                console.log('[AUTH] AI Assistant: Availability check skipped - authentication required');
+            } else {
+                console.error('[AUTH] AI Assistant: Availability check error:', error);
+            }
+            
             this.state.isAvailable = false;
             
-            if (error.message.includes('401') || error.message.includes('403')) {
-                this.setStatus('Silakan login untuk menggunakan AI', 'warning');
+            if (error.message && error.message.includes('sedang memuat')) {
+                this.setStatus('Aplikasi sedang memuat...', 'warning');
+            } else if (isAuthError) {
+                this.setStatus('Silakan login untuk menggunakan AI', 'info');
             } else {
-                this.setStatus('Tidak dapat memeriksa ketersediaan AI', 'error');
+                this.setStatus('Tidak dapat memeriksa ketersediaan AI', 'warning');
             }
         }
     },
@@ -131,7 +235,7 @@ const AIAssistant = {
 
         try {
             // Check if apiCall function is available
-            const api = window.apiCall;
+            const api = window.apiService?.apiCall || window.apiCall;
             if (typeof api !== 'function') {
                 throw new Error('API function tidak tersedia. Silakan refresh halaman.');
             }

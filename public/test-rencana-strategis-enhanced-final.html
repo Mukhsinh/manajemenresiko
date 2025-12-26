@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Enhanced</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/rencana-strategis-enhanced.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .status-demo {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            align-items: center;
+        }
+        
+        .demo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-clipboard-list"></i> Test Rencana Strategis Enhanced</h1>
+        
+        <!-- Status Badge Demo -->
+        <div class="demo-section">
+            <h3>Status Badge Demo</h3>
+            <div class="status-demo">
+                <span class="badge-status badge-draft">Draft</span>
+                <span class="badge-status badge-final">Final</span>
+                <span class="badge-status badge-draft alt">Draft Alt</span>
+                <span class="badge-status badge-final alt">Final Alt</span>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="card mb-4" id="form-section">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">Tambah Rencana Strategis</h3>
+                        <p class="text-muted mb-0">Hubungkan sasaran strategis dengan indikator kinerja utama</p>
+                    </div>
+                    <div>
+                        <span class="badge badge-primary mr-2">Mode Input</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="rs-form" class="form-grid two-column">
+                    <div class="form-group">
+                        <label>Kode Rencana</label>
+                        <input type="text" class="form-control" id="rs-kode" value="RS-2025-010" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Misi Strategis</label>
+                        <select id="rs-misi" class="form-control">
+                            <option value="">Pilih salah satu</option>
+                            <option value="1">Meningkatkan kualitas pelayanan kesehatan</option>
+                            <option value="2">Mengembangkan SDM yang kompeten</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Rencana Strategis</label>
+                        <input type="text" class="form-control" id="rs-nama" value="Program Peningkatan Mutu Pelayanan">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="rs-status" class="form-control">
+                            <option value="Draft">Draft</option>
+                            <option value="Final">Final</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Periode Mulai</label>
+                        <input type="date" class="form-control" id="rs-mulai" value="2025-01-01">
+                    </div>
+                    <div class="form-group">
+                        <label>Periode Selesai</label>
+                        <input type="date" class="form-control" id="rs-selesai" value="2025-12-31">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Deskripsi Rencana</label>
+                        <textarea id="rs-deskripsi" class="form-control" rows="2">Program komprehensif untuk meningkatkan mutu pelayanan kesehatan di seluruh unit kerja</textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Target</label>
+                        <textarea id="rs-target" class="form-control" rows="2">Mencapai akreditasi SNARS tingkat paripurna dengan skor minimal 90%</textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Indikator Kinerja</label>
+                        <input type="text" id="rs-indikator" class="form-control" value="Skor akreditasi, tingkat kepuasan pasien, waktu tunggu pelayanan">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Tambah Sasaran Strategis</label>
+                        <div class="input-with-button">
+                            <input type="text" id="rs-sasaran-input" class="form-control" placeholder="Masukkan sasaran">
+                            <button type="button" class="btn btn-primary btn-sm" id="rs-sasaran-add"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="chip-group" id="rs-sasaran-list">
+                            <span class="chip chip-removable">
+                                Implementasi sistem manajemen mutu terintegrasi
+                                <button type="button" class="chip-remove"><i class="fas fa-times"></i></button>
+                            </span>
+                            <span class="chip chip-removable">
+                                Peningkatan kompetensi tenaga kesehatan
+                                <button type="button" class="chip-remove"><i class="fas fa-times"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Tambah Indikator Kinerja Utama</label>
+                        <div class="input-with-button">
+                            <input type="text" id="rs-indikator-input" class="form-control" placeholder="Masukkan indikator">
+                            <button type="button" class="btn btn-primary btn-sm" id="rs-indikator-add"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="chip-group" id="rs-indikator-list">
+                            <span class="chip chip-removable">
+                                Skor akreditasi ≥ 90%
+                                <button type="button" class="chip-remove"><i class="fas fa-times"></i></button>
+                            </span>
+                            <span class="chip chip-removable">
+                                Tingkat kepuasan pasien ≥ 85%
+                                <button type="button" class="chip-remove"><i class="fas fa-times"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-actions full-width">
+                        <button type="submit" class="btn btn-primary">Simpan Rencana</button>
+                        <button type="button" id="rs-reset-btn" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="card" id="table-section">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">Daftar Rencana Strategis</h3>
+                        <p class="text-muted mb-0">Kelola sasaran strategis dan indikator kinerja utama</p>
+                    </div>
+                    <div class="action-group">
+                        <button class="btn btn-warning btn-sm"><i class="fas fa-download"></i> Template</button>
+                        <button class="btn btn-success btn-sm"><i class="fas fa-upload"></i> Import</button>
+                        <button class="btn btn-info btn-sm"><i class="fas fa-file-excel"></i> Export</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama Rencana & Deskripsi</th>
+                                <th>Target</th>
+                                <th>Periode</th>
+                                <th>Sasaran Strategis</th>
+                                <th>Indikator Kinerja Utama</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-id="1">
+                                <td><strong>RS-2025-001</strong></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <strong>Sistem Manajemen Keuangan Rumah Sakit Terintegrasi</strong>
+                                        <small class="text-muted d-block">Mengembangkan sistem manajemen keuangan dan aset yang terintegrasi untuk meningkatkan efisiensi penggunaan sumber daya, transparansi keuangan, dan sustainability rumah sakit.</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <span class="text-primary">Mencapai efisiensi operasional 20% dan meningkatkan revenue growth sebesar 15% dengan tetap mempertahankan kualitas pelayanan</span>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-info">Implementasi sistem Enterprise Resource Planning (ERP) terintegrasi; Pengembangan sistem cost accounting dan activity-based costing</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-success">Rasio efisiensi operasional meningkat 20%; Tingkat pertumbuhan pendapatan 15%; Return on Investment (ROI) ≥ 12%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-status badge-final">Final</span>
+                                </td>
+                                <td class="table-actions">
+                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr data-id="2">
+                                <td><strong>RS-2025-002</strong></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <strong>Program Inovasi Layanan Berkelanjutan</strong>
+                                        <small class="text-muted d-block">Mengembangkan program riset dan inovasi kesehatan yang berkelanjutan untuk menghasilkan evidence-based practice, teknologi kesehatan inovatif, dan publikasi ilmiah berkualitas tinggi.</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <span class="text-primary">Menghasilkan 20 publikasi ilmiah terakreditasi dan 5 inovasi teknologi kesehatan yang dapat diimplementasikan</span>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-info">Pembentukan komite etik penelitian dan unit penelitian klinis; Pengembangan sistem manajemen penelitian terintegrasi</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-success">Jumlah publikasi ilmiah terakreditasi 20 artikel per tahun; Jumlah penelitian selesai 15 penelitian per tahun</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-status badge-draft">Draft</span>
+                                </td>
+                                <td class="table-actions">
+                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr data-id="3">
+                                <td><strong>RS-2025-003</strong></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <strong>Pengembangan Pusat Pendidikan dan Pelatihan Terpadu</strong>
+                                        <small class="text-muted d-block">Mengembangkan pusat pendidikan dan pelatihan kesehatan yang komprehensif untuk meningkatkan kualitas pendidikan profesi kesehatan, continuing professional development, dan capacity building tenaga kesehatan.</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <span class="text-primary">Menjadi teaching hospital terakreditasi dengan 500 peserta didik per tahun dan 50 program pelatihan berkelanjutan</span>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-info">Pengembangan kurikulum pendidikan berbasis kompetensi dan evidence-based practice; Pembangunan fasilitas simulasi dan learning center modern</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-success">Jumlah peserta didik 500 orang per tahun; Jumlah program pelatihan 50 program per tahun; Tingkat kelulusan ≥ 95%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-status badge-final">Final</span>
+                                </td>
+                                <td class="table-actions">
+                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr data-id="4">
+                                <td><strong>RS-2025-004</strong></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <strong>Program Pengembangan Sumber Daya Manusia Berkelanjutan</strong>
+                                        <small class="text-muted d-block">Mengembangkan program komprehensif untuk meningkatkan kompetensi, profesionalisme, dan inovasi seluruh sumber daya manusia rumah sakit melalui pendidikan, pelatihan, dan pengembangan karir yang terstruktur.</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <span class="text-primary">Mencapai 100% staf tersertifikasi kompetensi dan meningkatkan indeks kepuasan karyawan menjadi ≥ 4.2/5.0</span>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-info">Implementasi sistem manajemen talenta dan succession planning; Pengembangan program pelatihan berkelanjutan berbasis kompetensi</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-success">Persentase staf tersertifikasi kompetensi 100%; Indeks kepuasan karyawan ≥ 4.2/5.0; Tingkat retensi karyawan ≥ 90%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-status badge-draft">Draft</span>
+                                </td>
+                                <td class="table-actions">
+                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr data-id="5">
+                                <td><strong>RS-2025-005</strong></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <strong>Sistem Manajemen Pengetahuan dan Knowledge Sharing</strong>
+                                        <small class="text-muted d-block">Mengembangkan sistem manajemen pengetahuan yang komprehensif untuk memfasilitasi knowledge sharing, best practice sharing, dan continuous learning di seluruh organisasi rumah sakit.</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <span class="text-primary">Membangun knowledge management system dengan 1000 konten pembelajaran dan 90% partisipasi staf dalam knowledge sharing</span>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-info">Implementasi learning management system (LMS) terintegrasi; Pengembangan komunitas praktik dan forum diskusi ilmiah</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-cell-content">
+                                        <small class="text-success">Jumlah konten pembelajaran 1000 konten; Tingkat partisipasi knowledge sharing ≥ 90%; Indeks pembelajaran organisasi ≥ 4.3/5.0</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-status badge-final">Final</span>
+                                </td>
+                                <td class="table-actions">
+                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple demo interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for demo
+            document.querySelectorAll('.chip-remove').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.chip').remove();
+                });
+            });
+            
+            // Add sasaran demo
+            document.getElementById('rs-sasaran-add')?.addEventListener('click', function() {
+                const input = document.getElementById('rs-sasaran-input');
+                const value = input.value.trim();
+                if (value) {
+                    const chipGroup = document.getElementById('rs-sasaran-list');
+                    const chip = document.createElement('span');
+                    chip.className = 'chip chip-removable';
+                    chip.innerHTML = `
+                        ${value}
+                        <button type="button" class="chip-remove"><i class="fas fa-times"></i></button>
+                    `;
+                    chipGroup.appendChild(chip);
+                    
+                    chip.querySelector('.chip-remove').addEventListener('click', function() {
+                        chip.remove();
+                    });
+                    
+                    input.value = '';
+                }
+            });
+            
+            // Add indikator demo
+            document.getElementById('rs-indikator-add')?.addEventListener('click', function() {
+                const input = document.getElementById('rs-indikator-input');
+                const value = input.value.trim();
+                if (value) {
+                    const chipGroup = document.getElementById('rs-indikator-list');
+                    const chip = document.createElement('span');
+                    chip.className = 'chip chip-removable';
+                    chip.innerHTML = `
+                        ${value}
+                        <button type="button" class="chip-remove"><i class="fas fa-times"></i></button>
+                    `;
+                    chipGroup.appendChild(chip);
+                    
+                    chip.querySelector('.chip-remove').addEventListener('click', function() {
+                        chip.remove();
+                    });
+                    
+                    input.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

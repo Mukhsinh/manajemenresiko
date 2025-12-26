@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard - Modul Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0066cc",
+                        "primary-dark": "#004c99",
+                        "primary-light": "#e0f2fe",
+                        "secondary": "#ffffff", 
+                        "secondary-dark": "#f8fafc",
+                        "text-main": "#1e293b",
+                        "text-secondary": "#64748b",
+                        "accent-blue": "#0ea5e9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                        'floating': '0 10px 40px -10px rgba(0,0,0,0.08)'
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: #0066cc;
+        }
+        .sidebar-link.active {
+            background-color: #e0f2fe;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background-color: #0066cc;
+            border-radius: 0 4px 4px 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        .material-symbols-outlined.bold {
+            font-variation-settings: 'wght' 600;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex text-text-main overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col flex-shrink-0 h-screen overflow-y-auto z-30">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+            <div class="size-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl filled">health_and_safety</span>
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-tight text-slate-800">PINTAR MR</h1>
+                <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Hospital Risk Mgmt</p>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm" href="#" onclick="showDashboard()">
+                <span class="material-symbols-outlined text-[20px] filled">space_dashboard</span>Dashboard
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analisis Strategis</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showAnalisisBSC()">
+                <span class="material-symbols-outlined text-[20px]">donut_large</span>Analisis BSC
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showVisiMisi()">
+                <span class="material-symbols-outlined text-[20px]">ads_click</span>Visi dan Misi
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showRencanaStrategis()">
+                <span class="material-symbols-outlined text-[20px]">account_tree</span>Rencana Strategis
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operasional</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showRiskRegister()">
+                <span class="material-symbols-outlined text-[20px]">folder_managed</span>Register Risiko
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showRiskProfile()">
+                <span class="material-symbols-outlined text-[20px]">find_in_page</span>Risk Profile
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200 hover:shadow-sm">
+                <div class="size-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-200">MH</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">Muksin Hadi</p>
+                    <p class="text-[10px] text-slate-500 truncate">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-white">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 z-20 flex-shrink-0 h-16 sticky top-0">
+            <div class="w-full h-full px-6 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div class="flex flex-col">
+                        <h2 id="page-title" class="text-lg font-bold text-slate-800 leading-tight">Dashboard</h2>
+                        <div class="flex items-center gap-1 text-xs text-slate-500">
+                            <span>Manajemen Risiko</span>
+                            <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+                            <span class="text-primary font-medium">Dashboard</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-800">RSUD BENDAN</p>
+                        <p class="text-xs text-slate-500">Jl. Sriwijaya 2 Pekalongan</p>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative">
+                            <span class="material-symbols-outlined text-[22px]">notifications</span>
+                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                            <span class="material-symbols-outlined text-[22px]">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-white">
+            <div class="max-w-[1600px] mx-auto space-y-8">
+                <!-- Dashboard Content -->
+                <div id="dashboard-content">
+                    <!-- Hero Section -->
+                    <div class="bg-gradient-to-br from-[#0066cc] to-[#0ea5e9] rounded-2xl shadow-floating p-8 text-white relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-1/2 bg-white/5 opacity-50" style="clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                        <div class="absolute right-20 top-0 h-full w-1/3 bg-white/5 opacity-30" style="clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div class="flex items-start gap-6">
+                                <div class="size-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
+                                    <span class="material-symbols-outlined text-white text-3xl">monitor_heart</span>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold tracking-tight">Dashboard Manajemen Risiko</h2>
+                                    <p class="text-blue-100 mt-2 max-w-2xl text-sm leading-relaxed opacity-90">Kelola database risiko strategis secara terintegrasi, lakukan analisis dampak mendalam, dan pantau mitigasi secara real-time untuk memastikan keselamatan pasien dan keberlangsungan RSUD Bendan.</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                                <div class="text-left sm:text-right">
+                                    <p class="text-[10px] uppercase tracking-wider text-blue-200 font-semibold">Periode Laporan</p>
+                                    <p class="font-bold text-lg">Semester II - 2025</p>
+                                </div>
+                                <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
+                                <button class="bg-white text-primary hover:bg-blue-50 px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-sm">
+                                    <span class="material-symbols-outlined text-[18px]">calendar_today</span>Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2.5 bg-blue-50 rounded-xl text-blue-600">
+                                    <span class="material-symbols-outlined filled">inventory</span>
+                                </div>
+                                <span class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+                                    <span class="material-symbols-outlined text-[14px] mr-1 bold">trending_down</span> -2%
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Risiko Aktif</p>
+                                <h3 id="total-risks" class="text-3xl font-bold text-slate-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div class="absolute right-0 top-0 w-16 h-16 bg-red-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2.5 bg-red-50 rounded-xl text-red-600">
+                                    <span class="material-symbols-outlined filled">error</span>
+                                </div>
+                                <span class="flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-100">Perlu Atensi</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Risiko Ekstrem</p>
+                                <h3 id="extreme-risks" class="text-3xl font-bold text-slate-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+                                    <span class="material-symbols-outlined">engineering</span>
+                                </div>
+                                <span class="flex items-center text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100">3 Deadline</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dalam Mitigasi</p>
+                                <h3 id="mitigation-risks" class="text-3xl font-bold text-slate-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+                                    <span class="material-symbols-outlined filled">verified</span>
+                                </div>
+                                <span class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">+8% Sukses</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Risiko Selesai</p>
+                                <h3 id="completed-risks" class="text-3xl font-bold text-slate-800">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        <!-- Risk Trend Chart -->
+                        <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <div class="bg-blue-100 p-1.5 rounded-md text-primary">
+                                        <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                                    </div>
+                                    Tren Risiko Bulanan
+                                </h3>
+                                <button class="text-slate-400 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">more_horiz</span>
+                                </button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center bg-slate-50 rounded-lg">
+                                <canvas id="risk-trend-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Risk Distribution -->
+                        <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <div class="bg-orange-100 p-1.5 rounded-md text-orange-600">
+                                        <span class="material-symbols-outlined text-[20px]">pie_chart</span>
+                                    </div>
+                                    Distribusi Level Risiko
+                                </h3>
+                                <button class="text-slate-400 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">info</span>
+                                </button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center">
+                                <canvas id="risk-distribution-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <div class="bg-green-100 p-1.5 rounded-md text-green-600">
+                                    <span class="material-symbols-outlined text-[20px]">history</span>
+                                </div>
+                                Aktivitas Terbaru
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="recent-activities" class="space-y-4">
+                                <!-- Activities will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Profile Content (Hidden by default) -->
+                <div id="risk-profile-content" style="display: none;">
+                    <!-- Risk Profile content will be loaded here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/dashboard-modern.js"></script>
+</body>
+</html>

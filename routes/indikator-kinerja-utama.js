@@ -1,20 +1,77 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
-// Public endpoint for testing (no auth required) - MUST BE FIRST
+// Debug endpoint without authentication for testing - MUST BE FIRST
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('🔍 Debug endpoint accessed for indikator-kinerja-utama');
+    
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
+      .from('indikator_kinerja_utama')
+      .select(`
+        *,
+        rencana_strategis(id, kode, nama_rencana),
+        sasaran_strategi(id, sasaran, perspektif)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Debug query error:', error);
+      throw error;
+    }
+
+    console.log(`✅ Debug query successful, returning ${data?.length || 0} items`);
+    res.json({ 
+      success: true, 
+      data: data || [], 
+      count: data?.length || 0,
+      message: 'Debug data retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message, 
+      data: [],
+      message: 'Debug endpoint failed'
+    });
+  }
+});
+
+// Simple endpoint without complex auth for testing - MUST BE SECOND
+router.get('/simple', async (req, res) => {
+  try {
+    const clientToUse = supabaseAdmin || supabase;
+    
+    const { data, error } = await clientToUse
+      .from('indikator_kinerja_utama')
+      .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    console.log('Simple endpoint - returning data:', data?.length || 0, 'items');
+    res.json(data || []);
+  } catch (error) {
+    console.error('Simple indikator kinerja utama error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public endpoint for testing (no auth required) - MUST BE THIRD
 router.get('/public', async (req, res) => {
   try {
     console.log('=== INDIKATOR KINERJA UTAMA PUBLIC ENDPOINT ===');
     
-    // Import supabaseAdmin directly
-    const { supabaseAdmin } = require('../config/supabase');
-    const client = supabaseAdmin || supabase;
+    const clientToUse = supabaseAdmin || supabase;
     
     // Use the same query structure as the main endpoint
-    let query = client
+    let query = clientToUse
       .from('indikator_kinerja_utama')
       .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
       .order('created_at', { ascending: false });
@@ -38,55 +95,6 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// Debug endpoint - temporary (no auth required) - MUST BE SECOND
-router.get('/debug', async (req, res) => {
-  try {
-    console.log('=== INDIKATOR KINERJA UTAMA DEBUG ENDPOINT ===');
-    
-    // Import supabaseAdmin directly
-    const { supabaseAdmin } = require('../config/supabase');
-    const client = supabaseAdmin || supabase;
-    
-    // Use the same query structure as the main endpoint
-    let query = client
-      .from('indikator_kinerja_utama')
-      .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
-      .order('created_at', { ascending: false });
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Indikator kinerja utama debug query error:', error);
-      throw error;
-    }
-
-    console.log('Debug query result:', {
-      count: data?.length || 0,
-      hasData: data && data.length > 0,
-      firstItem: data && data.length > 0 ? {
-        id: data[0].id,
-        indikator: data[0].indikator,
-        organization_id: data[0].organization_id
-      } : null
-    });
-
-    res.json({
-      success: true,
-      count: data?.length || 0,
-      data: data || [],
-      message: 'Indikator kinerja utama debug data retrieved successfully',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Debug error:', error);
-    res.status(500).json({ 
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
 // Get all indikator kinerja utama
 router.get('/', authenticateUser, async (req, res) => {
   try {
@@ -103,31 +111,28 @@ router.get('/', authenticateUser, async (req, res) => {
     console.log('Query params:', { rencana_strategis_id, sasaran_strategi_id, tahun });
 
     // Use supabaseAdmin for better reliability
-    const { supabaseAdmin } = require('../config/supabase');
-    const client = supabaseAdmin || supabase;
+    const clientToUse = supabaseAdmin || supabase;
 
-    let query = client
+    let query = clientToUse
       .from('indikator_kinerja_utama')
       .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
       .order('created_at', { ascending: false });
 
-    // NEW APPROACH: Filter by organization_id only, ignore user_id
-    // This allows showing all data within the organization regardless of who created it
-    const isAdminOrSuper = req.user.isSuperAdmin || 
-                          req.user.role === 'superadmin' || 
-                          req.user.role === 'admin';
-
-    if (isAdminOrSuper) {
-      console.log('Admin/Super admin - showing all data (no filter)');
-      // Admin can see all data, no filter needed
-    } else {
-      // Regular users - filter by organization_id instead of user_id
-      if (req.user.organizations && req.user.organizations.length > 0) {
-        console.log('Regular user - filtering by organization_id:', req.user.organizations);
-        query = query.in('organization_id', req.user.organizations);
+    // Apply organization filter through rencana_strategis relationship
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      // Get accessible rencana_strategis IDs first
+      let rsQuery = clientToUse
+        .from('rencana_strategis')
+        .select('id');
+      rsQuery = buildOrganizationFilter(rsQuery, req.user);
+      const { data: accessibleRS } = await rsQuery;
+      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
+      
+      if (accessibleRSIds.length > 0) {
+        query = query.in('rencana_strategis_id', accessibleRSIds);
       } else {
-        console.log('Regular user - no organizations, showing all data');
-        // If no organization info, show all data (fallback)
+        // No accessible rencana strategis, return empty
+        return res.json([]);
       }
     }
 
@@ -180,10 +185,9 @@ router.get('/:id', authenticateUser, async (req, res) => {
     console.log('User:', req.user.id);
 
     // Use supabaseAdmin for better reliability
-    const { supabaseAdmin } = require('../config/supabase');
-    const client = supabaseAdmin || supabase;
+    const clientToUse = supabaseAdmin || supabase;
 
-    const { data, error } = await client
+    const { data, error } = await clientToUse
       .from('indikator_kinerja_utama')
       .select(`
         *,
@@ -244,7 +248,8 @@ router.post('/', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Rencana strategis dan indikator wajib diisi' });
     }
 
-    const { data, error } = await supabase
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
       .from('indikator_kinerja_utama')
       .insert({
         user_id: req.user.id,
@@ -298,8 +303,10 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (initiatif_strategi !== undefined) updateData.initiatif_strategi = initiatif_strategi || null;
     if (pic !== undefined) updateData.pic = pic || null;
 
+    const clientToUse = supabaseAdmin || supabase;
+    
     // First check access through rencana_strategis
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await clientToUse
       .from('indikator_kinerja_utama')
       .select('rencana_strategis(organization_id)')
       .eq('id', req.params.id)
@@ -316,7 +323,7 @@ router.put('/:id', authenticateUser, async (req, res) => {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await clientToUse
       .from('indikator_kinerja_utama')
       .update(updateData)
       .eq('id', req.params.id)
@@ -335,8 +342,10 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
+    const clientToUse = supabaseAdmin || supabase;
+    
     // First check access through rencana_strategis
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await clientToUse
       .from('indikator_kinerja_utama')
       .select('rencana_strategis(organization_id)')
       .eq('id', req.params.id)
@@ -353,7 +362,7 @@ router.delete('/:id', authenticateUser, async (req, res) => {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await clientToUse
       .from('indikator_kinerja_utama')
       .delete()
       .eq('id', req.params.id);
@@ -365,8 +374,6 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
 
 module.exports = router;
 

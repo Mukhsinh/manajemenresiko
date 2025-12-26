@@ -7,14 +7,24 @@ async function testRencanaStrategis() {
         browser = await puppeteer.launch({ 
             headless: false, 
             devtools: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox', 
+                '--disable-setuid-sandbox',
+                '--disable-webgl',
+                '--disable-webgl2',
+                '--disable-software-rasterizer'
+            ]
         });
         
         const page = await browser.newPage();
         
-        // Listen to console logs
+        // Listen to console logs (filter out WebGL warnings)
         page.on('console', msg => {
-            console.log(`BROWSER: ${msg.type()}: ${msg.text()}`);
+            const text = msg.text();
+            // Filter out WebGL warnings
+            if (!text.includes('Webgl') && !text.includes('WebGL') && !text.includes('DOM renderer')) {
+                console.log(`BROWSER: ${msg.type()}: ${text}`);
+            }
         });
         
         // Listen to page errors

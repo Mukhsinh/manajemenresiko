@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWOT Analisis - Fixed Version</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/analisis-swot-fixed.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        /* Inline CSS untuk memastikan badge tidak overflow */
+        .badge {
+          display: inline-block;
+          padding: 6px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          line-height: 1;
+          text-align: center;
+          white-space: nowrap;
+          vertical-align: baseline;
+          border-radius: 6px;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .kategori-column {
+          width: 120px;
+          min-width: 120px;
+          text-align: center;
+        }
+        
+        .kategori-column .badge {
+          width: 100%;
+          max-width: 110px;
+          box-sizing: border-box;
+        }
+        
+        .badge-strength { 
+          background-color: #28a745; 
+          color: white;
+        }
+        
+        .badge-weakness { 
+          background-color: #dc3545; 
+          color: white;
+        }
+        
+        .badge-opportunity { 
+          background-color: #17a2b8; 
+          color: white;
+        }
+        
+        .badge-threat { 
+          background-color: #ffc107; 
+          color: #212529;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .kategori-column .badge {
+            max-width: 90px;
+            font-size: 10px;
+            padding: 4px 8px;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .kategori-column .badge {
+            max-width: 80px;
+            font-size: 9px;
+            padding: 3px 6px;
+          }
+        }
+        
+        /* Summary Cards */
+        .summary-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+
+        .summary-card {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          border-left: 4px solid;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .summary-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .summary-card.border-success {
+          border-left-color: #28a745;
+          background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+          color: white;
+        }
+
+        .summary-card.border-danger {
+          border-left-color: #dc3545;
+          background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+          color: white;
+        }
+
+        .summary-card.border-info {
+          border-left-color: #17a2b8;
+          background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+          color: white;
+        }
+
+        .summary-card.border-warning {
+          border-left-color: #ffc107;
+          background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+          color: #000;
+        }
+
+        .summary-value {
+          font-size: 32px;
+          font-weight: 700;
+          margin-bottom: 4px;
+          line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            SWOT Analisis - Fixed Version
+                        </h2>
+                        <p class="mb-0 mt-2">Versi yang sudah diperbaiki - Tanpa cache</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="analisis-swot-content">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/config.js"></script>
+    <script>
+        // Mock data untuk testing
+        const unitKerjaData = [
+            { id: 'bb7310a8-d098-4493-a8c5-c61177282669', name: 'Akreditasi', jenis: 'administrasi', kategori: 'non klinis' },
+            { id: 'bf1aa940-e451-4401-84bf-8e6d1f68bc53', name: 'ICU-PICU-NICU', jenis: 'rawat inap', kategori: 'klinis' },
+            { id: '70be337f-515f-4a1b-b167-60ad314b870f', name: 'IGD PONEK', jenis: 'rawat jalan', kategori: 'klinis' },
+            { id: 'efa9b52a-dc9e-4724-8d54-86d5e88e45c2', name: 'Laboratorium (PK-PA)', jenis: 'penunjang medis', kategori: 'klinis' },
+            { id: '1c2525d9-944f-468b-a97f-d808acdace16', name: 'Farmasi', jenis: 'penunjang medis', kategori: 'klinis' },
+            { id: 'c972a323-750a-4c84-87cc-6b244d1523ae', name: 'Unit IT', jenis: 'administrasi', kategori: 'non klinis' },
+            { id: 'da03ed3c-5f2a-4411-a8d6-c25c40e65f0e', name: 'Direktur', jenis: 'manajemen', kategori: 'non klinis' }
+        ];
+
+        // Mock API function dengan data yang benar
+        window.apiCall = async function(url) {
+            console.log('Mock API call to:', url);
+            
+            if (url.includes('/api/analisis-swot/summary')) {
+                return {
+                    Strength: { totalScore: 20230, totalBobot: 1925, items: Array(253).fill({}) },
+                    Weakness: { totalScore: 20330, totalBobot: 1925, items: Array(252).fill({}) },
+                    Opportunity: { totalScore: 20695, totalBobot: 1925, items: Array(245).fill({}) },
+                    Threat: { totalScore: 20050, totalBobot: 1925, items: Array(250).fill({}) }
+                };
+            }
+            
+            if (url.includes('/api/analisis-swot')) {
+                return [
+                    {
+                        id: '1',
+                        unit_kerja_id: 'bf1aa940-e451-4401-84bf-8e6d1f68bc53',
+                        kategori: 'Strength',
+                        objek_analisis: 'Tenaga medis intensivist dan perawat ICU bersertifikat dengan pengalaman critical care',
+                        bobot: 25,
+                        rank: 4,
+                        score: 100,
+                        tahun: 2025,
+                        rencana_strategis_id: '04b00510-6b9a-43e8-846a-d690f83a6003'
+                    },
+                    {
+                        id: '2',
+                        unit_kerja_id: '70be337f-515f-4a1b-b167-60ad314b870f',
+                        kategori: 'Opportunity',
+                        objek_analisis: 'Pengembangan sistem pre-hospital care dan ambulance service terintegrasi',
+                        bobot: 30,
+                        rank: 3,
+                        score: 90,
+                        tahun: 2025,
+                        rencana_strategis_id: '04b00510-6b9a-43e8-846a-d690f83a6003'
+                    },
+                    {
+                        id: '3',
+                        unit_kerja_id: 'efa9b52a-dc9e-4724-8d54-86d5e88e45c2',
+                        kategori: 'Weakness',
+                        objek_analisis: 'Sistem LIS yang belum terintegrasi penuh dengan EMR rumah sakit',
+                        bobot: 25,
+                        rank: 5,
+                        score: 125,
+                        tahun: 2025,
+                        rencana_strategis_id: '3911838f-562e-4c6e-985b-8155a89dcc51'
+                    },
+                    {
+                        id: '4',
+                        unit_kerja_id: '1c2525d9-944f-468b-a97f-d808acdace16',
+                        kategori: 'Threat',
+                        objek_analisis: 'Fluktuasi harga obat dan keterbatasan supply chain farmasi',
+                        bobot: 22,
+                        rank: 4,
+                        score: 88,
+                        tahun: 2025,
+                        rencana_strategis_id: '3911838f-562e-4c6e-985b-8155a89dcc51'
+                    }
+                ];
+            }
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return [
+                    {
+                        id: '04b00510-6b9a-43e8-846a-d690f83a6003',
+                        kode: 'RS-2025-001',
+                        nama_rencana: 'Peningkatan Sistem Keselamatan Pasien Terintegrasi'
+                    },
+                    {
+                        id: '3911838f-562e-4c6e-985b-8155a89dcc51',
+                        kode: 'RS-2025-008',
+                        nama_rencana: 'Digitalisasi Pelayanan Kesehatan Terintegrasi'
+                    }
+                ];
+            }
+            
+            if (url.includes('/api/master-data/work-units')) {
+                return unitKerjaData;
+            }
+            
+            return [];
+        };
+    </script>
+    <!-- Use the fixed version with cache busting -->
+    <script src="/js/analisis-swot-enhanced.js?v=<?php echo time(); ?>"></script>
+    <script>
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create analisis-swot page element
+            const swotPage = document.createElement('div');
+            swotPage.id = 'analisis-swot';
+            swotPage.classList.add('active');
+            document.body.appendChild(swotPage);
+            
+            // Load the module
+            AnalisisSwotEnhancedModule.load();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Diagram Kartesius Auto-Calculate</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .test-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .feature-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .feature-list h4 {
+            color: #28a745;
+            margin-bottom: 0.5rem;
+        }
+        .feature-list ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .feature-list li {
+            margin: 0.25rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Test Diagram Kartesius Auto-Calculate</h1>
+            <p>Testing the enhanced auto-calculation functionality for all units</p>
+        </div>
+
+        <div class="test-info">
+            <h3><i class="fas fa-info-circle"></i> Fitur Baru: Perhitungan Otomatis Semua Unit</h3>
+            <p>Sistem sekarang akan menghitung diagram kartesius untuk <strong>SEMUA unit kerja</strong> secara otomatis hanya dengan memilih tahun.</p>
+        </div>
+
+        <div class="feature-list">
+            <h4><i class="fas fa-star"></i> Fitur yang Diimplementasikan:</h4>
+            <ul>
+                <li><strong>Auto-Calculate All Units:</strong> Tidak perlu memilih unit kerja lagi</li>
+                <li><strong>Agregasi Keseluruhan:</strong> Menghitung diagram gabungan semua unit</li>
+                <li><strong>Diagram Individual:</strong> Menghitung diagram untuk setiap unit kerja</li>
+                <li><strong>UI yang Disederhanakan:</strong> Hanya perlu pilih tahun dan rencana strategis</li>
+                <li><strong>Visualisasi yang Ditingkatkan:</strong> Chart menampilkan semua unit dengan jelas</li>
+                <li><strong>Informasi yang Lebih Lengkap:</strong> Menunjukkan tipe unit (agregasi vs individual)</li>
+            </ul>
+        </div>
+
+        <!-- Diagram Kartesius Content -->
+        <div id="diagram-kartesius-content">
+            <!-- Content will be loaded here -->
+        </div>
+
+        <div class="feature-list">
+            <h4><i class="fas fa-cogs"></i> Perubahan Backend:</h4>
+            <ul>
+                <li>Route <code>/api/diagram-kartesius/calculate</code> diperbarui</li>
+                <li>Menghitung diagram untuk semua unit secara otomatis</li>
+                <li>Menyimpan hasil agregasi dan individual</li>
+                <li>Memberikan summary perhitungan yang detail</li>
+            </ul>
+        </div>
+
+        <div class="feature-list">
+            <h4><i class="fas fa-desktop"></i> Perubahan Frontend:</h4>
+            <ul>
+                <li>Menghapus dropdown pemilihan unit kerja</li>
+                <li>Menyederhanakan form menjadi hanya tahun dan rencana strategis</li>
+                <li>Menambahkan informasi yang jelas tentang auto-calculation</li>
+                <li>Meningkatkan visualisasi chart untuk multiple units</li>
+                <li>Menambahkan indikator visual untuk membedakan agregasi dan unit individual</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/diagram-kartesius.js"></script>
+
+    <script>
+        // Initialize the module when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Initializing Diagram Kartesius Auto-Calculate Test');
+            
+            try {
+                // Load the diagram module
+                await DiagramKartesiusModule.load();
+                console.log('✅ Diagram module loaded successfully');
+                
+                // Add test information
+                const container = document.getElementById('diagram-kartesius-content');
+                if (container && container.innerHTML.includes('Hitung Diagram Semua Unit')) {
+                    console.log('✅ Auto-calculate UI loaded correctly');
+                    
+                    // Add a test banner
+                    const banner = document.createElement('div');
+                    banner.className = 'alert alert-success';
+                    banner.innerHTML = `
+                        <h5><i class="fas fa-check-circle"></i> Auto-Calculate Feature Active</h5>
+                        <p class="mb-0">The system is now configured to automatically calculate diagrams for all work units. Simply select a year and click "Hitung Diagram Semua Unit".</p>
+                    `;
+                    container.insertBefore(banner, container.firstChild);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error loading diagram module:', error);
+                
+                const container = document.getElementById('diagram-kartesius-content');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Error Loading Module</h5>
+                            <p>Error: ${error.message}</p>
+                            <p>Please check the console for more details.</p>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        // Test function to simulate calculation
+        function testAutoCalculation() {
+            console.log('🧪 Testing auto-calculation functionality');
+            
+            // This would normally call the API
+            const testData = {
+                message: "Diagram berhasil dihitung untuk 5 unit kerja (termasuk agregasi keseluruhan)",
+                units_processed: 5,
+                calculation_summary: [
+                    {
+                        unit_name: "Semua Unit Kerja (Agregasi Otomatis)",
+                        totals: { Strength: 150, Weakness: 100, Opportunity: 120, Threat: 80 },
+                        axes: { x_axis: 50, y_axis: 40 },
+                        position: { kuadran: "I", strategi: "Growth" }
+                    },
+                    {
+                        unit_name: "Unit A",
+                        totals: { Strength: 40, Weakness: 30, Opportunity: 35, Threat: 25 },
+                        axes: { x_axis: 10, y_axis: 10 },
+                        position: { kuadran: "I", strategi: "Growth" }
+                    }
+                ]
+            };
+            
+            console.log('📊 Test calculation result:', testData);
+            alert(`Test Result:\n${testData.message}\n\nUnits processed: ${testData.units_processed}\nCalculation summary: ${testData.calculation_summary.length} entries`);
+        }
+    </script>
+</body>
+</html>

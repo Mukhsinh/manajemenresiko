@@ -75,7 +75,7 @@ function displayRiskRegister(data) {
                 <td>${risk.status_risiko || 'Active'}</td>
                 <td>${risk.jenis_risiko || 'Threat'}</td>
                 <td>${risk.master_risk_categories?.name || '-'}</td>
-                <td>${risk.master_work_units?.name || '-'}</td>
+                <td>${risk.master_work_units?.name || '-'}<br><small class="text-muted">${risk.master_work_units?.jenis || '-'} - ${risk.master_work_units?.kategori || '-'}</small></td>
                 <td title="${risk.sasaran || ''}">${truncateText(risk.sasaran)}</td>
                 <td>${formatDate(risk.tanggal_registrasi) || '-'}</td>
                 <td title="${risk.penyebab_risiko || ''}">${truncateText(risk.penyebab_risiko)}</td>
@@ -142,5 +142,77 @@ function formatDate(dateString) {
 }
 
 // Make function available globally
+// Download Risk Register Excel without opening external application
+async function downloadRiskRegisterExcel() {
+    try {
+        // Show loading state
+        const btn = event?.target?.closest('button');
+        if (btn) {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunduh...';
+            btn.disabled = true;
+            
+            // Reset button after delay
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }, 3000);
+        }
+        
+        // Get auth token if available
+        let token = null;
+        if (window.supabaseClient) {
+            try {
+                const session = await window.supabaseClient.auth.getSession();
+                token = session.data.session?.access_token;
+            } catch (e) {
+                console.warn('Failed to get session:', e);
+            }
+        }
+        
+        // Try localStorage as fallback
+        if (!token) {
+            token = localStorage.getItem('supabase.auth.token') || 
+                    localStorage.getItem('authToken') ||
+                    sessionStorage.getItem('authToken');
+        }
+        
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        // Fetch the file
+        const response = await fetch('/api/reports/risk-register/excel', { headers });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // Get blob from response
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `risk-register-${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        
+        console.log('Risk Register Excel downloaded successfully');
+    } catch (error) {
+        console.error('Error downloading Risk Register Excel:', error);
+        alert('Gagal mengunduh file Excel: ' + error.message);
+    }
+}
+
 window.loadRiskRegister = loadRiskRegister;
+window.downloadRiskRegisterExcel = downloadRiskRegisterExcel;
 

@@ -1,0 +1,109 @@
+{
+  "summary": {
+    "total": 14,
+    "passed": 13,
+    "failed": 1,
+    "successRate": 92.9,
+    "timestamp": "2025-12-26T22:10:36.880Z"
+  },
+  "tests": [
+    {
+      "name": "Server Connectivity",
+      "passed": true,
+      "message": "Server responding with status 200",
+      "details": "Response headers include: x-powered-by, content-security-policy, x-frame-options, x-content-type-options, x-xss-protection, referrer-policy, permissions-policy, access-control-allow-origin, access-control-allow-credentials, accept-ranges, cache-control, last-modified, etag, content-type, content-length, date, connection, keep-alive",
+      "timestamp": "2025-12-26T22:10:35.618Z"
+    },
+    {
+      "name": "File Existence: test-residual-risk-matrix-verification.html",
+      "passed": true,
+      "message": "File exists (38632 bytes)",
+      "details": "Last modified: 2025-12-26T22:08:17.875Z",
+      "timestamp": "2025-12-26T22:10:35.623Z"
+    },
+    {
+      "name": "File Existence: residual-risk-matrix-enhanced.html",
+      "passed": true,
+      "message": "File exists (57507 bytes)",
+      "details": "Last modified: 2025-12-26T22:07:31.720Z",
+      "timestamp": "2025-12-26T22:10:35.629Z"
+    },
+    {
+      "name": "File Existence: style.css",
+      "passed": true,
+      "message": "File exists (84593 bytes)",
+      "details": "Last modified: 2025-12-26T10:56:50.358Z",
+      "timestamp": "2025-12-26T22:10:35.632Z"
+    },
+    {
+      "name": "Verification Page Access",
+      "passed": true,
+      "message": "Page accessible: true, Content size: 38346 bytes",
+      "details": "Required libraries loaded: Chart.js, jsPDF, Lucide, Bootstrap",
+      "timestamp": "2025-12-26T22:10:35.644Z"
+    },
+    {
+      "name": "Enhanced Matrix Access",
+      "passed": true,
+      "message": "Enhanced matrix fully accessible with all features",
+      "details": "Star icons: true, Background colors: true, PDF export: true, Debug mode: true",
+      "timestamp": "2025-12-26T22:10:35.652Z"
+    },
+    {
+      "name": "API Endpoint /api/reports/residual-risk-simple",
+      "passed": true,
+      "message": "Endpoint responding with status 200",
+      "details": "Array with 10 records",
+      "timestamp": "2025-12-26T22:10:36.535Z"
+    },
+    {
+      "name": "API Endpoint /api/reports/residual-risk/excel",
+      "passed": false,
+      "message": "Endpoint responding with status 401",
+      "details": "Response size: 1284 bytes, Content-Type: application/json; charset=utf-8",
+      "timestamp": "2025-12-26T22:10:36.728Z"
+    },
+    {
+      "name": "Feature: Star Icon Implementation",
+      "passed": true,
+      "message": "Feature properly implemented",
+      "details": "Gold star icons for residual risk points",
+      "timestamp": "2025-12-26T22:10:36.732Z"
+    },
+    {
+      "name": "Feature: Background Color Zones",
+      "passed": true,
+      "message": "Feature properly implemented",
+      "details": "Color-coded risk zones with gradients",
+      "timestamp": "2025-12-26T22:10:36.733Z"
+    },
+    {
+      "name": "Feature: Interactive Tooltips",
+      "passed": true,
+      "message": "Feature properly implemented",
+      "details": "Rich tooltips with risk information",
+      "timestamp": "2025-12-26T22:10:36.735Z"
+    },
+    {
+      "name": "Feature: PDF Export Functionality",
+      "passed": true,
+      "message": "Feature properly implemented",
+      "details": "Client-side PDF generation with chart export",
+      "timestamp": "2025-12-26T22:10:36.740Z"
+    },
+    {
+      "name": "Feature: Debug Mode",
+      "passed": true,
+      "message": "Feature properly implemented",
+      "details": "Comprehensive debugging and logging system",
+      "timestamp": "2025-12-26T22:10:36.748Z"
+    },
+    {
+      "name": "Feature: Real-time Refresh",
+      "passed": true,
+      "message": "Feature properly implemented",
+      "details": "Manual and automatic data refresh capabilities",
+      "timestamp": "2025-12-26T22:10:36.749Z"
+    }
+  ]
+}

@@ -79,16 +79,15 @@ const ResidualRiskModule = (() => {
 
   async function load() {
     console.log('ResidualRiskModule: Starting load...');
+    console.log('ResidualRiskModule: Current state:', {
+      hasApiFunction: !!api(),
+      hasWindow: typeof window !== 'undefined',
+      hasDocument: typeof document !== 'undefined',
+      hasContainer: !!document.getElementById('residual-risk-content')
+    });
+    
     try {
-      // Check if API function is available
-      const apiFunction = api();
-      if (!apiFunction) {
-        console.error('ResidualRiskModule: API function not available');
-        showError('API function not available. Please refresh the page.');
-        return;
-      }
-
-      console.log('ResidualRiskModule: API function available, fetching data...');
+      console.log('ResidualRiskModule: Fetching data...');
       await Promise.all([fetchMasterData(), fetchResidualRisk()]);
       render();
       console.log('ResidualRiskModule: Load completed successfully');
@@ -103,11 +102,11 @@ const ResidualRiskModule = (() => {
     if (container) {
       container.innerHTML = `
         <div style="padding: 20px; text-align: center; color: #e74c3c;">
-          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+          <i data-lucide="alert-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
           <h3>Error Loading Data</h3>
           <p>${message}</p>
           <button class="btn btn-primary" onclick="ResidualRiskModule.load()" style="margin-top: 15px;">
-            <i class="fas fa-sync"></i> Retry
+            <i data-lucide="refresh-cw"></i> Retry
           </button>
         </div>
       `;
@@ -118,21 +117,22 @@ const ResidualRiskModule = (() => {
     try {
       console.log('ResidualRiskModule: Fetching master data...');
       
+      // Use fallback API calls for master data
       const [rencana, units, categories] = await Promise.all([
-        api()('/api/rencana-strategis'),
-        api()('/api/master-data/work-units'),
-        api()('/api/master-data/risk-categories')
+        fallbackApiCall('/api/rencana-strategis').catch(() => []),
+        fallbackApiCall('/api/master-data/work-units').catch(() => []),
+        fallbackApiCall('/api/master-data/risk-categories').catch(() => [])
       ]);
       
       state.rencanaStrategis = Array.isArray(rencana) ? rencana : [];
       state.unitKerja = Array.isArray(units) ? units : [];
       state.categories = Array.isArray(categories) ? categories : [];
       
-      // console.log('ResidualRiskModule: Master data loaded:', {
-      //   rencanaStrategis: state.rencanaStrategis.length,
-      //   unitKerja: state.unitKerja.length,
-      //   categories: state.categories.length
-      // });
+      console.log('ResidualRiskModule: Master data loaded:', {
+        rencanaStrategis: state.rencanaStrategis.length,
+        unitKerja: state.unitKerja.length,
+        categories: state.categories.length
+      });
       
     } catch (error) {
       console.error('ResidualRiskModule: Error fetching master data:', error);
@@ -155,20 +155,8 @@ const ResidualRiskModule = (() => {
       const endpoint = '/api/reports/residual-risk' + (params.toString() ? '?' + params.toString() : '');
       console.log('ResidualRiskModule: Calling endpoint:', endpoint);
       
-      let data;
-      try {
-        // Try main API function first
-        const apiFunction = api();
-        if (apiFunction) {
-          data = await apiFunction(endpoint);
-        } else {
-          throw new Error('Main API function not available');
-        }
-      } catch (mainError) {
-        console.warn('ResidualRiskModule: Main API failed, trying fallback:', mainError.message);
-        // Try fallback API call
-        data = await fallbackApiCall(endpoint);
-      }
+      // Always use fallback API call for more reliable data fetching
+      const data = await fallbackApiCall(endpoint);
       
       state.data = Array.isArray(data) ? data : [];
       
@@ -196,30 +184,30 @@ const ResidualRiskModule = (() => {
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title"><i class="fas fa-chart-pie"></i> Residual Risk Analysis</h3>
+          <h3 class="card-title"><i data-lucide="pie-chart"></i> Residual Risk Analysis</h3>
           <div style="display: flex; gap: 10px;">
             <button class="btn btn-success" onclick="ResidualRiskModule.refresh()">
-              <i class="fas fa-sync"></i> Refresh Data
+              <i data-lucide="refresh-cw"></i> Refresh Data
             </button>
             <div class="dropdown" style="position: relative;">
               <button class="btn btn-primary dropdown-toggle" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
-                <i class="fas fa-download"></i> Download
+                <i data-lucide="download"></i> Download
               </button>
               <div class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px;">
                 <a href="#" onclick="ResidualRiskModule.downloadExcel(); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
-                  <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel Report
+                  <i data-lucide="file-spreadsheet" style="color: #27ae60;"></i> Excel Report
                 </a>
                 <a href="#" onclick="ResidualRiskModule.downloadPDF(); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
-                  <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF Report
+                  <i data-lucide="file-text" style="color: #e74c3c;"></i> PDF Report
                 </a>
                 <a href="#" onclick="ResidualRiskModule.downloadChartImage('residual-risk-matrix', 'residual-matrix'); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
-                  <i class="fas fa-image" style="color: #3498db;"></i> Matrix Chart
+                  <i data-lucide="image" style="color: #3498db;"></i> Matrix Chart
                 </a>
                 <a href="#" onclick="ResidualRiskModule.downloadChartImage('comparison-chart', 'comparison-chart'); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
-                  <i class="fas fa-chart-bar" style="color: #9b59b6;"></i> Comparison Chart
+                  <i data-lucide="bar-chart" style="color: #9b59b6;"></i> Comparison Chart
                 </a>
                 <a href="#" onclick="ResidualRiskModule.printReport(); this.closest('.dropdown-menu').style.display='none'" style="display: block; padding: 8px 12px; text-decoration: none; color: #333;">
-                  <i class="fas fa-print" style="color: #34495e;"></i> Print Report
+                  <i data-lucide="printer" style="color: #34495e;"></i> Print Report
                 </a>
               </div>
             </div>
@@ -231,16 +219,30 @@ const ResidualRiskModule = (() => {
           
           <div class="row" style="margin-top: 2rem;">
             <div class="col-md-6">
-              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h4 style="margin-bottom: 1rem;">Residual Risk Matrix</h4>
+              <div class="risk-matrix-container">
+                <h4 style="margin-bottom: 1rem;"><i data-lucide="target"></i> Residual Risk Matrix</h4>
                 <div style="position: relative; height: 400px;">
                   <canvas id="residual-risk-matrix"></canvas>
+                </div>
+                <div class="risk-matrix-legend">
+                  <div class="legend-item">
+                    <div class="legend-symbol circle" style="background-color: #00FFFF; border: 2px solid #000;"></div>
+                    <span><i data-lucide="circle"></i> Inherent Risk Rating</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-symbol star" style="background-color: #FFD700; border: 2px solid #000; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);"></div>
+                    <span><i data-lucide="star"></i> Residual Risk Rating (★)</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-symbol triangle" style="background-color: #FFFFFF; border: 2px solid #000; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                    <span><i data-lucide="triangle"></i> Risk Appetite</span>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="col-md-6">
               <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h4 style="margin-bottom: 1rem;">Inherent vs Residual Comparison</h4>
+                <h4 style="margin-bottom: 1rem;"><i data-lucide="bar-chart-3"></i> Inherent vs Residual Comparison</h4>
                 <div style="position: relative; height: 400px;">
                   <canvas id="comparison-chart"></canvas>
                 </div>
@@ -257,13 +259,25 @@ const ResidualRiskModule = (() => {
 
     // Wait for Chart.js and DOM to be ready
     if (typeof Chart !== 'undefined') {
-      setTimeout(() => renderCharts(), 100);
+      setTimeout(() => {
+        renderCharts();
+        // Initialize Lucide icons after rendering
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      }, 100);
     } else {
       // Wait for Chart.js to load
       const checkChart = setInterval(() => {
         if (typeof Chart !== 'undefined') {
           clearInterval(checkChart);
-          setTimeout(() => renderCharts(), 100);
+          setTimeout(() => {
+            renderCharts();
+            // Initialize Lucide icons after rendering
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+            }
+          }, 100);
         }
       }, 100);
       
@@ -396,7 +410,7 @@ const ResidualRiskModule = (() => {
 
     return `
       <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin-bottom: 1rem;"><i class="fas fa-table"></i> Detail Residual Risk Analysis</h4>
+        <h4 style="margin-bottom: 1rem;"><i data-lucide="table"></i> Detail Residual Risk Analysis</h4>
         <div class="table-container">
           <table class="table residual-risk-table">
             <thead>
@@ -445,7 +459,7 @@ const ResidualRiskModule = (() => {
                 return `
                   <tr>
                     <td><strong>${risk.kode_risiko || '-'}</strong></td>
-                    <td>${risk.master_work_units?.name || '-'}</td>
+                    <td>${risk.master_work_units?.name || '-'}<br><small class="text-muted">${risk.master_work_units?.jenis || '-'} - ${risk.master_work_units?.kategori || '-'}</small></td>
                     <td><span class="badge-status ${getBadgeClassForRiskLevel(inherentLevel)}">${inherentValue || '-'}</span></td>
                     <td><span class="badge-status ${getBadgeClassForRiskLevel(item.risk_level)}">${residualValue || '-'}</span></td>
                     <td><strong style="color: #0d4f1c; font-weight: 700;">${reduction}</strong></td>
@@ -487,74 +501,276 @@ const ResidualRiskModule = (() => {
       state.chart = null;
     }
 
-    const points = state.data
-      .filter(item => item.risk_inputs) // Filter out items without risk_inputs
-      .map(item => {
+    // Separate data by risk type for different symbols
+    const inherentPoints = [];
+    const residualPoints = [];
+    const appetitePoints = [];
+
+    state.data
+      .filter(item => item.risk_inputs)
+      .forEach(item => {
         const risk = item.risk_inputs || {};
-        return {
+        const basePoint = {
           x: parseFloat(item.impact) || 0,
           y: parseFloat(item.probability) || 0,
           riskId: risk.kode_risiko || 'N/A',
           value: parseFloat(item.risk_value) || 0,
-          level: item.risk_level || 'LOW RISK',
-          color: getRiskColor(item.risk_level)
+          level: item.risk_level || 'LOW RISK'
         };
-      })
-      .filter(p => p.x > 0 && p.y > 0); // Filter out invalid points
 
-    if (points.length === 0) {
-      console.warn('No valid data points for residual matrix chart');
-      return;
-    }
+        if (basePoint.x > 0 && basePoint.y > 0) {
+          // Add inherent risk point (circle - cyan)
+          let inherent = {};
+          if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+            inherent = risk.risk_inherent_analysis[0];
+          } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+            inherent = risk.risk_inherent_analysis;
+          }
+          
+          const inherentValue = parseFloat(inherent.risk_value) || 0;
+          if (inherentValue > 0) {
+            inherentPoints.push({
+              ...basePoint,
+              value: inherentValue,
+              level: inherent.risk_level || 'LOW RISK'
+            });
+          }
+
+          // Add residual risk point (diamond - black)
+          residualPoints.push(basePoint);
+
+          // Add risk appetite point (triangle - white with black border)
+          // For demo purposes, we'll place appetite points at lower risk levels
+          appetitePoints.push({
+            ...basePoint,
+            x: Math.max(1, basePoint.x - 1),
+            y: Math.max(1, basePoint.y - 1),
+            value: Math.max(1, basePoint.value - 2),
+            level: 'LOW RISK'
+          });
+        }
+      });
 
     try {
       state.chart = new Chart(ctx, {
-      type: 'scatter',
-      data: {
-        datasets: [{
-          label: 'Residual Risk',
-          data: points,
-          backgroundColor: points.map(p => p.color),
-          borderColor: '#333',
-          borderWidth: 2,
-          pointRadius: 12,
-          pointHoverRadius: 15
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            type: 'linear',
-            min: 0.5,
-            max: 5.5,
-            ticks: { stepSize: 1 },
-            title: { display: true, text: 'Dampak', font: { weight: 'bold' } }
-          },
-          y: {
-            min: 0.5,
-            max: 5.5,
-            ticks: { stepSize: 1 },
-            title: { display: true, text: 'Probabilitas', font: { weight: 'bold' } }
-          }
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Inherent Risk Rating',
+              data: inherentPoints,
+              backgroundColor: '#00FFFF', // Cyan
+              borderColor: '#000000',
+              borderWidth: 2,
+              pointRadius: 12,
+              pointHoverRadius: 15,
+              pointStyle: 'circle'
+            },
+            {
+              label: 'Residual Risk Rating',
+              data: residualPoints,
+              backgroundColor: '#FFD700', // Gold for star
+              borderColor: '#000000',
+              borderWidth: 2,
+              pointRadius: 15,
+              pointHoverRadius: 18,
+              pointStyle: 'star' // Star shape for residual risk
+            },
+            {
+              label: 'Risk Appetite',
+              data: appetitePoints,
+              backgroundColor: '#FFFFFF', // White
+              borderColor: '#000000',
+              borderWidth: 2,
+              pointRadius: 12,
+              pointHoverRadius: 15,
+              pointStyle: 'triangle'
+            }
+          ]
         },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const point = context.raw;
-                return [
-                  `Kode: ${point.riskId}`,
-                  `Risk Value: ${point.value}`,
-                  `Level: ${point.level}`
-                ];
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: 'linear',
+              min: 0.5,
+              max: 5.5,
+              ticks: { 
+                stepSize: 1,
+                callback: function(value) {
+                  const labels = {
+                    1: '1 = Ringan Sekali',
+                    2: '2 = Ringan', 
+                    3: '3 = Sedang',
+                    4: '4 = Berat',
+                    5: '5 = Sangat Berat'
+                  };
+                  return labels[value] || value;
+                }
+              },
+              title: { display: true, text: 'Dampak', font: { weight: 'bold', size: 14 } },
+              grid: {
+                color: '#e2e8f0',
+                lineWidth: 1
+              }
+            },
+            y: {
+              min: 0.5,
+              max: 5.5,
+              ticks: { 
+                stepSize: 1,
+                callback: function(value) {
+                  const labels = {
+                    1: '1 = Sangat Kecil ≤ 10%',
+                    2: '2 = Kecil (10% < p < 40%)',
+                    3: '3 = Sedang (40% < p ≤ 60%)', 
+                    4: '4 = Besar (60% < p < 80%)',
+                    5: '5 = Sangat Besar (> 80%)'
+                  };
+                  return labels[value] || value;
+                }
+              },
+              title: { display: true, text: 'Probabilitas', font: { weight: 'bold', size: 14 } },
+              grid: {
+                color: '#e2e8f0',
+                lineWidth: 1
               }
             }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                generateLabels: function(chart) {
+                  return [
+                    {
+                      text: 'Inherent Risk Rating',
+                      fillStyle: '#00FFFF',
+                      strokeStyle: '#000000',
+                      pointStyle: 'circle'
+                    },
+                    {
+                      text: 'Residual Risk Rating (★)', 
+                      fillStyle: '#FFD700',
+                      strokeStyle: '#000000',
+                      pointStyle: 'star'
+                    },
+                    {
+                      text: 'Risk Appetite',
+                      fillStyle: '#FFFFFF',
+                      strokeStyle: '#000000', 
+                      pointStyle: 'triangle'
+                    }
+                  ];
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const point = context.raw;
+                  return [
+                    `Kode: ${point.riskId}`,
+                    `Risk Value: ${point.value}`,
+                    `Level: ${point.level}`
+                  ];
+                }
+              }
+            }
+          },
+          // Add background plugin for risk matrix colors
+          plugins: [{
+            id: 'riskMatrixBackground',
+            beforeDraw: function(chart) {
+              const ctx = chart.ctx;
+              const chartArea = chart.chartArea;
+              
+              if (!chartArea) return;
+              
+              ctx.save();
+              
+              // Define risk zones with enhanced colors and better coverage
+              const zones = [
+                // Green zones (Low Risk) - Enhanced visibility
+                { xMin: 0.5, xMax: 1.5, yMin: 0.5, yMax: 5.5, color: 'rgba(34, 197, 94, 0.3)', label: 'LOW' },
+                { xMin: 1.5, xMax: 2.5, yMin: 0.5, yMax: 2.5, color: 'rgba(34, 197, 94, 0.3)', label: 'LOW' },
+                
+                // Yellow zones (Medium Risk) - Enhanced visibility
+                { xMin: 1.5, xMax: 2.5, yMin: 2.5, yMax: 3.5, color: 'rgba(234, 179, 8, 0.3)', label: 'MEDIUM' },
+                { xMin: 2.5, xMax: 3.5, yMin: 0.5, yMax: 2.5, color: 'rgba(234, 179, 8, 0.3)', label: 'MEDIUM' },
+                
+                // Orange zones (High Risk) - Enhanced visibility
+                { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                
+                // Red zones (Extreme Risk) - Enhanced visibility
+                { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'EXTREME' },
+                { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'EXTREME' }
+              ];
+              
+              // Draw background zones with enhanced styling
+              zones.forEach(zone => {
+                const xStart = chart.scales.x.getPixelForValue(zone.xMin);
+                const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
+                const yStart = chart.scales.y.getPixelForValue(zone.yMax);
+                const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
+                
+                // Fill background color
+                ctx.fillStyle = zone.color;
+                ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                
+                // Add subtle border
+                ctx.strokeStyle = zone.color.replace('0.3', '0.6').replace('0.4', '0.8');
+                ctx.lineWidth = 1;
+                ctx.strokeRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                
+                // Add zone label in center
+                const centerX = (xStart + xEnd) / 2;
+                const centerY = (yStart + yEnd) / 2;
+                
+                ctx.fillStyle = zone.color.replace('0.3', '0.8').replace('0.4', '0.9');
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(zone.label, centerX, centerY);
+              });
+              
+              ctx.restore();
+            }
+          }],range zones (High Risk)
+                { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(249, 115, 22, 0.2)' },
+                { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(249, 115, 22, 0.2)' },
+                { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(249, 115, 22, 0.2)' },
+                
+                // Red zones (Extreme Risk)
+                { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.2)' },
+                { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.2)' }
+              ];
+              
+              // Draw background zones
+              zones.forEach(zone => {
+                const xStart = chart.scales.x.getPixelForValue(zone.xMin);
+                const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
+                const yStart = chart.scales.y.getPixelForValue(zone.yMax);
+                const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
+                
+                ctx.fillStyle = zone.color;
+                ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+              });
+              
+              ctx.restore();
+            }
+          }],
+          interaction: {
+            intersect: false,
+            mode: 'point'
           }
         }
-      }
-    });
+      });
     } catch (error) {
       console.error('Error creating residual matrix chart:', error);
     }
@@ -846,10 +1062,28 @@ const ResidualRiskModule = (() => {
       </html>
     `;
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
+    // Create a hidden iframe for printing instead of opening new window
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    
+    iframe.onload = function() {
+      iframe.contentWindow.document.write(printContent);
+      iframe.contentWindow.document.close();
+      iframe.contentWindow.print();
+      
+      // Remove iframe after printing
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    };
+    
+    iframe.src = 'about:blank';
   }
 
   return {

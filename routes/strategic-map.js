@@ -6,6 +6,154 @@ const { buildOrganizationFilter } = require('../utils/organization');
 const { exportToExcel } = require('../utils/exportHelper');
 
 
+// Generate strategic map automatically from all sasaran strategi
+router.post('/generate-all', authenticateUser, async (req, res) => {
+  try {
+    console.log('🗺️ Generating strategic map for all rencana strategis');
+
+    // Get all sasaran strategi for user's organization
+    const clientToUse = supabaseAdmin || supabase;
+    let sasaranQuery = clientToUse
+      .from('sasaran_strategi')
+      .select('*');
+
+    // Apply organization filter
+    sasaranQuery = buildOrganizationFilter(sasaranQuery, req.user);
+
+    const { data: sasaranList, error: sasaranError } = await sasaranQuery;
+
+    if (sasaranError) {
+      console.error('❌ Error fetching sasaran strategi:', sasaranError);
+      throw sasaranError;
+    }
+
+    console.log('📋 Found sasaran strategi:', sasaranList?.length || 0, 'items');
+
+    if (!sasaranList || sasaranList.length === 0) {
+      return res.json({ 
+        message: 'Tidak ada sasaran strategi untuk digenerate. Silakan tambahkan sasaran strategi terlebih dahulu.', 
+        data: [], 
+        generated: 0 
+      });
+    }
+
+    // Delete existing strategic map entries for user's organization
+    console.log('🗑️ Deleting existing strategic map entries...');
+    let deleteQuery = clientToUse
+      .from('strategic_map')
+      .delete();
+
+    // Apply organization filter for delete
+    deleteQuery = buildOrganizationFilter(deleteQuery, req.user);
+
+    const { error: deleteError } = await deleteQuery;
+    if (deleteError) {
+      console.error('❌ Error deleting existing entries:', deleteError);
+    }
+
+    // Map perspektif to full name and default positions
+    const perspektifMap = {
+      'ES': { name: 'Eksternal Stakeholder', y: 100, color: '#3498db' },
+      'IBP': { name: 'Internal Business Process', y: 200, color: '#e74c3c' },
+      'LG': { name: 'Learning & Growth', y: 300, color: '#f39c12' },
+      'Fin': { name: 'Financial', y: 400, color: '#27ae60' }
+    };
+
+    // Group by perspektif and create strategic map entries
+    const strategicMapData = [];
+    const perspektifCount = {};
+    const processedSasaranIds = new Set(); // Track processed sasaran_strategi_id to prevent duplicates
+
+    console.log('🏗️ Creating strategic map entries...');
+
+    sasaranList.forEach((sasaran, index) => {
+      // Skip if this sasaran_strategi_id has already been processed (prevent duplicates)
+      if (processedSasaranIds.has(sasaran.id)) {
+        console.warn(`⚠️ Skipping duplicate sasaran_strategi_id: ${sasaran.id}`);
+        return;
+      }
+      processedSasaranIds.add(sasaran.id);
+
+      // Handle both short and full perspektif names
+      let perspektifInfo = perspektifMap[sasaran.perspektif];
+      
+      // If not found, try to match by full name
+      if (!perspektifInfo) {
+        const fullNameMap = {
+          'Eksternal Stakeholder': { name: 'Eksternal Stakeholder', y: 100, color: '#3498db' },
+          'Internal Business Process': { name: 'Internal Business Process', y: 200, color: '#e74c3c' },
+          'Learning & Growth': { name: 'Learning & Growth', y: 300, color: '#f39c12' },
+          'Financial': { name: 'Financial', y: 400, color: '#27ae60' }
+        };
+        perspektifInfo = fullNameMap[sasaran.perspektif];
+      }
+
+      if (!perspektifInfo) {
+        console.warn('⚠️ Unknown perspektif:', sasaran.perspektif);
+        // Default fallback
+        perspektifInfo = { name: sasaran.perspektif, y: 100 + (index * 100), color: '#95a5a6' };
+      }
+
+      const perspektifKey = perspektifInfo.name; // Use full name for consistency
+      if (!perspektifCount[perspektifKey]) {
+        perspektifCount[perspektifKey] = 0;
+      }
+      perspektifCount[perspektifKey]++;
+
+      // Calculate position with better spacing
+      const xPosition = 100 + (perspektifCount[perspektifKey] - 1) * 300;
+      const yPosition = perspektifInfo.y;
+
+      strategicMapData.push({
+        user_id: req.user.id,
+        rencana_strategis_id: sasaran.rencana_strategis_id,
+        sasaran_strategi_id: sasaran.id,
+        perspektif: perspektifInfo.name,
+        posisi_x: xPosition,
+        posisi_y: yPosition,
+        warna: perspektifInfo.color,
+        organization_id: sasaran.organization_id || req.user.organizations?.[0] || null
+      });
+
+      console.log(`📍 Created entry for: ${sasaran.sasaran} (${perspektifInfo.name}) at (${xPosition}, ${yPosition})`);
+    });
+
+    if (strategicMapData.length > 0) {
+      console.log('💾 Inserting strategic map data...');
+      const { data, error } = await clientToUse
+        .from('strategic_map')
+        .insert(strategicMapData)
+        .select();
+
+      if (error) {
+        console.error('❌ Error inserting strategic map data:', error);
+        throw error;
+      }
+
+      console.log('✅ Strategic map generated successfully');
+      res.json({ 
+        message: 'Strategic map berhasil digenerate', 
+        data, 
+        generated: strategicMapData.length,
+        summary: {
+          total_sasaran: sasaranList.length,
+          perspektif_distribution: perspektifCount,
+          generated_entries: strategicMapData.length
+        }
+      });
+    } else {
+      res.json({ 
+        message: 'Tidak ada sasaran strategi yang valid untuk digenerate', 
+        data: [], 
+        generated: 0 
+      });
+    }
+  } catch (error) {
+    console.error('❌ Strategic map generate error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Generate strategic map automatically from sasaran strategi
 router.post('/generate', authenticateUser, async (req, res) => {
   try {
@@ -14,6 +162,8 @@ router.post('/generate', authenticateUser, async (req, res) => {
     if (!rencana_strategis_id) {
       return res.status(400).json({ error: 'Rencana strategis ID wajib diisi' });
     }
+
+    console.log('🗺️ Generating strategic map for rencana_strategis_id:', rencana_strategis_id);
 
     // Get all sasaran strategi for this rencana
     const clientToUse = supabaseAdmin || supabase;
@@ -27,9 +177,23 @@ router.post('/generate', authenticateUser, async (req, res) => {
 
     const { data: sasaranList, error: sasaranError } = await sasaranQuery;
 
-    if (sasaranError) throw sasaranError;
+    if (sasaranError) {
+      console.error('❌ Error fetching sasaran strategi:', sasaranError);
+      throw sasaranError;
+    }
 
-    // Delete existing strategic map entries
+    console.log('📋 Found sasaran strategi:', sasaranList?.length || 0, 'items');
+
+    if (!sasaranList || sasaranList.length === 0) {
+      return res.json({ 
+        message: 'Tidak ada sasaran strategi untuk digenerate. Silakan tambahkan sasaran strategi terlebih dahulu.', 
+        data: [], 
+        generated: 0 
+      });
+    }
+
+    // Delete existing strategic map entries for this rencana strategis
+    console.log('🗑️ Deleting existing strategic map entries...');
     let deleteQuery = clientToUse
       .from('strategic_map')
       .delete()
@@ -38,7 +202,10 @@ router.post('/generate', authenticateUser, async (req, res) => {
     // Apply organization filter for delete
     deleteQuery = buildOrganizationFilter(deleteQuery, req.user);
 
-    await deleteQuery;
+    const { error: deleteError } = await deleteQuery;
+    if (deleteError) {
+      console.error('❌ Error deleting existing entries:', deleteError);
+    }
 
     // Map perspektif to full name and default positions
     const perspektifMap = {
@@ -51,41 +218,94 @@ router.post('/generate', authenticateUser, async (req, res) => {
     // Group by perspektif and create strategic map entries
     const strategicMapData = [];
     const perspektifCount = {};
+    const processedSasaranIds = new Set(); // Track processed sasaran_strategi_id to prevent duplicates
 
-    (sasaranList || []).forEach((sasaran, index) => {
-      const perspektif = perspektifMap[sasaran.perspektif];
-      if (!perspektif) return;
+    console.log('🏗️ Creating strategic map entries...');
 
-      if (!perspektifCount[sasaran.perspektif]) {
-        perspektifCount[sasaran.perspektif] = 0;
+    sasaranList.forEach((sasaran, index) => {
+      // Skip if this sasaran_strategi_id has already been processed (prevent duplicates)
+      if (processedSasaranIds.has(sasaran.id)) {
+        console.warn(`⚠️ Skipping duplicate sasaran_strategi_id: ${sasaran.id}`);
+        return;
       }
-      perspektifCount[sasaran.perspektif]++;
+      processedSasaranIds.add(sasaran.id);
+
+      // Handle both short and full perspektif names
+      let perspektifInfo = perspektifMap[sasaran.perspektif];
+      
+      // If not found, try to match by full name
+      if (!perspektifInfo) {
+        const fullNameMap = {
+          'Eksternal Stakeholder': { name: 'Eksternal Stakeholder', y: 100, color: '#3498db' },
+          'Internal Business Process': { name: 'Internal Business Process', y: 200, color: '#e74c3c' },
+          'Learning & Growth': { name: 'Learning & Growth', y: 300, color: '#f39c12' },
+          'Financial': { name: 'Financial', y: 400, color: '#27ae60' }
+        };
+        perspektifInfo = fullNameMap[sasaran.perspektif];
+      }
+
+      if (!perspektifInfo) {
+        console.warn('⚠️ Unknown perspektif:', sasaran.perspektif);
+        // Default fallback
+        perspektifInfo = { name: sasaran.perspektif, y: 100 + (index * 100), color: '#95a5a6' };
+      }
+
+      const perspektifKey = perspektifInfo.name; // Use full name for consistency
+      if (!perspektifCount[perspektifKey]) {
+        perspektifCount[perspektifKey] = 0;
+      }
+      perspektifCount[perspektifKey]++;
+
+      // Calculate position with better spacing
+      const xPosition = 100 + (perspektifCount[perspektifKey] - 1) * 300;
+      const yPosition = perspektifInfo.y;
 
       strategicMapData.push({
         user_id: req.user.id,
         rencana_strategis_id,
         sasaran_strategi_id: sasaran.id,
-        perspektif: perspektif.name,
-        posisi_x: 100 + (perspektifCount[sasaran.perspektif] - 1) * 200,
-        posisi_y: perspektif.y,
-        warna: perspektif.color,
+        perspektif: perspektifInfo.name,
+        posisi_x: xPosition,
+        posisi_y: yPosition,
+        warna: perspektifInfo.color,
         organization_id: sasaran.organization_id || req.user.organizations?.[0] || null
       });
+
+      console.log(`📍 Created entry for: ${sasaran.sasaran} (${perspektifInfo.name}) at (${xPosition}, ${yPosition})`);
     });
 
     if (strategicMapData.length > 0) {
+      console.log('💾 Inserting strategic map data...');
       const { data, error } = await clientToUse
         .from('strategic_map')
         .insert(strategicMapData)
         .select();
 
-      if (error) throw error;
-      res.json({ message: 'Strategic map berhasil digenerate', data, generated: strategicMapData.length });
+      if (error) {
+        console.error('❌ Error inserting strategic map data:', error);
+        throw error;
+      }
+
+      console.log('✅ Strategic map generated successfully');
+      res.json({ 
+        message: 'Strategic map berhasil digenerate', 
+        data, 
+        generated: strategicMapData.length,
+        summary: {
+          total_sasaran: sasaranList.length,
+          perspektif_distribution: perspektifCount,
+          generated_entries: strategicMapData.length
+        }
+      });
     } else {
-      res.json({ message: 'Tidak ada sasaran strategi untuk digenerate', data: [], generated: 0 });
+      res.json({ 
+        message: 'Tidak ada sasaran strategi yang valid untuk digenerate', 
+        data: [], 
+        generated: 0 
+      });
     }
   } catch (error) {
-    console.error('Strategic map generate error:', error);
+    console.error('❌ Strategic map generate error:', error);
     res.status(500).json({ error: error.message });
   }
 });

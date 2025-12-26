@@ -1314,13 +1314,33 @@ router.get('/residual-risk/pdf', authenticateUser, async (req, res) => {
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
           '--disable-gpu',
+          '--disable-webgl',
+          '--disable-webgl2',
+          '--disable-software-rasterizer',
           '--no-first-run',
           '--no-zygote',
-          '--single-process'
-        ]
+          '--single-process',
+          '--disable-logging',
+          '--log-level=0',
+          '--silent'
+        ],
+        ignoreDefaultArgs: ['--enable-logging']
       });
       
       const page = await browser.newPage();
+      
+      // Filter out WebGL warnings from console
+      page.on('console', (msg) => {
+        const text = msg.text();
+        // Suppress WebGL warnings
+        if (text.includes('Webgl') || text.includes('WebGL') || text.includes('DOM renderer')) {
+          return; // Ignore these warnings
+        }
+        // Only log errors, not warnings
+        if (msg.type() === 'error') {
+          console.error('Puppeteer console error:', text);
+        }
+      });
       
       // Set viewport for consistent rendering
       await page.setViewport({ width: 1200, height: 800 });
@@ -1568,11 +1588,32 @@ router.get('/residual-risk-pdf-debug', async (req, res) => {
           '--no-sandbox', 
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
-          '--disable-gpu'
-        ]
+          '--disable-gpu',
+          '--disable-webgl',
+          '--disable-webgl2',
+          '--disable-software-rasterizer',
+          '--disable-logging',
+          '--log-level=0',
+          '--silent'
+        ],
+        ignoreDefaultArgs: ['--enable-logging']
       });
       
       const page = await browser.newPage();
+      
+      // Filter out WebGL warnings from console
+      page.on('console', (msg) => {
+        const text = msg.text();
+        // Suppress WebGL warnings
+        if (text.includes('Webgl') || text.includes('WebGL') || text.includes('DOM renderer')) {
+          return; // Ignore these warnings
+        }
+        // Only log errors, not warnings
+        if (msg.type() === 'error') {
+          console.error('Puppeteer console error:', text);
+        }
+      });
+      
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
       
       console.log('Generating PDF...');

@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Analisis SWOT - Modul Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0066cc",
+                        "primary-dark": "#004c99",
+                        "primary-light": "#e0f2fe",
+                        "secondary": "#ffffff", 
+                        "secondary-dark": "#f8fafc",
+                        "text-main": "#1e293b",
+                        "text-secondary": "#64748b",
+                        "accent-blue": "#0ea5e9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                        'floating': '0 10px 40px -10px rgba(0,0,0,0.08)'
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: #0066cc;
+        }
+        .sidebar-link.active {
+            background-color: #e0f2fe;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background-color: #0066cc;
+            border-radius: 0 4px 4px 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        .material-symbols-outlined.bold {
+            font-variation-settings: 'wght' 600;
+        }
+        
+        /* SWOT specific styles */
+        .swot-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .swot-badge.strength { background-color: #10b981; color: white; }
+        .swot-badge.weakness { background-color: #ef4444; color: white; }
+        .swot-badge.opportunity { background-color: #3b82f6; color: white; }
+        .swot-badge.threat { background-color: #f59e0b; color: white; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* Register-style table */
+        .register-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .register-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 12px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 16px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .register-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        .register-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .status-badge.mitigasi { background-color: #dbeafe; color: #1e40af; }
+        .status-badge.analisis { background-color: #fef3c7; color: #92400e; }
+        .status-badge.selesai { background-color: #d1fae5; color: #065f46; }
+        
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .level-badge.ekstrem { background-color: #fecaca; color: #991b1b; }
+        .level-badge.tinggi { background-color: #fed7aa; color: #9a3412; }
+        .level-badge.sedang { background-color: #fef3c7; color: #92400e; }
+        .level-badge.rendah { background-color: #d1fae5; color: #065f46; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex text-text-main overflow-hidden">
+    <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col flex-shrink-0 h-screen overflow-y-auto z-30">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+            <div class="size-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl filled">health_and_safety</span>
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-tight text-slate-800">PINTAR MR</h1>
+                <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Hospital Risk Mgmt</p>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/">
+                <span class="material-symbols-outlined text-[20px]">space_dashboard</span>Dashboard
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analisis Strategis</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/analisis-bsc">
+                <span class="material-symbols-outlined text-[20px]">analytics</span>Analisis BSC
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/visi-misi">
+                <span class="material-symbols-outlined text-[20px]">ads_click</span>Visi dan Misi
+            </a>
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm" href="/rencana-strategis">
+                <span class="material-symbols-outlined text-[20px] filled">account_tree</span>Rencana Strategis
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operasional</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/register-risiko">
+                <span class="material-symbols-outlined text-[20px]">folder_managed</span>Register Risiko
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/identifikasi-risiko">
+                <span class="material-symbols-outlined text-[20px]">find_in_page</span>Identifikasi Risiko
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200 hover:shadow-sm">
+                <div class="size-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-200">MH</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">Muksin Hadi</p>
+                    <p class="text-[10px] text-slate-500 truncate">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-slate-50">
+        <header class="bg-white border-b border-slate-200 z-20 flex-shrink-0 h-16 sticky top-0">
+            <div class="w-full h-full px-6 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 leading-tight">Register Risiko</h2>
+                        <div class="flex items-center gap-1 text-xs text-slate-500">
+                            <span>Manajemen Risiko</span>
+                            <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+                            <span class="text-primary font-medium">Dashboard</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-800">RSUD BENDAN</p>
+                        <p class="text-xs text-slate-500">Jl. Sriwijaya 2 Pekalongan</p>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative">
+                            <span class="material-symbols-outlined text-[22px]">notifications</span>
+                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                            <span class="material-symbols-outlined text-[22px]">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50">
+            <div class="max-w-[1600px] mx-auto space-y-8">
+                <!-- Header Section -->
+                <div class="bg-gradient-to-br from-[#0066cc] to-[#0ea5e9] rounded-2xl shadow-floating p-8 text-white relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1/2 bg-white/5 opacity-50" style="clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="absolute right-20 top-0 h-full w-1/3 bg-white/5 opacity-30" style="clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex items-start gap-6">
+                            <div class="size-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
+                                <span class="material-symbols-outlined text-white text-3xl">folder_managed</span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold tracking-tight">Register Risiko Klinis & Non-Klinis</h2>
+                                <p class="text-blue-100 mt-2 max-w-2xl text-sm leading-relaxed opacity-90">Kelola database risiko strategis secara terintegrasi, lakukan analisis dampak mendalam, dan pantau mitigasi secara real-time untuk memastikan keselamatan pasien dan keberlanjutan RSUD Bendan.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                            <div class="text-left sm:text-right">
+                                <p class="text-[10px] uppercase tracking-wider text-blue-200 font-semibold">Periode Laporan</p>
+                                <p class="font-bold text-lg">Semester II - 2025</p>
+                            </div>
+                            <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
+                            <button class="bg-white text-primary hover:bg-blue-50 px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-sm" onclick="showFilterModal()">
+                                <span class="material-symbols-outlined text-[18px]">tune</span>Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -mr-10 -mt-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-blue-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-blue-600 text-[20px]">folder</span>
+                                </div>
+                                <span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">-2%</span>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-800 mb-1">124</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Risiko Aktif</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-red-50 rounded-full -mr-10 -mt-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-red-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-red-600 text-[20px]">error</span>
+                                </div>
+                                <span class="text-red-600 text-xs font-bold">Perlu Atensi</span>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-800 mb-1">12</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Risiko Ekstrem</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-50 rounded-full -mr-10 -mt-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-yellow-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-yellow-600 text-[20px]">schedule</span>
+                                </div>
+                                <span class="text-yellow-600 text-xs font-bold">3 Deadline</span>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-800 mb-1">45</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Dalam Mitigasi</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-full -mr-10 -mt-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-green-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-green-600 text-[20px]">check_circle</span>
+                                </div>
+                                <span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+8%</span>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-800 mb-1">67</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Risiko Selesai</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Table -->
+                <div class="bg-white rounded-2xl shadow-card border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <div class="bg-blue-100 p-1.5 rounded-md text-primary">
+                                <span class="material-symbols-outlined text-[20px]">table_rows</span>
+                            </div>
+                            Daftar Risiko Terdaftar
+                        </h3>
+                        <div class="flex gap-3 w-full sm:w-auto">
+                            <div class="relative flex-1 sm:w-64">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                                <input class="w-full pl-9 h-10 rounded-xl border-slate-200 bg-white focus:border-primary focus:ring-primary text-sm transition-all shadow-sm" placeholder="Cari ID, risiko, unit..." type="text" id="searchInput"/>
+                            </div>
+                            <button class="flex items-center justify-center gap-2 h-10 px-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm">
+                                <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                                <span class="hidden sm:inline">Tambah</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Tabs -->
+                    <div class="px-6 pt-2 border-b border-slate-100 flex gap-8 text-sm overflow-x-auto bg-white">
+                        <button class="py-3 border-b-2 border-primary text-primary font-bold whitespace-nowrap">Semua Risiko</button>
+                        <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors">Risiko Medis</button>
+                        <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors">Risiko Non-Medis</button>
+                        <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors">Arsip</button>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse register-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th>Risiko & Unit</th>
+                                    <th class="text-center">Score</th>
+                                    <th class="text-center">Level</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">
+                                        <div class="font-bold text-slate-800">RSK-001</div>
+                                        <div class="text-xs text-slate-500">Kegagalan Genset Utama</div>
+                                    </td>
+                                    <td>
+                                        <div class="font-semibold text-slate-800 mb-1">Kegagalan Genset Utama</div>
+                                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                                            <span class="material-symbols-outlined text-[14px]">business</span>
+                                            <span>IPSRS • Instalasi</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="font-bold text-xl text-slate-800">20</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="level-badge ekstrem">
+                                            <span class="material-symbols-outlined text-[12px]">circle</span>
+                                            Ekstrem
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="status-badge mitigasi">
+                                            <span class="material-symbols-outlined text-[12px]">circle</span>
+                                            Mitigasi
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">edit</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td class="text-center">
+                                        <div class="font-bold text-slate-800">RSK-002</div>
+                                        <div class="text-xs text-slate-500">Medication Error</div>
+                                    </td>
+                                    <td>
+                                        <div class="font-semibold text-slate-800 mb-1">Medication Error</div>
+                                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                                            <span class="material-symbols-outlined text-[14px]">local_pharmacy</span>
+                                            <span>Farmasi • Klinis</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="font-bold text-xl text-slate-800">16</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="level-badge tinggi">
+                                            <span class="material-symbols-outlined text-[12px]">circle</span>
+                                            Tinggi
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="status-badge analisis">
+                                            <span class="material-symbols-outlined text-[12px]">circle</span>
+                                            Analisis
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">edit</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td class="text-center">
+                                        <div class="font-bold text-slate-800">RSK-003</div>
+                                        <div class="text-xs text-slate-500">Keterlambatan Lab Cito</div>
+                                    </td>
+                                    <td>
+                                        <div class="font-semibold text-slate-800 mb-1">Keterlambatan Lab Cito</div>
+                                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                                            <span class="material-symbols-outlined text-[14px]">science</span>
+                                            <span>Laboratorium • Penunjang</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="font-bold text-xl text-slate-800">9</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="level-badge sedang">
+                                            <span class="material-symbols-outlined text-[12px]">circle</span>
+                                            Sedang
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="status-badge selesai">
+                                            <span class="material-symbols-outlined text-[12px]">circle</span>
+                                            Selesai
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">edit</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="p-4 border-t border-slate-100 flex items-center justify-between bg-white">
+                        <span class="text-xs font-medium text-slate-500">Menampilkan 1-10 dari 124 data</span>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">Sebelumnya</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-md">1</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">2</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">3</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">Selanjutnya</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Simple demo functionality
+        function showFilterModal() {
+            alert('Filter modal akan ditampilkan di sini');
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Analisis SWOT - Modul Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0066cc",
+                        "primary-dark": "#004c99",
+                        "primary-light": "#e0f2fe",
+                        "secondary": "#ffffff", 
+                        "secondary-dark": "#f8fafc",
+                        "text-main": "#1e293b",
+                        "text-secondary": "#64748b",
+                        "accent-blue": "#0ea5e9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                        'floating': '0 10px 40px -10px rgba(0,0,0,0.08)'
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: #0066cc;
+        }
+        .sidebar-link.active {
+            background-color: #e0f2fe;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background-color: #0066cc;
+            border-radius: 0 4px 4px 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        .material-symbols-outlined.bold {
+            font-variation-settings: 'wght' 600;
+        }
+        
+        /* SWOT specific styles */
+        .swot-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .swot-badge.strength { background-color: #10b981; color: white; }
+        .swot-badge.weakness { background-color: #ef4444; color: white; }
+        .swot-badge.opportunity { background-color: #3b82f6; color: white; }
+        .swot-badge.threat { background-color: #f59e0b; color: white; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex text-text-main overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col flex-shrink-0 h-screen overflow-y-auto z-30">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+            <div class="size-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl filled">health_and_safety</span>
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-tight text-slate-800">PINTAR MR</h1>
+                <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Hospital Risk Mgmt</p>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/">
+                <span class="material-symbols-outlined text-[20px]">space_dashboard</span>Dashboard
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analisis Strategis</div>
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm" href="/analisis-swot">
+                <span class="material-symbols-outlined text-[20px] filled">analytics</span>Analisis SWOT
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/visi-misi">
+                <span class="material-symbols-outlined text-[20px]">ads_click</span>Visi dan Misi
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/rencana-strategis">
+                <span class="material-symbols-outlined text-[20px]">account_tree</span>Rencana Strategis
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operasional</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/risk-register">
+                <span class="material-symbols-outlined text-[20px]">folder_managed</span>Register Risiko
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/risk-identification">
+                <span class="material-symbols-outlined text-[20px]">find_in_page</span>Identifikasi Risiko
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/risk-analysis">
+                <span class="material-symbols-outlined text-[20px]">assessment</span>Analisis Risiko
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/laporan">
+                <span class="material-symbols-outlined text-[20px]">description</span>Laporan
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200 hover:shadow-sm">
+                <div class="size-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-200">MH</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">Muksin Hadi</p>
+                    <p class="text-[10px] text-slate-500 truncate">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-white">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 z-20 flex-shrink-0 h-16 sticky top-0">
+            <div class="w-full h-full px-6 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 leading-tight">Analisis SWOT</h2>
+                        <div class="flex items-center gap-1 text-xs text-slate-500">
+                            <span>Manajemen Risiko</span>
+                            <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+                            <span class="text-primary font-medium">Analisis SWOT</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-800">RSUD BENDAN</p>
+                        <p class="text-xs text-slate-500">Jl. Sriwijaya 2 Pekalongan</p>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative">
+                            <span class="material-symbols-outlined text-[22px]">notifications</span>
+                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                            <span class="material-symbols-outlined text-[22px]">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-white">
+            <div class="max-w-[1600px] mx-auto space-y-8">
+                <!-- Hero Section - Register Style -->
+                <div class="bg-gradient-to-br from-[#0066cc] to-[#0ea5e9] rounded-2xl shadow-floating p-8 text-white relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1/2 bg-white/5 opacity-50" style="clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="absolute right-20 top-0 h-full w-1/3 bg-white/5 opacity-30" style="clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex items-start gap-6">
+                            <div class="size-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
+                                <span class="material-symbols-outlined text-white text-3xl">analytics</span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold tracking-tight">Analisis SWOT Klinis & Non-Klinis</h2>
+                                <p class="text-blue-100 mt-2 max-w-2xl text-sm leading-relaxed opacity-90">Kelola database analisis strategis secara terintegrasi, lakukan analisis dampak mendalam, dan pantau secara real-time untuk memastikan keselamatan pasien dan keberlanjutan RSUD Bendan.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                            <div class="text-left sm:text-right">
+                                <p class="text-[10px] uppercase tracking-wider text-blue-200 font-semibold">Periode Laporan</p>
+                                <p class="font-bold text-lg">Semester II - 2025</p>
+                            </div>
+                            <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
+                            <button class="bg-white text-primary hover:bg-blue-50 px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-sm" onclick="showFilterModal()">
+                                <span class="material-symbols-outlined text-[18px]">tune</span>Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards - Register Style -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Total Analisis Aktif -->
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-blue-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-blue-600 text-[24px]">analytics</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[12px]">trending_up</span>
+                                    <span class="font-semibold">-2%</span>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Analisis Aktif</p>
+                                <p class="text-3xl font-bold text-slate-800">124</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Ekstrem -->
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-red-50 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-red-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-red-600 text-[24px]">error</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[12px]">priority_high</span>
+                                    <span class="font-semibold">Perlu Atensi</span>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Analisis Ekstrem</p>
+                                <p class="text-3xl font-bold text-slate-800">12</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dalam Mitigasi -->
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-orange-50 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-orange-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-orange-600 text-[24px]">schedule</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[12px]">schedule</span>
+                                    <span class="font-semibold">3 Deadline</span>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Dalam Mitigasi</p>
+                                <p class="text-3xl font-bold text-slate-800">45</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Selesai -->
+                    <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-green-100 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined text-green-600 text-[24px]">check_circle</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[12px]">trending_up</span>
+                                    <span class="font-semibold">+8% Sukses</span>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Analisis Selesai</p>
+                                <p class="text-3xl font-bold text-slate-800">67</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Table Section - Register Style -->
+                <div class="bg-white rounded-2xl shadow-card border border-slate-200 overflow-hidden">
+                    <!-- Table Header -->
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-blue-100 p-2 rounded-lg">
+                                <span class="material-symbols-outlined text-blue-600 text-[24px]">table_rows</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Daftar Analisis Terdaftar</h3>
+                                <p class="text-xs text-slate-500">Semua analisis • Analisis Medis • Analisis Non-Medis • Arsip</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 w-full sm:w-auto">
+                            <div class="relative flex-1 sm:w-64">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                                <input class="w-full pl-9 h-10 rounded-xl border-slate-200 bg-white focus:border-primary focus:ring-primary text-sm transition-all shadow-sm" placeholder="Cari ID, analisis, unit..." type="text" id="searchInput" onkeyup="filterTable()"/>
+                            </div>
+                            <button class="flex items-center justify-center gap-2 h-10 px-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm" onclick="showAddModal()">
+                                <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                                <span class="hidden sm:inline">Tambah</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Tabs -->
+                    <div class="px-6 pt-2 border-b border-slate-100 flex gap-8 text-sm overflow-x-auto bg-white">
+                        <button class="py-3 border-b-2 border-primary text-primary font-bold whitespace-nowrap filter-tab active" data-filter="all" onclick="setActiveFilter('all')">Semua Analisis</button>
+                        <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Strength" onclick="setActiveFilter('Strength')">Analisis Medis</button>
+                        <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Weakness" onclick="setActiveFilter('Weakness')">Analisis Non-Medis</button>
+                        <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Opportunity" onclick="setActiveFilter('Opportunity')">Arsip</button>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Analisis & Unit</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Score</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Level</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50" id="swotTableBody">
+                                <!-- Sample Data Row 1 -->
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-800">SWO-001</div>
+                                        <div class="text-xs text-slate-500">Kegagalan Genset Utama</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-slate-800">Kegagalan Genset Utama</div>
+                                        <div class="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                                            <span class="material-symbols-outlined text-[12px]">business</span>
+                                            IPSRS • Instalasi
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="font-bold text-lg text-slate-800">20</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Ekstrem
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            <span class="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1.5"></span>
+                                            Mitigasi
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit">
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Sample Data Row 2 -->
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-800">SWO-002</div>
+                                        <div class="text-xs text-slate-500">Medication Error</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-slate-800">Medication Error</div>
+                                        <div class="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                                            <span class="material-symbols-outlined text-[12px]">local_pharmacy</span>
+                                            Farmasi • Klinis
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="font-bold text-lg text-slate-800">16</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                            Tinggi
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <span class="w-1.5 h-1.5 bg-yellow-600 rounded-full mr-1.5"></span>
+                                            Analisis
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit">
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Sample Data Row 3 -->
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-800">SWO-003</div>
+                                        <div class="text-xs text-slate-500">Keterlambatan Lab Cito</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-slate-800">Keterlambatan Lab Cito</div>
+                                        <div class="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                                            <span class="material-symbols-outlined text-[12px]">science</span>
+                                            Laboratorium • Penunjang
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="font-bold text-lg text-slate-800">9</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            Sedang
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <span class="w-1.5 h-1.5 bg-green-600 rounded-full mr-1.5"></span>
+                                            Terkendali
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit">
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                            </button>
+                                            <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="p-4 border-t border-slate-100 flex items-center justify-between bg-white">
+                        <span class="text-xs font-medium text-slate-500">Menampilkan 1-10 dari 124 analisis</span>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                            </button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-white bg-primary border border-primary rounded-lg">1</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">2</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">3</button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="/js/analisis-swot-modern.js"></script>
+</body>
+</html>

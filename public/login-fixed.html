@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Fixed</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-login:hover {
+            background: #0056b3;
+        }
+        .btn-login:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .auth-debug {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login - Enhanced</h1>
+        <p>Login dengan kredensial superadmin yang telah diperbaiki.</p>
+        
+        <div id="statusMessage" class="status-message status-info">
+            🔄 Initializing authentication system...
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="mukhsin9@gmail.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" value="Jlamprang233!!" required>
+            </div>
+            
+            <button type="submit" id="loginBtn" class="btn-login">
+                Login
+            </button>
+        </form>
+        
+        <div class="auth-debug" id="authDebug">
+            <div>Initializing auth debug...</div>
+        </div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load auth system -->
+    <script src="/js/config.js"></script>
+    <script src="/js/auth-state-manager.js"></script>
+    <script src="/js/auth-fix.js"></script>
+    
+    <script>
+        let supabaseClient = null;
+        let authManager = null;
+        let isLoggingIn = false;
+        
+        function debugLog(message, type = 'info') {
+            const debugEl = document.getElementById('authDebug');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#6c757d';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            debugEl.appendChild(logEntry);
+            debugEl.scrollTop = debugEl.scrollHeight;
+            console.log(`[LOGIN-FIX] ${message}`);
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.className = `status-message status-${type}`;
+            statusEl.innerHTML = message;
+        }
+        
+        async function initializeAuth() {
+            try {
+                debugLog('Waiting for Supabase client...');
+                
+                // Wait for Supabase client
+                let attempts = 0;
+                while (!supabaseClient && attempts < 100) {
+                    supabaseClient = window.supabaseClient || 
+                                   (window.SupabaseClientManager && window.SupabaseClientManager.getClient());
+                    
+                    if (!supabaseClient) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+                }
+                
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                debugLog('Supabase client ready', 'success');
+                
+                // Check if already authenticated
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                
+                if (error) {
+                    debugLog(`Session check error: ${error.message}`, 'error');
+                } else if (session && session.user) {
+                    debugLog('User already authenticated, redirecting...', 'success');
+                    showStatus('✅ Already authenticated, redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                    return;
+                }
+                
+                // Wait for auth manager
+                attempts = 0;
+                while (!authManager && attempts < 50) {
+                    authManager = window.enhancedAuthStateManager || window.authStateManager;
+                    
+                    if (!authManager) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+                }
+                
+                if (authManager) {
+                    debugLog('Auth manager ready', 'success');
+                    
+                    // Listen to auth state changes
+                    if (authManager.onAuthStateChange) {
+                        authManager.onAuthStateChange((state) => {
+                            debugLog(`Auth state: ${state.state} (authenticated: ${state.isAuthenticated})`);
+                            
+                            if (state.isAuthenticated && !isLoggingIn) {
+                                showStatus('✅ Authentication successful, redirecting...', 'success');
+                                setTimeout(() => {
+                                    window.location.href = '/';
+                                }, 1000);
+                            }
+                        });
+                    }
+                } else {
+                    debugLog('Auth manager not available, using basic auth', 'error');
+                }
+                
+                showStatus('Ready to login', 'info');
+                debugLog('Auth initialization complete', 'success');
+                
+            } catch (error) {
+                debugLog(`Auth initialization failed: ${error.message}`, 'error');
+                showStatus('❌ Auth initialization failed', 'error');
+            }
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            if (isLoggingIn) {
+                return;
+            }
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (!email || !password) {
+                showStatus('❌ Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                isLoggingIn = true;
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Logging in...';
+                
+                showStatus('🔄 Logging in...', 'info');
+                debugLog('Starting login process...');
+                
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                debugLog('Calling signInWithPassword...');
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                debugLog('Login API call successful', 'success');
+                debugLog(`User: ${data.user.email}`);
+                debugLog(`Role: ${data.user.user_metadata?.role}`);
+                
+                showStatus('✅ Login successful, updating auth state...', 'success');
+                
+                // Wait for auth state to update
+                debugLog('Waiting for auth state update...');
+                
+                let authUpdated = false;
+                let waitAttempts = 0;
+                const maxWaitAttempts = 50; // 5 seconds
+                
+                while (!authUpdated && waitAttempts < maxWaitAttempts) {
+                    // Check global auth state
+                    if (window.isAuthenticated && window.currentUser) {
+                        authUpdated = true;
+                        debugLog('Global auth state updated', 'success');
+                        break;
+                    }
+                    
+                    // Check auth manager state
+                    if (authManager && authManager.isAuthenticated) {
+                        authUpdated = true;
+                        debugLog('Auth manager state updated', 'success');
+                        break;
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    waitAttempts++;
+                }
+                
+                if (authUpdated) {
+                    showStatus('✅ Authentication complete, redirecting...', 'success');
+                    debugLog('Redirecting to dashboard...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    debugLog('Auth state update timeout, forcing redirect...', 'error');
+                    showStatus('⚠️ Auth state timeout, redirecting anyway...', 'info');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                }
+                
+            } catch (error) {
+                debugLog(`Login failed: ${error.message}`, 'error');
+                showStatus(`❌ Login failed: ${error.message}`, 'error');
+            } finally {
+                isLoggingIn = false;
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeAuth, 1000);
+        });
+        
+        // Handle auth state changes from Supabase
+        window.addEventListener('load', () => {
+            // Additional check after page load
+            setTimeout(async () => {
+                if (supabaseClient) {
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session && session.user) {
+                        debugLog('Session found after page load, redirecting...', 'success');
+                        window.location.href = '/';
+                    }
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

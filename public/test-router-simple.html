@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Router Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { margin: 5px; padding: 10px 15px; }
+        #current-url { font-family: monospace; background: #f8f9fa; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Router Simple</h1>
+    
+    <div id="current-url">Current URL: <span id="url-display"></span></div>
+    
+    <h3>Navigation Test</h3>
+    <button onclick="testNavigation('/dashboard')">Dashboard</button>
+    <button onclick="testNavigation('/visi-misi')">Visi Misi</button>
+    <button onclick="testNavigation('/manajemen-risiko/input-data')">Risk Input</button>
+    <button onclick="testNavigation('/laporan')">Laporan</button>
+    <button onclick="testNavigation('/invalid-route')">Invalid Route</button>
+    
+    <h3>Test Results</h3>
+    <div id="test-results"></div>
+    
+    <!-- Load router scripts -->
+    <script src="js/router.js"></script>
+    <script src="js/route-config.js"></script>
+    <script src="js/router-integration.js"></script>
+    
+    <script>
+        let testResults = [];
+        
+        function updateUrlDisplay() {
+            document.getElementById('url-display').textContent = window.location.href;
+        }
+        
+        function addTestResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            document.getElementById('test-results').appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function testNavigation(url) {
+            addTestResult(`Testing navigation to: ${url}`, 'info');
+            
+            try {
+                if (window.appRouter) {
+                    window.appRouter.navigate(url);
+                    
+                    setTimeout(() => {
+                        const currentPath = window.location.pathname;
+                        if (currentPath === url) {
+                            addTestResult(`✅ SUCCESS: URL changed to ${currentPath}`, 'success');
+                        } else {
+                            addTestResult(`⚠️ WARNING: Expected ${url}, got ${currentPath}`, 'error');
+                        }
+                        updateUrlDisplay();
+                    }, 100);
+                } else {
+                    addTestResult('❌ ERROR: Router not available', 'error');
+                }
+            } catch (error) {
+                addTestResult(`❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize test
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUrlDisplay();
+            
+            // Test router initialization
+            setTimeout(() => {
+                if (window.SPARouter) {
+                    addTestResult('✅ SPARouter class available', 'success');
+                } else {
+                    addTestResult('❌ SPARouter class not available', 'error');
+                }
+                
+                if (window.ROUTE_CONFIG) {
+                    addTestResult(`✅ Route config loaded (${Object.keys(window.ROUTE_CONFIG).length} routes)`, 'success');
+                } else {
+                    addTestResult('❌ Route config not loaded', 'error');
+                }
+                
+                // Initialize router manually for testing
+                try {
+                    if (!window.appRouter) {
+                        window.authGuard = new AuthGuard({
+                            isAuthenticated: () => true // Always authenticated for testing
+                        });
+                        
+                        window.appRouter = new SPARouter(ROUTE_CONFIG, {
+                            authGuard: window.authGuard,
+                            fallbackRoute: '/404'
+                        });
+                        
+                        addTestResult('✅ Router initialized for testing', 'success');
+                    }
+                } catch (error) {
+                    addTestResult(`❌ Router initialization failed: ${error.message}`, 'error');
+                }
+            }, 500);
+        });
+        
+        // Update URL display on navigation
+        window.addEventListener('popstate', updateUrlDisplay);
+    </script>
+</body>
+</html>

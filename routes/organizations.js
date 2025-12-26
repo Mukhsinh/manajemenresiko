@@ -176,30 +176,44 @@ router.get('/:id/users', authenticateUser, async (req, res) => {
   try {
     const { id } = req.params;
     const clientToUse = supabaseAdmin || getSupabaseClientForRequest(req);
-    const { data, error } = await clientToUse
+    
+    // First get organization_users
+    const { data: orgUsers, error: orgUsersError } = await clientToUse
       .from('organization_users')
-      .select(`
-        id,
-        role,
-        user_id,
-        user_profiles (
-          full_name,
-          email,
-          role,
-          organization_name,
-          organization_code
-        )
-      `)
+      .select('id, role, user_id, created_at')
       .eq('organization_id', id)
       .order('created_at', { ascending: true });
 
-    if (error) throw error;
-    if (!data || !Array.isArray(data)) {
-      console.warn(`[Organizations] No users found for organization ${id}. Response:`, data);
-    } else {
-      console.log(`[Organizations] Loaded ${data.length} users for organization ${id}`);
+    if (orgUsersError) throw orgUsersError;
+
+    if (!orgUsers || orgUsers.length === 0) {
+      console.log(`[Organizations] No users found for organization ${id}`);
+      return res.json([]);
     }
-    res.json(data || []);
+
+    // Then get user profiles for each user
+    const userIds = orgUsers.map(ou => ou.user_id);
+    const { data: userProfiles, error: profilesError } = await clientToUse
+      .from('user_profiles')
+      .select('id, full_name, email, role, organization_name, organization_code')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.warn('Error fetching user profiles:', profilesError);
+      // Continue without profiles
+    }
+
+    // Combine the data
+    const combinedData = orgUsers.map(orgUser => {
+      const profile = userProfiles?.find(p => p.id === orgUser.user_id);
+      return {
+        ...orgUser,
+        user_profiles: profile || null
+      };
+    });
+
+    console.log(`[Organizations] Loaded ${combinedData.length} users for organization ${id}`);
+    res.json(combinedData);
   } catch (error) {
     console.error(`[Organizations] Error fetching users for organization ${req.params?.id}:`, error);
     res.status(500).json({ error: error.message });
@@ -269,18 +283,59 @@ router.put('/users/:id', authenticateUser, async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
+    
+    // Validate role
+    const validRoles = ['user', 'manager', 'admin', 'superadmin'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: 'Role tidak valid' });
+    }
+    
     // Use admin client for backend operations
     const clientToUse = supabaseAdmin || supabase;
-    const { data, error } = await clientToUse
+    
+    // First get the organization_users record to get user_id
+    const { data: orgUser, error: orgUserError } = await clientToUse
+      .from('organization_users')
+      .select('user_id, organization_id')
+      .eq('id', id)
+      .single();
+
+    if (orgUserError) throw orgUserError;
+    
+    // Update role in organization_users
+    const { data: updatedOrgUser, error: updateError } = await clientToUse
       .from('organization_users')
       .update({ role })
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
-    res.json(data);
+    if (updateError) throw updateError;
+
+    // Also update role in user_profiles to maintain consistency
+    // Only update if this is the user's primary organization or if they're being promoted to superadmin
+    if (orgUser.user_id) {
+      try {
+        const { error: profileUpdateError } = await clientToUse
+          .from('user_profiles')
+          .update({ 
+            role: role,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', orgUser.user_id);
+
+        if (profileUpdateError) {
+          console.warn('Warning: Failed to update user_profiles role:', profileUpdateError);
+          // Don't fail the request, just log the warning
+        }
+      } catch (profileError) {
+        console.warn('Warning: Error updating user profile role:', profileError);
+      }
+    }
+
+    res.json(updatedOrgUser);
   } catch (error) {
+    console.error('Error updating user role:', error);
     res.status(500).json({ error: error.message });
   }
 });

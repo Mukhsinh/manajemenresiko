@@ -1,27 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
-const { generateKodeKRI } = require('../utils/codeGenerator');
-const { buildOrganizationFilter } = require('../utils/organization');
+// const { generateKodeKRI } = require('../utils/codeGenerator');
+// const { buildOrganizationFilter } = require('../utils/organization');
 
-// Test route without auth for debugging
-router.get('/test-no-auth', async (req, res) => {
+// Debug endpoint without authentication for testing - MUST BE FIRST
+router.get('/debug', async (req, res) => {
   try {
-    console.log('KRI test without auth');
+    console.log('🔍 Debug endpoint accessed for kri');
     
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
     const client = supabaseAdmin || supabase;
-    
-    console.log('Using client:', supabaseAdmin ? 'Admin' : 'Regular');
-    
-    // First try simple count
-    const { count, error: countError } = await client
-      .from('key_risk_indicator')
-      .select('*', { count: 'exact', head: true });
-    
-    console.log('Total KRI count:', count, 'Error:', countError?.message);
     
     const { data, error } = await client
       .from('key_risk_indicator')
@@ -42,14 +31,97 @@ router.get('/test-no-auth', async (req, res) => {
       .limit(10);
 
     if (error) {
-      console.error('KRI test error:', error);
+      console.error('Debug query error:', error);
       throw error;
     }
+
+    console.log(`✅ Debug query successful, returning ${data?.length || 0} items`);
+    res.json({ 
+      success: true, 
+      data: data || [], 
+      count: data?.length || 0,
+      message: 'Debug data retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message, 
+      data: [],
+      message: 'Debug endpoint failed'
+    });
+  }
+});
+
+// Simple endpoint without complex auth for testing - MUST BE SECOND
+router.get('/simple', async (req, res) => {
+  try {
+    const client = supabaseAdmin || supabase;
     
-    console.log('KRI test response - Total records:', data?.length || 0);
+    const { data, error } = await client
+      .from('key_risk_indicator')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        ),
+        master_work_units (
+          name,
+          code
+        ),
+        risk_inputs (
+          kode_risiko
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    console.log('Simple endpoint - returning data:', data?.length || 0, 'items');
     res.json(data || []);
   } catch (error) {
-    console.error('KRI test error:', error);
+    console.error('Simple KRI error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public endpoint for testing (no auth required) - MUST BE THIRD
+router.get('/public', async (req, res) => {
+  try {
+    console.log('=== KRI PUBLIC ENDPOINT ===');
+    
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
+      .from('key_risk_indicator')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        ),
+        master_work_units (
+          name,
+          code
+        ),
+        risk_inputs (
+          kode_risiko
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('KRI public query error:', error);
+      throw error;
+    }
+
+    console.log('Public query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0
+    });
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Public endpoint error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -57,10 +129,14 @@ router.get('/test-no-auth', async (req, res) => {
 // Get all KRI
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    console.log('KRI request - User:', req.user.id, 'Organizations:', req.user.organizations, 'Role:', req.user.role, 'IsSuperAdmin:', req.user.isSuperAdmin);
+    console.log('=== KRI REQUEST ===');
+    console.log('User info:', {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+      organizations: req.user.organizations
+    });
     
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
     const client = supabaseAdmin || supabase;
     
     let query = client
@@ -80,15 +156,24 @@ router.get('/', authenticateUser, async (req, res) => {
       `)
       .order('created_at', { ascending: false });
     
-    // Apply organization filter (temporarily disabled for debugging)
-    // query = buildOrganizationFilter(query, req.user);
-    console.log('Skipping organization filter for debugging');
+    // Apply organization filter
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      query = buildOrganizationFilter(query, req.user);
+    }
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('KRI query error:', error);
+      throw error;
+    }
     
-    console.log('KRI response - Total records:', data?.length || 0);
+    console.log('Query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0
+    });
+    console.log('=== END REQUEST ===');
+    
     res.json(data || []);
   } catch (error) {
     console.error('KRI error:', error);
@@ -135,7 +220,8 @@ router.get('/:id', authenticateUser, async (req, res) => {
 // Generate kode
 router.get('/generate/kode', authenticateUser, async (req, res) => {
   try {
-    const kode = await generateKodeKRI(req.user.id);
+    // Simple kode generation without external dependency
+    const kode = `KRI-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
     res.json({ kode });
   } catch (error) {
     console.error('Generate kode error:', error);

@@ -20,6 +20,10 @@
     }
     
     function fixVisiMisiButtons() {
+        // Only fix visi misi buttons in visi misi context
+        const visiMisiContent = document.getElementById('visi-misi-content');
+        if (!visiMisiContent) return;
+        
         // Tambah button
         const btnTambah = document.getElementById('btn-tambah-visi-misi');
         if (btnTambah && !btnTambah.hasAttribute('data-fixed')) {
@@ -34,8 +38,8 @@
             btnTambah.setAttribute('data-fixed', 'true');
         }
         
-        // Edit and delete buttons
-        document.querySelectorAll('[data-action="edit"]:not([data-fixed])').forEach(btn => {
+        // Edit and delete buttons - only within visi misi content
+        visiMisiContent.querySelectorAll('[data-action="edit"]:not([data-fixed])').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const id = this.getAttribute('data-id');
@@ -48,7 +52,7 @@
             btn.setAttribute('data-fixed', 'true');
         });
         
-        document.querySelectorAll('[data-action="delete"]:not([data-fixed])').forEach(btn => {
+        visiMisiContent.querySelectorAll('[data-action="delete"]:not([data-fixed])').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const id = this.getAttribute('data-id');

@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Risk Profile - Modul Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0066cc",
+                        "primary-dark": "#004c99",
+                        "primary-light": "#e0f2fe",
+                        "secondary": "#ffffff", 
+                        "secondary-dark": "#f8fafc",
+                        "text-main": "#1e293b",
+                        "text-secondary": "#64748b",
+                        "accent-blue": "#0ea5e9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                        'floating': '0 10px 40px -10px rgba(0,0,0,0.08)'
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .heatmap-cell {
+            transition: all 0.2s;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: #0066cc;
+        }
+        .sidebar-link.active {
+            background-color: #e0f2fe;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background-color: #0066cc;
+            border-radius: 0 4px 4px 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        .material-symbols-outlined.bold {
+            font-variation-settings: 'wght' 600;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex text-text-main overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col flex-shrink-0 h-screen overflow-y-auto z-30">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+            <div class="size-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl filled">health_and_safety</span>
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-tight text-slate-800">PINTAR MR</h1>
+                <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Hospital Risk Mgmt</p>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showDashboard()">
+                <span class="material-symbols-outlined text-[20px]">space_dashboard</span>Dashboard
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analisis Strategis</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showAnalisisBSC()">
+                <span class="material-symbols-outlined text-[20px]">donut_large</span>Analisis BSC
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showVisiMisi()">
+                <span class="material-symbols-outlined text-[20px]">ads_click</span>Visi dan Misi
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showRencanaStrategis()">
+                <span class="material-symbols-outlined text-[20px]">account_tree</span>Rencana Strategis
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operasional</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="#" onclick="showRiskRegister()">
+                <span class="material-symbols-outlined text-[20px]">folder_managed</span>Register Risiko
+            </a>
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm" href="#" onclick="showRiskProfile()">
+                <span class="material-symbols-outlined text-[20px] filled">find_in_page</span>Risk Profile
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200 hover:shadow-sm">
+                <div class="size-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-200">MH</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">Muksin Hadi</p>
+                    <p class="text-[10px] text-slate-500 truncate">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-white">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 z-20 flex-shrink-0 h-16 sticky top-0">
+            <div class="w-full h-full px-6 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 leading-tight">Risk Profile</h2>
+                        <div class="flex items-center gap-1 text-xs text-slate-500">
+                            <span>Manajemen Risiko</span>
+                            <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+                            <span class="text-primary font-medium">Risk Profile</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-800">RSUD BENDAN</p>
+                        <p class="text-xs text-slate-500">Jl. Sriwijaya 2 Pekalongan</p>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative">
+                            <span class="material-symbols-outlined text-[22px]">notifications</span>
+                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                            <span class="material-symbols-outlined text-[22px]">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-white">
+            <div class="max-w-[1600px] mx-auto space-y-8">
+                <!-- Hero Section -->
+                <div class="bg-gradient-to-br from-[#0066cc] to-[#0ea5e9] rounded-2xl shadow-floating p-8 text-white relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1/2 bg-white/5 opacity-50" style="clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="absolute right-20 top-0 h-full w-1/3 bg-white/5 opacity-30" style="clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex items-start gap-6">
+                            <div class="size-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
+                                <span class="material-symbols-outlined text-white text-3xl">analytics</span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold tracking-tight">Risk Profile Analysis</h2>
+                                <p class="text-blue-100 mt-2 max-w-2xl text-sm leading-relaxed opacity-90">Analisis mendalam profil risiko inheren dengan visualisasi interaktif, pemetaan dampak-probabilitas, dan rekomendasi mitigasi berbasis data untuk optimalisasi manajemen risiko RSUD Bendan.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                            <div class="text-left sm:text-right">
+                                <p class="text-[10px] uppercase tracking-wider text-blue-200 font-semibold">Periode Analisis</p>
+                                <p class="font-bold text-lg">Semester II - 2025</p>
+                            </div>
+                            <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
+                            <button class="bg-white text-primary hover:bg-blue-50 px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-sm">
+                                <span class="material-symbols-outlined text-[18px]">filter_alt</span>Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2.5 bg-blue-50 rounded-xl text-blue-600">
+                                <span class="material-symbols-outlined filled">assessment</span>
+                            </div>
+                            <span class="flex items-center text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">Total</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Risk Profile</p>
+                            <h3 id="total-profiles" class="text-3xl font-bold text-slate-800">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-red-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2.5 bg-red-50 rounded-xl text-red-600">
+                                <span class="material-symbols-outlined filled">priority_high</span>
+                            </div>
+                            <span class="flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-100">Kritis</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">High Risk</p>
+                            <h3 id="high-risk-profiles" class="text-3xl font-bold text-slate-800">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+                                <span class="material-symbols-outlined">warning</span>
+                            </div>
+                            <span class="flex items-center text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100">Perhatian</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Medium Risk</p>
+                            <h3 id="medium-risk-profiles" class="text-3xl font-bold text-slate-800">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+                                <span class="material-symbols-outlined filled">check_circle</span>
+                            </div>
+                            <span class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">Aman</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Low Risk</p>
+                            <h3 id="low-risk-profiles" class="text-3xl font-bold text-slate-800">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+                    <!-- Risk Profile Table -->
+                    <div class="xl:col-span-8 bg-white rounded-2xl shadow-card border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <div class="bg-blue-100 p-1.5 rounded-md text-primary">
+                                    <span class="material-symbols-outlined text-[20px]">table_rows</span>
+                                </div>
+                                Daftar Risk Profile
+                            </h3>
+                            <div class="flex gap-3 w-full sm:w-auto">
+                                <div class="relative flex-1 sm:w-64">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                                    <input class="w-full pl-9 h-10 rounded-xl border-slate-200 bg-white focus:border-primary focus:ring-primary text-sm transition-all shadow-sm" placeholder="Cari risiko, unit..." type="text" id="search-input"/>
+                                </div>
+                                <button class="flex items-center justify-center gap-2 h-10 px-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm" onclick="refreshRiskProfile()">
+                                    <span class="material-symbols-outlined text-[20px]">refresh</span>
+                                    <span class="hidden sm:inline">Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-6 pt-2 border-b border-slate-100 flex gap-8 text-sm overflow-x-auto bg-white">
+                            <button class="py-3 border-b-2 border-primary text-primary font-bold whitespace-nowrap" onclick="filterRiskProfile('all')">Semua Profile</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors" onclick="filterRiskProfile('high')">High Risk</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors" onclick="filterRiskProfile('medium')">Medium Risk</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors" onclick="filterRiskProfile('low')">Low Risk</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100">
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-24">ID</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Risiko & Unit</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Score</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Level</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Kategori</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="risk-profile-table-body" class="divide-y divide-slate-50">
+                                    <!-- Table rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 border-t border-slate-100 flex items-center justify-between bg-white mt-auto">
+                            <span class="text-xs font-medium text-slate-500" id="table-info">Loading...</span>
+                            <div class="flex gap-2" id="pagination-controls">
+                                <!-- Pagination will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Heat Map & Analysis -->
+                    <div class="xl:col-span-4 flex flex-col gap-8">
+                        <!-- Risk Heat Map -->
+                        <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 flex flex-col">
+                            <div class="flex items-center justify-between mb-8">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                    <div class="bg-orange-100 p-1.5 rounded-md text-orange-600">
+                                        <span class="material-symbols-outlined text-[20px]">apps</span>
+                                    </div>
+                                    Risk Heat Map
+                                </h3>
+                                <button class="text-slate-400 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">info</span>
+                                </button>
+                            </div>
+                            <div class="flex justify-center relative pl-8 pb-8 self-center">
+                                <div class="absolute -left-6 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">KEMUNGKINAN</div>
+                                <div class="w-full max-w-[280px] aspect-square grid grid-cols-5 grid-rows-5 gap-1.5 text-[10px] font-bold text-slate-700/60 p-1 bg-slate-50 rounded-xl border border-slate-100" id="heat-map">
+                                    <!-- Heat map cells will be populated here -->
+                                </div>
+                                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">DAMPAK</div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Analysis Panel -->
+                        <div class="bg-white rounded-2xl shadow-card border border-slate-200 overflow-hidden flex-1">
+                            <div class="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Analisis Detail</p>
+                                    <h4 class="font-bold text-slate-800 text-base leading-tight" id="selected-risk-title">Pilih risiko untuk analisis</h4>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200" id="selected-risk-level">-</span>
+                            </div>
+                            <div class="p-6 space-y-8" id="risk-analysis-content">
+                                <div class="text-center py-8">
+                                    <div class="size-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span class="material-symbols-outlined text-slate-400 text-2xl">analytics</span>
+                                    </div>
+                                    <p class="text-slate-500 text-sm">Klik pada risiko di tabel untuk melihat analisis detail</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Global variables
+        let riskProfileData = [];
+        let filteredData = [];
+        let currentFilter = 'all';
+        let selectedRisk = null;
+
+        // Initialize risk profile
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRiskProfileData();
+            initializeHeatMap();
+        });
+
+        // Load risk profile data
+        async function loadRiskProfileData() {
+            try {
+                const response = await fetch('/api/risk-profile/public');
+                riskProfileData = await response.json();
+                filteredData = riskProfileData;
+                updateStatistics();
+                renderTable();
+                updateHeatMap();
+            } catch (error) {
+                console.error('Error loading risk profile data:', error);
+                showErrorMessage('Gagal memuat data risk profile');
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const stats = calculateStatistics(filteredData);
+            document.getElementById('total-profiles').textContent = stats.total;
+            document.getElementById('high-risk-profiles').textContent = stats.high;
+            document.getElementById('medium-risk-profiles').textContent = stats.medium;
+            document.getElementById('low-risk-profiles').textContent = stats.low;
+        }
+
+        // Calculate statistics
+        function calculateStatistics(data) {
+            const stats = { total: 0, high: 0, medium: 0, low: 0 };
+            
+            data.forEach(item => {
+                stats.total++;
+                const level = item.risk_level?.toLowerCase() || '';
+                if (level.includes('high') || level.includes('extreme')) {
+                    stats.high++;
+                } else if (level.includes('medium')) {
+                    stats.medium++;
+                } else if (level.includes('low')) {
+                    stats.low++;
+                }
+            });
+            
+            return stats;
+        }
+
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('risk-profile-table-body');
+            const tableInfo = document.getElementById('table-info');
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="material-symbols-outlined text-4xl text-slate-300">search_off</span>
+                                <p>Tidak ada data risk profile</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableInfo.textContent = 'Tidak ada data';
+                return;
+            }
+
+            tbody.innerHTML = filteredData.map((item, index) => {
+                const riskLevel = item.risk_level || 'Unknown';
+                const levelClass = getRiskLevelClass(riskLevel);
+                const riskCode = item.risk_inputs?.kode_risiko || `RSK-${String(index + 1).padStart(3, '0')}`;
+                const sasaran = item.risk_inputs?.sasaran || 'Tidak ada deskripsi';
+                const unitName = item.risk_inputs?.master_work_units?.name || 'Unit tidak diketahui';
+                const categoryName = item.risk_inputs?.master_risk_categories?.name || 'Kategori tidak diketahui';
+                const riskScore = calculateRiskScore(item);
+
+                return `
+                    <tr class="hover:bg-blue-50/30 transition-colors group cursor-pointer" onclick="selectRisk(${index})">
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded">${riskCode}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${sasaran.substring(0, 50)}${sasaran.length > 50 ? '...' : ''}</p>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                                    <span class="material-symbols-outlined text-[14px] text-slate-400">business</span> ${unitName}
+                                </span>
+                                <span class="size-1 bg-slate-300 rounded-full"></span>
+                                <span class="text-[11px] text-slate-400">${categoryName}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="inline-flex items-center justify-center size-8 rounded-lg bg-slate-100 font-bold text-slate-700 text-sm">${riskScore}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${levelClass}">${riskLevel}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs text-slate-600">${categoryName}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="text-slate-400 hover:text-primary hover:bg-blue-50 transition-all p-1.5 rounded-lg" onclick="event.stopPropagation(); showRiskDetails(${index})">
+                                <span class="material-symbols-outlined text-[20px]">more_horiz</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableInfo.textContent = `Showing 1-${filteredData.length} of ${filteredData.length} risk profiles`;
+        }
+
+        // Get risk level CSS class
+        function getRiskLevelClass(level) {
+            const levelLower = level.toLowerCase();
+            if (levelLower.includes('high') || levelLower.includes('extreme')) {
+                return 'bg-red-50 text-red-600 border border-red-100';
+            } else if (levelLower.includes('medium')) {
+                return 'bg-yellow-50 text-yellow-600 border border-yellow-100';
+            } else if (levelLower.includes('low')) {
+                return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+            }
+            return 'bg-slate-50 text-slate-600 border border-slate-100';
+        }
+
+        // Calculate risk score
+        function calculateRiskScore(item) {
+            // This is a simplified calculation - adjust based on your actual scoring logic
+            const impact = item.impact_score || 1;
+            const probability = item.probability_score || 1;
+            return impact * probability;
+        }
+
+        // Initialize heat map
+        function initializeHeatMap() {
+            const heatMap = document.getElementById('heat-map');
+            let cells = '';
+            
+            for (let prob = 5; prob >= 1; prob--) {
+                for (let impact = 1; impact <= 5; impact++) {
+                    const score = prob * impact;
+                    const cellClass = getHeatMapCellClass(score);
+                    cells += `
+                        <div class="heatmap-cell ${cellClass} rounded flex items-center justify-center text-slate-700 cursor-pointer relative" 
+                             onclick="filterByScore(${score})" 
+                             data-score="${score}">
+                            ${score}
+                        </div>
+                    `;
+                }
+            }
+            
+            heatMap.innerHTML = cells;
+        }
+
+        // Update heat map with data
+        function updateHeatMap() {
+            const cells = document.querySelectorAll('.heatmap-cell');
+            
+            // Reset all cells
+            cells.forEach(cell => {
+                const existingBadge = cell.querySelector('.risk-count-badge');
+                if (existingBadge) {
+                    existingBadge.remove();
+                }
+            });
+
+            // Count risks by score
+            const scoreCounts = {};
+            filteredData.forEach(item => {
+                const score = calculateRiskScore(item);
+                scoreCounts[score] = (scoreCounts[score] || 0) + 1;
+            });
+
+            // Add count badges
+            Object.entries(scoreCounts).forEach(([score, count]) => {
+                const cell = document.querySelector(`[data-score="${score}"]`);
+                if (cell && count > 0) {
+                    const badge = document.createElement('div');
+                    badge.className = 'absolute -top-2 -right-2 bg-white text-red-600 size-5 rounded-full flex items-center justify-center text-[10px] shadow-sm border border-red-100 font-bold risk-count-badge';
+                    badge.textContent = count;
+                    cell.appendChild(badge);
+                }
+            });
+        }
+
+        // Get heat map cell class
+        function getHeatMapCellClass(score) {
+            if (score >= 20) return 'bg-red-500 text-white';
+            if (score >= 15) return 'bg-red-300 text-red-900';
+            if (score >= 10) return 'bg-orange-300 text-slate-800';
+            if (score >= 6) return 'bg-orange-200 text-slate-700';
+            if (score >= 3) return 'bg-yellow-100 text-slate-600';
+            return 'bg-emerald-50 text-emerald-700';
+        }
+
+        // Filter functions
+        function filterRiskProfile(type) {
+            currentFilter = type;
+            
+            if (type === 'all') {
+                filteredData = riskProfileData;
+            } else {
+                filteredData = riskProfileData.filter(item => {
+                    const level = item.risk_level?.toLowerCase() || '';
+                    switch (type) {
+                        case 'high':
+                            return level.includes('high') || level.includes('extreme');
+                        case 'medium':
+                            return level.includes('medium');
+                        case 'low':
+                            return level.includes('low');
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            updateStatistics();
+            renderTable();
+            updateHeatMap();
+            updateFilterButtons();
+        }
+
+        // Update filter buttons
+        function updateFilterButtons() {
+            const buttons = document.querySelectorAll('[onclick^="filterRiskProfile"]');
+            buttons.forEach(button => {
+                button.classList.remove('border-primary', 'text-primary', 'font-bold');
+                button.classList.add('border-transparent', 'text-slate-500', 'font-medium');
+            });
+            
+            const activeButton = document.querySelector(`[onclick="filterRiskProfile('${currentFilter}')"]`);
+            if (activeButton) {
+                activeButton.classList.add('border-primary', 'text-primary', 'font-bold');
+                activeButton.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+            }
+        }
+
+        // Select risk for analysis
+        function selectRisk(index) {
+            selectedRisk = filteredData[index];
+            updateRiskAnalysis();
+        }
+
+        // Update risk analysis panel
+        function updateRiskAnalysis() {
+            if (!selectedRisk) return;
+
+            const title = document.getElementById('selected-risk-title');
+            const level = document.getElementById('selected-risk-level');
+            const content = document.getElementById('risk-analysis-content');
+
+            const riskCode = selectedRisk.risk_inputs?.kode_risiko || 'RSK-XXX';
+            const sasaran = selectedRisk.risk_inputs?.sasaran || 'Tidak ada deskripsi';
+            const riskLevel = selectedRisk.risk_level || 'Unknown';
+
+            title.textContent = `${riskCode}: ${sasaran.substring(0, 30)}${sasaran.length > 30 ? '...' : ''}`;
+            level.textContent = riskLevel;
+            level.className = `inline-flex items-center px-2 py-1 rounded text-[10px] font-bold border ${getRiskLevelClass(riskLevel)}`;
+
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between text-xs mb-3 items-end">
+                            <span class="font-bold text-slate-700">Dampak (Impact)</span>
+                            <span class="font-bold text-primary bg-primary-light px-2 py-1 rounded">${selectedRisk.impact_score || 1} - Level</span>
+                        </div>
+                        <div class="relative h-2 bg-slate-100 rounded-full">
+                            <div class="absolute top-0 left-0 h-full bg-primary rounded-full" style="width: ${((selectedRisk.impact_score || 1) / 5) * 100}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-2 font-medium">
+                            <span>Insignificant</span>
+                            <span>Catastrophic</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-3 items-end">
+                            <span class="font-bold text-slate-700">Kemungkinan (Probability)</span>
+                            <span class="font-bold text-primary bg-primary-light px-2 py-1 rounded">${selectedRisk.probability_score || 1} - Level</span>
+                        </div>
+                        <div class="relative h-2 bg-slate-100 rounded-full">
+                            <div class="absolute top-0 left-0 h-full bg-primary rounded-full" style="width: ${((selectedRisk.probability_score || 1) / 5) * 100}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-2 font-medium">
+                            <span>Rare</span>
+                            <span>Almost Certain</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-100">
+                    <p class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Detail Risiko</p>
+                    <div class="space-y-2 text-sm">
+                        <div><span class="font-medium text-slate-600">Unit:</span> ${selectedRisk.risk_inputs?.master_work_units?.name || 'N/A'}</div>
+                        <div><span class="font-medium text-slate-600">Kategori:</span> ${selectedRisk.risk_inputs?.master_risk_categories?.name || 'N/A'}</div>
+                        <div><span class="font-medium text-slate-600">Score:</span> ${calculateRiskScore(selectedRisk)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility functions
+        function refreshRiskProfile() {
+            loadRiskProfileData();
+        }
+
+        function filterByScore(score) {
+            filteredData = riskProfileData.filter(item => calculateRiskScore(item) === score);
+            updateStatistics();
+            renderTable();
+            updateHeatMap();
+        }
+
+        function showRiskDetails(index) {
+            const risk = filteredData[index];
+            alert(`Detail risiko: ${risk.risk_inputs?.sasaran || 'Tidak ada deskripsi'}`);
+        }
+
+        function showErrorMessage(message) {
+            const tbody = document.getElementById('risk-profile-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-red-500">
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="material-symbols-outlined text-4xl text-red-300">error</span>
+                            <p>${message}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Search functionality
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filterRiskProfile(currentFilter);
+                return;
+            }
+
+            filteredData = riskProfileData.filter(item => {
+                const sasaran = (item.risk_inputs?.sasaran || '').toLowerCase();
+                const unitName = (item.risk_inputs?.master_work_units?.name || '').toLowerCase();
+                const categoryName = (item.risk_inputs?.master_risk_categories?.name || '').toLowerCase();
+                const riskCode = (item.risk_inputs?.kode_risiko || '').toLowerCase();
+                
+                return sasaran.includes(searchTerm) || 
+                       unitName.includes(searchTerm) || 
+                       categoryName.includes(searchTerm) || 
+                       riskCode.includes(searchTerm);
+            });
+
+            updateStatistics();
+            renderTable();
+            updateHeatMap();
+        });
+
+        // Navigation functions (placeholders)
+        function showDashboard() { window.location.href = 'dashboard-modern.html'; }
+        function showAnalisisBSC() { alert('Analisis BSC - Coming Soon'); }
+        function showVisiMisi() { alert('Visi Misi - Coming Soon'); }
+        function showRencanaStrategis() { alert('Rencana Strategis - Coming Soon'); }
+        function showRiskRegister() { alert('Risk Register - Coming Soon'); }
+        function showRiskProfile() { /* Already on this page */ }
+    </script>
+</body>
+</html>

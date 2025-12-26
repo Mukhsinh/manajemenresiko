@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Role Change Fix</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        
+        .user-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: white;
+        }
+        
+        .user-card.current-user {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        
+        .role-selector {
+            margin: 0.5rem 0;
+        }
+        
+        .role-selector select {
+            padding: 0.25rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        
+        .btn-test {
+            margin: 0.25rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-user-cog"></i> Test Role Change Fix</h1>
+        
+        <div class="test-section">
+            <h3>Current Authentication Status</h3>
+            <button onclick="checkAuthStatus()" class="btn-test btn-info">Check Auth Status</button>
+            <div id="auth-status" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Login Test</h3>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <input type="email" id="login-email" placeholder="Email" value="mukhsin9@gmail.com" style="flex: 1; padding: 0.5rem;">
+                <input type="password" id="login-password" placeholder="Password" style="flex: 1; padding: 0.5rem;">
+                <button onclick="testLogin()" class="btn-test btn-primary">Login</button>
+            </div>
+            <div id="login-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Organizations & Users</h3>
+            <button onclick="loadOrganizationsAndUsers()" class="btn-test btn-success">Load Organizations & Users</button>
+            <div id="organizations-result" class="test-result"></div>
+            <div id="users-list"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Role Change Test</h3>
+            <div class="warning test-result">
+                <strong>⚠️ Warning:</strong> Changing your own role may cause login issues. 
+                Test with other users first, or be prepared to fix your role manually in the database.
+            </div>
+            <div id="role-change-controls"></div>
+            <div id="role-change-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Session Monitoring</h3>
+            <button onclick="startSessionMonitoring()" class="btn-test btn-info">Start Monitoring</button>
+            <button onclick="stopSessionMonitoring()" class="btn-test btn-warning">Stop Monitoring</button>
+            <div id="session-monitor" class="test-result"></div>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/services/authService.js"></script>
+
+    <script>
+        let sessionMonitorInterval = null;
+        let organizationsData = [];
+        let currentUserData = null;
+
+        function checkAuthStatus() {
+            const resultDiv = document.getElementById('auth-status');
+            
+            try {
+                const status = {
+                    isAuthenticated: window.authService?.isAuthenticated() || false,
+                    currentUser: window.currentUser ? {
+                        id: window.currentUser.id,
+                        email: window.currentUser.email,
+                        role: window.currentUser.profile?.role
+                    } : null,
+                    currentSession: window.currentSession ? {
+                        hasToken: !!window.currentSession.access_token,
+                        expiresAt: window.currentSession.expires_at,
+                        timeLeft: window.currentSession.expires_at ? 
+                            Math.max(0, window.currentSession.expires_at - Math.floor(Date.now() / 1000)) : 0
+                    } : null,
+                    supabaseClient: !!window.supabaseClient
+                };
+
+                resultDiv.innerHTML = JSON.stringify(status, null, 2);
+                resultDiv.className = 'test-result ' + (status.isAuthenticated ? 'success' : 'warning');
+            } catch (error) {
+                resultDiv.innerHTML = `Error checking auth status: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                resultDiv.innerHTML = 'Please enter email and password';
+                resultDiv.className = 'test-result warning';
+                return;
+            }
+
+            resultDiv.innerHTML = 'Logging in...';
+            resultDiv.className = 'test-result info';
+
+            try {
+                const response = await apiCall('/api/auth/login', {
+                    method: 'POST',
+                    body: { email, password }
+                });
+
+                // Store session and user data
+                if (response.session) {
+                    window.currentSession = response.session;
+                    localStorage.setItem('token', response.session.access_token);
+                }
+                
+                if (response.user) {
+                    window.currentUser = response.user;
+                    currentUserData = response.user;
+                }
+
+                if (response.profile) {
+                    if (!window.currentUser) window.currentUser = {};
+                    window.currentUser.profile = response.profile;
+                }
+
+                resultDiv.innerHTML = `✅ Login successful!\nUser: ${response.user?.email}\nRole: ${response.profile?.role}`;
+                resultDiv.className = 'test-result success';
+
+                // Auto-load organizations after successful login
+                setTimeout(loadOrganizationsAndUsers, 1000);
+            } catch (error) {
+                console.error('Login error:', error);
+                resultDiv.innerHTML = `❌ Login failed: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        async function loadOrganizationsAndUsers() {
+            const resultDiv = document.getElementById('organizations-result');
+            const usersDiv = document.getElementById('users-list');
+
+            resultDiv.innerHTML = 'Loading organizations and users...';
+            resultDiv.className = 'test-result info';
+
+            try {
+                const organizations = await apiCall('/api/organizations');
+                organizationsData = organizations;
+
+                let result = `✅ Loaded ${organizations.length} organizations:\n\n`;
+                
+                organizations.forEach((org, index) => {
+                    result += `${index + 1}. ${org.name} (${org.code})\n`;
+                    result += `   Users: ${org.users?.length || 0}\n`;
+                });
+
+                resultDiv.innerHTML = result;
+                resultDiv.className = 'test-result success';
+
+                // Render user cards
+                renderUserCards(organizations);
+            } catch (error) {
+                console.error('Organizations error:', error);
+                resultDiv.innerHTML = `❌ Failed to load organizations: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        function renderUserCards(organizations) {
+            const usersDiv = document.getElementById('users-list');
+            const controlsDiv = document.getElementById('role-change-controls');
+            
+            let usersHtml = '<h4>Users in Organizations:</h4>';
+            let controlsHtml = '<h4>Role Change Controls:</h4>';
+
+            organizations.forEach(org => {
+                if (org.users && org.users.length > 0) {
+                    usersHtml += `<h5>${org.name}</h5>`;
+                    
+                    org.users.forEach(user => {
+                        const fullName = user.user_profiles?.full_name || 'Unknown';
+                        const email = user.user_profiles?.email || 'Unknown';
+                        const isCurrentUser = currentUserData && user.user_id === currentUserData.id;
+                        
+                        usersHtml += `
+                            <div class="user-card ${isCurrentUser ? 'current-user' : ''}">
+                                <strong>${fullName}</strong> (${email})
+                                ${isCurrentUser ? '<span style="color: #007bff; font-weight: bold;"> - YOU</span>' : ''}
+                                <br>
+                                <small>User ID: ${user.user_id}</small>
+                                <br>
+                                <small>Record ID: ${user.id}</small>
+                                <br>
+                                Current Role: <strong>${user.role}</strong>
+                            </div>
+                        `;
+
+                        controlsHtml += `
+                            <div style="margin: 1rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                                <strong>${fullName}</strong> ${isCurrentUser ? '(YOU)' : ''}
+                                <div class="role-selector">
+                                    <select id="role-${user.id}">
+                                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                                        <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Manager</option>
+                                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                        <option value="superadmin" ${user.role === 'superadmin' ? 'selected' : ''}>Super Admin</option>
+                                    </select>
+                                    <button onclick="changeUserRole('${user.id}', '${user.user_id}', '${fullName}', ${isCurrentUser})" 
+                                            class="btn-test ${isCurrentUser ? 'btn-warning' : 'btn-primary'}">
+                                        ${isCurrentUser ? '⚠️ Change My Role' : 'Change Role'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            usersDiv.innerHTML = usersHtml;
+            controlsDiv.innerHTML = controlsHtml;
+        }
+
+        async function changeUserRole(recordId, userId, userName, isCurrentUser) {
+            const resultDiv = document.getElementById('role-change-result');
+            const selectElement = document.getElementById(`role-${recordId}`);
+            const newRole = selectElement.value;
+
+            if (isCurrentUser) {
+                const confirm = window.confirm(
+                    `⚠️ WARNING: You are about to change your own role to "${newRole}".\n\n` +
+                    `This may cause login issues or loss of access. Are you sure you want to continue?\n\n` +
+                    `If you lose access, you may need to manually fix your role in the database.`
+                );
+                if (!confirm) return;
+            }
+
+            resultDiv.innerHTML = `Changing ${userName}'s role to ${newRole}...`;
+            resultDiv.className = 'test-result info';
+
+            try {
+                // Store current auth state
+                const beforeAuth = {
+                    isAuthenticated: window.authService?.isAuthenticated(),
+                    currentUserRole: window.currentUser?.profile?.role,
+                    hasSession: !!window.currentSession
+                };
+
+                console.log('Before role change:', beforeAuth);
+
+                const response = await apiCall(`/api/organizations/users/${recordId}`, {
+                    method: 'PUT',
+                    body: { role: newRole }
+                });
+
+                console.log('Role change response:', response);
+
+                // Wait for database to update
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Check auth state after change
+                const afterAuth = {
+                    isAuthenticated: window.authService?.isAuthenticated(),
+                    currentUserRole: window.currentUser?.profile?.role,
+                    hasSession: !!window.currentSession
+                };
+
+                console.log('After role change:', afterAuth);
+
+                // If current user's role was changed, update session
+                if (isCurrentUser) {
+                    if (window.currentUser && window.currentUser.profile) {
+                        window.currentUser.profile.role = newRole;
+                    }
+                }
+
+                let resultText = `✅ Role changed successfully!\n`;
+                resultText += `User: ${userName}\n`;
+                resultText += `New Role: ${newRole}\n\n`;
+                resultText += `Auth Status Before: ${JSON.stringify(beforeAuth, null, 2)}\n\n`;
+                resultText += `Auth Status After: ${JSON.stringify(afterAuth, null, 2)}`;
+
+                resultDiv.innerHTML = resultText;
+                resultDiv.className = 'test-result success';
+
+                // Reload organizations to see the change
+                setTimeout(loadOrganizationsAndUsers, 1000);
+
+            } catch (error) {
+                console.error('Role change error:', error);
+                resultDiv.innerHTML = `❌ Failed to change role: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        function startSessionMonitoring() {
+            if (sessionMonitorInterval) {
+                clearInterval(sessionMonitorInterval);
+            }
+
+            const monitorDiv = document.getElementById('session-monitor');
+            
+            sessionMonitorInterval = setInterval(() => {
+                try {
+                    const status = {
+                        timestamp: new Date().toLocaleTimeString(),
+                        isAuthenticated: window.authService?.isAuthenticated() || false,
+                        hasCurrentUser: !!window.currentUser,
+                        hasCurrentSession: !!window.currentSession,
+                        userRole: window.currentUser?.profile?.role,
+                        sessionExpiresAt: window.currentSession?.expires_at,
+                        timeLeft: window.currentSession?.expires_at ? 
+                            Math.max(0, window.currentSession.expires_at - Math.floor(Date.now() / 1000)) : 0
+                    };
+
+                    monitorDiv.innerHTML = JSON.stringify(status, null, 2);
+                    monitorDiv.className = 'test-result ' + (status.isAuthenticated ? 'success' : 'warning');
+                } catch (error) {
+                    monitorDiv.innerHTML = `Monitor error: ${error.message}`;
+                    monitorDiv.className = 'test-result error';
+                }
+            }, 2000);
+
+            monitorDiv.innerHTML = 'Session monitoring started...';
+            monitorDiv.className = 'test-result info';
+        }
+
+        function stopSessionMonitoring() {
+            if (sessionMonitorInterval) {
+                clearInterval(sessionMonitorInterval);
+                sessionMonitorInterval = null;
+            }
+
+            const monitorDiv = document.getElementById('session-monitor');
+            monitorDiv.innerHTML = 'Session monitoring stopped.';
+            monitorDiv.className = 'test-result info';
+        }
+
+        // Auto-check auth status on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkAuthStatus, 1000);
+        });
+    </script>
+</body>
+</html>

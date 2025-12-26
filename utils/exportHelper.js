@@ -71,8 +71,55 @@ function generateTemplate(columns, sheetName = 'Template') {
   return buffer;
 }
 
+/**
+ * Generate template Excel dengan contoh data untuk import
+ */
+function generateTemplateWithSamples(columns, sampleData, sheetName = 'Template') {
+  try {
+    // Create worksheet with headers and sample data
+    const worksheet = XLSX.utils.json_to_sheet(sampleData);
+    
+    // Auto-size columns
+    const cols = [];
+    columns.forEach(col => {
+      const maxLength = Math.max(
+        col.length,
+        ...sampleData.map(row => String(row[col] || '').length)
+      );
+      cols.push({ width: Math.min(Math.max(maxLength + 2, 15), 50) });
+    });
+    worksheet['!cols'] = cols;
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    
+    // Set workbook properties
+    workbook.Props = {
+      Title: `Template ${sheetName}`,
+      Subject: 'Import Template with Sample Data',
+      Author: 'Risk Management System',
+      CreatedDate: new Date()
+    };
+
+    // Write buffer
+    const buffer = XLSX.write(workbook, { 
+      type: 'buffer', 
+      bookType: 'xlsx',
+      compression: true
+    });
+    
+    console.log(`Template with samples generated: ${buffer.length} bytes for ${sampleData.length} sample records`);
+    return buffer;
+  } catch (error) {
+    console.error('Error generating template with samples:', error);
+    throw new Error('Failed to generate template: ' + error.message);
+  }
+}
+
 module.exports = {
   exportToExcel,
-  generateTemplate
+  generateTemplate,
+  generateTemplateWithSamples
 };
 

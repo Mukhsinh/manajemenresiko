@@ -6,9 +6,9 @@ const path = require('path');
 const { securityHeaders } = require('./middleware/security');
 const { errorHandler } = require('./utils/errors');
 const logger = require('./utils/logger');
+const { findAvailablePort, getPort } = require('./config/port');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Security middleware (must be first)
 app.use(securityHeaders);
@@ -37,13 +37,17 @@ app.use('/api/debug-data', require('./routes/debug-data'));
 app.use('/api/debug-monitoring', require('./routes/debug-monitoring'));
 app.use('/api/debug-risk-profile', require('./routes/debug-risk-profile'));
 app.use('/api/risk-profile-simple', require('./routes/risk-profile-simple'));
-app.use('/api/risk-profile-real', require('./routes/risk-profile-real'));
 
 // Risk Profile Excel Export (no auth for testing)
 app.get('/api/risk-profile-excel', async (req, res) => {
   try {
-    // Get data from risk-profile-real endpoint
-    const response = await fetch(`${req.protocol}://${req.get('host')}/api/risk-profile-real`);
+    // Get data from the correct risk-profile endpoint
+    const response = await fetch(`${req.protocol}://${req.get('host')}/api/risk-profile`, {
+      headers: {
+        'Authorization': req.headers.authorization || '',
+        'Content-Type': 'application/json'
+      }
+    });
     const data = await response.json();
     
     if (!data || data.length === 0) {
@@ -57,6 +61,8 @@ app.get('/api/risk-profile-excel', async (req, res) => {
         'No': index + 1,
         'Kode Risiko': risk.kode_risiko || '-',
         'Unit Kerja': risk.master_work_units?.name || '-',
+        'Jenis Unit Kerja': risk.master_work_units?.jenis || '-',
+        'Kategori Unit Kerja': risk.master_work_units?.kategori || '-',
         'Kategori Risiko': risk.master_risk_categories?.name || '-',
         'Sasaran': risk.sasaran || '-',
         'Probabilitas': item.probability || 0,
@@ -95,7 +101,9 @@ app.get('/api/risk-profile-excel', async (req, res) => {
 });
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/user-management', require('./routes/user-management'));
 app.use('/api/risks', require('./routes/risks'));
+app.use('/api/risk-profile', require('./routes/risk-profile'));
 app.use('/api/master-data', require('./routes/master-data'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/dashboard', require('./routes/dashboard'));
@@ -104,11 +112,11 @@ app.use('/api/rencana-strategis', require('./routes/rencana-strategis'));
 app.use('/api/monitoring-evaluasi', require('./routes/monitoring-evaluasi'));
 app.use('/api/peluang', require('./routes/peluang'));
 app.use('/api/kri', require('./routes/kri'));
-app.use('/api/loss-event', require('./routes/loss-event'));
+// app.use('/api/loss-event', require('./routes/loss-event'));
 app.use('/api/ews', require('./routes/ews'));
-app.use('/api/organizations', require('./routes/organizations'));
-app.use('/api/pengaturan', require('./routes/pengaturan'));
-app.use('/api/chat', require('./routes/chat'));
+// app.use('/api/organizations', require('./routes/organizations'));
+// app.use('/api/pengaturan', require('./routes/pengaturan'));
+// app.use('/api/chat', require('./routes/chat'));
 app.use('/api/ai-assistant', require('./routes/ai-assistant-direct'));
 app.use('/api/analisis-swot', require('./routes/analisis-swot'));
 app.use('/api/diagram-kartesius', require('./routes/diagram-kartesius'));
@@ -134,13 +142,37 @@ app.use(errorHandler);
 
 // Start server (only if not in Vercel serverless environment)
 if (process.env.VERCEL !== '1') {
-  app.listen(PORT, () => {
-    logger.info(`========================================`);
-    logger.info(`Server running on port ${PORT}`);
-    logger.info(`Access: http://localhost:${PORT}`);
-    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    logger.info(`========================================`);
-  });
+  // Use async function to handle port finding
+  (async () => {
+    try {
+      const PORT = await findAvailablePort(getPort());
+      
+      const server = app.listen(PORT, () => {
+        logger.info(`========================================`);
+        logger.info(`Server running on port ${PORT}`);
+        logger.info(`Access: http://localhost:${PORT}`);
+        logger.info(`Modern Dashboard: http://localhost:${PORT}/dashboard-modern.html`);
+        logger.info(`Modern Risk Profile: http://localhost:${PORT}/risk-profile-modern.html`);
+        logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+        logger.info(`========================================`);
+      });
+      
+      // Handle server errors
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          logger.error(`Port ${PORT} is already in use. Trying to find another port...`);
+        } else {
+          logger.error('Server error:', err);
+          process.exit(1);
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Failed to start server:', error.message);
+      logger.error('Please check if ports 3001-3010 are available or set PORT environment variable');
+      process.exit(1);
+    }
+  })();
 }
 
 // Error handling

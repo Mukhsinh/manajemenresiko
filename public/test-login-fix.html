@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Login System Fix</h1>
+    
+    <div class="test-container">
+        <h2>1. Configuration Test</h2>
+        <button onclick="testConfiguration()">Test Configuration</button>
+        <div id="config-results"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>2. Authentication Test</h2>
+        <div class="form-group">
+            <label for="test-email">Email:</label>
+            <input type="email" id="test-email" value="mukhsin9@gmail.com" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label for="test-password">Password:</label>
+            <input type="password" id="test-password" placeholder="Enter password">
+        </div>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testLogout()">Test Logout</button>
+        <button onclick="testCheckAuth()">Test Check Auth</button>
+        <div id="auth-results"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>3. API Test</h2>
+        <button onclick="testApiCall()">Test API Call</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>4. Token Management Test</h2>
+        <button onclick="testTokenRetrieval()">Test Token Retrieval</button>
+        <div id="token-results"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/services/authService.js"></script>
+
+    <script>
+        let testResults = {
+            config: [],
+            auth: [],
+            api: [],
+            token: []
+        };
+
+        function addResult(category, type, message) {
+            const result = { type, message, timestamp: new Date().toLocaleTimeString() };
+            testResults[category].push(result);
+            
+            const container = document.getElementById(`${category}-results`);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `[${result.timestamp}] ${message}`;
+            container.appendChild(div);
+            
+            // Auto-scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function testConfiguration() {
+            const container = document.getElementById('config-results');
+            container.innerHTML = '';
+            
+            addResult('config', 'info', '🔧 Testing configuration...');
+            
+            try {
+                // Test 1: Check if Supabase library is loaded
+                if (typeof window.supabase === 'undefined') {
+                    addResult('config', 'error', '❌ Supabase library not loaded');
+                    return;
+                }
+                addResult('config', 'success', '✅ Supabase library loaded');
+                
+                // Test 2: Wait for config to load
+                if (window.configManager) {
+                    const isReady = await window.configManager.waitForSupabaseClient(5000);
+                    if (isReady) {
+                        addResult('config', 'success', '✅ Supabase client initialized');
+                    } else {
+                        addResult('config', 'error', '❌ Supabase client initialization timeout');
+                        return;
+                    }
+                } else {
+                    addResult('config', 'warning', '⚠️ ConfigManager not available, checking client directly');
+                }
+                
+                // Test 3: Check if client is available
+                if (window.supabaseClient) {
+                    addResult('config', 'success', '✅ Supabase client available globally');
+                } else {
+                    addResult('config', 'error', '❌ Supabase client not available globally');
+                    return;
+                }
+                
+                // Test 4: Test client functionality
+                const { data, error } = await window.supabaseClient.auth.getSession();
+                if (error) {
+                    addResult('config', 'warning', `⚠️ Session check error: ${error.message}`);
+                } else {
+                    addResult('config', 'success', '✅ Supabase client functional');
+                }
+                
+                addResult('config', 'success', '🎉 Configuration test completed successfully');
+                
+            } catch (error) {
+                addResult('config', 'error', `❌ Configuration test failed: ${error.message}`);
+            }
+        }
+
+        async function testLogin() {
+            const container = document.getElementById('auth-results');
+            container.innerHTML = '';
+            
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            if (!email || !password) {
+                addResult('auth', 'error', '❌ Please enter both email and password');
+                return;
+            }
+            
+            addResult('auth', 'info', `🔐 Testing login for: ${email}`);
+            
+            try {
+                // Test using authService
+                if (window.authService) {
+                    addResult('auth', 'info', '📝 Using authService for login...');
+                    const result = await window.authService.login(email, password);
+                    
+                    if (result.success) {
+                        addResult('auth', 'success', `✅ Login successful: ${result.user.email}`);
+                        
+                        // Test token availability
+                        if (result.session && result.session.access_token) {
+                            addResult('auth', 'success', `✅ Token available: ${result.session.access_token.substring(0, 20)}...`);
+                        } else {
+                            addResult('auth', 'warning', '⚠️ Login successful but no token in response');
+                        }
+                        
+                        // Test global state
+                        if (window.currentUser) {
+                            addResult('auth', 'success', `✅ Global user state set: ${window.currentUser.email}`);
+                        } else {
+                            addResult('auth', 'warning', '⚠️ Global user state not set');
+                        }
+                        
+                        if (window.currentSession) {
+                            addResult('auth', 'success', '✅ Global session state set');
+                        } else {
+                            addResult('auth', 'warning', '⚠️ Global session state not set');
+                        }
+                        
+                    } else {
+                        addResult('auth', 'error', `❌ Login failed: ${result.error}`);
+                    }
+                } else {
+                    addResult('auth', 'error', '❌ AuthService not available');
+                }
+                
+            } catch (error) {
+                addResult('auth', 'error', `❌ Login test failed: ${error.message}`);
+            }
+        }
+
+        async function testLogout() {
+            const container = document.getElementById('auth-results');
+            
+            addResult('auth', 'info', '🚪 Testing logout...');
+            
+            try {
+                if (window.authService) {
+                    const result = await window.authService.logout();
+                    if (result.success) {
+                        addResult('auth', 'success', '✅ Logout successful');
+                        
+                        // Check if global state is cleared
+                        if (!window.currentUser) {
+                            addResult('auth', 'success', '✅ Global user state cleared');
+                        } else {
+                            addResult('auth', 'warning', '⚠️ Global user state not cleared');
+                        }
+                        
+                        if (!window.currentSession) {
+                            addResult('auth', 'success', '✅ Global session state cleared');
+                        } else {
+                            addResult('auth', 'warning', '⚠️ Global session state not cleared');
+                        }
+                    } else {
+                        addResult('auth', 'warning', `⚠️ Logout completed with warning: ${result.error || 'Unknown'}`);
+                    }
+                } else {
+                    addResult('auth', 'error', '❌ AuthService not available');
+                }
+            } catch (error) {
+                addResult('auth', 'error', `❌ Logout test failed: ${error.message}`);
+            }
+        }
+
+        async function testCheckAuth() {
+            const container = document.getElementById('auth-results');
+            
+            addResult('auth', 'info', '🔍 Testing auth check...');
+            
+            try {
+                if (window.authService) {
+                    const result = await window.authService.checkAuth();
+                    
+                    if (result.authenticated) {
+                        addResult('auth', 'success', `✅ User authenticated: ${result.user.email}`);
+                    } else {
+                        addResult('auth', 'info', '📝 User not authenticated');
+                        if (result.error) {
+                            addResult('auth', 'info', `📝 Auth error: ${result.error}`);
+                        }
+                    }
+                } else {
+                    addResult('auth', 'error', '❌ AuthService not available');
+                }
+            } catch (error) {
+                addResult('auth', 'error', `❌ Auth check test failed: ${error.message}`);
+            }
+        }
+
+        async function testApiCall() {
+            const container = document.getElementById('api-results');
+            container.innerHTML = '';
+            
+            addResult('api', 'info', '🌐 Testing API call...');
+            
+            try {
+                // Test API call using global apiCall function
+                if (window.apiCall) {
+                    addResult('api', 'info', '📝 Using global apiCall function...');
+                    
+                    const userData = await window.apiCall('/api/auth/me');
+                    addResult('api', 'success', `✅ API call successful: ${userData.user?.email || 'No user data'}`);
+                    
+                } else {
+                    addResult('api', 'error', '❌ Global apiCall function not available');
+                }
+                
+            } catch (error) {
+                addResult('api', 'error', `❌ API call failed: ${error.message}`);
+            }
+        }
+
+        async function testTokenRetrieval() {
+            const container = document.getElementById('token-results');
+            container.innerHTML = '';
+            
+            addResult('token', 'info', '🔑 Testing token retrieval...');
+            
+            try {
+                // Test 1: Global session
+                if (window.currentSession && window.currentSession.access_token) {
+                    addResult('token', 'success', `✅ Token from global session: ${window.currentSession.access_token.substring(0, 20)}...`);
+                } else {
+                    addResult('token', 'info', '📝 No token in global session');
+                }
+                
+                // Test 2: Supabase client
+                if (window.supabaseClient) {
+                    const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+                    if (error) {
+                        addResult('token', 'warning', `⚠️ Supabase session error: ${error.message}`);
+                    } else if (session && session.access_token) {
+                        addResult('token', 'success', `✅ Token from Supabase client: ${session.access_token.substring(0, 20)}...`);
+                    } else {
+                        addResult('token', 'info', '📝 No token in Supabase client');
+                    }
+                } else {
+                    addResult('token', 'error', '❌ Supabase client not available');
+                }
+                
+                // Test 3: AuthService token retrieval
+                if (window.authService && window.authService.getAuthTokenReliable) {
+                    const token = await window.authService.getAuthTokenReliable();
+                    if (token) {
+                        addResult('token', 'success', `✅ Token from authService: ${token.substring(0, 20)}...`);
+                    } else {
+                        addResult('token', 'info', '📝 No token from authService');
+                    }
+                } else {
+                    addResult('token', 'warning', '⚠️ AuthService getAuthTokenReliable not available');
+                }
+                
+                // Test 4: localStorage backup
+                try {
+                    const storedAuth = localStorage.getItem('supabase.auth.token');
+                    if (storedAuth) {
+                        const authData = JSON.parse(storedAuth);
+                        if (authData.access_token) {
+                            addResult('token', 'success', `✅ Token from localStorage: ${authData.access_token.substring(0, 20)}...`);
+                            
+                            // Check expiration
+                            if (authData.expires_at > Date.now() / 1000) {
+                                addResult('token', 'success', '✅ localStorage token not expired');
+                            } else {
+                                addResult('token', 'warning', '⚠️ localStorage token expired');
+                            }
+                        } else {
+                            addResult('token', 'info', '📝 No token in localStorage');
+                        }
+                    } else {
+                        addResult('token', 'info', '📝 No auth data in localStorage');
+                    }
+                } catch (error) {
+                    addResult('token', 'warning', `⚠️ localStorage check failed: ${error.message}`);
+                }
+                
+            } catch (error) {
+                addResult('token', 'error', `❌ Token retrieval test failed: ${error.message}`);
+            }
+        }
+
+        // Auto-run configuration test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testConfiguration, 1000);
+        });
+    </script>
+</body>
+</html>

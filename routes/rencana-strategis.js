@@ -41,12 +41,44 @@ router.get('/public', async (req, res) => {
 router.get('/generate/kode/public', async (req, res) => {
   try {
     const year = new Date().getFullYear();
-    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    const kode = `RS-${year}-${random}`;
+    
+    // Get the highest number for current year
+    const { data: maxData, error: maxError } = await (supabaseAdmin || supabase)
+      .rpc('get_max_rencana_strategis_number', { year_param: year });
+    
+    if (maxError) {
+      console.warn('Error getting max number, using fallback:', maxError);
+      // Fallback: query directly
+      const { data: fallbackData } = await (supabaseAdmin || supabase)
+        .from('rencana_strategis')
+        .select('kode')
+        .like('kode', `RS-${year}-%`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      let nextNumber = 1;
+      if (fallbackData && fallbackData.length > 0) {
+        const lastKode = fallbackData[0].kode;
+        const match = lastKode.match(/RS-\d{4}-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+      
+      const kode = `RS-${year}-${String(nextNumber).padStart(3, '0')}`;
+      return res.json({ kode });
+    }
+    
+    const nextNumber = (maxData || 0) + 1;
+    const kode = `RS-${year}-${String(nextNumber).padStart(3, '0')}`;
     res.json({ kode });
   } catch (error) {
     console.error('Generate kode public error:', error);
-    res.status(500).json({ error: error.message });
+    // Ultimate fallback
+    const year = new Date().getFullYear();
+    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    const kode = `RS-${year}-${random}`;
+    res.json({ kode });
   }
 });
 
@@ -112,11 +144,45 @@ router.get('/:id', authenticateUser, async (req, res) => {
 // Generate kode
 router.get('/generate/kode', authenticateUser, async (req, res) => {
   try {
-    const kode = await generateKodeRencanaStrategis(req.user.id);
+    const year = new Date().getFullYear();
+    
+    // Get the highest number for current year
+    const { data: maxData, error: maxError } = await (supabaseAdmin || supabase)
+      .rpc('get_max_rencana_strategis_number', { year_param: year });
+    
+    if (maxError) {
+      console.warn('Error getting max number, using fallback:', maxError);
+      // Fallback: query directly
+      const { data: fallbackData } = await (supabaseAdmin || supabase)
+        .from('rencana_strategis')
+        .select('kode')
+        .like('kode', `RS-${year}-%`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      let nextNumber = 1;
+      if (fallbackData && fallbackData.length > 0) {
+        const lastKode = fallbackData[0].kode;
+        const match = lastKode.match(/RS-\d{4}-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+      
+      const kode = `RS-${year}-${String(nextNumber).padStart(3, '0')}`;
+      return res.json({ kode });
+    }
+    
+    const nextNumber = (maxData || 0) + 1;
+    const kode = `RS-${year}-${String(nextNumber).padStart(3, '0')}`;
     res.json({ kode });
   } catch (error) {
     console.error('Generate kode error:', error);
-    res.status(500).json({ error: error.message });
+    // Ultimate fallback
+    const year = new Date().getFullYear();
+    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    const kode = `RS-${year}-${random}`;
+    res.json({ kode });
   }
 });
 

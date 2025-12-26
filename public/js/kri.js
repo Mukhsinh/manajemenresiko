@@ -67,8 +67,155 @@ const KRI = {
         }
     },
 
+    /**
+     * Renders the KRI page with enhanced styling
+     * @param {Array<Object>} data - Array of KRI data
+     * @returns {void}
+     */
     render(data) {
+        /** @type {HTMLElement | null} */
         const content = document.getElementById('kri-content');
+        if (!content) {
+            console.error('KRI content element not found');
+            return;
+        }
+        
+        // Handle empty data
+        if (!data || data.length === 0) {
+            content.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; color: #3498db; margin-bottom: 1rem;"></i>
+                    <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Tidak Ada Data KRI</h4>
+                    <p style="color: #7f8c8d;">Belum ada data Key Risk Indicator. Silakan tambah data KRI terlebih dahulu.</p>
+                    <button class="btn btn-primary" onclick="KRI.showAddModal()" style="margin-top: 1rem;">
+                        <i class="fas fa-plus-circle"></i> Tambah KRI
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Add enhanced CSS styling
+        const styleId = 'kri-enhanced-styles';
+        if (!document.getElementById(styleId)) {
+            /** @type {HTMLStyleElement} */
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                /* Enhanced KRI Styles */
+                .page-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 2rem 0;
+                    margin-bottom: 2rem;
+                    border-radius: 12px;
+                }
+                
+                .action-buttons {
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                    align-items: center;
+                }
+                
+                .charts-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+                
+                .chart-card {
+                    background: white;
+                    padding: 1.5rem;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                }
+                
+                .chart-title {
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                    margin-bottom: 1rem;
+                    color: #2c3e50;
+                }
+                
+                .table-container {
+                    overflow-x: auto;
+                    max-width: 100%;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                }
+                
+                .table td, .table th {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 300px;
+                    word-wrap: break-word;
+                }
+                
+                .badge-status {
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                
+                .btn-edit, .btn-delete {
+                    max-width: 40px;
+                    overflow: hidden;
+                }
+                
+                .badge-status {
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    display: inline-block;
+                }
+                
+                .badge-status.badge-aman {
+                    background-color: #28a745 !important;
+                    color: #ffffff !important;
+                }
+                
+                .badge-status.badge-hati-hati {
+                    background-color: #ffc107 !important;
+                    color: #212529 !important;
+                }
+                
+                .badge-status.badge-kritis {
+                    background-color: #dc3545 !important;
+                    color: #ffffff !important;
+                }
+                
+                .btn-edit, .btn-delete {
+                    padding: 6px 8px;
+                    margin: 0 2px;
+                    border-radius: 6px;
+                    border: none;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-size: 0.75rem;
+                }
+                
+                .btn-edit {
+                    background-color: #17a2b8;
+                    color: white;
+                }
+                
+                .btn-delete {
+                    background-color: #dc3545;
+                    color: white;
+                }
+                
+                .btn-edit:hover, .btn-delete:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+            `;
+            document.head.appendChild(style);
+        }
         
         // Calculate statistics - map "Peringatan" to "Hati-hati"
         const stats = {
@@ -76,6 +223,12 @@ const KRI = {
             hati_hati: data.filter(d => d.status_indikator === 'Hati-hati' || d.status_indikator === 'Peringatan').length,
             kritis: data.filter(d => d.status_indikator === 'Kritis').length
         };
+        
+        // Ensure we have valid stats even if all are zero
+        const totalStats = stats.aman + stats.hati_hati + stats.kritis;
+        if (totalStats === 0) {
+            stats.aman = 1; // Show at least one slice for empty state
+        }
         
         content.innerHTML = `
             <div class="charts-grid mb-3">
@@ -150,10 +303,15 @@ const KRI = {
 
     renderChart(stats) {
         const ctx = document.getElementById('kri-status-chart');
-        if (!ctx || typeof Chart === 'undefined') {
-            console.warn('Chart context not available or Chart.js not loaded');
+        if (!ctx) {
+            console.warn('Chart context element not found');
+            return;
+        }
+        
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js not loaded, showing fallback');
             // Show fallback stats
-            const chartCard = ctx?.closest('.chart-card');
+            const chartCard = ctx.closest('.chart-card');
             if (chartCard) {
                 chartCard.innerHTML = `
                     <h4 class="chart-title">Status KRI</h4>
@@ -179,12 +337,29 @@ const KRI = {
         }
         
         try {
-            new Chart(ctx, {
+            // Destroy existing chart if any
+            if (window.kriChartInstance) {
+                window.kriChartInstance.destroy();
+            }
+            
+            // Prepare data - ensure at least one value for chart
+            const chartData = [
+                Math.max(stats.aman, 0),
+                Math.max(stats.hati_hati, 0),
+                Math.max(stats.kritis, 0)
+            ];
+            
+            // If all are zero, show a placeholder
+            if (chartData[0] === 0 && chartData[1] === 0 && chartData[2] === 0) {
+                chartData[0] = 1; // Show one slice for empty state
+            }
+            
+            window.kriChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Aman', 'Hati-hati', 'Kritis'],
                     datasets: [{
-                        data: [stats.aman, stats.hati_hati, stats.kritis],
+                        data: chartData,
                         backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
@@ -203,6 +378,17 @@ const KRI = {
                                     size: 12
                                 }
                             }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
                         }
                     },
                     layout: {
@@ -211,15 +397,15 @@ const KRI = {
                 }
             });
         } catch (error) {
-            console.error('Error creating chart:', error);
+            console.error('Error creating KRI chart:', error);
         }
     },
 
     async showAddModal() {
         let kode = '';
         try {
-            const kodeData = await apiCall('/api/kri/generate/kode');
-            kode = kodeData.kode;
+            // Simple kode generation
+            kode = `KRI-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
         } catch (error) {
             console.error('Error generating kode:', error);
         }

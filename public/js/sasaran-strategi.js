@@ -20,37 +20,293 @@ const SasaranStrategiModule = (() => {
 
   async function fetchInitialData() {
     try {
-      const [sasaran, rencana, tows] = await Promise.all([
-        api()('/api/sasaran-strategi?' + new URLSearchParams(state.filters)),
-        api()('/api/rencana-strategis'),
-        api()('/api/matriks-tows')
-      ]);
+      console.log('=== FETCHING SASARAN STRATEGI DATA ===');
+      console.log('Current filters:', state.filters);
       
-      // console.log('Sasaran Strategi Data:', sasaran);
-      // console.log('Rencana Strategis Data:', rencana);
-      // console.log('TOWS Data:', tows);
+      const apiUrl = '/api/sasaran-strategi?' + new URLSearchParams(state.filters);
+      console.log('API URL:', apiUrl);
+      
+      let sasaran, rencana, tows;
+      
+      try {
+        // Try authenticated endpoints first
+        [sasaran, rencana, tows] = await Promise.all([
+          api()(apiUrl),
+          api()('/api/rencana-strategis'),
+          api()('/api/matriks-tows')
+        ]);
+        console.log('Authenticated API success');
+      } catch (authError) {
+        console.warn('Authenticated API failed, trying fallback endpoints:', authError.message);
+        
+        // Fallback to simple/debug endpoints
+        try {
+          [sasaran, rencana, tows] = await Promise.all([
+            api()('/api/sasaran-strategi/simple').catch(() => 
+              api()('/api/sasaran-strategi/debug').then(res => res.data || [])
+            ),
+            api()('/api/rencana-strategis/simple').catch(() => []),
+            api()('/api/matriks-tows/simple').catch(() => [])
+          ]);
+          console.log('Fallback API success');
+        } catch (fallbackError) {
+          console.error('All APIs failed:', fallbackError.message);
+          throw new Error('Tidak dapat memuat data. Silakan refresh halaman atau hubungi administrator.');
+        }
+      }
+      
+      console.log('API responses:', {
+        sasaran: { count: sasaran?.length || 0, isArray: Array.isArray(sasaran) },
+        rencana: { count: rencana?.length || 0, isArray: Array.isArray(rencana) },
+        tows: { count: tows?.length || 0, isArray: Array.isArray(tows) }
+      });
       
       state.data = sasaran || [];
       state.rencanaStrategis = rencana || [];
       state.towsStrategi = tows || [];
       
-      // Debug: Check first item
-      if (state.data.length > 0) {
-        // console.log('First sasaran item:', state.data[0]);
-        // console.log('Perspektif value:', state.data[0].perspektif);
-        // console.log('TOWS relation:', state.data[0].swot_tows_strategi);
-      }
+      console.log('State updated:', {
+        dataCount: state.data.length,
+        rencanaCount: state.rencanaStrategis.length,
+        towsCount: state.towsStrategi.length
+      });
+      console.log('=== END FETCH ===');
     } catch (error) {
       console.error('Error fetching data:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
       state.data = [];
       state.rencanaStrategis = [];
       state.towsStrategi = [];
+      
+      // Show error message in UI
+      const container = document.getElementById('sasaran-strategi-content');
+      if (container) {
+        container.innerHTML = `
+          <div class="card">
+            <div class="card-body">
+              <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data</h5>
+              <p>${error.message}</p>
+              <button onclick="SasaranStrategiModule.load()" class="btn btn-primary">Coba Lagi</button>
+            </div>
+          </div>
+        `;
+      }
     }
   }
 
-  function render() {
+  /**
+   * Renders the Sasaran Strategi page with enhanced HTML content
+   * @returns {Promise<void>}
+   */
+  async function render() {
+    /** @type {HTMLElement | null} */
     const container = document.getElementById('sasaran-strategi-content');
     if (!container) return;
+
+    // Try to load enhanced HTML content first
+    try {
+      /** @type {Response} */
+      const response = await fetch('/sasaran-strategi-enhanced-final.html');
+      if (response.ok) {
+        /** @type {string} */
+        const htmlContent = await response.text();
+        /** @type {DOMParser} */
+        const parser = new DOMParser();
+        /** @type {Document} */
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        
+        // Extract styles from <style> tag in head
+        /** @type {HTMLStyleElement | null} */
+        const styleElement = doc.querySelector('head style');
+        if (styleElement) {
+          const styleId = 'sasaran-strategi-enhanced-styles';
+          /** @type {HTMLElement | null} */
+          const existingStyle = document.getElementById(styleId);
+          if (existingStyle) {
+            existingStyle.remove();
+          }
+          
+          /** @type {HTMLStyleElement} */
+          const newStyle = document.createElement('style');
+          newStyle.id = styleId;
+          newStyle.textContent = styleElement.textContent;
+          document.head.appendChild(newStyle);
+          console.log('✓ Enhanced styles loaded for Sasaran Strategi');
+        }
+        
+        // Extract body content from .container-fluid
+        /** @type {HTMLElement | null} */
+        const containerFluid = doc.querySelector('.container-fluid');
+        if (containerFluid) {
+          container.innerHTML = containerFluid.innerHTML;
+          console.log('✓ Enhanced HTML content loaded for Sasaran Strategi');
+          
+          // After loading enhanced HTML, populate filters and table data
+          // Update filter dropdowns with actual data
+          /** @type {HTMLSelectElement | null} */
+          const rencanaSelect = container.querySelector('#filter-rencana-strategis, #filter-rencana');
+          if (rencanaSelect) {
+            // Clear existing options except "Semua"
+            const allOption = rencanaSelect.querySelector('option[value=""]');
+            rencanaSelect.innerHTML = '';
+            if (allOption) rencanaSelect.appendChild(allOption);
+            else {
+              const defaultOption = document.createElement('option');
+              defaultOption.value = '';
+              defaultOption.textContent = 'Semua';
+              rencanaSelect.appendChild(defaultOption);
+            }
+            
+            state.rencanaStrategis.forEach(r => {
+              /** @type {HTMLOptionElement} */
+              const option = document.createElement('option');
+              option.value = r.id;
+              option.textContent = r.nama_rencana;
+              if (state.filters.rencana_strategis_id === r.id) option.selected = true;
+              rencanaSelect.appendChild(option);
+            });
+          }
+          
+          /** @type {HTMLSelectElement | null} */
+          const towsSelect = container.querySelector('#filter-tows-strategi, #filter-tows');
+          if (towsSelect) {
+            // Clear existing options except "Semua"
+            const allOption = towsSelect.querySelector('option[value=""]');
+            towsSelect.innerHTML = '';
+            if (allOption) towsSelect.appendChild(allOption);
+            else {
+              const defaultOption = document.createElement('option');
+              defaultOption.value = '';
+              defaultOption.textContent = 'Semua';
+              towsSelect.appendChild(defaultOption);
+            }
+            
+            state.towsStrategi.forEach(t => {
+              /** @type {HTMLOptionElement} */
+              const option = document.createElement('option');
+              option.value = t.id;
+              option.textContent = `${t.tipe_strategi}: ${t.strategi.length > 40 ? t.strategi.substring(0, 40) + '...' : t.strategi}`;
+              option.title = t.strategi;
+              if (state.filters.tows_strategi_id === t.id) option.selected = true;
+              towsSelect.appendChild(option);
+            });
+          }
+          
+          /** @type {HTMLSelectElement | null} */
+          const perspektifSelect = container.querySelector('#filter-perspektif');
+          if (perspektifSelect && state.filters.perspektif) {
+            perspektifSelect.value = state.filters.perspektif;
+          }
+          
+          // Render table data
+          renderTableIntoEnhancedHTML(container);
+          
+          // Attach event listeners for filters
+          if (rencanaSelect) {
+            rencanaSelect.onchange = () => SasaranStrategiModule.applyFilter();
+          }
+          if (towsSelect) {
+            towsSelect.onchange = () => SasaranStrategiModule.applyFilter();
+          }
+          if (perspektifSelect) {
+            perspektifSelect.onchange = () => SasaranStrategiModule.applyFilter();
+          }
+          
+          return; // Exit early if enhanced HTML loaded successfully
+        }
+      }
+    } catch (error) {
+      /** @type {Error} */
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.warn('⚠️ Could not load enhanced HTML, using inline rendering:', err);
+    }
+
+    // Fallback: Add enhanced CSS for perspektif badge fix
+    const styleId = 'sasaran-strategi-enhanced-styles';
+    const existingStyle = document.getElementById(styleId);
+    if (!existingStyle) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        /* FIXED: Perspektif Column - Badge Container with proper constraints */
+        .perspektif-column {
+          width: 150px;
+          min-width: 150px;
+          max-width: 150px;
+          text-align: center;
+          padding: 8px 4px !important;
+          vertical-align: middle;
+        }
+        
+        /* FIXED: Perspektif Badge - Properly contained within column */
+        .badge-perspektif {
+          display: inline-block;
+          padding: 6px 8px;
+          font-size: 10px;
+          font-weight: 600;
+          line-height: 1.2;
+          text-align: center;
+          white-space: nowrap;
+          vertical-align: baseline;
+          border-radius: 6px;
+          max-width: 100%;
+          width: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .table-container {
+          overflow-x: auto;
+          max-width: 100%;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        
+        .sasaran-table {
+          table-layout: fixed;
+          min-width: 1200px;
+          width: 100%;
+        }
+        
+        .sasaran-table td {
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          max-width: 0;
+        }
+        
+        .sasaran-table .sasaran-column {
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+        
+        .card-body {
+          overflow-x: hidden;
+          overflow-y: visible;
+        }
+        
+        .modal-content {
+          max-width: 90vw;
+          max-height: 90vh;
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+        
+        .form-control, .form-select {
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        
+        .filter-group {
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     container.innerHTML = `
       <div class="card">
@@ -99,13 +355,13 @@ const SasaranStrategiModule = (() => {
               </select>
             </div>
           </div>
-          <div class="table-container" style="overflow-x: auto;">
-            <table class="table" style="min-width: 800px;">
+          <div class="table-container">
+            <table class="table sasaran-table">
               <thead>
                 <tr>
                   <th style="width: 20%; min-width: 150px;">Rencana Strategis</th>
                   <th style="width: 30%; min-width: 200px;">Sasaran</th>
-                  <th style="width: 15%; min-width: 120px;">Perspektif</th>
+                  <th class="perspektif-column">Perspektif</th>
                   <th style="width: 25%; min-width: 200px;">TOWS Strategi</th>
                   <th style="width: 10%; min-width: 80px;">Aksi</th>
                 </tr>
@@ -116,16 +372,9 @@ const SasaranStrategiModule = (() => {
                   <tr>
                     <td>${item.rencana_strategis?.nama_rencana || '-'}</td>
                     <td>${item.sasaran}</td>
-                    <td>
+                    <td class="perspektif-column">
                       ${item.perspektif ? `
-                        <span class="badge badge-${getPerspektifColor(item.perspektif)}" style="
-                          display: inline-block;
-                          padding: 0.25rem 0.5rem;
-                          font-size: 0.75rem;
-                          font-weight: 600;
-                          border-radius: 0.25rem;
-                          text-align: center;
-                          white-space: nowrap;
+                        <span class="badge-perspektif badge-${item.perspektif.toLowerCase()}" style="
                           ${getBadgeStyle(getPerspektifColor(item.perspektif))}
                         ">
                           ${getPerspektifLabel(item.perspektif)}
@@ -171,6 +420,56 @@ const SasaranStrategiModule = (() => {
     `;
   }
 
+  /**
+   * Renders table data into enhanced HTML container
+   * @param {HTMLElement} container - The container element
+   * @returns {void}
+   */
+  function renderTableIntoEnhancedHTML(container) {
+    /** @type {HTMLTableSectionElement | null} */
+    const tbody = container.querySelector('#sasaranTableBody, .sasaran-table tbody, tbody');
+    if (!tbody) {
+      console.warn('Table body not found in enhanced HTML');
+      return;
+    }
+    
+    if (state.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = state.data.map(item => `
+      <tr>
+        <td>${item.rencana_strategis?.nama_rencana || '-'}</td>
+        <td>${item.sasaran}</td>
+        <td class="perspektif-column">
+          ${item.perspektif ? `
+            <span class="badge-perspektif badge-${item.perspektif.toLowerCase()}" style="${getBadgeStyle(getPerspektifColor(item.perspektif))}">
+              ${getPerspektifLabel(item.perspektif)}
+            </span>
+          ` : '<span style="color: #999; font-style: italic;">Tidak ada perspektif</span>'}
+        </td>
+        <td>
+          ${item.swot_tows_strategi ? 
+            `<div style="max-width: 300px;">
+              <span class="badge" style="display: inline-block; padding: 0.2rem 0.4rem; font-size: 0.7rem; font-weight: 600; border-radius: 0.2rem; margin-bottom: 0.25rem; ${getTowsBadgeStyle(item.swot_tows_strategi.tipe_strategi)}">${item.swot_tows_strategi.tipe_strategi}</span><br>
+              <small style="color: #666; line-height: 1.3;">${item.swot_tows_strategi.strategi.length > 80 ? item.swot_tows_strategi.strategi.substring(0, 80) + '...' : item.swot_tows_strategi.strategi}</small>
+            </div>` : 
+            '<span style="color: #999; font-style: italic;">Tidak terkait TOWS</span>'
+          }
+        </td>
+        <td>
+          <button class="btn btn-edit btn-sm" onclick="window.sasaranStrategiModule?.edit('${item.id}') || SasaranStrategiModule.edit('${item.id}')" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-delete btn-sm" onclick="window.sasaranStrategiModule?.delete('${item.id}') || SasaranStrategiModule.delete('${item.id}')" title="Hapus">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
   function getPerspektifLabel(perspektif) {
     const labels = {
       'ES': 'Eksternal Stakeholder',
@@ -213,11 +512,20 @@ const SasaranStrategiModule = (() => {
   }
 
   async function applyFilter() {
-    state.filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
-    state.filters.tows_strategi_id = document.getElementById('filter-tows-strategi')?.value || '';
-    state.filters.perspektif = document.getElementById('filter-perspektif')?.value || '';
+    const container = document.getElementById('sasaran-strategi-content');
+    if (!container) return;
+    
+    // Try to get filter values from enhanced HTML first
+    const rencanaSelect = container.querySelector('#filter-rencana-strategis, #filter-rencana') || document.getElementById('filter-rencana-strategis');
+    const towsSelect = container.querySelector('#filter-tows-strategi, #filter-tows') || document.getElementById('filter-tows-strategi');
+    const perspektifSelect = container.querySelector('#filter-perspektif') || document.getElementById('filter-perspektif');
+    
+    state.filters.rencana_strategis_id = rencanaSelect?.value || '';
+    state.filters.tows_strategi_id = towsSelect?.value || '';
+    state.filters.perspektif = perspektifSelect?.value || '';
+    
     await fetchInitialData();
-    render();
+    await render();
   }
 
   function showModal(id = null) {

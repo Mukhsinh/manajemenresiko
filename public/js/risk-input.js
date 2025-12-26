@@ -14,6 +14,38 @@ const RiskInputModule = (() => {
   const safeArray = (value) => (Array.isArray(value) ? value : []);
 
   async function load() {
+    console.log('[AUTH] RiskInputModule.load() starting...');
+    
+    // CRITICAL: Wait for auth to be ready before making API calls
+    if (window.waitForAuthReady) {
+      const authReady = await window.waitForAuthReady(5000);
+      if (!authReady) {
+        // Check if user is actually authenticated (might be a timing issue)
+        if (window.isAuthenticated && window.currentSession && window.currentSession.access_token) {
+          console.log('[AUTH] RiskInputModule: Auth not ready but session exists, retrying waitForReady...');
+          // Retry with longer timeout
+          const retryReady = await window.waitForAuthReady(3000);
+          if (retryReady) {
+            console.log('[AUTH] RiskInputModule: Auth ready after retry, proceeding with data load');
+          } else {
+            console.log('[AUTH] RiskInputModule: Auth still not ready after retry, but session exists - proceeding anyway');
+            // Session exists, proceed anyway
+          }
+        } else {
+          // Don't throw error - just log and return gracefully
+          // Module will retry when user logs in via auth state listener
+          console.log('[AUTH] RiskInputModule: Auth not ready, skipping data load (user not logged in)');
+          return; // Graceful return instead of throwing error
+        }
+      } else {
+        console.log('[AUTH] RiskInputModule: Auth ready, proceeding with data load');
+      }
+    } else if (!window.isAuthenticated) {
+      // Fallback if waitForAuthReady is not available
+      console.log('[AUTH] RiskInputModule: User not authenticated, skipping data load');
+      return; // Graceful return instead of throwing error
+    }
+    
     await Promise.all([loadMasters(), loadRisks()]);
     bindEvents();
   }
@@ -201,6 +233,8 @@ const RiskInputModule = (() => {
     tbody.innerHTML = state.risks
       .map((risk) => {
         const unitName = risk.master_work_units?.name || '-';
+        const unitJenis = risk.master_work_units?.jenis || '-';
+        const unitKategori = risk.master_work_units?.kategori || '-';
         const categoryName = risk.master_risk_categories?.name || '-';
         const ownerName = risk.pemilik_risiko_nama || '-';
         const riskType = risk.jenis_risiko || 'Threat';
@@ -210,7 +244,7 @@ const RiskInputModule = (() => {
         <td>${risk.no || '-'}</td>
         <td>${risk.kode_risiko || '-'}</td>
         <td><span class="risk-type ${riskType.toLowerCase()}">${riskType}</span></td>
-        <td>${unitName}</td>
+        <td>${unitName}<br><small class="text-muted">${unitJenis} - ${unitKategori}</small></td>
         <td>${categoryName}</td>
         <td>${ownerName}</td>
         <td><span class="status-badge ${risk.status_risiko?.toLowerCase() || 'active'}">${risk.status_risiko || 'Active'}</span></td>
@@ -500,6 +534,8 @@ const RiskInputModule = (() => {
       const rows = state.risks.map((risk) => ({
         'Kode Risiko': risk.kode_risiko || '-',
         'Unit Kerja': risk.master_work_units?.name || '-',
+        'Jenis Unit Kerja': risk.master_work_units?.jenis || '-',
+        'Kategori Unit Kerja': risk.master_work_units?.kategori || '-',
         'Rencana Strategis': risk.rencana_strategis?.nama_rencana || '-',
         'Status Risiko': risk.status_risiko || '-',
         'Sasaran': risk.sasaran || '-',
@@ -670,6 +706,14 @@ const RiskInputModule = (() => {
             <div class="detail-item">
               <label>Unit Kerja:</label>
               <span>${risk.master_work_units?.name || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Jenis Unit Kerja:</label>
+              <span>${risk.master_work_units?.jenis || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <label>Kategori Unit Kerja:</label>
+              <span>${risk.master_work_units?.kategori || '-'}</span>
             </div>
             <div class="detail-item">
               <label>Kategori Risiko:</label>
@@ -1162,7 +1206,7 @@ async function loadRiskInputData() {
             <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data risiko</h5>
             <p>${error.message}</p>
             <button onclick="loadRiskInputData()" class="btn btn-primary">Coba Lagi</button>
-            <button onclick="window.open('/test-risk-input-simple.html', '_blank')" class="btn btn-secondary">Test Risk Input</button>
+            <button onclick="navigateToPage('test-risk-input-simple')" class="btn btn-secondary">Test Risk Input</button>
           </div>
         </div>
       `;
@@ -1173,6 +1217,21 @@ async function loadRiskInputData() {
 // Make functions available globally
 window.loadRiskInputData = loadRiskInputData;
 window.RiskInputModule = RiskInputModule;
+
+// Setup auth state listener to reload data when user logs in
+if (window.authStateManager) {
+  window.authStateManager.addListener((state) => {
+    if (state.isAuthenticated && document.getElementById('risk-input-tbody')) {
+      console.log('[AUTH] RiskInputModule: User authenticated, reloading data...');
+      // Small delay to ensure token is fully available
+      setTimeout(() => {
+        loadRiskInputData().catch(err => {
+          console.warn('[AUTH] RiskInputModule: Error reloading data after login:', err);
+        });
+      }, 500);
+    }
+  });
+}
 
 // Auto-load when page is ready
 if (document.readyState === 'loading') {

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Fix Final</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .test-result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .test-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .console-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .login-form {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-container">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-bug-slash"></i> Test Login Fix Final
+            </h1>
+            
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Test Tujuan</h5>
+                <p>Memverifikasi bahwa semua syntax error telah diperbaiki dan login berfungsi dengan sempurna.</p>
+            </div>
+
+            <!-- Console Output -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-terminal"></i> Console Output</h5>
+                </div>
+                <div class="card-body">
+                    <div id="console-output" class="console-output">
+                        Memuat console output...
+                    </div>
+                    <button onclick="clearConsole()" class="btn btn-sm btn-secondary mt-2">
+                        <i class="fas fa-trash"></i> Clear Console
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Results -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-check-circle"></i> Test Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="test-results">
+                        <div class="test-info">
+                            <i class="fas fa-spinner fa-spin"></i> Running tests...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Test Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-sign-in-alt"></i> Manual Login Test</h5>
+                </div>
+                <div class="card-body">
+                    <form id="test-login-form" class="login-form">
+                        <div class="mb-3">
+                            <label for="test-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="test-email" value="mukhsin9@gmail.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="test-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="test-password" value="password123" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="test-login-btn">
+                            <i class="fas fa-sign-in-alt"></i> Test Login
+                        </button>
+                        <button type="button" onclick="testLogout()" class="btn btn-secondary ms-2" id="test-logout-btn" disabled>
+                            <i class="fas fa-sign-out-alt"></i> Test Logout
+                        </button>
+                    </form>
+                    <div id="login-result" class="mt-3"></div>
+                </div>
+            </div>
+
+            <!-- Navigation Test -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-compass"></i> Navigation Test</h5>
+                </div>
+                <div class="card-body">
+                    <p>Test navigasi setelah login berhasil:</p>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button onclick="testNavigation('dashboard')" class="btn btn-outline-primary mb-2">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </button>
+                        <button onclick="testNavigation('visi-misi')" class="btn btn-outline-primary mb-2">
+                            <i class="fas fa-bullseye"></i> Visi & Misi
+                        </button>
+                        <button onclick="testNavigation('rencana-strategis')" class="btn btn-outline-primary mb-2">
+                            <i class="fas fa-chart-line"></i> Rencana Strategis
+                        </button>
+                    </div>
+                    <div id="navigation-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load Config -->
+    <script src="/js/config.js"></script>
+    
+    <!-- Load Services -->
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/services/authService.js"></script>
+    
+    <!-- Load Router Components -->
+    <script src="/js/RouterErrorHandler.js"></script>
+    <script src="/js/RouterManager.js"></script>
+    <script src="/js/route-config.js"></script>
+    <script src="/js/404-handler.js"></script>
+    <script src="/js/router-integration.js"></script>
+    
+    <script>
+        let consoleOutput = document.getElementById('console-output');
+        let testResults = document.getElementById('test-results');
+        let loginResult = document.getElementById('login-result');
+        let navigationResult = document.getElementById('navigation-result');
+        
+        // Capture console output
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        
+        function addToConsole(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            consoleOutput.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addToConsole('log', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addToConsole('error', ...args);
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addToConsole('warn', ...args);
+        };
+        
+        function clearConsole() {
+            consoleOutput.textContent = '';
+        }
+        
+        function showTestResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result test-${type}`;
+            div.innerHTML = message;
+            testResults.appendChild(div);
+        }
+        
+        function showLoginResult(message, type = 'info') {
+            loginResult.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}">${message}</div>`;
+        }
+        
+        function showNavigationResult(message, type = 'info') {
+            navigationResult.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}">${message}</div>`;
+        }
+        
+        // Run initial tests
+        async function runInitialTests() {
+            console.log('🚀 Starting initial tests...');
+            
+            // Test 1: Check if scripts loaded without errors
+            try {
+                if (typeof window.supabase !== 'undefined') {
+                    showTestResult('<i class="fas fa-check"></i> Supabase library loaded successfully', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> Supabase library not loaded', 'error');
+                }
+                
+                if (typeof window.configManager !== 'undefined') {
+                    showTestResult('<i class="fas fa-check"></i> Config manager loaded successfully', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> Config manager not loaded', 'error');
+                }
+                
+                if (typeof window.apiService !== 'undefined') {
+                    showTestResult('<i class="fas fa-check"></i> API service loaded successfully', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> API service not loaded', 'error');
+                }
+                
+                if (typeof window.authService !== 'undefined') {
+                    showTestResult('<i class="fas fa-check"></i> Auth service loaded successfully', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> Auth service not loaded', 'error');
+                }
+                
+                if (typeof window.RouterManager !== 'undefined') {
+                    showTestResult('<i class="fas fa-check"></i> Router manager loaded successfully', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> Router manager not loaded', 'error');
+                }
+                
+            } catch (error) {
+                showTestResult(`<i class="fas fa-times"></i> Error during initial tests: ${error.message}`, 'error');
+            }
+            
+            // Test 2: Wait for Supabase client initialization
+            try {
+                console.log('⏳ Waiting for Supabase client initialization...');
+                
+                if (window.configManager) {
+                    const isReady = await window.configManager.waitForSupabaseClient(5000);
+                    if (isReady) {
+                        showTestResult('<i class="fas fa-check"></i> Supabase client initialized successfully', 'success');
+                    } else {
+                        showTestResult('<i class="fas fa-times"></i> Supabase client initialization timeout', 'error');
+                    }
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> Config manager not available for client initialization', 'error');
+                }
+                
+            } catch (error) {
+                showTestResult(`<i class="fas fa-times"></i> Error initializing Supabase client: ${error.message}`, 'error');
+            }
+            
+            // Test 3: Check for syntax errors by trying to access problematic functions
+            try {
+                if (typeof window.show404Error === 'function') {
+                    showTestResult('<i class="fas fa-check"></i> 404 handler loaded without syntax errors', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> 404 handler has issues', 'error');
+                }
+                
+                if (typeof window.apiCall === 'function') {
+                    showTestResult('<i class="fas fa-check"></i> API call function available', 'success');
+                } else {
+                    showTestResult('<i class="fas fa-times"></i> API call function not available', 'error');
+                }
+                
+            } catch (error) {
+                showTestResult(`<i class="fas fa-times"></i> Syntax error detected: ${error.message}`, 'error');
+            }
+            
+            console.log('✅ Initial tests completed');
+        }
+        
+        // Test login functionality
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const loginBtn = document.getElementById('test-login-btn');
+            const logoutBtn = document.getElementById('test-logout-btn');
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            
+            try {
+                console.log(`🔐 Testing login with: ${email}`);
+                
+                if (!window.authService) {
+                    throw new Error('Auth service not available');
+                }
+                
+                const result = await window.authService.login(email, password);
+                
+                if (result.success) {
+                    showLoginResult(`<i class="fas fa-check"></i> Login berhasil! User: ${result.user.email}`, 'success');
+                    logoutBtn.disabled = false;
+                    console.log('✅ Login test passed');
+                } else {
+                    showLoginResult(`<i class="fas fa-times"></i> Login gagal: ${result.error}`, 'error');
+                    console.error('❌ Login test failed:', result.error);
+                }
+                
+            } catch (error) {
+                showLoginResult(`<i class="fas fa-times"></i> Error during login test: ${error.message}`, 'error');
+                console.error('❌ Login test error:', error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Test Login';
+            }
+        }
+        
+        // Test logout functionality
+        async function testLogout() {
+            const logoutBtn = document.getElementById('test-logout-btn');
+            
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            
+            try {
+                console.log('🚪 Testing logout...');
+                
+                if (!window.authService) {
+                    throw new Error('Auth service not available');
+                }
+                
+                const result = await window.authService.logout();
+                
+                if (result.success) {
+                    showLoginResult(`<i class="fas fa-check"></i> Logout berhasil!`, 'success');
+                    console.log('✅ Logout test passed');
+                } else {
+                    showLoginResult(`<i class="fas fa-times"></i> Logout gagal: ${result.error}`, 'error');
+                    console.error('❌ Logout test failed:', result.error);
+                }
+                
+            } catch (error) {
+                showLoginResult(`<i class="fas fa-times"></i> Error during logout test: ${error.message}`, 'error');
+                console.error('❌ Logout test error:', error);
+            } finally {
+                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Test Logout';
+            }
+        }
+        
+        // Test navigation
+        async function testNavigation(page) {
+            try {
+                console.log(`🧭 Testing navigation to: ${page}`);
+                
+                if (window.appRouter) {
+                    const url = window.getUrlForPage ? window.getUrlForPage(page) : `/${page}`;
+                    window.appRouter.navigate(url);
+                    showNavigationResult(`<i class="fas fa-check"></i> Navigasi ke ${page} berhasil menggunakan router`, 'success');
+                } else {
+                    showNavigationResult(`<i class="fas fa-times"></i> Router tidak tersedia untuk navigasi`, 'error');
+                }
+                
+            } catch (error) {
+                showNavigationResult(`<i class="fas fa-times"></i> Error navigasi: ${error.message}`, 'error');
+                console.error('❌ Navigation test error:', error);
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('test-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            testLogin();
+        });
+        
+        // Run tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(runInitialTests, 1000);
+        });
+        
+        console.log('🎯 Test page loaded and ready');
+    </script>
+</body>
+</html>

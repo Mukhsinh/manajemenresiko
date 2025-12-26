@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Risk - Enhanced</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .summary-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .risk-event-cell {
+            max-width: 200px;
+        }
+        
+        .risk-event-cell strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .badge-very-low { background-color: #28a745; }
+        .badge-low { background-color: #17a2b8; }
+        .badge-medium { background-color: #ffc107; color: #212529; }
+        .badge-high { background-color: #fd7e14; }
+        .badge-very-high { background-color: #dc3545; }
+        .badge-unknown { background-color: #6c757d; }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        #loadingIndicator {
+            display: none;
+        }
+        
+        .filter-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .risk-level-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .risk-level-legend .badge {
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
+                        <i class="fas fa-shield-alt me-3"></i>
+                        Residual Risk Analysis
+                    </h1>
+                    <p class="mb-0 mt-2">Analisis Risiko Sisa Setelah Pengendalian</p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <button id="refreshBtn" class="btn btn-light">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-success ml-2" onclick="window.location.href='/risk-input'">
+                        <i class="fas fa-plus"></i> Input Risiko
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Memuat data residual risk...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage"></div>
+
+        <!-- Risk Level Legend -->
+        <div class="risk-level-legend">
+            <span class="badge badge-very-low">Very Low (1-4)</span>
+            <span class="badge badge-low">Low (5-8)</span>
+            <span class="badge badge-medium">Medium (9-12)</span>
+            <span class="badge badge-high">High (13-16)</span>
+            <span class="badge badge-very-high">Very High (17-25)</span>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="filter-card">
+            <form id="filterForm" class="row align-items-end">
+                <div class="col-md-3">
+                    <label for="riskLevelFilter" class="form-label">Filter Risk Level:</label>
+                    <select id="riskLevelFilter" class="form-control">
+                        <option value="">Semua Level</option>
+                        <option value="Very Low">Very Low</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Very High">Very High</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="unitFilter" class="form-label">Filter Unit Kerja:</label>
+                    <select id="unitFilter" class="form-control">
+                        <option value="">Semua Unit</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="searchInput" class="form-label">Cari Risk Event:</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Masukkan kata kunci...">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                    <button type="button" class="btn btn-secondary ml-2" onclick="residualRiskManager.clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card summary-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list-alt fa-2x text-primary mb-2"></i>
+                        <div class="summary-number" id="totalRisks">0</div>
+                        <small class="text-muted">Total Risiko</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                        <div class="summary-number text-danger" id="highRisks">0</div>
+                        <small class="text-muted">High/Very High Risk</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calculator fa-2x text-info mb-2"></i>
+                        <div class="summary-number" id="avgRiskValue">0.0</div>
+                        <small class="text-muted">Rata-rata Risk Value</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                        <div class="summary-number" id="totalFinancialImpact">Rp 0</div>
+                        <small class="text-muted">Total Dampak Finansial</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Level Distribution -->
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card summary-card border-success">
+                    <div class="card-body text-center">
+                        <div class="summary-number text-success" id="verylowCount">0</div>
+                        <small class="text-muted">Very Low</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card summary-card border-info">
+                    <div class="card-body text-center">
+                        <div class="summary-number text-info" id="lowCount">0</div>
+                        <small class="text-muted">Low</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card summary-card border-warning">
+                    <div class="card-body text-center">
+                        <div class="summary-number text-warning" id="mediumCount">0</div>
+                        <small class="text-muted">Medium</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card summary-card border-danger">
+                    <div class="card-body text-center">
+                        <div class="summary-number text-danger" id="highCount">0</div>
+                        <small class="text-muted">High</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card summary-card border-dark">
+                    <div class="card-body text-center">
+                        <div class="summary-number text-dark" id="veryhighCount">0</div>
+                        <small class="text-muted">Very High</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card summary-card border-secondary">
+                    <div class="card-body text-center">
+                        <div class="summary-number text-secondary" id="unknownCount">0</div>
+                        <small class="text-muted">Unknown</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Residual Risk Table -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table id="residualRiskTable" class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="8%">Kode</th>
+                            <th width="25%">Risk Event</th>
+                            <th width="12%">Inherent Risk</th>
+                            <th width="12%">Residual Risk</th>
+                            <th width="8%">Risk Value</th>
+                            <th width="12%">Dampak Finansial</th>
+                            <th width="10%">Unit Kerja</th>
+                            <th width="8%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="residualRiskTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Memuat data residual risk...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <small class="text-muted">Menampilkan <span id="showingFrom">0</span> - <span id="showingTo">0</span> dari <span id="totalRecords">0</span> data</small>
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" id="pagination">
+                    <!-- Pagination will be generated by JavaScript -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Risk Detail Modal -->
+    <div class="modal fade" id="riskDetailModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail Residual Risk</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="riskDetailContent">
+                    <!-- Content will be loaded by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="residualRiskManager.editRisk()">Edit Risiko</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/residual-risk-enhanced-fix.js"></script>
+    
+    <script>
+        // Additional functionality for filters and pagination
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search input with debounce
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        if (window.residualRiskManager) {
+                            window.residualRiskManager.applyFilters();
+                        }
+                    }, 500);
+                });
+            }
+            
+            // Clear filters function
+            window.clearFilters = function() {
+                document.getElementById('riskLevelFilter').value = '';
+                document.getElementById('unitFilter').value = '';
+                document.getElementById('searchInput').value = '';
+                if (window.residualRiskManager) {
+                    window.residualRiskManager.applyFilters();
+                }
+            };
+        });
+    </script>
+</body>
+</html>

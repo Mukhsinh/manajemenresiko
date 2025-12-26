@@ -17,34 +17,101 @@ const StrategicMapModule = (() => {
 
   async function fetchInitialData() {
     try {
-      const [map, rencana] = await Promise.all([
-        api()('/api/strategic-map?' + new URLSearchParams(state.filters)),
-        api()('/api/rencana-strategis')
-      ]);
+      const map = await api()('/api/strategic-map');
       state.data = map || [];
-      state.rencanaStrategis = rencana || [];
     } catch (error) {
       console.error('Error fetching data:', error);
       state.data = [];
-      state.rencanaStrategis = [];
     }
   }
 
+  /**
+   * Renders the Strategic Map page with enhanced styling
+   * @returns {void}
+   */
   function render() {
+    /** @type {HTMLElement | null} */
     const container = document.getElementById('strategic-map-content');
     if (!container) return;
+
+    // Add enhanced CSS styling
+    const styleId = 'strategic-map-enhanced-styles';
+    if (!document.getElementById(styleId)) {
+      /** @type {HTMLStyleElement} */
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        /* Enhanced Strategic Map Styles */
+        .page-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 2rem 0;
+          margin-bottom: 2rem;
+          border-radius: 12px;
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+        
+        .table-container {
+          overflow-x: auto;
+          max-width: 100%;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .strategic-map-card {
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          border: none;
+        }
+        
+        .badge-status {
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.875rem;
+        }
+        
+        .btn-icon {
+          padding: 6px 8px;
+          margin: 0 2px;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .btn-edit {
+          background-color: #17a2b8;
+          color: white;
+        }
+        
+        .btn-delete {
+          background-color: #dc3545;
+          color: white;
+        }
+        
+        .btn-icon:hover {
+          transform: scale(1.1);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">Strategic Map</h3>
           <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <select class="form-control" id="filter-rencana-strategis" style="width: auto;" onchange="StrategicMapModule.applyFilter()">
-              <option value="">Pilih Rencana Strategis</option>
-              ${state.rencanaStrategis.map(r => `<option value="${r.id}" ${state.filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.nama_rencana}</option>`).join('')}
-            </select>
-            <button class="btn btn-success" onclick="StrategicMapModule.generate()" ${!state.filters.rencana_strategis_id ? 'disabled' : ''}>
-              <i class="fas fa-sync"></i> Generate Map
+            <button class="btn btn-success" onclick="StrategicMapModule.generate()">
+              <i class="fas fa-sync"></i> Generate Map Otomatis
             </button>
             <div class="dropdown" style="position: relative;">
               <button class="btn btn-primary dropdown-toggle" onclick="StrategicMapModule.toggleDownloadMenu()" ${state.data.length === 0 ? 'disabled' : ''}>
@@ -80,8 +147,16 @@ const StrategicMapModule = (() => {
                 </tr>
               </thead>
               <tbody>
-                ${state.data.length === 0 ? '<tr><td colspan="5" class="text-center">Tidak ada data. Pilih rencana strategis dan klik "Generate Map" untuk membuat strategic map.</td></tr>' : ''}
-                ${state.data.map(item => `
+                ${state.data.length === 0 ? '<tr><td colspan="5" class="text-center">Tidak ada data. Klik "Generate Map Otomatis" untuk membuat strategic map dari sasaran strategi yang tersedia.</td></tr>' : ''}
+                ${(() => {
+                  const seenIds = new Set();
+                  return state.data.filter(item => {
+                    if (seenIds.has(item.sasaran_strategi_id)) {
+                      return false; // Skip duplicates
+                    }
+                    seenIds.add(item.sasaran_strategi_id);
+                    return true;
+                  }).map(item => `
                   <tr>
                     <td><span class="badge-status badge-${getPerspektifColor(item.perspektif)}">${item.perspektif}</span></td>
                     <td>${item.sasaran_strategi?.sasaran || '-'}</td>
@@ -96,7 +171,8 @@ const StrategicMapModule = (() => {
                       </button>
                     </td>
                   </tr>
-                `).join('')}
+                `).join('');
+                })()}
               </tbody>
             </table>
           </div>
@@ -160,7 +236,16 @@ const StrategicMapModule = (() => {
 
   function groupByPerspektif(data) {
     const groups = {};
+    const seenIds = new Set(); // Track seen IDs to prevent duplicates in frontend
+    
     data.forEach(item => {
+      // Skip duplicates based on sasaran_strategi_id
+      if (seenIds.has(item.sasaran_strategi_id)) {
+        console.warn('⚠️ Skipping duplicate sasaran_strategi_id in frontend:', item.sasaran_strategi_id);
+        return;
+      }
+      seenIds.add(item.sasaran_strategi_id);
+      
       // Use the perspektif as is (full name from database)
       const perspektifKey = item.perspektif;
       
@@ -200,38 +285,56 @@ const StrategicMapModule = (() => {
     return colorMap[perspektif] || '#95a5a6';
   }
 
-  async function applyFilter() {
-    state.filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
-    await fetchInitialData();
-    render();
-  }
-
   async function generate() {
-    const rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value;
-    
-    if (!rencana_strategis_id) {
-      alert('Pilih rencana strategis terlebih dahulu');
-      return;
-    }
-
-    if (!confirm('Generate strategic map dari sasaran strategi?\nData yang sudah ada akan diganti dengan data terbaru.')) return;
+    if (!confirm('Generate strategic map dari semua sasaran strategi?\nData yang sudah ada akan diganti dengan data terbaru.')) return;
 
     try {
-      const result = await api()('/api/strategic-map/generate', {
-        method: 'POST',
-        body: { rencana_strategis_id }
+      // Show loading state
+      let button = null;
+      if (window.event && window.event.target) {
+        button = window.event.target;
+      } else {
+        // Fallback: find the generate button
+        button = document.querySelector('button[onclick*="generate"]');
+      }
+      
+      let originalText = '';
+      if (button) {
+        originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        button.disabled = true;
+      }
+
+      console.log('🗺️ Generating strategic map for all sasaran strategis');
+
+      const result = await api()('/api/strategic-map/generate-all', {
+        method: 'POST'
       });
+      
+      console.log('✅ Generate response:', result);
       
       await load();
       
+      // Restore button
+      if (button) {
+        button.innerHTML = originalText;
+        button.disabled = false;
+      }
+      
       if (result.generated > 0) {
-        alert(`Strategic map berhasil digenerate!\nTotal: ${result.generated} sasaran strategi`);
+        alert(`Strategic map berhasil digenerate!\nTotal: ${result.generated} sasaran strategi\n\nDistribusi per perspektif:\n${Object.entries(result.summary?.perspektif_distribution || {}).map(([k, v]) => `- ${k}: ${v} sasaran`).join('\n')}`);
       } else {
         alert('Tidak ada sasaran strategi untuk digenerate.\nSilakan tambahkan sasaran strategi terlebih dahulu.');
       }
     } catch (error) {
-      console.error('Generate error:', error);
-      alert('Error: ' + error.message);
+      // Restore button on error
+      if (button) {
+        button.innerHTML = originalText || '<i class="fas fa-sync"></i> Generate Map';
+        button.disabled = false;
+      }
+      
+      console.error('❌ Generate error:', error);
+      alert('Error: ' + (error.message || 'Terjadi kesalahan saat generate strategic map'));
     }
   }
 
@@ -386,27 +489,8 @@ const StrategicMapModule = (() => {
         link.href = canvas.toDataURL();
         link.click();
       } else {
-        // Fallback: open in new window for manual save
-        const content = visualization.innerHTML;
-        const newWindow = window.open('', '_blank');
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>Strategic Map</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .perspektif-group { margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border-left: 4px solid #007bff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                .sasaran-node { padding: 1rem; margin: 0.5rem; border-radius: 8px; color: white; display: inline-block; }
-              </style>
-            </head>
-            <body>
-              <h1>Strategic Map</h1>
-              ${content}
-              <p><em>Klik kanan dan pilih "Save as" untuk menyimpan gambar</em></p>
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
+        // Fallback: show alert to use canvas download instead
+        alert('Grafik tidak tersedia untuk diunduh. Silakan gunakan fitur download Excel atau PDF.');
       }
       
       toggleDownloadMenu();
@@ -523,7 +607,6 @@ const StrategicMapModule = (() => {
 
   return {
     load,
-    applyFilter,
     generate,
     handleDragStart,
     handleDrop,

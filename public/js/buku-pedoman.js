@@ -697,21 +697,32 @@ class BukuPedomanManager {
 
     printHandbook() {
         // Create a print-friendly version
-        const printWindow = window.open('', '_blank');
+        // Use iframe for printing instead of opening new window
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+        
         const printContent = this.generatePrintContent();
         
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>${this.handbookData.title}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-                    .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-                    .chapter { page-break-before: always; margin-bottom: 30px; }
-                    .chapter:first-child { page-break-before: auto; }
-                    .chapter-title { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-                    .section { margin: 20px 0; }
+        iframe.onload = function() {
+            const printWindow = iframe.contentWindow;
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${this.handbookData.title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                        .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                        .chapter { page-break-before: always; margin-bottom: 30px; }
+                        .chapter:first-child { page-break-before: auto; }
+                        .chapter-title { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+                        .section { margin: 20px 0; }
                     .section-title { color: #555; margin: 15px 0 10px 0; }
                     .section-content { margin-left: 20px; }
                     @media print {
@@ -724,15 +735,24 @@ class BukuPedomanManager {
                 ${printContent}
             </body>
             </html>
-        `);
-        
-        printWindow.document.close();
-        printWindow.focus();
-        
-        setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 500);
+                `);
+                
+                printWindow.document.close();
+                
+                // Wait a bit for content to load, then print
+                setTimeout(() => {
+                    printWindow.print();
+                    
+                    // Remove iframe after printing
+                    setTimeout(() => {
+                        if (iframe.parentNode) {
+                            document.body.removeChild(iframe);
+                        }
+                    }, 1000);
+                }, 500);
+            }.bind(this);
+            
+            iframe.src = 'about:blank';
     }
 
     generatePrintContent() {

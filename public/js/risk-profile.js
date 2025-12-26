@@ -11,7 +11,8 @@ const RiskProfileModule = (() => {
       kategori_risiko_id: '',
       risk_level: ''
     },
-    chart: null
+    chart: null,
+    activeTab: 'risk-profile' // Default tab
   };
 
   const api = () => (window.app ? window.app.apiCall : window.apiCall);
@@ -47,8 +48,8 @@ const RiskProfileModule = (() => {
       if (state.filters.kategori_risiko_id) params.append('kategori_risiko_id', state.filters.kategori_risiko_id);
       if (state.filters.risk_level) params.append('risk_level', state.filters.risk_level);
 
-      console.log('Calling API endpoint: /api/risk-profile-real');
-      const data = await api()('/api/risk-profile-real');
+      console.log('Calling API endpoint: /api/risk-profile');
+      const data = await api()('/api/risk-profile');
       // console.log('Raw API response:', data);
       
       state.data = data || [];
@@ -61,10 +62,15 @@ const RiskProfileModule = (() => {
     }
   }
 
+  /**
+   * Renders the Risk Profile page with enhanced styling and fixed badge colors
+   * @returns {void}
+   */
   function render() {
     console.log('=== RENDERING RISK PROFILE ===');
     console.log('Data to render:', state.data.length, 'items');
     
+    /** @type {HTMLElement | null} */
     const container = document.getElementById('risk-profile-content');
     if (!container) {
       console.error('Container #risk-profile-content not found!');
@@ -72,68 +78,124 @@ const RiskProfileModule = (() => {
     }
     console.log('Container found:', container);
 
+    // Add enhanced CSS styling with fixed badge colors
+    const styleId = 'risk-profile-enhanced-styles';
+    if (!document.getElementById(styleId)) {
+      /** @type {HTMLStyleElement} */
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        /* Enhanced Risk Profile Styles with Fixed Badge Colors */
+        .badge-status {
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.875rem;
+          display: inline-block;
+        }
+        
+        /* Fixed badge colors with proper contrast */
+        .badge-status.badge-kritis {
+          background-color: #dc3545 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-status.badge-hati-hati {
+          background-color: #ffc107 !important;
+          color: #212529 !important;
+        }
+        
+        .badge-status.badge-normal,
+        .badge-status.badge-medium {
+          background-color: #17a2b8 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-status.badge-aman,
+        .badge-status.badge-low {
+          background-color: #28a745 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-status.badge-extreme {
+          background-color: #721c24 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-status.badge-high {
+          background-color: #856404 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-status.badge-secondary {
+          background-color: #6c757d !important;
+          color: #ffffff !important;
+        }
+        
+        .table-container {
+          overflow-x: auto;
+          max-width: 100%;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table td, .table th {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 300px;
+          word-wrap: break-word;
+        }
+        
+        .badge-status {
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // SIMPLIFIED RENDER - Direct display without tabs
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title"><i class="fas fa-chart-bar"></i> Risk Profile (Inherent Risk)</h3>
-          <button class="btn btn-success" onclick="RiskProfileModule.refresh()">
-            <i class="fas fa-sync"></i> Refresh Data
-          </button>
+          <h3 class="card-title"><i class="fas fa-chart-bar"></i> Risk Profile - Inherent Risk Analysis</h3>
+          <div class="card-tools">
+            <button class="btn btn-success" onclick="RiskProfileModule.refresh()">
+              <i class="fas fa-sync"></i> Refresh Data
+            </button>
+            <button class="btn btn-primary" onclick="RiskProfileModule.downloadReport()">
+              <i class="fas fa-download"></i> Download Report
+            </button>
+          </div>
         </div>
         <div class="card-body">
-          ${renderFilters()}
-          ${renderStatistics()}
-          <div class="row" style="margin-top: 2rem;">
-            <div class="col-md-12">
-              <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem;">
-                  <h4 style="color: #2c3e50; font-weight: 600; margin: 0;">
-                    <i class="fas fa-chart-scatter"></i> Inherent Risk Matrix (5×5) - ${state.data.length} Risiko
-                  </h4>
-                  <div style="display: flex; gap: 1rem;">
-                    <button class="btn btn-success" onclick="RiskProfileModule.downloadChart()" style="padding: 0.5rem 1rem;">
-                      <i class="fas fa-download"></i> Unduh Grafik
-                    </button>
-                    <button class="btn btn-primary" onclick="RiskProfileModule.downloadReport()" style="padding: 0.5rem 1rem;">
-                      <i class="fas fa-file-excel"></i> Unduh Laporan
-                    </button>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-9">
-                    <div style="position: relative; height: 700px; background: #f8f9fa; border-radius: 8px; padding: 1rem;">
-                      <canvas id="inherent-risk-matrix"></canvas>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    ${renderLegend()}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="margin-top: 2rem;">
-            ${renderTable()}
-          </div>
+          ${renderRiskProfileContent()}
         </div>
       </div>
     `;
 
-    // Wait for Chart.js and DOM to be ready
-    if (typeof Chart !== 'undefined') {
-      setTimeout(() => renderChart(), 100);
-    } else {
-      // Wait for Chart.js to load
-      const checkChart = setInterval(() => {
-        if (typeof Chart !== 'undefined') {
-          clearInterval(checkChart);
-          setTimeout(() => renderChart(), 100);
-        }
-      }, 100);
-      
-      // Timeout after 5 seconds
-      setTimeout(() => clearInterval(checkChart), 5000);
-    }
+    // Initialize chart after DOM is ready
+    setTimeout(() => {
+      if (typeof Chart !== 'undefined') {
+        renderChart();
+      }
+    }, 100);
+  }
+
+  function renderRiskProfileContent() {
+    console.log('=== RENDERING RISK PROFILE CONTENT ===');
+    console.log('Data available:', state.data.length, 'items');
+    
+    return `
+      ${renderFilters()}
+      ${renderStatistics()}
+      <div style="margin-top: 2rem;">
+        ${renderTable()}
+      </div>
+    `;
   }
 
   function renderFilters() {
@@ -165,9 +227,14 @@ const RiskProfileModule = (() => {
           <select class="form-control" id="filter-level" onchange="RiskProfileModule.applyFilter()">
             <option value="">Semua</option>
             <option value="EXTREME HIGH">Extreme High</option>
+            <option value="Very High">Very High</option>
+            <option value="Sangat Tinggi">Sangat Tinggi</option>
             <option value="HIGH RISK">High Risk</option>
+            <option value="Tinggi">Tinggi</option>
             <option value="MEDIUM RISK">Medium Risk</option>
+            <option value="Sedang">Sedang</option>
             <option value="LOW RISK">Low Risk</option>
+            <option value="Rendah">Rendah</option>
           </select>
         </div>
       </div>
@@ -180,10 +247,23 @@ const RiskProfileModule = (() => {
     
     const stats = {
       total: state.data.length,
-      extreme: state.data.filter(d => d.risk_level === 'EXTREME HIGH').length,
-      high: state.data.filter(d => d.risk_level === 'HIGH RISK').length,
-      medium: state.data.filter(d => d.risk_level === 'MEDIUM RISK').length,
-      low: state.data.filter(d => d.risk_level === 'LOW RISK').length
+      extreme: state.data.filter(d => 
+        d.risk_level === 'EXTREME HIGH' || 
+        d.risk_level === 'Very High' || 
+        d.risk_level === 'Sangat Tinggi'
+      ).length,
+      high: state.data.filter(d => 
+        d.risk_level === 'HIGH RISK' || 
+        d.risk_level === 'Tinggi'
+      ).length,
+      medium: state.data.filter(d => 
+        d.risk_level === 'MEDIUM RISK' || 
+        d.risk_level === 'Sedang'
+      ).length,
+      low: state.data.filter(d => 
+        d.risk_level === 'LOW RISK' || 
+        d.risk_level === 'Rendah'
+      ).length
     };
     
     // console.log('Calculated stats:', stats);
@@ -253,10 +333,23 @@ const RiskProfileModule = (() => {
         <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.875rem;">
             <div><strong>Total Risiko:</strong> ${state.data.length}</div>
-            <div><strong>Extreme High:</strong> ${state.data.filter(d => d.risk_level === 'EXTREME HIGH').length}</div>
-            <div><strong>High Risk:</strong> ${state.data.filter(d => d.risk_level === 'HIGH RISK').length}</div>
-            <div><strong>Medium Risk:</strong> ${state.data.filter(d => d.risk_level === 'MEDIUM RISK').length}</div>
-            <div><strong>Low Risk:</strong> ${state.data.filter(d => d.risk_level === 'LOW RISK').length}</div>
+            <div><strong>Extreme High:</strong> ${state.data.filter(d => 
+              d.risk_level === 'EXTREME HIGH' || 
+              d.risk_level === 'Very High' || 
+              d.risk_level === 'Sangat Tinggi'
+            ).length}</div>
+            <div><strong>High Risk:</strong> ${state.data.filter(d => 
+              d.risk_level === 'HIGH RISK' || 
+              d.risk_level === 'Tinggi'
+            ).length}</div>
+            <div><strong>Medium Risk:</strong> ${state.data.filter(d => 
+              d.risk_level === 'MEDIUM RISK' || 
+              d.risk_level === 'Sedang'
+            ).length}</div>
+            <div><strong>Low Risk:</strong> ${state.data.filter(d => 
+              d.risk_level === 'LOW RISK' || 
+              d.risk_level === 'Rendah'
+            ).length}</div>
             <div><strong>Unit Kerja:</strong> ${[...new Set(state.data.map(d => d.risk_inputs?.master_work_units?.name).filter(Boolean))].length}</div>
           </div>
         </div>
@@ -271,7 +364,16 @@ const RiskProfileModule = (() => {
 
   function renderTable() {
     if (state.data.length === 0) {
-      return '<div style="text-align: center; padding: 2rem; color: #999;">Tidak ada data inherent risk. Silakan lakukan analisis risiko terlebih dahulu.</div>';
+      return `
+        <div style="text-align: center; padding: 3rem; color: #666;">
+          <i class="fas fa-info-circle" style="font-size: 3rem; color: #3498db; margin-bottom: 1rem;"></i>
+          <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Tidak Ada Data Risk Profile</h4>
+          <p style="color: #7f8c8d;">Belum ada data inherent risk analysis. Silakan lakukan analisis risiko terlebih dahulu.</p>
+          <button class="btn btn-primary" onclick="navigateToPage('risk-input')" style="margin-top: 1rem;">
+            <i class="fas fa-plus-circle"></i> Input Data Risiko
+          </button>
+        </div>
+      `;
     }
 
     return `
@@ -297,11 +399,13 @@ const RiskProfileModule = (() => {
                 const risk = item.risk_inputs || {};
                 const riskName = risk?.kode_risiko || '-';
                 const unitName = risk?.master_work_units?.name || '-';
+                const unitJenis = risk?.master_work_units?.jenis || '-';
+                const unitKategori = risk?.master_work_units?.kategori || '-';
                 const categoryName = risk?.master_risk_categories?.name || '-';
                 return `
                   <tr>
                     <td><strong>${riskName}</strong></td>
-                    <td>${unitName}</td>
+                    <td>${unitName}<br><small class="text-muted">${unitJenis} - ${unitKategori}</small></td>
                     <td>${categoryName}</td>
                     <td>${item.probability || '-'}</td>
                     <td>${item.impact || '-'}</td>
@@ -341,19 +445,22 @@ const RiskProfileModule = (() => {
 
     // Create points for scatter chart
     const points = state.data
-      .filter(item => item.risk_inputs) // Filter out items without risk_inputs
+      .filter(item => item.risk_inputs && item.probability && item.impact) // Filter out items without required data
       .map(item => {
         const risk = item.risk_inputs || {};
+        const impact = parseFloat(item.impact) || 0;
+        const probability = parseFloat(item.probability) || 0;
         return {
-          x: parseFloat(item.impact) || 0,
-          y: parseFloat(item.probability) || 0,
+          x: impact,
+          y: probability,
           riskId: risk.kode_risiko || 'N/A',
           value: parseFloat(item.risk_value) || 0,
           level: item.risk_level || 'LOW RISK',
-          color: getRiskColor(item.risk_level)
+          color: getRiskColor(item.risk_level),
+          sasaran: risk.sasaran || ''
         };
       })
-      .filter(p => p.x > 0 && p.y > 0); // Filter out invalid points
+      .filter(p => p.x > 0 && p.y > 0 && p.x <= 5 && p.y <= 5); // Filter out invalid points
 
     if (points.length === 0) {
       console.warn('No valid data points for chart');
@@ -434,8 +541,9 @@ const RiskProfileModule = (() => {
                   `Probability: ${point.y}`,
                   `Impact: ${point.x}`,
                   `Risk Value: ${point.value}`,
-                  `Level: ${point.level}`
-                ];
+                  `Level: ${point.level}`,
+                  point.sasaran ? `Sasaran: ${point.sasaran.substring(0, 50)}${point.sasaran.length > 50 ? '...' : ''}` : ''
+                ].filter(Boolean);
               }
             },
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -499,7 +607,12 @@ const RiskProfileModule = (() => {
       'EXTREME HIGH': '#e74c3c',  // Solid red
       'HIGH RISK': '#f39c12',     // Solid orange
       'MEDIUM RISK': '#3498db',   // Solid blue
-      'LOW RISK': '#27ae60'       // Solid green
+      'LOW RISK': '#27ae60',      // Solid green
+      'Very High': '#e74c3c',     // Solid red
+      'Sangat Tinggi': '#e74c3c', // Solid red
+      'Tinggi': '#f39c12',        // Solid orange
+      'Sedang': '#3498db',        // Solid blue
+      'Rendah': '#27ae60'         // Solid green
     };
     return colorMap[level] || '#95a5a6';
   }
@@ -509,7 +622,12 @@ const RiskProfileModule = (() => {
       'EXTREME HIGH': 'kritis',
       'HIGH RISK': 'hati-hati',
       'MEDIUM RISK': 'normal',
-      'LOW RISK': 'aman'
+      'LOW RISK': 'aman',
+      'Very High': 'kritis',
+      'Sangat Tinggi': 'kritis',
+      'Tinggi': 'hati-hati',
+      'Sedang': 'normal',
+      'Rendah': 'aman'
     };
     return colorMap[level] || 'secondary';
   }

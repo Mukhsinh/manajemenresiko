@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Table - Complete Fix</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/rencana-strategis-table.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #0b4d88, #0f97d6);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .test-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .test-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .test-content {
+            padding: 2rem;
+        }
+        
+        .test-info {
+            background: #e0f2fe;
+            border: 1px solid #0284c7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #0284c7;
+        }
+        
+        .test-info ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .test-info li {
+            margin: 0.25rem 0;
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+        
+        .loading-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #0b4d88;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 3rem;
+            color: #dc2626;
+        }
+        
+        .error-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .success-state {
+            text-align: center;
+            padding: 2rem;
+            color: #059669;
+            background: #ecfdf5;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .success-state i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .card-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .card-header h3 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 1.25rem;
+        }
+        
+        .card-body {
+            padding: 0;
+        }
+        
+        /* Override untuk memastikan tabel responsive */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .data-table {
+            width: 100%;
+            min-width: 1200px;
+        }
+        
+        /* Pastikan status badge tidak overflow */
+        .data-table tbody td:nth-child(7) {
+            position: relative;
+            overflow: visible;
+        }
+        
+        .data-table tbody td:nth-child(7) .badge {
+            position: relative;
+            z-index: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-table"></i> Test Rencana Strategis Table</h1>
+            <p>Verifikasi Perbaikan Tampilan Tabel Rencana Strategis</p>
+        </div>
+        
+        <div class="test-content">
+            <div class="test-info">
+                <h3><i class="fas fa-info-circle"></i> Perbaikan yang Diimplementasikan</h3>
+                <ul>
+                    <li><strong>Tabel tampil penuh tanpa overflow:</strong> Menggunakan table-layout auto dan min-width yang optimal</li>
+                    <li><strong>Teks terbaca jelas:</strong> Meningkatkan padding, font-size, dan line-height</li>
+                    <li><strong>Status di dalam kolom:</strong> Memperbaiki CSS positioning untuk badge status</li>
+                    <li><strong>Tidak perlu refresh:</strong> Optimasi loading data dan rendering</li>
+                    <li><strong>Tooltips untuk teks panjang:</strong> Menambahkan title attribute untuk UX yang lebih baik</li>
+                    <li><strong>Responsive design:</strong> Mendukung berbagai ukuran layar</li>
+                </ul>
+            </div>
+            
+            <div id="loading-indicator" class="loading-state">
+                <i class="fas fa-spinner"></i>
+                <h3>Memuat Data Rencana Strategis...</h3>
+                <p>Sedang mengambil data dari server</p>
+            </div>
+            
+            <div id="error-indicator" class="error-state" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Gagal Memuat Data</h3>
+                <p id="error-message">Terjadi kesalahan saat mengambil data</p>
+                <button onclick="loadData()" class="btn btn-primary">
+                    <i class="fas fa-retry"></i> Coba Lagi
+                </button>
+            </div>
+            
+            <div id="success-indicator" class="success-state" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+                <h3>Data Berhasil Dimuat</h3>
+                <p id="success-message">Tabel rencana strategis siap ditampilkan</p>
+            </div>
+            
+            <div id="table-container" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Daftar Rencana Strategis</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kode</th>
+                                        <th>Nama Rencana & Deskripsi</th>
+                                        <th>Target</th>
+                                        <th>Periode</th>
+                                        <th>Sasaran Strategis</th>
+                                        <th>Indikator Kinerja Utama</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- Data akan dimuat di sini -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulasi data rencana strategis
+        const sampleData = [
+            {
+                id: '1',
+                kode: 'RS-2025-009',
+                nama_rencana: 'Sistem Manajemen Pengetahuan dan Knowledge Sharing',
+                deskripsi: 'Mengembangkan sistem manajemen pengetahuan yang komprehensif untuk memfasilitasi knowledge sharing, best practice sharing, dan continuous learning di seluruh organisasi rumah sakit.',
+                periode_mulai: '2025-01-01',
+                periode_selesai: '2025-12-31',
+                target: 'Membangun knowledge management system dengan 1000 konten pembelajaran dan 90% partisipasi staf dalam knowledge sharing',
+                indikator_kinerja: 'Jumlah konten pembelajaran, tingkat partisipasi knowledge sharing, indeks pembelajaran organisasi',
+                status: 'Aktif',
+                sasaran_strategis: ['Implementasi learning management system (LMS) terintegrasi', 'Pengembangan komunitas praktik dan forum diskusi ilmiah', 'Penguatan budaya pembelajaran dan knowledge sharing organisasi'],
+                indikator_kinerja_utama: ['Jumlah konten pembelajaran 1000 konten', 'Tingkat partisipasi knowledge sharing ≥ 90%', 'Indeks pembelajaran organisasi ≥ 4.3/5.0']
+            },
+            {
+                id: '2',
+                kode: 'RS-2025-005',
+                nama_rencana: 'Pengembangan Pusat Pendidikan dan Pelatihan Terpadu',
+                deskripsi: 'Mengembangkan pusat pendidikan dan pelatihan kesehatan yang komprehensif untuk meningkatkan kualitas pendidikan profesi kesehatan, continuing professional development, dan capacity building tenaga kesehatan.',
+                periode_mulai: '2025-01-01',
+                periode_selesai: '2025-12-31',
+                target: 'Menjadi teaching hospital terakreditasi dengan 500 peserta didik per tahun dan 50 program pelatihan berkelanjutan',
+                indikator_kinerja: 'Jumlah peserta didik, jumlah program pelatihan, tingkat kelulusan, skor akreditasi pendidikan',
+                status: 'Draft',
+                sasaran_strategis: ['Pengembangan kurikulum pendidikan berbasis kompetensi dan evidence-based practice', 'Pembangunan fasilitas simulasi dan learning center modern', 'Kemitraan strategis dengan institusi pendidikan tinggi kesehatan'],
+                indikator_kinerja_utama: ['Jumlah peserta didik 500 orang per tahun', 'Jumlah program pelatihan 50 program per tahun', 'Tingkat kelulusan ≥ 95%']
+            },
+            {
+                id: '3',
+                kode: 'RS-2025-004',
+                nama_rencana: 'Program Inovasi Layanan Berkelanjutan',
+                deskripsi: 'Mengembangkan program riset dan inovasi kesehatan yang berkelanjutan untuk menghasilkan evidence-based practice, teknologi kesehatan inovatif, dan publikasi ilmiah berkualitas tinggi.',
+                periode_mulai: '2025-01-01',
+                periode_selesai: '2025-12-31',
+                target: 'Menghasilkan 20 publikasi ilmiah terakreditasi dan 5 inovasi teknologi kesehatan yang dapat diimplementasikan',
+                indikator_kinerja: 'Jumlah publikasi ilmiah, jumlah penelitian yang diselesaikan, jumlah inovasi teknologi kesehatan',
+                status: 'Aktif',
+                sasaran_strategis: ['Pembentukan komite etik penelitian dan unit penelitian klinis', 'Pengembangan sistem manajemen penelitian terintegrasi', 'Kolaborasi riset dengan institusi penelitian nasional dan internasional'],
+                indikator_kinerja_utama: ['Jumlah publikasi ilmiah terakreditasi 20 artikel per tahun', 'Jumlah penelitian selesai 15 penelitian per tahun', 'Jumlah inovasi teknologi kesehatan 5 inovasi per tahun']
+            }
+        ];
+
+        // Helper functions
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit', 
+                    year: 'numeric'
+                });
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function safeArray(value) {
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
+                }
+            }
+            return [];
+        }
+
+        function renderTableRows(data) {
+            if (!data.length) {
+                return '<tr><td colspan="8" class="table-empty"><i class="fas fa-inbox"></i><br>Belum ada rencana strategis</td></tr>';
+            }
+            
+            return data.map((item, index) => {
+                const sasaran = safeArray(item.sasaran_strategis);
+                const indikator = safeArray(item.indikator_kinerja_utama);
+                
+                // Format sasaran strategis untuk tampilan dengan tooltip
+                const sasaranDisplay = sasaran.length > 0 
+                    ? (sasaran.length > 2 
+                        ? sasaran.slice(0, 2).join('; ') + ` ... (+${sasaran.length - 2} lainnya)`
+                        : sasaran.join('; '))
+                    : '-';
+                
+                const sasaranTooltip = sasaran.length > 2 ? sasaran.join('; ') : '';
+                
+                // Format indikator kinerja utama untuk tampilan dengan tooltip
+                const indikatorDisplay = indikator.length > 0 
+                    ? (indikator.length > 2 
+                        ? indikator.slice(0, 2).join('; ') + ` ... (+${indikator.length - 2} lainnya)`
+                        : indikator.join('; '))
+                    : '-';
+                
+                const indikatorTooltip = indikator.length > 2 ? indikator.join('; ') : '';
+                
+                // Format periode
+                const periodeDisplay = item.periode_mulai && item.periode_selesai 
+                    ? `${formatDate(item.periode_mulai)} s/d ${formatDate(item.periode_selesai)}`
+                    : '-';
+                
+                // Format target dengan tooltip untuk teks panjang
+                const targetDisplay = item.target 
+                    ? (item.target.length > 120 ? item.target.substring(0, 120) + '...' : item.target)
+                    : '-';
+                
+                const targetTooltip = item.target && item.target.length > 120 ? item.target : '';
+                
+                // Format deskripsi dengan tooltip untuk teks panjang
+                const deskripsiDisplay = item.deskripsi 
+                    ? (item.deskripsi.length > 150 ? item.deskripsi.substring(0, 150) + '...' : item.deskripsi)
+                    : '-';
+                
+                const deskripsiTooltip = item.deskripsi && item.deskripsi.length > 150 ? item.deskripsi : '';
+                
+                // Format nama rencana dengan tooltip jika terlalu panjang
+                const namaDisplay = item.nama_rencana || '-';
+                const namaTooltip = item.nama_rencana && item.nama_rencana.length > 50 ? item.nama_rencana : '';
+                
+                return `
+                <tr data-id="${item.id}">
+                    <td><strong>${item.kode}</strong></td>
+                    <td>
+                        <div class="table-cell-content">
+                            <strong ${namaTooltip ? `title="${escapeHtml(namaTooltip)}"` : ''}>${namaDisplay}</strong>
+                            <small class="text-muted d-block" ${deskripsiTooltip ? `title="${escapeHtml(deskripsiTooltip)}"` : ''}>${deskripsiDisplay}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-cell-content" ${targetTooltip ? `title="${escapeHtml(targetTooltip)}"` : ''}>
+                            <span class="text-primary">${targetDisplay}</span>
+                        </div>
+                    </td>
+                    <td><span class="text-muted">${periodeDisplay}</span></td>
+                    <td>
+                        <div class="table-cell-content" ${sasaranTooltip ? `title="${escapeHtml(sasaranTooltip)}"` : ''}>
+                            <small class="text-info">${sasaranDisplay}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-cell-content" ${indikatorTooltip ? `title="${escapeHtml(indikatorTooltip)}"` : ''}>
+                            <small class="text-success">${indikatorDisplay}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-${item.status === 'Aktif' ? 'success' : 'warning'}" title="${item.status || 'Draft'}">
+                            ${item.status || 'Draft'}
+                        </span>
+                    </td>
+                    <td class="table-actions">
+                        <button class="btn btn-info btn-sm" title="Lihat Detail">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-edit btn-sm" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-delete btn-sm" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function loadData() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorIndicator = document.getElementById('error-indicator');
+            const successIndicator = document.getElementById('success-indicator');
+            const tableContainer = document.getElementById('table-container');
+            
+            // Show loading
+            loadingIndicator.style.display = 'block';
+            errorIndicator.style.display = 'none';
+            successIndicator.style.display = 'none';
+            tableContainer.style.display = 'none';
+            
+            // Simulate API call
+            setTimeout(() => {
+                try {
+                    // Render table
+                    const tableBody = document.getElementById('table-body');
+                    tableBody.innerHTML = renderTableRows(sampleData);
+                    
+                    // Show success and table
+                    loadingIndicator.style.display = 'none';
+                    successIndicator.style.display = 'block';
+                    
+                    document.getElementById('success-message').textContent = 
+                        `${sampleData.length} rencana strategis berhasil dimuat dan ditampilkan`;
+                    
+                    setTimeout(() => {
+                        successIndicator.style.display = 'none';
+                        tableContainer.style.display = 'block';
+                    }, 2000);
+                    
+                } catch (error) {
+                    // Show error
+                    loadingIndicator.style.display = 'none';
+                    errorIndicator.style.display = 'block';
+                    document.getElementById('error-message').textContent = error.message;
+                }
+            }, 2000);
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Test page loaded, starting data load...');
+            loadData();
+        });
+    </script>
+</body>
+</html>

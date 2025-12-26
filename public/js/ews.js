@@ -13,6 +13,55 @@ const EWS = {
 
     render(data) {
         const content = document.getElementById('ews-content');
+        if (!content) {
+            console.error('EWS content element not found');
+            return;
+        }
+        
+        // Add enhanced CSS styling for overflow prevention
+        const styleId = 'ews-enhanced-styles';
+        if (!document.getElementById(styleId)) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                .table-container {
+                    overflow-x: auto;
+                    max-width: 100%;
+                }
+                .table td, .table th {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 300px;
+                    word-wrap: break-word;
+                }
+                .badge-status {
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .btn-edit, .btn-delete {
+                    max-width: 40px;
+                    overflow: hidden;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Handle empty data
+        if (!data || data.length === 0) {
+            content.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; color: #3498db; margin-bottom: 1rem;"></i>
+                    <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Tidak Ada Data EWS</h4>
+                    <p style="color: #7f8c8d;">Belum ada data Early Warning System. Silakan tambah data EWS terlebih dahulu.</p>
+                    <button class="btn btn-primary" onclick="EWS.showAddModal()" style="margin-top: 1rem;">
+                        <i class="fas fa-plus-circle"></i> Tambah EWS
+                    </button>
+                </div>
+            `;
+            return;
+        }
         
         // Calculate statistics
         const stats = {
@@ -122,44 +171,86 @@ const EWS = {
 
     renderLevelChart(stats) {
         const ctx = document.getElementById('ews-level-chart');
-        if (!ctx || typeof Chart === 'undefined') {
-            console.warn('Chart context not available or Chart.js not loaded');
+        if (!ctx) {
+            console.warn('EWS level chart context element not found');
+            return;
+        }
+        
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js not loaded, showing fallback');
             return;
         }
         
         try {
-            new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Normal', 'Peringatan', 'Waspada', 'Darurat'],
-                datasets: [{
-                    data: [stats.normal, stats.peringatan, stats.waspada, stats.darurat],
-                    backgroundColor: ['#3b82f6', '#f59e0b', '#f97316', '#dc2626']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                aspectRatio: 1,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: {
-                                size: 12
+            // Destroy existing chart if any
+            if (window.ewsLevelChartInstance) {
+                window.ewsLevelChartInstance.destroy();
+            }
+            
+            // Prepare data
+            const chartData = [
+                Math.max(stats.normal, 0),
+                Math.max(stats.peringatan, 0),
+                Math.max(stats.waspada, 0),
+                Math.max(stats.darurat, 0)
+            ];
+            
+            // If all are zero, show a placeholder
+            if (chartData[0] === 0 && chartData[1] === 0 && chartData[2] === 0 && chartData[3] === 0) {
+                chartData[0] = 1; // Show one slice for empty state
+            }
+            
+            window.ewsLevelChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Normal', 'Peringatan', 'Waspada', 'Darurat'],
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#f97316', '#dc2626']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error rendering EWS level chart:', error);
+        }
     },
 
     renderStatusChart(data) {
         const ctx = document.getElementById('ews-status-chart');
-        if (!ctx || typeof Chart === 'undefined') {
-            console.warn('Chart context not available or Chart.js not loaded');
+        if (!ctx) {
+            console.warn('EWS status chart context element not found');
+            return;
+        }
+        
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js not loaded, showing fallback');
             return;
         }
         
@@ -167,12 +258,28 @@ const EWS = {
         const tidakAktif = data.length - aktif;
         
         try {
-            new Chart(ctx, {
+            // Destroy existing chart if any
+            if (window.ewsStatusChartInstance) {
+                window.ewsStatusChartInstance.destroy();
+            }
+            
+            // Prepare data
+            const chartData = [
+                Math.max(aktif, 0),
+                Math.max(tidakAktif, 0)
+            ];
+            
+            // If all are zero, show a placeholder
+            if (chartData[0] === 0 && chartData[1] === 0) {
+                chartData[0] = 1; // Show one slice for empty state
+            }
+            
+            window.ewsStatusChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Aktif', 'Tidak Aktif'],
                     datasets: [{
-                        data: [aktif, tidakAktif],
+                        data: chartData,
                         backgroundColor: ['#10b981', '#6b7280']
                     }]
                 },
@@ -187,6 +294,17 @@ const EWS = {
                                 padding: 15,
                                 font: {
                                     size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
                                 }
                             }
                         }

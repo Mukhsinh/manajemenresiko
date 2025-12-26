@@ -4,182 +4,251 @@ const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
-// Calculate and generate diagram kartesius from SWOT analysis
+// Calculate and generate diagram kartesius from SWOT analysis - AUTO MODE FOR ALL UNITS
 router.post('/calculate', authenticateUser, async (req, res) => {
   try {
-    const { rencana_strategis_id, unit_kerja_id, tahun } = req.body;
+    const { unit_kerja_id, jenis, kategori, tahun } = req.body;
 
     if (!tahun) {
       return res.status(400).json({ error: 'Tahun wajib diisi' });
     }
 
-    // Get SWOT analysis summary
+    console.log('🔄 AUTO CALCULATION - Processing units for year:', tahun, 'filters:', { unit_kerja_id, jenis, kategori });
+
     const clientToUse = supabaseAdmin || supabase;
+    
+    // Get all SWOT analysis data for the year
     let analisisQuery = clientToUse
       .from('swot_analisis')
-      .select('kategori, score, bobot, kuantitas, unit_kerja_id, organization_id')
+      .select(`
+        kategori, score, bobot, kuantitas, unit_kerja_id, organization_id, objek_analisis,
+        master_work_units!unit_kerja_id(id, name, code, jenis, kategori)
+      `)
       .eq('tahun', parseInt(tahun));
     
-    // Apply organization filter (superadmin and admin can see all data)
+    // Apply organization filter
     analisisQuery = buildOrganizationFilter(analisisQuery, req.user);
-
-    if (rencana_strategis_id) {
-      analisisQuery = analisisQuery.eq('rencana_strategis_id', rencana_strategis_id);
-    }
-    
-    // If specific unit selected (not RUMAH_SAKIT and not empty)
-    if (unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT') {
-      analisisQuery = analisisQuery.eq('unit_kerja_id', unit_kerja_id);
-    }
 
     const { data: analisis, error: analisisError } = await analisisQuery;
 
     if (analisisError) throw analisisError;
 
+    console.log('📊 Found SWOT analysis data:', analisis?.length || 0, 'items');
+
     if (!analisis || analisis.length === 0) {
-      return res.status(400).json({ error: 'Tidak ada data analisis SWOT untuk dihitung' });
+      return res.status(400).json({ error: 'Tidak ada data analisis SWOT untuk dihitung. Pastikan data SWOT sudah diinput untuk tahun yang dipilih.' });
     }
 
-    // Calculate totals per category
-    const totals = {
-      Strength: 0,
-      Weakness: 0,
-      Opportunity: 0,
-      Threat: 0
-    };
-
-    // If RUMAH_SAKIT (aggregation), select highest score and bobot
-    if (unit_kerja_id === 'RUMAH_SAKIT') {
-      const grouped = {};
-      analisis.forEach(item => {
-        if (!grouped[item.kategori]) {
-          grouped[item.kategori] = [];
-        }
-        grouped[item.kategori].push(item);
-      });
-
-      // For each category, get items with highest score and bobot
-      Object.keys(grouped).forEach(kategori => {
-        const items = grouped[kategori];
-        // Sort by score desc, then bobot desc
-        items.sort((a, b) => {
-          if (b.score !== a.score) return b.score - a.score;
-          return b.bobot - a.bobot;
-        });
+    // Filter by unit kerja, jenis, kategori
+    let filteredAnalisis = analisis;
+    
+    if (unit_kerja_id && unit_kerja_id !== 'AGGREGATE') {
+      filteredAnalisis = filteredAnalisis.filter(item => item.unit_kerja_id === unit_kerja_id);
+    }
+    
+    if (jenis || kategori) {
+      filteredAnalisis = filteredAnalisis.filter(item => {
+        const workUnit = item.master_work_units;
+        if (!workUnit) return false;
         
-        // Take top items based on kuantitas (limit to reasonable number)
-        const topItems = items.slice(0, Math.min(5, items.length));
-        totals[kategori] = topItems.reduce((sum, item) => sum + (item.score || 0), 0);
-      });
-    } else {
-      // Normal calculation for specific unit or all
-      (analisis || []).forEach(item => {
-        if (totals[item.kategori] !== undefined) {
-          totals[item.kategori] += item.score || 0;
+        let matchJenis = true;
+        let matchKategori = true;
+        
+        if (jenis) {
+          matchJenis = workUnit.jenis === jenis;
         }
+        
+        if (kategori) {
+          matchKategori = workUnit.kategori === kategori;
+        }
+        
+        return matchJenis && matchKategori;
       });
     }
 
-    // Calculate axes
-    const x_axis = totals.Strength - totals.Weakness;
-    const y_axis = totals.Opportunity - totals.Threat;
+    // Get unique units from the filtered data
+    const uniqueUnits = [...new Set(filteredAnalisis.map(item => item.unit_kerja_id).filter(Boolean))];
+    console.log('🏢 Found unique units after filtering:', uniqueUnits.length);
 
-    // Determine kuadran and strategi
-    let kuadran, strategi;
-    if (x_axis >= 0 && y_axis >= 0) {
-      kuadran = 'I';
-      strategi = 'Growth';
-    } else if (x_axis < 0 && y_axis >= 0) {
-      kuadran = 'II';
-      strategi = 'Stability';
-    } else if (x_axis < 0 && y_axis < 0) {
-      kuadran = 'III';
-      strategi = 'Survival';
-    } else {
-      kuadran = 'IV';
-      strategi = 'Diversification';
-    }
+    // Get organization_id for the record
+    let organization_id = req.user.organizations?.[0] || null;
 
-    // Get unit name if specific unit selected
-    let unit_kerja_name = null;
-    if (unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT') {
-      const { data: unitData } = await clientToUse
-        .from('master_work_units')
-        .select('name')
-        .eq('id', unit_kerja_id)
-        .single();
-      unit_kerja_name = unitData?.name;
-    } else if (unit_kerja_id === 'RUMAH_SAKIT') {
-      unit_kerja_name = 'Rumah Sakit (Agregasi)';
-    }
-
-    // Check if diagram already exists for this combination
-    const existingQuery = clientToUse
-      .from('swot_diagram_kartesius')
-      .select('id')
-      .eq('user_id', req.user.id)
-      .eq('tahun', parseInt(tahun));
+    // Get unit names for better display
+    const { data: unitData } = await clientToUse
+      .from('master_work_units')
+      .select('id, name, code')
+      .in('id', uniqueUnits);
     
-    if (rencana_strategis_id) {
-      existingQuery.eq('rencana_strategis_id', rencana_strategis_id);
-    } else {
-      existingQuery.is('rencana_strategis_id', null);
-    }
-    
-    if (unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT') {
-      existingQuery.eq('unit_kerja_id', unit_kerja_id);
-    } else {
-      existingQuery.is('unit_kerja_id', null);
-    }
+    const unitMap = {};
+    (unitData || []).forEach(unit => {
+      unitMap[unit.id] = { name: unit.name, code: unit.code };
+    });
 
-    const { data: existing } = await existingQuery.single();
+    const results = [];
+    const errors = [];
 
-    let data, error;
-    
-    if (existing) {
-      // Update existing record
-      const result = await clientToUse
-        .from('swot_diagram_kartesius')
-        .update({
+    // Process each unit individually + aggregate if multiple units
+    const unitsToProcess = uniqueUnits.length > 1 ? [...uniqueUnits, 'AGGREGATE'] : uniqueUnits;
+
+    for (const unitId of unitsToProcess) {
+      try {
+        let unitAnalisis, unitName;
+        
+        if (unitId === 'AGGREGATE') {
+          // Process all units together
+          unitAnalisis = filteredAnalisis;
+          unitName = 'Semua Unit Kerja (Agregasi Otomatis)';
+        } else {
+          // Process individual unit
+          unitAnalisis = filteredAnalisis.filter(item => item.unit_kerja_id === unitId);
+          const unitInfo = unitMap[unitId];
+          unitName = unitInfo ? `${unitInfo.name} (${unitInfo.code})` : `Unit ${unitId.substring(0, 8)}...`;
+        }
+
+        if (unitAnalisis.length === 0) {
+          console.log(`⚠️ No data for unit: ${unitName}`);
+          continue;
+        }
+
+        // Calculate totals per category for this unit
+        const totals = {
+          Strength: 0,
+          Weakness: 0,
+          Opportunity: 0,
+          Threat: 0
+        };
+
+        // Group by category
+        const grouped = {};
+        unitAnalisis.forEach(item => {
+          if (!grouped[item.kategori]) {
+            grouped[item.kategori] = [];
+          }
+          grouped[item.kategori].push(item);
+        });
+
+        // Sum scores for each category
+        Object.keys(grouped).forEach(kategori => {
+          const items = grouped[kategori];
+          const categoryTotal = items.reduce((sum, item) => sum + (item.score || 0), 0);
+          
+          if (totals[kategori] !== undefined) {
+            totals[kategori] = categoryTotal;
+          }
+        });
+
+        // Calculate axes
+        const x_axis = totals.Strength - totals.Weakness;
+        const y_axis = totals.Opportunity - totals.Threat;
+
+        // Determine kuadran and strategi
+        let kuadran, strategi;
+        if (x_axis >= 0 && y_axis >= 0) {
+          kuadran = 'I';
+          strategi = 'Growth';
+        } else if (x_axis < 0 && y_axis >= 0) {
+          kuadran = 'II';
+          strategi = 'Stability';
+        } else if (x_axis < 0 && y_axis < 0) {
+          kuadran = 'III';
+          strategi = 'Survival';
+        } else {
+          kuadran = 'IV';
+          strategi = 'Diversification';
+        }
+
+        console.log(`📍 Unit ${unitName}: (${x_axis.toFixed(1)}, ${y_axis.toFixed(1)}) - Kuadran ${kuadran}`);
+
+        // Check if diagram already exists
+        let existingQuery = clientToUse
+          .from('swot_diagram_kartesius')
+          .select('id')
+          .eq('user_id', req.user.id)
+          .eq('tahun', parseInt(tahun))
+          .eq('unit_kerja_name', unitName);
+        
+        existingQuery = existingQuery.is('rencana_strategis_id', null);
+
+        const { data: existing } = await existingQuery.single();
+
+        const diagramData = {
           x_axis,
           y_axis,
           kuadran,
           strategi,
-          unit_kerja_name,
+          unit_kerja_name: unitName,
+          organization_id,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', existing.id)
-        .select()
-        .single();
-      
-      data = result.data;
-      error = result.error;
-    } else {
-      // Insert new record
-      const result = await clientToUse
-        .from('swot_diagram_kartesius')
-        .insert({
-          user_id: req.user.id,
-          rencana_strategis_id: rencana_strategis_id || null,
-          unit_kerja_id: unit_kerja_id && unit_kerja_id !== 'RUMAH_SAKIT' ? unit_kerja_id : null,
-          unit_kerja_name,
-          tahun: parseInt(tahun),
-          x_axis,
-          y_axis,
-          kuadran,
-          strategi
-        })
-        .select()
-        .single();
-      
-      data = result.data;
-      error = result.error;
+        };
+        
+        let data, error;
+        
+        if (existing) {
+          // Update existing record
+          const result = await clientToUse
+            .from('swot_diagram_kartesius')
+            .update(diagramData)
+            .eq('id', existing.id)
+            .select()
+            .single();
+          
+          data = result.data;
+          error = result.error;
+        } else {
+          // Insert new record
+          const insertData = {
+            user_id: req.user.id,
+            rencana_strategis_id: null,
+            unit_kerja_id: unitId === 'AGGREGATE' ? null : unitId,
+            tahun: parseInt(tahun),
+            ...diagramData
+          };
+          
+          const result = await clientToUse
+            .from('swot_diagram_kartesius')
+            .insert(insertData)
+            .select()
+            .single();
+          
+          data = result.data;
+          error = result.error;
+        }
+
+        if (error) {
+          console.error(`❌ Database error for ${unitName}:`, error);
+          errors.push({ unit: unitName, error: error.message });
+        } else {
+          results.push({
+            unit: unitName,
+            data,
+            calculation: {
+              totals,
+              axes: { x_axis, y_axis },
+              position: { kuadran, strategi }
+            }
+          });
+        }
+
+      } catch (unitError) {
+        console.error(`❌ Error processing unit ${unitId}:`, unitError);
+        errors.push({ unit: unitMap[unitId]?.name || unitId, error: unitError.message });
+      }
     }
 
-    if (error) throw error;
-    res.json({ message: 'Diagram berhasil dihitung', data });
+    console.log(`✅ AUTO CALCULATION completed: ${results.length} successful, ${errors.length} errors`);
+    
+    res.json({ 
+      message: `Diagram berhasil dihitung untuk ${results.length} unit kerja`,
+      results,
+      errors,
+      summary: {
+        total_processed: unitsToProcess.length,
+        successful: results.length,
+        failed: errors.length
+      }
+    });
   } catch (error) {
-    console.error('Diagram kartesius error:', error);
+    console.error('Diagram kartesius auto calculation error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -187,42 +256,28 @@ router.post('/calculate', authenticateUser, async (req, res) => {
 // Get all diagram kartesius
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const { rencana_strategis_id, unit_kerja_id, tahun } = req.query;
+    const { unit_kerja_id, jenis, kategori, tahun } = req.query;
     
     const clientToUse = supabaseAdmin || supabase;
     let query = clientToUse
       .from('swot_diagram_kartesius')
-      .select('*, rencana_strategis(nama_rencana)')
-      .order('tahun', { ascending: false })
-      .order('created_at', { ascending: false });
+      .select(`
+        *, 
+        rencana_strategis(nama_rencana),
+        master_work_units!unit_kerja_id(id, name, code, jenis, kategori)
+      `)
+      .order('tahun', { ascending: false });
 
-    // Apply organization filter through rencana_strategis relationship
-    // Since diagram kartesius doesn't have direct organization_id, we filter through rencana_strategis
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      // Get accessible rencana_strategis IDs first
-      let rsQuery = clientToUse
-        .from('rencana_strategis')
-        .select('id');
-      rsQuery = buildOrganizationFilter(rsQuery, req.user);
-      const { data: accessibleRS } = await rsQuery;
-      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
-      
-      if (accessibleRSIds.length > 0) {
-        query = query.in('rencana_strategis_id', accessibleRSIds);
-      } else {
-        // No accessible rencana strategis, return empty
-        return res.json([]);
-      }
-    }
+    // Apply organization filter
+    query = buildOrganizationFilter(query, req.user);
 
-    if (rencana_strategis_id) {
-      query = query.eq('rencana_strategis_id', rencana_strategis_id);
-    }
+    // Filter by unit kerja
     if (unit_kerja_id === 'RUMAH_SAKIT') {
       query = query.eq('unit_kerja_name', 'Rumah Sakit (Agregasi)');
     } else if (unit_kerja_id) {
       query = query.eq('unit_kerja_id', unit_kerja_id);
     }
+    
     if (tahun) {
       query = query.eq('tahun', parseInt(tahun));
     }
@@ -230,7 +285,38 @@ router.get('/', authenticateUser, async (req, res) => {
     const { data, error } = await query;
 
     if (error) throw error;
-    res.json(data || []);
+    
+    let filteredData = data || [];
+    
+    // Apply jenis and kategori filters on the result
+    if (jenis || kategori) {
+      filteredData = filteredData.filter(item => {
+        const workUnit = item.master_work_units;
+        if (!workUnit) return true; // Keep aggregated data
+        
+        let matchJenis = true;
+        let matchKategori = true;
+        
+        if (jenis) {
+          matchJenis = workUnit.jenis === jenis;
+        }
+        
+        if (kategori) {
+          matchKategori = workUnit.kategori === kategori;
+        }
+        
+        return matchJenis && matchKategori;
+      });
+    }
+    
+    // Sort by unit kerja code (001, 002, etc.)
+    filteredData.sort((a, b) => {
+      const codeA = a.master_work_units?.code || '999';
+      const codeB = b.master_work_units?.code || '999';
+      return codeA.localeCompare(codeB);
+    });
+
+    res.json(filteredData);
   } catch (error) {
     console.error('Diagram kartesius error:', error);
     res.status(500).json({ error: error.message });
@@ -351,4 +437,3 @@ router.delete('/:id', authenticateUser, async (req, res) => {
 });
 
 module.exports = router;
-

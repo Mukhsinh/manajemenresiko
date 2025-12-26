@@ -4,146 +4,386 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Manajemen Risiko</title>
+    <!-- Preconnect for faster loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome harus dimuat SEBELUM CSS custom - MULTIPLE CDN FALLBACK -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous" />
+    
+    <!-- Font Awesome - Single CDN (remove redundant) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
+    
+    <!-- App CSS -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/style-new.css">
     <link rel="stylesheet" href="/css/buku-pedoman.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/rencana-strategis-table.css">
+    <link rel="stylesheet" href="/css/rencana-strategis-enhanced.css">
+    <link rel="stylesheet" href="/css/swot-analisis-enhanced.css">
+    <link rel="stylesheet" href="/css/analisis-swot-fixed.css">
+    
+    <!-- Enhanced UI Fixes -->
     <style>
-        /* Fallback untuk Font Awesome jika CDN lambat */
-        @font-face {
-            font-family: 'Font Awesome 6 Free';
-            font-style: normal;
-            font-weight: 900;
-            font-display: swap;
-            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2') format('woff2');
-        }
-        @font-face {
-            font-family: 'Font Awesome 6 Brands';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2') format('woff2');
-        }
-        
-        /* CRITICAL: Force Font Awesome icons to display immediately - HIGHEST PRIORITY */
-        i.fas, i.fab, i.far, i.fal, i.fad,
-        .fas, .fab, .far, .fal, .fad,
-        [class*="fa-"],
-        i[class*="fa-"],
-        i[class^="fa-"],
-        .sidebar i,
-        .menu-item i,
-        .brand-icon i,
-        .header-icon i,
-        .notification-icon i,
-        .btn i,
-        button i,
-        a i,
-        .sidebar-section-label i {
-            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome", "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
-            font-style: normal !important;
-            font-weight: 900 !important;
+        /* ANALISIS SWOT FIXES */
+        .badge-kategori {
             display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            -webkit-font-smoothing: antialiased !important;
-            -moz-osx-font-smoothing: grayscale !important;
-            line-height: 1 !important;
-            text-rendering: auto !important;
-            speak: none;
-            text-transform: none;
-            letter-spacing: normal;
-            word-wrap: normal;
-            white-space: nowrap;
-            direction: ltr;
+            padding: 6px 10px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            vertical-align: baseline !important;
+            border-radius: 6px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         
-        i.fab, .fab {
-            font-family: "Font Awesome 6 Brands", "Font Awesome 5 Brands", "FontAwesome" !important;
-            font-weight: 400 !important;
+        .badge-strength { background-color: #10b981 !important; color: white !important; }
+        .badge-weakness { background-color: #ef4444 !important; color: white !important; }
+        .badge-opportunity { background-color: #3b82f6 !important; color: white !important; }
+        .badge-threat { background-color: #f59e0b !important; color: #1e293b !important; }
+        
+        .kategori-column {
+            width: 120px !important;
+            min-width: 120px !important;
+            max-width: 120px !important;
+            text-align: center !important;
+            padding: 8px 4px !important;
         }
         
-        /* Ensure icons have content and proper rendering - CRITICAL: Use Font Awesome font, NOT inherit */
-        i.fas::before, 
-        i.fab::before, 
-        i.far::before,
-        i[class*="fa-"]::before,
-        [class*="fa-"]::before,
-        .sidebar i::before,
-        .menu-item i::before,
-        .sidebar-section-label i::before,
-        .dropdown-icon::before {
+        /* SASARAN STRATEGI FIXES */
+        .perspektif-column {
+            width: 150px !important;
+            min-width: 150px !important;
+            max-width: 150px !important;
+            text-align: center !important;
+            padding: 8px 4px !important;
+            vertical-align: middle !important;
+        }
+        
+        .badge-perspektif {
             display: inline-block !important;
-            text-rendering: auto !important;
-            -webkit-font-smoothing: antialiased !important;
-            -moz-osx-font-smoothing: grayscale !important;
-            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
-            font-weight: 900 !important;
-            font-style: normal !important;
-            line-height: 1 !important;
+            padding: 6px 8px !important;
+            font-size: 10px !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            vertical-align: baseline !important;
+            border-radius: 6px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         
-        i.fab::before,
-        [class*="fa-"].fab::before {
-            font-family: "Font Awesome 6 Brands" !important;
-            font-weight: 400 !important;
+        .sasaran-table {
+            table-layout: fixed !important;
+            min-width: 1200px !important;
         }
         
-        /* Prevent body font-family from affecting icons */
-        body i,
-        body [class*="fa-"] {
-            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+        /* INDIKATOR KINERJA UTAMA FIXES */
+        .text-container-multiline {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            line-height: 1.3 !important;
+            word-break: break-word !important;
+            hyphens: auto !important;
+            font-size: 0.7rem !important;
+        }
+        
+        .text-container {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+            line-height: 1.4 !important;
+            word-break: break-word !important;
+            hyphens: auto !important;
+            display: block !important;
+            font-size: 0.75rem !important;
+        }
+        
+        .iku-table {
+            table-layout: fixed !important;
+            min-width: 1400px !important;
+        }
+        
+        /* COMMON ACTION BUTTONS */
+        .btn-icon {
+            padding: 6px 8px !important;
+            margin: 0 2px !important;
+            border-radius: 6px !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            font-size: 0.75rem !important;
+            min-width: 32px !important;
+        }
+        
+        .btn-edit { background-color: #17a2b8 !important; color: white !important; }
+        .btn-delete { background-color: #dc3545 !important; color: white !important; }
+        
+        .btn-icon:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+    </style>
+    
+    <!-- Critical: Supabase must load first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Non-critical libraries - defer loading -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Font Awesome icons */
+        .fas, .fab, .far, [class*="fa-"] {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+            font-style: normal;
+            -webkit-font-smoothing: antialiased;
+        }
+        .fas, .far { font-weight: 900; }
+        .fab { font-family: "Font Awesome 6 Brands" !important; font-weight: 400; }
+        
+        .error-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .error-container {
+            text-align: center;
+            color: white;
+            max-width: 600px;
+            padding: 2rem;
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .error-message {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .error-description {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .current-url {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            word-break: break-all;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .navigation-buttons .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+        
+        .navigation-buttons .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .error-suggestions {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+        
+        .error-suggestions h5 {
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .error-suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .error-suggestions li {
+            padding: 0.5rem 0;
+            opacity: 0.8;
+        }
+        
+        .error-suggestions li::before {
+            content: '→ ';
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-message {
+                font-size: 1.2rem;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .navigation-buttons .btn {
+                width: 200px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Login Screen -->
     <div id="login-screen" class="screen">
-        <div class="login-container">
-            <h1>Aplikasi Manajemen Risiko</h1>
-            <form id="login-form">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="login-email" required>
+        <div class="login-split-container">
+            <!-- Left Side - Login Form -->
+            <div class="login-form-container">
+                <div class="login-form-wrapper">
+                    <!-- Logo and Title -->
+                    <div class="login-header">
+                        <div class="login-logo">
+                            <i class="fas fa-triangle logo-icon"></i>
+                        </div>
+                        <h1 class="login-title">Manajemen Risiko Rumah Sakit</h1>
+                    </div>
+
+                    <!-- Welcome Section -->
+                    <div class="login-welcome">
+                        <h2 class="welcome-heading">Selamat Datang</h2>
+                        <p class="welcome-subtitle">Silakan masuk untuk mengakses dasbor risiko.</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" class="login-form">
+                        <div class="form-group login-input-group">
+                            <label for="login-email" class="login-label">Nama Pengguna</label>
+                            <div class="input-with-icon">
+                                <input type="email" id="login-email" class="login-input" placeholder="Masukkan nama pengguna" required>
+                                <i class="fas fa-user input-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group login-input-group">
+                            <label for="login-password" class="login-label">Kata Sandi</label>
+                            <div class="input-with-icon">
+                                <input type="password" id="login-password" class="login-input" placeholder="Masukkan kata sandi" required>
+                                <i class="fas fa-eye input-icon password-toggle-icon" id="password-toggle-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="forgot-password-link">
+                            <a href="#" id="forgot-password-link" class="forgot-link">Lupa Kata Sandi?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-login-primary">
+                            <span>Masuk</span>
+                        </button>
+                    </form>
+
+                    <!-- Register Form (Hidden by default) -->
+                    <form id="register-form" class="login-form" style="display: none;">
+                        <div class="form-group login-input-group">
+                            <label for="register-name" class="login-label">Nama Lengkap</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="register-name" class="login-input" required>
+                                <i class="fas fa-user input-icon"></i>
+                            </div>
+                        </div>
+                        <div class="form-group login-input-group">
+                            <label for="register-email" class="login-label">Email</label>
+                            <div class="input-with-icon">
+                                <input type="email" id="register-email" class="login-input" required>
+                                <i class="fas fa-envelope input-icon"></i>
+                            </div>
+                        </div>
+                        <div class="form-group login-input-group">
+                            <label for="register-password" class="login-label">Password</label>
+                            <div class="input-with-icon">
+                                <input type="password" id="register-password" class="login-input" required>
+                                <i class="fas fa-eye input-icon"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-login-primary">Daftar</button>
+                        <p class="switch-form">Sudah punya akun? <a href="#" id="show-login">Login</a></p>
+                    </form>
+
+                    <!-- Auth Message -->
+                    <div id="auth-message" class="message"></div>
+
+                    <!-- Copyright -->
+                    <div class="login-copyright">
+                        <p>Pintar MR@2025. Mukhsin Hadi. Hak cipta dilindungi oleh Undang-Undang</p>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="login-password" required>
+            </div>
+
+            <!-- Right Side - Background Image with Overlay -->
+            <div class="login-image-container">
+                <div class="login-image-background"></div>
+                <div class="login-image-overlay">
+                    <div class="quote-box">
+                        <div class="quote-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <p class="quote-text">"Risiko Tidak Bisa Dihilangkan, Tapi Bisa Dikelola dengan efektif jika diidentifikasi sejak awal."</p>
+                        <p class="portal-text">PORTAL MANAJEMEN RISIKO</p>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
-                <p class="switch-form">Belum punya akun? <a href="#" id="show-register">Daftar</a></p>
-            </form>
-            <form id="register-form" style="display: none;">
-                <div class="form-group">
-                    <label>Nama Lengkap</label>
-                    <input type="text" id="register-name" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="register-email" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="register-password" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Daftar</button>
-                <p class="switch-form">Sudah punya akun? <a href="#" id="show-login">Login</a></p>
-            </form>
-            <div id="auth-message" class="message"></div>
+            </div>
         </div>
     </div>
 
@@ -589,7 +829,7 @@
                                         <button class="btn btn-success" onclick="loadRiskRegister()">
                                             <i class="fas fa-sync"></i> Refresh Data
                                         </button>
-                                        <button class="btn btn-info" onclick="window.open('/api/reports/risk-register/excel', '_blank')">
+                                        <button class="btn btn-info" onclick="downloadRiskRegisterExcel()">
                                             <i class="fas fa-file-excel"></i> Export Excel
                                         </button>
                                     </div>
@@ -989,6 +1229,80 @@
                 </div>
                 <div id="master-data-content"></div>
                     </div>
+
+                    <!-- 404 Error Page -->
+                    <div id="404" class="page-content">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-exclamation-triangle"></i> Halaman Tidak Ditemukan</h1>
+                            <p class="page-subtitle">URL yang Anda akses tidak ditemukan</p>
+                        </div>
+                        <div class="error-content">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="error-icon">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #ffc107; margin-bottom: 1rem;"></i>
+                                    </div>
+                                    <h3>Oops! Halaman Tidak Ditemukan</h3>
+                                    <p class="text-muted mb-4">URL yang Anda cari tidak tersedia atau telah dipindahkan.</p>
+                                    
+                                    <div class="navigation-options">
+                                        <h5>Halaman yang Tersedia:</h5>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="nav-section">
+                                                    <h6><i class="fas fa-chart-pie"></i> Analisis BSC</h6>
+                                                    <ul class="nav-links">
+                                                        <li><a href="/dashboard" class="nav-link-404">Dashboard</a></li>
+                                                        <li><a href="/visi-misi" class="nav-link-404">Visi dan Misi</a></li>
+                                                        <li><a href="/rencana-strategis" class="nav-link-404">Rencana Strategis</a></li>
+                                                        <li><a href="/analisis-swot" class="nav-link-404">Analisis SWOT</a></li>
+                                                        <li><a href="/diagram-kartesius" class="nav-link-404">Diagram Kartesius</a></li>
+                                                        <li><a href="/matriks-tows" class="nav-link-404">Matriks TOWS</a></li>
+                                                        <li><a href="/sasaran-strategi" class="nav-link-404">Sasaran Strategi</a></li>
+                                                        <li><a href="/strategic-map" class="nav-link-404">Strategic Map</a></li>
+                                                        <li><a href="/indikator-kinerja-utama" class="nav-link-404">Indikator Kinerja Utama</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="nav-section">
+                                                    <h6><i class="fas fa-shield-alt"></i> Manajemen Risiko</h6>
+                                                    <ul class="nav-links">
+                                                        <li><a href="/manajemen-risiko/input-data" class="nav-link-404">Input Data Risiko</a></li>
+                                                        <li><a href="/manajemen-risiko/monitoring-evaluasi" class="nav-link-404">Monitoring & Evaluasi</a></li>
+                                                        <li><a href="/manajemen-risiko/peluang" class="nav-link-404">Peluang</a></li>
+                                                        <li><a href="/manajemen-risiko/risk-profile" class="nav-link-404">Risk Profile</a></li>
+                                                        <li><a href="/manajemen-risiko/residual-risk" class="nav-link-404">Residual Risk</a></li>
+                                                        <li><a href="/manajemen-risiko/kri" class="nav-link-404">Key Risk Indicator</a></li>
+                                                        <li><a href="/manajemen-risiko/loss-event" class="nav-link-404">Loss Event</a></li>
+                                                        <li><a href="/manajemen-risiko/ews" class="nav-link-404">Early Warning System</a></li>
+                                                        <li><a href="/manajemen-risiko/risk-register" class="nav-link-404">Risk Register</a></li>
+                                                    </ul>
+                                                </div>
+                                                <div class="nav-section">
+                                                    <h6><i class="fas fa-cog"></i> Lainnya</h6>
+                                                    <ul class="nav-links">
+                                                        <li><a href="/laporan" class="nav-link-404">Laporan</a></li>
+                                                        <li><a href="/master-data" class="nav-link-404">Master Data</a></li>
+                                                        <li><a href="/buku-pedoman" class="nav-link-404">Buku Pedoman</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button class="btn btn-primary" onclick="goToDashboard()">
+                                            <i class="fas fa-home"></i> Kembali ke Dashboard
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="goBack()">
+                                            <i class="fas fa-arrow-left"></i> Kembali
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -997,228 +1311,28 @@
     <script src="/js/config.js"></script>
     <script src="/js/services/apiService.js"></script>
     <script src="/js/services/authService.js"></script>
+    <script src="/js/auth-state-manager.js"></script>
     <script src="/js/button-fix.js"></script>
+    
+    <!-- Enhanced Router System -->
+    <script src="/js/router-enhanced.js" onerror="console.error('Failed to load router-enhanced.js')"></script>
+    <script src="/js/router-init.js" onerror="console.error('Failed to load router-init.js')"></script>
+    
+    <!-- Legacy Router System (Fallback) -->
+    <script src="/js/RouterErrorHandler.js" onerror="console.error('Failed to load RouterErrorHandler.js')"></script>
+    <script src="/js/RouterManager.js" onerror="console.error('Failed to load RouterManager.js')"></script>
+    <script src="/js/router.js" onerror="console.error('Failed to load router.js')"></script>
+    <script src="/js/route-config.js" onerror="console.error('Failed to load route-config.js')"></script>
+    <script src="/js/404-handler.js" onerror="console.error('Failed to load 404-handler.js')"></script>
+    
+    <!-- Login Loop Prevention - CRITICAL: Load after router but before router-integration -->
+    <script src="/js/login-loop-prevention.js" onerror="console.error('Failed to load login-loop-prevention.js')"></script>
+    
+    <script src="/js/router-integration.js" onerror="console.error('Failed to load router-integration.js')"></script>
     <script src="/js/buku-pedoman.js"></script>
-    <script>
-        // CRITICAL: Test if Font Awesome is loaded
-        (function() {
-            function testFontAwesome() {
-                const testEl = document.createElement('i');
-                testEl.className = 'fas fa-check';
-                testEl.style.position = 'absolute';
-                testEl.style.visibility = 'hidden';
-                testEl.style.fontSize = '1px';
-                document.body.appendChild(testEl);
-                
-                const computed = window.getComputedStyle(testEl, ':before');
-                const fontFamily = computed.getPropertyValue('font-family');
-                const content = computed.getPropertyValue('content');
-                
-                document.body.removeChild(testEl);
-                
-                if (!fontFamily.includes('Font Awesome') && !fontFamily.includes('FontAwesome')) {
-                    console.error('Font Awesome CSS not loaded! Font family:', fontFamily);
-                    // Try to load Font Awesome again
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-                    link.crossOrigin = 'anonymous';
-                    document.head.appendChild(link);
-                } else {
-                    console.log('Font Awesome CSS loaded successfully');
-                }
-            }
-            
-            // Test after a delay to ensure CSS is loaded
-            setTimeout(testFontAwesome, 500);
-        })();
-        
-        // CRITICAL: Ensure Font Awesome icons display correctly - AGGRESSIVE FIX
-        (function() {
-            function forceIconDisplay() {
-                // Force all icons to use Font Awesome font-family with setProperty for !important
-                const allIcons = document.querySelectorAll('i[class*="fa-"], [class*="fa-"], i.fas, i.fab, i.far, .fas, .fab, .far');
-                let fixedCount = 0;
-                
-                allIcons.forEach(function(icon) {
-                    // Skip if already processed
-                    if (icon.dataset.faFixed === 'true') return;
-                    
-                    if (icon.classList.contains('fab')) {
-                        icon.style.setProperty('font-family', '"Font Awesome 6 Brands", "Font Awesome 5 Brands", "FontAwesome"', 'important');
-                        icon.style.setProperty('font-weight', '400', 'important');
-                    } else {
-                        icon.style.setProperty('font-family', '"Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome"', 'important');
-                        icon.style.setProperty('font-weight', '900', 'important');
-                    }
-                    icon.style.setProperty('font-style', 'normal', 'important');
-                    icon.style.setProperty('display', 'inline-flex', 'important');
-                    icon.style.setProperty('align-items', 'center', 'important');
-                    icon.style.setProperty('justify-content', 'center', 'important');
-                    icon.style.setProperty('visibility', 'visible', 'important');
-                    icon.style.setProperty('opacity', '1', 'important');
-                    icon.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
-                    icon.style.setProperty('-moz-osx-font-smoothing', 'grayscale', 'important');
-                    icon.style.setProperty('text-rendering', 'auto', 'important');
-                    icon.style.setProperty('line-height', '1', 'important');
-                    icon.dataset.faFixed = 'true';
-                    fixedCount++;
-                });
-                
-                // Force dropdown icons specifically
-                const dropdownIcons = document.querySelectorAll('.dropdown-icon, i.dropdown-icon, .sidebar-section-label i.fa-chevron-down, .sidebar-section-label i.fa-chevron-up');
-                dropdownIcons.forEach(function(icon) {
-                    icon.style.setProperty('font-family', '"Font Awesome 6 Free", "FontAwesome"', 'important');
-                    icon.style.setProperty('font-weight', '900', 'important');
-                    icon.style.setProperty('display', 'inline-flex', 'important');
-                    icon.style.setProperty('align-items', 'center', 'important');
-                    icon.style.setProperty('justify-content', 'center', 'important');
-                    icon.style.setProperty('visibility', 'visible', 'important');
-                    icon.style.setProperty('opacity', '1', 'important');
-                    icon.style.setProperty('color', '#ffffff', 'important');
-                    
-                    // Force ::before pseudo-element to use Font Awesome
-                    const style = document.createElement('style');
-                    style.textContent = `
-                        .dropdown-icon::before,
-                        i.dropdown-icon::before,
-                        .sidebar-section-label i.fa-chevron-down::before,
-                        .sidebar-section-label i.fa-chevron-up::before {
-                            font-family: "Font Awesome 6 Free", "FontAwesome" !important;
-                            font-weight: 900 !important;
-                            font-style: normal !important;
-                        }
-                    `;
-                    if (!document.getElementById('fa-dropdown-fix')) {
-                        style.id = 'fa-dropdown-fix';
-                        document.head.appendChild(style);
-                    }
-                });
-                
-                // Force menu item icons to have proper spacing
-                const menuItemIcons = document.querySelectorAll('.menu-item i');
-                menuItemIcons.forEach(function(icon) {
-                    if (!icon.classList.contains('dropdown-icon')) {
-                        icon.style.setProperty('margin-right', '0.75rem', 'important');
-                        icon.style.setProperty('width', '20px', 'important');
-                        icon.style.setProperty('min-width', '20px', 'important');
-                        icon.style.setProperty('font-size', '1.1rem', 'important');
-                        icon.style.setProperty('color', '#ffffff', 'important');
-                    }
-                });
-                
-                // Force sidebar section label icons (first icon) to be visible
-                const sectionLabelIcons = document.querySelectorAll('.sidebar-section-label > i:first-child');
-                sectionLabelIcons.forEach(function(icon) {
-                    icon.style.setProperty('width', '20px', 'important');
-                    icon.style.setProperty('min-width', '20px', 'important');
-                    icon.style.setProperty('font-size', '1rem', 'important');
-                    icon.style.setProperty('color', '#ffffff', 'important');
-                    icon.style.setProperty('margin-right', '0.75rem', 'important');
-                    icon.style.setProperty('display', 'inline-flex', 'important');
-                    icon.style.setProperty('visibility', 'visible', 'important');
-                    icon.style.setProperty('opacity', '1', 'important');
-                    icon.style.setProperty('font-family', '"Font Awesome 6 Free", "FontAwesome"', 'important');
-                    icon.style.setProperty('font-weight', '900', 'important');
-                });
-                
-                // Add style for ::before pseudo-element of all icons
-                if (!document.getElementById('fa-before-fix')) {
-                    const style = document.createElement('style');
-                    style.id = 'fa-before-fix';
-                    style.textContent = `
-                        .sidebar i::before,
-                        .menu-item i::before,
-                        .sidebar-section-label i::before,
-                        .brand-icon i::before,
-                        .header-icon i::before,
-                        .notification-icon i::before,
-                        i[class*="fa-"]::before,
-                        [class*="fa-"]::before {
-                            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
-                            font-weight: 900 !important;
-                            font-style: normal !important;
-                            display: inline-block !important;
-                            -webkit-font-smoothing: antialiased !important;
-                            -moz-osx-font-smoothing: grayscale !important;
-                        }
-                        i.fab::before,
-                        [class*="fa-"].fab::before {
-                            font-family: "Font Awesome 6 Brands" !important;
-                            font-weight: 400 !important;
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-                
-                // Force notification icons to be clearly visible
-                const notificationIcons = document.querySelectorAll('.notification-icon i');
-                notificationIcons.forEach(function(icon) {
-                    icon.style.setProperty('font-size', '1.3rem', 'important');
-                    icon.style.setProperty('width', '100%', 'important');
-                    icon.style.setProperty('height', '100%', 'important');
-                });
-                
-                // Force header icons to be clearly visible
-                const headerIcons = document.querySelectorAll('.header-icon i, .btn-icon i');
-                headerIcons.forEach(function(icon) {
-                    icon.style.setProperty('font-size', '1.2rem', 'important');
-                    icon.style.setProperty('width', '100%', 'important');
-                    icon.style.setProperty('height', '100%', 'important');
-                });
-                
-                if (fixedCount > 0) {
-                    console.log('Applied Font Awesome styles to', fixedCount, 'icons');
-                }
-            }
-            
-            // Run immediately and on various events
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', forceIconDisplay);
-            } else {
-                forceIconDisplay();
-            }
-            
-            window.addEventListener('load', function() {
-                setTimeout(forceIconDisplay, 100);
-                setTimeout(forceIconDisplay, 300);
-                setTimeout(forceIconDisplay, 500);
-            });
-            
-            // Also run after delays to catch dynamically added icons
-            setTimeout(forceIconDisplay, 500);
-            setTimeout(forceIconDisplay, 1000);
-            setTimeout(forceIconDisplay, 2000);
-            
-            // Use MutationObserver to catch dynamically added icons
-            if (window.MutationObserver) {
-                const observer = new MutationObserver(function(mutations) {
-                    let shouldFix = false;
-                    mutations.forEach(function(mutation) {
-                        if (mutation.addedNodes.length > 0) {
-                            mutation.addedNodes.forEach(function(node) {
-                                if (node.nodeType === 1) {
-                                    if (node.matches && (node.matches('i[class*="fa-"]') || node.querySelector('i[class*="fa-"]'))) {
-                                        shouldFix = true;
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    if (shouldFix) {
-                        setTimeout(forceIconDisplay, 100);
-                    }
-                });
-                
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true
-                });
-            }
-        })();
-    </script>
     <script src="/js/dashboard.js"></script>
     <script src="/js/chat.js"></script>
+    <script src="/js/navigation.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/visi-misi.js"></script>
     <script src="/js/rencana-strategis.js"></script>

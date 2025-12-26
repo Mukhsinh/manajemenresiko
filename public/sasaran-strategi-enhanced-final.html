@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sasaran Strategi - Enhanced Final</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Enhanced Sasaran Strategi Styles */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+        }
+        
+        .filter-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* FIXED: Table Container with proper overflow handling */
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        .sasaran-table {
+            min-width: 1200px;
+            font-size: 0.875rem;
+            margin: 0;
+            table-layout: fixed;
+            width: 100%;
+        }
+        
+        .sasaran-table td {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 0;
+        }
+        
+        .card-body {
+            overflow-x: hidden;
+            overflow-y: visible;
+        }
+        
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .form-control, .form-select {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .filter-section {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .sasaran-table th {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 12px 8px;
+            color: #495057;
+        }
+        
+        .sasaran-table td {
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+            padding: 10px 8px;
+        }
+        
+        /* Column Styles */
+        .rencana-column {
+            width: 200px;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+        
+        .sasaran-column {
+            width: 300px;
+            max-width: 300px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        /* FIXED: Perspektif Column - Badge Container with proper constraints */
+        .perspektif-column {
+            width: 150px;
+            min-width: 150px;
+            max-width: 150px;
+            text-align: center;
+            padding: 8px 4px !important;
+            vertical-align: middle;
+        }
+        
+        /* FIXED: Perspektif Badge - Properly contained within column */
+        .badge-perspektif {
+            display: inline-block;
+            padding: 6px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 6px;
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Perspektif Badge Colors */
+        .badge-es { 
+            background-color: #17a2b8; 
+            color: white;
+        }
+        
+        .badge-ibp { 
+            background-color: #28a745; 
+            color: white;
+        }
+        
+        .badge-lg { 
+            background-color: #ffc107; 
+            color: #212529;
+        }
+        
+        .badge-fin { 
+            background-color: #dc3545; 
+            color: white;
+        }
+        
+        .tows-column {
+            width: 250px;
+            max-width: 250px;
+            word-wrap: break-word;
+        }
+        
+        .aksi-column {
+            width: 100px;
+            text-align: center;
+        }
+        
+        /* TOWS Badge Styles */
+        .badge-tows {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        
+        .badge-so { background-color: #28a745; color: white; }
+        .badge-wo { background-color: #17a2b8; color: white; }
+        .badge-st { background-color: #ffc107; color: #212529; }
+        .badge-wt { background-color: #dc3545; color: white; }
+        
+        /* Action Buttons */
+        .btn-icon {
+            padding: 6px 8px;
+            margin: 0 2px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.75rem;
+            min-width: 32px;
+        }
+        
+        .btn-edit {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .perspektif-column {
+                width: 120px;
+                min-width: 120px;
+                max-width: 120px;
+            }
+            
+            .badge-perspektif {
+                font-size: 9px;
+                padding: 4px 6px;
+            }
+            
+            .sasaran-table {
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .perspektif-column {
+                width: 100px;
+                min-width: 100px;
+                max-width: 100px;
+            }
+            
+            .badge-perspektif {
+                font-size: 8px;
+                padding: 3px 4px;
+            }
+        }
+        
+        /* Loading and No Data States */
+        .loading, .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .loading i, .no-data i {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-1"><i class="fas fa-bullseye"></i> Sasaran Strategi</h2>
+                        <p class="mb-0 opacity-75">Kelola sasaran strategi dengan perspektif yang jelas dan terintegrasi</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+                            <button class="btn btn-info" onclick="autoCorrelate()" title="Korelasikan otomatis dengan TOWS Strategi menggunakan AI">
+                                <i class="fas fa-magic"></i> Auto Korelasi AI
+                            </button>
+                            <button class="btn btn-success" onclick="downloadReport()">
+                                <i class="fas fa-download"></i> Unduh Laporan
+                            </button>
+                            <button class="btn btn-primary" onclick="showModal()">
+                                <i class="fas fa-plus"></i> Tambah Sasaran
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Rencana Strategis</label>
+                    <select class="form-control" id="filter-rencana-strategis" onchange="applyFilter()">
+                        <option value="">Semua</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">TOWS Strategi</label>
+                    <select class="form-control" id="filter-tows-strategi" onchange="applyFilter()">
+                        <option value="">Semua</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Perspektif</label>
+                    <select class="form-control" id="filter-perspektif" onchange="applyFilter()">
+                        <option value="">Semua</option>
+                        <option value="ES">ES (Eksternal Stakeholder)</option>
+                        <option value="IBP">IBP (Internal Business Process)</option>
+                        <option value="LG">LG (Learning & Growth)</option>
+                        <option value="Fin">Fin (Financial)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card border-0">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="mb-0">Data Sasaran Strategi</h5>
+                <small class="text-muted">Badge perspektif diperbaiki agar tidak overflow dari tabel</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <table class="table table-striped sasaran-table" id="sasaranTable">
+                        <thead>
+                            <tr>
+                                <th class="rencana-column">Rencana Strategis</th>
+                                <th class="sasaran-column">Sasaran</th>
+                                <th class="perspektif-column">Perspektif</th>
+                                <th class="tows-column">TOWS Strategi</th>
+                                <th class="aksi-column">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sasaranTableBody">
+                            <tr>
+                                <td colspan="5" class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Tambah Sasaran Strategi</h3>
+                <button class="modal-close" onclick="closeModal('dataModal')">&times;</button>
+            </div>
+            <form id="sasaranForm" onsubmit="saveData(event)">
+                <div style="padding: 1.5rem;">
+                    <div class="mb-3">
+                        <label class="form-label">Rencana Strategis *</label>
+                        <select class="form-control" id="rencanaStrategis" required>
+                            <option value="">Pilih Rencana Strategis</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">TOWS Strategi</label>
+                        <select class="form-control" id="towsStrategi">
+                            <option value="">Pilih TOWS Strategi (Opsional)</option>
+                        </select>
+                        <small class="form-text text-muted">Pilih strategi TOWS yang relevan dengan sasaran ini (opsional)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Perspektif *</label>
+                        <select class="form-control" id="perspektif" required>
+                            <option value="">Pilih Perspektif</option>
+                            <option value="ES">ES (Eksternal Stakeholder)</option>
+                            <option value="IBP">IBP (Internal Business Process)</option>
+                            <option value="LG">LG (Learning & Growth)</option>
+                            <option value="Fin">Fin (Financial)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sasaran *</label>
+                        <textarea class="form-control" id="sasaran" required rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('dataModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allData = [];
+        let rencanaStrategis = [];
+        let towsStrategi = [];
+        let currentEditId = null;
+        let filters = {
+            rencana_strategis_id: '',
+            tows_strategi_id: '',
+            perspektif: ''
+        };
+
+        // API Configuration
+        const API_BASE_URL = window.location.origin;
+        
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            };
+            
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...defaultOptions,
+                ...options,
+                headers: { ...defaultOptions.headers, ...options.headers }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+
+        async function loadInitialData() {
+            try {
+                console.log('Loading Sasaran Strategi data...');
+                
+                const [sasaran, rencana, tows] = await Promise.all([
+                    apiCall('/api/sasaran-strategi?' + new URLSearchParams(filters)),
+                    apiCall('/api/rencana-strategis'),
+                    apiCall('/api/matriks-tows')
+                ]);
+                
+                allData = sasaran || [];
+                rencanaStrategis = rencana || [];
+                towsStrategi = tows || [];
+                
+                populateFilters();
+                populateFormOptions();
+                renderTable();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+
+        function populateFilters() {
+            // Populate Rencana Strategis filter
+            const rencanaSelect = document.getElementById('filter-rencana-strategis');
+            rencanaSelect.innerHTML = '<option value="">Semua</option>';
+            rencanaStrategis.forEach(r => {
+                rencanaSelect.innerHTML += `<option value="${r.id}" ${filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.nama_rencana}</option>`;
+            });
+
+            // Populate TOWS filter
+            const towsSelect = document.getElementById('filter-tows-strategi');
+            towsSelect.innerHTML = '<option value="">Semua</option>';
+            towsStrategi.forEach(t => {
+                const shortStrategy = t.strategi.length > 40 ? t.strategi.substring(0, 40) + '...' : t.strategi;
+                towsSelect.innerHTML += `<option value="${t.id}" ${filters.tows_strategi_id === t.id ? 'selected' : ''} title="${t.strategi}">${t.tipe_strategi}: ${shortStrategy}</option>`;
+            });
+        }
+
+        function populateFormOptions() {
+            // Populate Rencana Strategis in form
+            const rencanaForm = document.getElementById('rencanaStrategis');
+            rencanaForm.innerHTML = '<option value="">Pilih Rencana Strategis</option>';
+            rencanaStrategis.forEach(r => {
+                rencanaForm.innerHTML += `<option value="${r.id}">${r.nama_rencana}</option>`;
+            });
+
+            // Populate TOWS in form
+            const towsForm = document.getElementById('towsStrategi');
+            towsForm.innerHTML = '<option value="">Pilih TOWS Strategi (Opsional)</option>';
+            towsStrategi.forEach(t => {
+                const shortStrategy = t.strategi.length > 60 ? t.strategi.substring(0, 60) + '...' : t.strategi;
+                towsForm.innerHTML += `<option value="${t.id}" title="${t.strategi}">${t.tipe_strategi}: ${shortStrategy}</option>`;
+            });
+        }
+
+        async function applyFilter() {
+            filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
+            filters.tows_strategi_id = document.getElementById('filter-tows-strategi')?.value || '';
+            filters.perspektif = document.getElementById('filter-perspektif')?.value || '';
+            
+            await loadInitialData();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('sasaranTableBody');
+            
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-info-circle"></i> Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allData.map(item => `
+                <tr>
+                    <td class="rencana-column">${item.rencana_strategis?.nama_rencana || '-'}</td>
+                    <td class="sasaran-column">${item.sasaran}</td>
+                    <td class="perspektif-column">
+                        ${item.perspektif ? `
+                            <span class="badge-perspektif badge-${item.perspektif.toLowerCase()}">
+                                ${getPerspektifLabel(item.perspektif)}
+                            </span>
+                        ` : '<span style="color: #999; font-style: italic;">Tidak ada perspektif</span>'}
+                    </td>
+                    <td class="tows-column">
+                        ${item.swot_tows_strategi ? `
+                            <div>
+                                <span class="badge-tows badge-${item.swot_tows_strategi.tipe_strategi.toLowerCase()}">${item.swot_tows_strategi.tipe_strategi}</span><br>
+                                <small style="color: #666; line-height: 1.3;">
+                                    ${item.swot_tows_strategi.strategi.length > 80 ? 
+                                      item.swot_tows_strategi.strategi.substring(0, 80) + '...' : 
+                                      item.swot_tows_strategi.strategi}
+                                </small>
+                            </div>
+                        ` : '<span style="color: #999; font-style: italic;">Tidak terkait TOWS</span>'}
+                    </td>
+                    <td class="aksi-column">
+                        <button class="btn-icon btn-edit" onclick="window.sasaranStrategiModule?.edit('${item.id}') || SasaranStrategiModule.edit('${item.id}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="window.sasaranStrategiModule?.delete('${item.id}') || SasaranStrategiModule.delete('${item.id}')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getPerspektifLabel(perspektif) {
+            const labels = {
+                'ES': 'Eksternal Stakeholder',
+                'IBP': 'Internal Business Process',
+                'LG': 'Learning & Growth',
+                'Fin': 'Financial'
+            };
+            return labels[perspektif] || perspektif;
+        }
+
+        function showError(message) {
+            const tbody = document.getElementById('sasaranTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Modal Functions
+        function showModal(id = null) {
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = id ? 'Edit Sasaran Strategi' : 'Tambah Sasaran Strategi';
+            document.getElementById('sasaranForm').reset();
+            
+            if (id) {
+                loadForEdit(id);
+            }
+            
+            document.getElementById('dataModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        async function loadForEdit(id) {
+            try {
+                const data = await apiCall(`/api/sasaran-strategi/${id}`);
+                document.getElementById('rencanaStrategis').value = data.rencana_strategis_id || '';
+                document.getElementById('towsStrategi').value = data.tows_strategi_id || '';
+                document.getElementById('perspektif').value = data.perspektif || '';
+                document.getElementById('sasaran').value = data.sasaran || '';
+            } catch (error) {
+                alert('Error loading data: ' + error.message);
+            }
+        }
+
+        async function saveData(event) {
+            event.preventDefault();
+            
+            try {
+                const formData = {
+                    rencana_strategis_id: document.getElementById('rencanaStrategis').value,
+                    tows_strategi_id: document.getElementById('towsStrategi').value || null,
+                    perspektif: document.getElementById('perspektif').value,
+                    sasaran: document.getElementById('sasaran').value
+                };
+
+                if (currentEditId) {
+                    await apiCall(`/api/sasaran-strategi/${currentEditId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(formData)
+                    });
+                } else {
+                    await apiCall('/api/sasaran-strategi', {
+                        method: 'POST',
+                        body: JSON.stringify(formData)
+                    });
+                }
+
+                closeModal('dataModal');
+                await loadInitialData();
+                alert('Sasaran strategi berhasil disimpan');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function editData(id) {
+            showModal(id);
+        }
+
+        async function deleteData(id) {
+            if (!confirm('Yakin ingin menghapus sasaran strategi ini?')) return;
+            
+            try {
+                await apiCall(`/api/sasaran-strategi/${id}`, { method: 'DELETE' });
+                await loadInitialData();
+                alert('Sasaran strategi berhasil dihapus');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function downloadReport() {
+            try {
+                if (allData.length === 0) {
+                    alert('Tidak ada data untuk diunduh');
+                    return;
+                }
+
+                // Prepare data for Excel
+                const excelData = allData.map((item, index) => ({
+                    'No': index + 1,
+                    'Rencana Strategis': item.rencana_strategis?.nama_rencana || '-',
+                    'Sasaran': item.sasaran,
+                    'Perspektif': getPerspektifLabel(item.perspektif),
+                    'Tipe TOWS': item.swot_tows_strategi?.tipe_strategi || '-',
+                    'Strategi TOWS': item.swot_tows_strategi?.strategi || '-',
+                    'Tanggal Dibuat': new Date(item.created_at).toLocaleDateString('id-ID'),
+                    'Terakhir Diupdate': new Date(item.updated_at).toLocaleDateString('id-ID')
+                }));
+
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelData);
+
+                // Set column widths
+                const colWidths = [
+                    { wch: 5 },   // No
+                    { wch: 25 },  // Rencana Strategis
+                    { wch: 40 },  // Sasaran
+                    { wch: 20 },  // Perspektif
+                    { wch: 10 },  // Tipe TOWS
+                    { wch: 50 },  // Strategi TOWS
+                    { wch: 15 },  // Tanggal Dibuat
+                    { wch: 15 }   // Terakhir Diupdate
+                ];
+                ws['!cols'] = colWidths;
+
+                XLSX.utils.book_append_sheet(wb, ws, 'Sasaran Strategi');
+
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `Laporan_Sasaran_Strategi_${timestamp}.xlsx`;
+
+                // Download file
+                XLSX.writeFile(wb, filename);
+
+                alert('Laporan berhasil diunduh!');
+            } catch (error) {
+                console.error('Error downloading report:', error);
+                alert('Gagal mengunduh laporan: ' + error.message);
+            }
+        }
+
+        async function autoCorrelate() {
+            if (!confirm('Apakah Anda yakin ingin mengkorelasikan sasaran strategi dengan TOWS strategi secara otomatis menggunakan AI?')) {
+                return;
+            }
+
+            try {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                button.disabled = true;
+
+                const result = await apiCall('/api/sasaran-strategi/auto-correlate', { method: 'POST' });
+                
+                // Restore button
+                button.innerHTML = originalText;
+                button.disabled = false;
+
+                if (result.correlations && result.correlations.length > 0) {
+                    alert(`Berhasil mengkorelasikan ${result.correlations.length} sasaran strategi`);
+                    await loadInitialData();
+                } else {
+                    alert(result.message || 'Tidak ada korelasi baru yang dibuat');
+                }
+            } catch (error) {
+                console.error('Auto-correlate error:', error);
+                alert('Gagal melakukan auto korelasi: ' + error.message);
+                
+                // Restore button on error
+                const button = event.target;
+                button.innerHTML = '<i class="fas fa-magic"></i> Auto Korelasi AI';
+                button.disabled = false;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing Sasaran Strategi...');
+            loadInitialData();
+        });
+    </script>
+</body>
+</html>

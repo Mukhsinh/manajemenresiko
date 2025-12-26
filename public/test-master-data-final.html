@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Master Data Final</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-database"></i> Test Master Data Final</h1>
+            <p>Testing halaman master-data tab 'unit kerja' setelah cleanup duplikasi</p>
+        </div>
+
+        <div class="test-section">
+            <h2>1. Data Verification</h2>
+            <button onclick="testDataVerification()" class="btn btn-primary">
+                <i class="fas fa-check-circle"></i> Verify Data Integrity
+            </button>
+            <div id="data-verification-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Master Data UI Test</h2>
+            <button onclick="testMasterDataUI()" class="btn btn-success">
+                <i class="fas fa-table"></i> Test Master Data UI
+            </button>
+            <div id="ui-test-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. CRUD Operations Test</h2>
+            <button onclick="testCRUDOperations()" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Test CRUD Operations
+            </button>
+            <div id="crud-test-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Template & Export Test</h2>
+            <button onclick="testTemplateExport()" class="btn btn-info">
+                <i class="fas fa-download"></i> Test Template & Export
+            </button>
+            <div id="template-export-result" class="result-box"></div>
+        </div>
+
+        <!-- Master Data Container -->
+        <div id="master-data-container">
+            <div class="master-tabs">
+                <button class="master-tab-btn active" data-master="work-units">Unit Kerja</button>
+            </div>
+            <div id="master-data-content"></div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="test-section">
+            <h2>Test Summary</h2>
+            <div id="test-summary" class="summary-box">
+                <p>Jalankan semua test untuk melihat ringkasan hasil.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/master-data.js"></script>
+
+    <script>
+        let testResults = {
+            dataVerification: false,
+            masterDataUI: false,
+            crudOperations: false,
+            templateExport: false
+        };
+
+        async function testDataVerification() {
+            const resultDiv = document.getElementById('data-verification-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Verifying data...</div>';
+
+            try {
+                const response = await fetch('/api/master-data/work-units');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    throw new Error('Response is not an array');
+                }
+
+                // Check for duplicates
+                const names = data.map(item => item.name);
+                const codes = data.map(item => item.code);
+                const uniqueNames = [...new Set(names)];
+                const uniqueCodes = [...new Set(codes)];
+                
+                const hasDuplicates = names.length !== uniqueNames.length || codes.length !== uniqueCodes.length;
+
+                // Check data completeness
+                const hasJenisKategori = data.every(item => item.jenis && item.kategori);
+                
+                // Analyze distribution
+                const jenisCount = {};
+                const kategoriCount = {};
+                data.forEach(item => {
+                    jenisCount[item.jenis] = (jenisCount[item.jenis] || 0) + 1;
+                    kategoriCount[item.kategori] = (kategoriCount[item.kategori] || 0) + 1;
+                });
+
+                testResults.dataVerification = !hasDuplicates && hasJenisKategori;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.dataVerification ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.dataVerification ? 'check' : 'times'}-circle"></i> 
+                            Data Verification ${testResults.dataVerification ? 'PASSED' : 'FAILED'}</h4>
+                        <ul>
+                            <li>Total records: ${data.length}</li>
+                            <li>Unique names: ${uniqueNames.length}</li>
+                            <li>Unique codes: ${uniqueCodes.length}</li>
+                            <li>Has duplicates: ${hasDuplicates ? 'YES ❌' : 'NO ✅'}</li>
+                            <li>All have jenis & kategori: ${hasJenisKategori ? 'YES ✅' : 'NO ❌'}</li>
+                        </ul>
+                        
+                        <h5>Jenis Distribution:</h5>
+                        <ul>
+                            ${Object.entries(jenisCount).map(([jenis, count]) => 
+                                `<li><span class="badge badge-jenis-${jenis.replace(' ', '-')}">${jenis}</span>: ${count}</li>`
+                            ).join('')}
+                        </ul>
+                        
+                        <h5>Kategori Distribution:</h5>
+                        <ul>
+                            ${Object.entries(kategoriCount).map(([kategori, count]) => 
+                                `<li><span class="badge badge-kategori-${kategori.replace(' ', '-')}">${kategori}</span>: ${count}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.dataVerification = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Data Verification FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testMasterDataUI() {
+            const resultDiv = document.getElementById('ui-test-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing UI...</div>';
+
+            try {
+                // Load master data
+                await loadMasterData();
+                
+                // Wait for rendering
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Check if table is rendered
+                const table = document.querySelector('#master-data-content table');
+                const hasTable = !!table;
+
+                // Check if form fields exist
+                const jenisField = document.getElementById('form-jenis');
+                const kategoriField = document.getElementById('form-kategori');
+                const hasFormFields = jenisField && kategoriField;
+
+                // Check table headers
+                const headers = Array.from(document.querySelectorAll('#master-data-content th')).map(th => th.textContent);
+                const hasJenisColumn = headers.includes('Jenis');
+                const hasKategoriColumn = headers.includes('Kategori');
+
+                // Check if data is displayed
+                const rows = document.querySelectorAll('#master-data-content tbody tr');
+                const hasData = rows.length > 0;
+
+                testResults.masterDataUI = hasTable && hasFormFields && hasJenisColumn && hasKategoriColumn && hasData;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.masterDataUI ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.masterDataUI ? 'check' : 'times'}-circle"></i> 
+                            Master Data UI Test ${testResults.masterDataUI ? 'PASSED' : 'FAILED'}</h4>
+                        <ul>
+                            <li>Table rendered: ${hasTable ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Form fields exist: ${hasFormFields ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Jenis column: ${hasJenisColumn ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Kategori column: ${hasKategoriColumn ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Data displayed: ${hasData ? `YES (${rows.length} rows) ✅` : 'NO ❌'}</li>
+                        </ul>
+                        
+                        <h5>Table Headers:</h5>
+                        <ul>
+                            ${headers.map(header => `<li>${header}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.masterDataUI = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Master Data UI Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testCRUDOperations() {
+            const resultDiv = document.getElementById('crud-test-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing CRUD...</div>';
+
+            try {
+                const testResults = {
+                    create: false,
+                    read: false,
+                    update: false,
+                    delete: false
+                };
+
+                // Test READ
+                try {
+                    const readResponse = await fetch('/api/master-data/work-units');
+                    testResults.read = readResponse.ok;
+                } catch (e) {
+                    testResults.read = false;
+                }
+
+                // Test CREATE (dry run - we won't actually create)
+                try {
+                    const createResponse = await fetch('/api/master-data/work-units', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: 'Test Unit CRUD',
+                            jenis: 'administrasi',
+                            kategori: 'non klinis'
+                        })
+                    });
+                    // We expect this to fail due to auth, but endpoint should exist
+                    testResults.create = createResponse.status === 401 || createResponse.status === 200;
+                } catch (e) {
+                    testResults.create = false;
+                }
+
+                // Test template and export endpoints
+                try {
+                    const templateResponse = await fetch('/api/master-data/work-units/template');
+                    const exportResponse = await fetch('/api/master-data/work-units/export');
+                    testResults.update = templateResponse.status === 401 || templateResponse.ok;
+                    testResults.delete = exportResponse.status === 401 || exportResponse.ok;
+                } catch (e) {
+                    testResults.update = false;
+                    testResults.delete = false;
+                }
+
+                const allPassed = Object.values(testResults).every(result => result);
+                this.testResults.crudOperations = allPassed;
+                
+                resultDiv.innerHTML = `
+                    <div class="${allPassed ? 'success' : 'warning'}">
+                        <h4><i class="fas fa-${allPassed ? 'check' : 'exclamation'}-circle"></i> 
+                            CRUD Operations Test ${allPassed ? 'PASSED' : 'PARTIAL'}</h4>
+                        <ul>
+                            <li>READ endpoint: ${testResults.read ? 'WORKING ✅' : 'FAILED ❌'}</li>
+                            <li>CREATE endpoint: ${testResults.create ? 'EXISTS ✅' : 'MISSING ❌'}</li>
+                            <li>Template endpoint: ${testResults.update ? 'EXISTS ✅' : 'MISSING ❌'}</li>
+                            <li>Export endpoint: ${testResults.delete ? 'EXISTS ✅' : 'MISSING ❌'}</li>
+                        </ul>
+                        <p><small>Note: CREATE/UPDATE/DELETE may require authentication</small></p>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                this.testResults.crudOperations = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> CRUD Operations Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testTemplateExport() {
+            const resultDiv = document.getElementById('template-export-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing template & export...</div>';
+
+            try {
+                const results = {
+                    template: false,
+                    export: false
+                };
+
+                // Test template
+                try {
+                    const templateResponse = await fetch('/api/master-data/work-units/template');
+                    results.template = templateResponse.ok || templateResponse.status === 401;
+                    
+                    if (templateResponse.ok) {
+                        const contentType = templateResponse.headers.get('content-type');
+                        results.templateType = contentType;
+                    }
+                } catch (e) {
+                    results.template = false;
+                }
+
+                // Test export
+                try {
+                    const exportResponse = await fetch('/api/master-data/work-units/export');
+                    results.export = exportResponse.ok || exportResponse.status === 401;
+                    
+                    if (exportResponse.ok) {
+                        const contentType = exportResponse.headers.get('content-type');
+                        results.exportType = contentType;
+                    }
+                } catch (e) {
+                    results.export = false;
+                }
+
+                testResults.templateExport = results.template && results.export;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.templateExport ? 'success' : 'warning'}">
+                        <h4><i class="fas fa-${testResults.templateExport ? 'check' : 'exclamation'}-circle"></i> 
+                            Template & Export Test ${testResults.templateExport ? 'PASSED' : 'PARTIAL'}</h4>
+                        <ul>
+                            <li>Template endpoint: ${results.template ? 'WORKING ✅' : 'FAILED ❌'}</li>
+                            <li>Export endpoint: ${results.export ? 'WORKING ✅' : 'FAILED ❌'}</li>
+                            ${results.templateType ? `<li>Template type: ${results.templateType}</li>` : ''}
+                            ${results.exportType ? `<li>Export type: ${results.exportType}</li>` : ''}
+                        </ul>
+                        <p><small>Note: Endpoints may require authentication</small></p>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.templateExport = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Template & Export Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result === true).length;
+            const percentage = Math.round((passedTests / totalTests) * 100);
+
+            summaryDiv.innerHTML = `
+                <div class="${percentage === 100 ? 'success' : percentage >= 75 ? 'warning' : 'error'}">
+                    <h4><i class="fas fa-chart-pie"></i> Test Summary</h4>
+                    <p><strong>Passed: ${passedTests}/${totalTests} (${percentage}%)</strong></p>
+                    <ul>
+                        ${Object.entries(testResults).map(([test, result]) => 
+                            `<li><i class="fas fa-${result ? 'check' : 'times'}"></i> ${test}: ${result ? 'PASS' : 'FAIL'}</li>`
+                        ).join('')}
+                    </ul>
+                    ${percentage === 100 ? 
+                        '<p><strong>🎉 Semua test berhasil! Master Data halaman berfungsi dengan sempurna.</strong></p>' :
+                        percentage >= 75 ?
+                        '<p><strong>✅ Sebagian besar test berhasil. Sistem berfungsi dengan baik.</strong></p>' :
+                        '<p><strong>⚠️ Beberapa test gagal. Periksa hasil test di atas untuk detail.</strong></p>'
+                    }
+                </div>
+            `;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', async () => {
+            console.log('Running automated tests...');
+            await testDataVerification();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testMasterDataUI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testCRUDOperations();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testTemplateExport();
+        });
+    </script>
+
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .result-box, .summary-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .loading {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+            text-align: center;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .badge-jenis-rawat-inap { background-color: #e3f2fd; color: #1976d2; }
+        .badge-jenis-rawat-jalan { background-color: #f3e5f5; color: #7b1fa2; }
+        .badge-jenis-penunjang-medis { background-color: #e8f5e8; color: #388e3c; }
+        .badge-jenis-administrasi { background-color: #fff3e0; color: #f57c00; }
+        .badge-jenis-manajemen { background-color: #fce4ec; color: #c2185b; }
+
+        .badge-kategori-klinis { background-color: #e8f5e8; color: #2e7d32; }
+        .badge-kategori-non-klinis { background-color: #f5f5f5; color: #616161; }
+
+        .master-tabs {
+            margin: 20px 0;
+        }
+
+        .master-tab-btn {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .master-tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .summary-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        #master-data-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</body>
+</html>

@@ -33,8 +33,19 @@ const masterConfigs = {
     title: 'Unit Kerja',
     endpoint: 'work-units',
     fields: [
-      { key: 'name', label: 'Nama Unit Kerja', type: 'text' },
       { key: 'code', label: 'Kode Unit Kerja', type: 'text', readonly: true },
+      { key: 'name', label: 'Nama Unit Kerja', type: 'text' },
+      { key: 'jenis', label: 'Jenis', type: 'select', options: [
+        { value: 'rawat inap', label: 'Rawat Inap' },
+        { value: 'rawat jalan', label: 'Rawat Jalan' },
+        { value: 'penunjang medis', label: 'Penunjang Medis' },
+        { value: 'administrasi', label: 'Administrasi' },
+        { value: 'manajemen', label: 'Manajemen' }
+      ]},
+      { key: 'kategori', label: 'Kategori', type: 'select', options: [
+        { value: 'klinis', label: 'Klinis' },
+        { value: 'non klinis', label: 'Non Klinis' }
+      ]},
       { key: 'organization_id', label: 'Organisasi', type: 'select', source: 'organizations' },
       { key: 'manager_name', label: 'Nama Manajer', type: 'text' },
       { key: 'manager_email', label: 'Email Manajer', type: 'email' }
@@ -175,9 +186,14 @@ function bindMasterActionEvents() {
     btn.parentNode.replaceChild(newBtn, btn);
   });
 
-  // Add new listeners
+  // Add new listeners specifically for master data actions
   document.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', handleMasterAction);
+    // Only bind if this is within master data context
+    const masterDataContent = document.getElementById('master-data-content');
+    if (masterDataContent && masterDataContent.contains(btn)) {
+      btn.addEventListener('click', handleMasterAction);
+      btn.setAttribute('data-master-bound', 'true');
+    }
   });
 }
 
@@ -219,6 +235,10 @@ function formatFieldValue(field, item) {
   if (field.source === 'organizations') {
     return getOrganizationName(value) || '-';
   }
+  if (field.type === 'select' && field.options) {
+    const option = field.options.find(opt => opt.value === value);
+    return option ? option.label : (value || '-');
+  }
   return value ?? '-';
 }
 
@@ -241,6 +261,18 @@ function renderMasterForm(config) {
       if (field.type === 'select' && field.source === 'organizations') {
         const options = ['<option value="">Pilih Organisasi</option>']
           .concat(masterState.organizations.map((org) => `<option value="${org.id}">${org.name}</option>`))
+          .join('');
+        return `
+          <div class="form-group">
+            <label class="form-label">${field.label}</label>
+            <select id="form-${field.key}" class="form-control">
+              ${options}
+            </select>
+          </div>`;
+      }
+      if (field.type === 'select' && field.options) {
+        const options = ['<option value="">Pilih ' + field.label + '</option>']
+          .concat(field.options.map((opt) => `<option value="${opt.value}">${opt.label}</option>`))
           .join('');
         return `
           <div class="form-group">

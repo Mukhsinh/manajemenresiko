@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Loop Fix - Comprehensive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        .status-info { background-color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Login Loop Fix - Comprehensive</h1>
+        <p>Test ini akan menganalisis dan memperbaiki masalah login loop secara komprehensif.</p>
+        
+        <div class="test-section">
+            <h3>🔐 1. Authentication Test</h3>
+            <button onclick="testAuthentication()">Test Login</button>
+            <button onclick="testLogout()">Test Logout</button>
+            <div id="auth-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧭 2. Navigation Test</h3>
+            <button onclick="testNavigation()">Test Navigation</button>
+            <button onclick="testRouterIntegration()">Test Router Integration</button>
+            <div id="nav-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📡 3. API Test</h3>
+            <button onclick="testAPIEndpoints()">Test API Endpoints</button>
+            <div id="api-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔄 4. Redirect Loop Analysis</h3>
+            <button onclick="analyzeRedirectLoop()">Analyze Redirect Loop</button>
+            <button onclick="fixRedirectLoop()">Apply Fix</button>
+            <div id="loop-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 5. System Status</h3>
+            <button onclick="checkSystemStatus()">Check System Status</button>
+            <div id="status-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Console Log</h3>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="console-log" class="log"></div>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/services/authService.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/route-config.js"></script>
+    <script src="/js/RouterManager.js"></script>
+    <script src="/js/router-integration.js"></script>
+
+    <script>
+        // Global variables
+        let testResults = {};
+        let currentSession = null;
+        
+        // Logging function
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('console-log');
+            const logMessage = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logElement.textContent += logMessage;
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            // Also log to browser console
+            console.log(`[TEST] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('console-log').textContent = '';
+        }
+        
+        function addResult(sectionId, type, message) {
+            const section = document.getElementById(sectionId);
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.innerHTML = `<span class="status-indicator status-${type}"></span>${message}`;
+            section.appendChild(result);
+        }
+        
+        // Wait for config to load
+        async function waitForConfig() {
+            log('Waiting for configuration to load...');
+            
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            while (attempts < maxAttempts) {
+                if (window.supabaseClient && window.configManager) {
+                    log('✅ Configuration loaded successfully');
+                    return true;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            log('❌ Configuration failed to load after 5 seconds');
+            return false;
+        }
+        
+        // 1. Authentication Test
+        async function testAuthentication() {
+            log('🔐 Starting authentication test...');
+            const resultsDiv = document.getElementById('auth-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                // Wait for config
+                const configReady = await waitForConfig();
+                if (!configReady) {
+                    addResult('auth-results', 'error', 'Configuration not ready');
+                    return;
+                }
+                
+                // Test login
+                log('Testing login with superadmin credentials...');
+                const loginResult = await window.authService.login('mukhsin9@gmail.com', 'Jlamprang233!!');
+                
+                if (loginResult.success) {
+                    addResult('auth-results', 'success', `✅ Login successful: ${loginResult.user.email}`);
+                    currentSession = loginResult.session;
+                    
+                    // Test session storage
+                    if (currentSession && currentSession.access_token) {
+                        addResult('auth-results', 'success', '✅ Session created with access token');
+                        log(`Session expires at: ${new Date(currentSession.expires_at * 1000)}`);
+                    } else {
+                        addResult('auth-results', 'warning', '⚠️ Session created but no access token');
+                    }
+                    
+                    // Test authentication state
+                    const isAuth = window.authService.isAuthenticated();
+                    if (isAuth) {
+                        addResult('auth-results', 'success', '✅ Authentication state is valid');
+                    } else {
+                        addResult('auth-results', 'error', '❌ Authentication state is invalid');
+                    }
+                    
+                } else {
+                    addResult('auth-results', 'error', `❌ Login failed: ${loginResult.error}`);
+                }
+                
+            } catch (error) {
+                log(`Authentication test error: ${error.message}`);
+                addResult('auth-results', 'error', `❌ Authentication test failed: ${error.message}`);
+            }
+        }
+        
+        async function testLogout() {
+            log('🚪 Testing logout...');
+            
+            try {
+                const logoutResult = await window.authService.logout();
+                
+                if (logoutResult.success) {
+                    addResult('auth-results', 'success', '✅ Logout successful');
+                    currentSession = null;
+                    
+                    // Test authentication state after logout
+                    const isAuth = window.authService.isAuthenticated();
+                    if (!isAuth) {
+                        addResult('auth-results', 'success', '✅ Authentication state cleared');
+                    } else {
+                        addResult('auth-results', 'warning', '⚠️ Authentication state not cleared');
+                    }
+                } else {
+                    addResult('auth-results', 'warning', `⚠️ Logout completed with warning: ${logoutResult.error || 'Unknown'}`);
+                }
+                
+            } catch (error) {
+                log(`Logout test error: ${error.message}`);
+                addResult('auth-results', 'error', `❌ Logout test failed: ${error.message}`);
+            }
+        }
+        
+        // 2. Navigation Test
+        async function testNavigation() {
+            log('🧭 Testing navigation system...');
+            const resultsDiv = document.getElementById('nav-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                // Test if router is available
+                if (window.appRouter) {
+                    addResult('nav-results', 'success', '✅ Router is available');
+                    
+                    // Test navigation to different pages
+                    const testPages = ['dashboard', 'risks', 'visi-misi'];
+                    
+                    for (const page of testPages) {
+                        try {
+                            const url = window.getUrlForPage ? window.getUrlForPage(page) : null;
+                            if (url && url !== '/404') {
+                                addResult('nav-results', 'success', `✅ URL mapping for ${page}: ${url}`);
+                            } else {
+                                addResult('nav-results', 'warning', `⚠️ No URL mapping for ${page}`);
+                            }
+                        } catch (error) {
+                            addResult('nav-results', 'error', `❌ Error getting URL for ${page}: ${error.message}`);
+                        }
+                    }
+                } else {
+                    addResult('nav-results', 'warning', '⚠️ Router not available, using fallback navigation');
+                }
+                
+                // Test navigateToPage function
+                if (typeof window.navigateToPage === 'function') {
+                    addResult('nav-results', 'success', '✅ navigateToPage function is available');
+                } else {
+                    addResult('nav-results', 'error', '❌ navigateToPage function not available');
+                }
+                
+            } catch (error) {
+                log(`Navigation test error: ${error.message}`);
+                addResult('nav-results', 'error', `❌ Navigation test failed: ${error.message}`);
+            }
+        }
+        
+        async function testRouterIntegration() {
+            log('🔗 Testing router integration...');
+            
+            try {
+                // Check if router integration is initialized
+                if (window.routerIntegrationInitialized) {
+                    addResult('nav-results', 'success', '✅ Router integration is initialized');
+                } else {
+                    addResult('nav-results', 'warning', '⚠️ Router integration not initialized');
+                }
+                
+                // Check if router integration functions are available
+                if (window.routerIntegration) {
+                    addResult('nav-results', 'success', '✅ Router integration object is available');
+                    
+                    const functions = ['handleLoginSuccess', 'handleLogout'];
+                    functions.forEach(func => {
+                        if (typeof window.routerIntegration[func] === 'function') {
+                            addResult('nav-results', 'success', `✅ ${func} function is available`);
+                        } else {
+                            addResult('nav-results', 'error', `❌ ${func} function not available`);
+                        }
+                    });
+                } else {
+                    addResult('nav-results', 'error', '❌ Router integration object not available');
+                }
+                
+            } catch (error) {
+                log(`Router integration test error: ${error.message}`);
+                addResult('nav-results', 'error', `❌ Router integration test failed: ${error.message}`);
+            }
+        }
+        
+        // 3. API Test
+        async function testAPIEndpoints() {
+            log('📡 Testing API endpoints...');
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                // Ensure we have a valid session
+                if (!currentSession || !currentSession.access_token) {
+                    addResult('api-results', 'warning', '⚠️ No active session, testing login first...');
+                    await testAuthentication();
+                    
+                    if (!currentSession) {
+                        addResult('api-results', 'error', '❌ Cannot test API without valid session');
+                        return;
+                    }
+                }
+                
+                // Test /api/auth/me endpoint
+                log('Testing /api/auth/me endpoint...');
+                try {
+                    const response = await fetch('/api/auth/me', {
+                        headers: {
+                            'Authorization': `Bearer ${currentSession.access_token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        addResult('api-results', 'success', '✅ /api/auth/me endpoint working');
+                        
+                        // Check data completeness
+                        if (userData.user.organizations && userData.user.organizations.length > 0) {
+                            addResult('api-results', 'success', `✅ Organizations data: ${userData.user.organizations.length} found`);
+                        } else {
+                            addResult('api-results', 'warning', '⚠️ No organizations data');
+                        }
+                        
+                        if (userData.user.role) {
+                            addResult('api-results', 'success', `✅ Role data: ${userData.user.role}`);
+                        } else {
+                            addResult('api-results', 'warning', '⚠️ No role data');
+                        }
+                        
+                        if (userData.user.isSuperAdmin !== undefined) {
+                            addResult('api-results', 'success', `✅ SuperAdmin flag: ${userData.user.isSuperAdmin}`);
+                        } else {
+                            addResult('api-results', 'warning', '⚠️ No SuperAdmin flag');
+                        }
+                        
+                    } else {
+                        addResult('api-results', 'error', `❌ /api/auth/me failed: ${response.status}`);
+                    }
+                } catch (error) {
+                    addResult('api-results', 'error', `❌ /api/auth/me error: ${error.message}`);
+                }
+                
+                // Test dashboard endpoint
+                log('Testing /api/dashboard endpoint...');
+                try {
+                    const response = await fetch('/api/dashboard', {
+                        headers: {
+                            'Authorization': `Bearer ${currentSession.access_token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const dashboardData = await response.json();
+                        addResult('api-results', 'success', '✅ /api/dashboard endpoint working');
+                        log(`Dashboard data keys: ${Object.keys(dashboardData).join(', ')}`);
+                    } else {
+                        addResult('api-results', 'error', `❌ /api/dashboard failed: ${response.status}`);
+                    }
+                } catch (error) {
+                    addResult('api-results', 'error', `❌ /api/dashboard error: ${error.message}`);
+                }
+                
+            } catch (error) {
+                log(`API test error: ${error.message}`);
+                addResult('api-results', 'error', `❌ API test failed: ${error.message}`);
+            }
+        }
+        
+        // 4. Redirect Loop Analysis
+        async function analyzeRedirectLoop() {
+            log('🔄 Analyzing redirect loop...');
+            const resultsDiv = document.getElementById('loop-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                // Check current URL and navigation state
+                const currentPath = window.location.pathname;
+                addResult('loop-results', 'info', `Current path: ${currentPath}`);
+                
+                // Check authentication state
+                const isAuth = window.authService ? window.authService.isAuthenticated() : false;
+                addResult('loop-results', 'info', `Authentication state: ${isAuth}`);
+                
+                // Check session storage
+                const storedRoute = sessionStorage.getItem('intendedRoute');
+                if (storedRoute) {
+                    addResult('loop-results', 'info', `Stored intended route: ${storedRoute}`);
+                } else {
+                    addResult('loop-results', 'info', 'No stored intended route');
+                }
+                
+                // Check router state
+                if (window.appRouter) {
+                    const currentRoute = window.appRouter.getCurrentRoute();
+                    if (currentRoute) {
+                        addResult('loop-results', 'info', `Router current route: ${currentRoute.path}`);
+                    } else {
+                        addResult('loop-results', 'warning', 'Router has no current route');
+                    }
+                } else {
+                    addResult('loop-results', 'warning', 'Router not available');
+                }
+                
+                // Analyze potential loop conditions
+                if (currentPath === '/login' && isAuth) {
+                    addResult('loop-results', 'error', '❌ LOOP DETECTED: On login page but authenticated');
+                } else if (currentPath !== '/login' && !isAuth) {
+                    addResult('loop-results', 'error', '❌ LOOP DETECTED: On protected page but not authenticated');
+                } else {
+                    addResult('loop-results', 'success', '✅ No obvious redirect loop detected');
+                }
+                
+                // Check for navigation conflicts
+                const hasNavigateToPage = typeof window.navigateToPage === 'function';
+                const hasRouter = !!window.appRouter;
+                const hasRouterIntegration = !!window.routerIntegration;
+                
+                addResult('loop-results', 'info', `Navigation functions available:`);
+                addResult('loop-results', 'info', `  - navigateToPage: ${hasNavigateToPage}`);
+                addResult('loop-results', 'info', `  - Router: ${hasRouter}`);
+                addResult('loop-results', 'info', `  - Router Integration: ${hasRouterIntegration}`);
+                
+                if (hasNavigateToPage && hasRouter && !hasRouterIntegration) {
+                    addResult('loop-results', 'warning', '⚠️ Potential conflict: Router and legacy navigation both available without integration');
+                }
+                
+            } catch (error) {
+                log(`Redirect loop analysis error: ${error.message}`);
+                addResult('loop-results', 'error', `❌ Analysis failed: ${error.message}`);
+            }
+        }
+        
+        async function fixRedirectLoop() {
+            log('🔧 Applying redirect loop fix...');
+            
+            try {
+                // Clear any stored routes that might cause loops
+                sessionStorage.removeItem('intendedRoute');
+                sessionStorage.removeItem('routerState');
+                addResult('loop-results', 'success', '✅ Cleared stored routes');
+                
+                // Ensure proper authentication state
+                const isAuth = window.authService ? window.authService.isAuthenticated() : false;
+                const currentPath = window.location.pathname;
+                
+                if (isAuth && currentPath === '/login') {
+                    addResult('loop-results', 'info', '🔄 Authenticated user on login page, redirecting to dashboard...');
+                    
+                    if (window.appRouter) {
+                        window.appRouter.navigate('/dashboard', true);
+                    } else if (typeof window.navigateToPage === 'function') {
+                        window.navigateToPage('dashboard');
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
+                    
+                    addResult('loop-results', 'success', '✅ Redirected to dashboard');
+                    
+                } else if (!isAuth && currentPath !== '/login') {
+                    addResult('loop-results', 'info', '🔄 Unauthenticated user on protected page, redirecting to login...');
+                    
+                    if (window.appRouter) {
+                        window.appRouter.navigate('/login', true);
+                    } else {
+                        window.location.href = '/login';
+                    }
+                    
+                    addResult('loop-results', 'success', '✅ Redirected to login');
+                    
+                } else {
+                    addResult('loop-results', 'success', '✅ No redirect needed, state is correct');
+                }
+                
+                // Reinitialize router integration if needed
+                if (window.routerIntegration && !window.routerIntegrationInitialized) {
+                    log('Reinitializing router integration...');
+                    window.routerIntegration.initializeRouterIntegration();
+                    addResult('loop-results', 'success', '✅ Router integration reinitialized');
+                }
+                
+            } catch (error) {
+                log(`Redirect loop fix error: ${error.message}`);
+                addResult('loop-results', 'error', `❌ Fix failed: ${error.message}`);
+            }
+        }
+        
+        // 5. System Status
+        async function checkSystemStatus() {
+            log('📊 Checking system status...');
+            const resultsDiv = document.getElementById('status-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                // Check all required components
+                const components = [
+                    { name: 'Supabase Client', check: () => !!window.supabaseClient },
+                    { name: 'Config Manager', check: () => !!window.configManager },
+                    { name: 'Auth Service', check: () => !!window.authService },
+                    { name: 'API Service', check: () => !!window.apiCall },
+                    { name: 'Router', check: () => !!window.appRouter },
+                    { name: 'Router Manager', check: () => !!window.RouterManager },
+                    { name: 'Router Integration', check: () => !!window.routerIntegration },
+                    { name: 'Navigate Function', check: () => typeof window.navigateToPage === 'function' }
+                ];
+                
+                components.forEach(component => {
+                    const status = component.check();
+                    const statusType = status ? 'success' : 'error';
+                    const statusIcon = status ? '✅' : '❌';
+                    addResult('status-results', statusType, `${statusIcon} ${component.name}: ${status ? 'Available' : 'Not Available'}`);
+                });
+                
+                // Check authentication state
+                const isAuth = window.authService ? window.authService.isAuthenticated() : false;
+                addResult('status-results', 'info', `🔐 Authentication State: ${isAuth ? 'Authenticated' : 'Not Authenticated'}`);
+                
+                // Check current user
+                if (window.currentUser) {
+                    addResult('status-results', 'success', `👤 Current User: ${window.currentUser.email}`);
+                } else {
+                    addResult('status-results', 'info', '👤 Current User: None');
+                }
+                
+                // Check current session
+                if (window.currentSession) {
+                    const expiresAt = new Date(window.currentSession.expires_at * 1000);
+                    const isExpired = expiresAt < new Date();
+                    addResult('status-results', isExpired ? 'warning' : 'success', 
+                        `🎫 Session: ${isExpired ? 'Expired' : 'Valid'} (expires: ${expiresAt.toLocaleString()})`);
+                } else {
+                    addResult('status-results', 'info', '🎫 Session: None');
+                }
+                
+                // Check URL and routing
+                addResult('status-results', 'info', `🌐 Current URL: ${window.location.pathname}`);
+                
+                if (window.appRouter) {
+                    const currentRoute = window.appRouter.getCurrentRoute();
+                    if (currentRoute) {
+                        addResult('status-results', 'success', `🗺️ Current Route: ${currentRoute.path}`);
+                    } else {
+                        addResult('status-results', 'warning', '🗺️ Current Route: None');
+                    }
+                }
+                
+            } catch (error) {
+                log(`System status check error: ${error.message}`);
+                addResult('status-results', 'error', `❌ Status check failed: ${error.message}`);
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            log('🚀 Test page loaded, initializing...');
+            
+            // Wait for configuration
+            const configReady = await waitForConfig();
+            if (configReady) {
+                log('✅ Configuration ready, test page initialized');
+                addResult('status-results', 'success', '✅ Test page initialized successfully');
+            } else {
+                log('❌ Configuration failed to load');
+                addResult('status-results', 'error', '❌ Configuration failed to load');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test URL Change</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #current-url { font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .nav-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .status { font-weight: bold; padding: 5px 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test URL Change - Router Implementation</h1>
+        
+        <div id="current-url">
+            <strong>Current URL:</strong> <span id="url-display"></span>
+        </div>
+        
+        <div class="status" id="router-status">Router Status: Loading...</div>
+        
+        <h3>Navigation Test</h3>
+        <div class="nav-buttons">
+            <button onclick="testNavigation('/dashboard')">🏠 Dashboard</button>
+            <button onclick="testNavigation('/visi-misi')">👁️ Visi Misi</button>
+            <button onclick="testNavigation('/rencana-strategis')">📋 Rencana Strategis</button>
+            <button onclick="testNavigation('/analisis-swot')">📊 Analisis SWOT</button>
+            <button onclick="testNavigation('/manajemen-risiko/input-data')">⚠️ Risk Input</button>
+            <button onclick="testNavigation('/manajemen-risiko/risk-profile')">📈 Risk Profile</button>
+            <button onclick="testNavigation('/laporan')">📄 Laporan</button>
+            <button onclick="testNavigation('/master-data')">🗃️ Master Data</button>
+            <button onclick="testNavigation('/invalid-route')">❌ Invalid Route</button>
+        </div>
+        
+        <h3>Browser Navigation Test</h3>
+        <div class="nav-buttons">
+            <button onclick="goBack()">⬅️ Back</button>
+            <button onclick="goForward()">➡️ Forward</button>
+            <button onclick="refreshPage()">🔄 Refresh</button>
+        </div>
+        
+        <h3>Test Results</h3>
+        <div id="test-results"></div>
+    </div>
+    
+    <!-- Load router scripts in correct order -->
+    <script src="/js/router.js"></script>
+    <script src="/js/route-config.js"></script>
+    <script src="/js/404-handler.js"></script>
+    <script src="/js/router-integration.js"></script>
+    
+    <script>
+        let testCount = 0;
+        
+        function updateUrlDisplay() {
+            document.getElementById('url-display').textContent = window.location.href;
+        }
+        
+        function addTestResult(message, type = 'info') {
+            testCount++;
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${testCount}.</strong> ${message}`;
+            document.getElementById('test-results').appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            // Auto scroll to bottom
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateRouterStatus(status, type = 'info') {
+            const statusEl = document.getElementById('router-status');
+            statusEl.textContent = `Router Status: ${status}`;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function testNavigation(url) {
+            addTestResult(`Testing navigation to: ${url}`, 'info');
+            
+            try {
+                if (window.appRouter) {
+                    const beforeUrl = window.location.pathname;
+                    window.appRouter.navigate(url);
+                    
+                    setTimeout(() => {
+                        const afterUrl = window.location.pathname;
+                        updateUrlDisplay();
+                        
+                        if (afterUrl === url) {
+                            addTestResult(`✅ SUCCESS: URL changed from ${beforeUrl} to ${afterUrl}`, 'success');
+                        } else {
+                            addTestResult(`⚠️ PARTIAL: Expected ${url}, got ${afterUrl} (from ${beforeUrl})`, 'warning');
+                        }
+                    }, 100);
+                } else {
+                    addTestResult('❌ ERROR: Router not available', 'error');
+                }
+            } catch (error) {
+                addTestResult(`❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        function goBack() {
+            addTestResult('Testing browser back navigation', 'info');
+            window.history.back();
+            setTimeout(() => {
+                updateUrlDisplay();
+                addTestResult(`🔙 Browser back: ${window.location.pathname}`, 'info');
+            }, 100);
+        }
+        
+        function goForward() {
+            addTestResult('Testing browser forward navigation', 'info');
+            window.history.forward();
+            setTimeout(() => {
+                updateUrlDisplay();
+                addTestResult(`➡️ Browser forward: ${window.location.pathname}`, 'info');
+            }, 100);
+        }
+        
+        function refreshPage() {
+            addTestResult('Refreshing page to test state preservation', 'info');
+            window.location.reload();
+        }
+        
+        // Initialize test
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUrlDisplay();
+            addTestResult('🚀 Page loaded, initializing router test...', 'info');
+            
+            // Test router components availability
+            setTimeout(() => {
+                let allGood = true;
+                
+                if (window.SPARouter) {
+                    addTestResult('✅ SPARouter class available', 'success');
+                } else {
+                    addTestResult('❌ SPARouter class not available', 'error');
+                    allGood = false;
+                }
+                
+                if (window.AuthGuard) {
+                    addTestResult('✅ AuthGuard class available', 'success');
+                } else {
+                    addTestResult('❌ AuthGuard class not available', 'error');
+                    allGood = false;
+                }
+                
+                if (window.ROUTE_CONFIG) {
+                    addTestResult(`✅ Route config loaded (${Object.keys(window.ROUTE_CONFIG).length} routes)`, 'success');
+                } else {
+                    addTestResult('❌ Route config not loaded', 'error');
+                    allGood = false;
+                }
+                
+                if (window.getUrlForPage) {
+                    addTestResult('✅ URL mapping functions available', 'success');
+                } else {
+                    addTestResult('❌ URL mapping functions not available', 'error');
+                    allGood = false;
+                }
+                
+                // Initialize router for testing
+                try {
+                    if (!window.appRouter) {
+                        window.authGuard = new AuthGuard({
+                            isAuthenticated: () => true // Always authenticated for testing
+                        });
+                        
+                        window.appRouter = new SPARouter(ROUTE_CONFIG, {
+                            authGuard: window.authGuard,
+                            fallbackRoute: '/404'
+                        });
+                        
+                        addTestResult('✅ Router initialized for testing', 'success');
+                        updateRouterStatus('Initialized and Ready', 'success');
+                    } else {
+                        addTestResult('✅ Router already initialized', 'success');
+                        updateRouterStatus('Already Initialized', 'success');
+                    }
+                } catch (error) {
+                    addTestResult(`❌ Router initialization failed: ${error.message}`, 'error');
+                    updateRouterStatus('Initialization Failed', 'error');
+                    allGood = false;
+                }
+                
+                if (allGood) {
+                    addTestResult('🎉 All components loaded successfully! Ready for testing.', 'success');
+                    
+                    // Test URL mapping
+                    const testMappings = [
+                        ['dashboard', '/dashboard'],
+                        ['visi-misi', '/visi-misi'],
+                        ['risk-input', '/manajemen-risiko/input-data']
+                    ];
+                    
+                    testMappings.forEach(([pageName, expectedUrl]) => {
+                        const actualUrl = getUrlForPage(pageName);
+                        if (actualUrl === expectedUrl) {
+                            addTestResult(`✅ URL mapping: ${pageName} → ${actualUrl}`, 'success');
+                        } else {
+                            addTestResult(`❌ URL mapping failed: ${pageName} → expected ${expectedUrl}, got ${actualUrl}`, 'error');
+                        }
+                    });
+                } else {
+                    updateRouterStatus('Components Missing', 'error');
+                }
+            }, 500);
+        });
+        
+        // Update URL display on navigation
+        window.addEventListener('popstate', function() {
+            updateUrlDisplay();
+            addTestResult(`🔄 URL changed via browser navigation: ${window.location.pathname}`, 'info');
+        });
+        
+        // Log all navigation events
+        if (window.history && window.history.pushState) {
+            const originalPushState = window.history.pushState;
+            window.history.pushState = function(...args) {
+                originalPushState.apply(window.history, args);
+                setTimeout(() => {
+                    updateUrlDisplay();
+                    addTestResult(`📝 History pushed: ${window.location.pathname}`, 'info');
+                }, 10);
+            };
+            
+            const originalReplaceState = window.history.replaceState;
+            window.history.replaceState = function(...args) {
+                originalReplaceState.apply(window.history, args);
+                setTimeout(() => {
+                    updateUrlDisplay();
+                    addTestResult(`📝 History replaced: ${window.location.pathname}`, 'info');
+                }, 10);
+            };
+        }
+    </script>
+</body>
+</html>

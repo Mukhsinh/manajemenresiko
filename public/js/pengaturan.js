@@ -196,11 +196,24 @@ const PengaturanAplikasi = {
     const selectedOrgId = this.selectedOrgId || '';
     const selectedOrg = this.organizations.find(org => org.id === selectedOrgId);
     
+    // Check if current user is superadmin
+    const currentUser = window.currentUser || {};
+    const isSuperAdmin = currentUser.profile?.role === 'superadmin' || currentUser.email === 'mukhsin9@gmail.com';
+    
     return `
       <div class="section-card">
         <div class="section-header">
-          <h3>Manajemen User</h3>
+          <h3>Manajemen User ${isSuperAdmin ? '<span class="badge badge-danger">Super Admin</span>' : ''}</h3>
+          <p class="text-muted">Kelola user dalam organisasi. ${isSuperAdmin ? 'Sebagai superadmin, Anda dapat melihat dan mengelola user dari semua organisasi.' : ''}</p>
         </div>
+        
+        ${isSuperAdmin ? `
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Mode Super Admin:</strong> Anda dapat melihat dan mengelola user dari semua organisasi.
+          </div>
+        ` : ''}
+        
         <div class="form-group">
           <label class="form-label">Pilih Organisasi</label>
           <select id="select-organization" class="form-control">
@@ -210,6 +223,7 @@ const PengaturanAplikasi = {
             ).join('')}
           </select>
         </div>
+        
         ${selectedOrg ? `
           <div id="user-management-form" style="margin-top: 1.5rem;">
             <div class="section-header" style="padding: 0; margin-bottom: 1rem;">
@@ -231,28 +245,79 @@ const PengaturanAplikasi = {
               <div class="form-group">
                 <label class="form-label">Role</label>
                 <select id="new-user-role" class="form-control">
+                  <option value="user">User</option>
                   <option value="manager">Manager</option>
                   <option value="admin">Admin</option>
-                  <option value="superadmin">Super Admin</option>
+                  ${isSuperAdmin ? '<option value="superadmin">Super Admin</option>' : ''}
                 </select>
               </div>
               <div class="form-actions full-width">
-                <button type="submit" class="btn btn-primary">Tambah User</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-plus"></i> Tambah User
+                </button>
               </div>
             </form>
           </div>
           <div style="margin-top: 2rem;">
             <div class="section-header" style="padding: 0; margin-bottom: 1rem;">
-              <h4>Daftar User di ${selectedOrg.name}</h4>
+              <h4>Daftar User di ${selectedOrg.name} <span class="badge badge-info">${selectedOrg.users?.length || 0} user</span></h4>
+              <button class="btn btn-secondary btn-sm" onclick="PengaturanAplikasi.refreshOrgUsers('${selectedOrg.id}')">
+                <i class="fas fa-sync"></i> Refresh
+              </button>
             </div>
-            ${this.renderOrgUsersTable(selectedOrg)}
+            ${this.renderOrgUsersTable(selectedOrg, isSuperAdmin)}
           </div>
         ` : `
           <div style="margin-top: 1.5rem; padding: 2rem; text-align: center; color: #666;">
             <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-            <p>Pilih organisasi terlebih dahulu untuk menambahkan user</p>
+            <p>Pilih organisasi terlebih dahulu untuk mengelola user</p>
           </div>
         `}
+        
+        ${isSuperAdmin ? `
+          <div style="margin-top: 2rem;">
+            <div class="section-header">
+              <h4>Semua User (Super Admin View)</h4>
+              <button class="btn btn-secondary btn-sm" onclick="PengaturanAplikasi.loadAllUsers()">
+                <i class="fas fa-sync"></i> Refresh All Users
+              </button>
+            </div>
+            <div id="all-users-table">
+              ${this.renderAllUsersTable()}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+      
+      <!-- Password Reset Modal -->
+      <div id="password-reset-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:400px;">
+          <div class="modal-header">
+            <h3 class="modal-title">Reset Password User</h3>
+            <button class="modal-close" onclick="PengaturanAplikasi.closePasswordModal()">&times;</button>
+          </div>
+          <form id="password-reset-form">
+            <input type="hidden" id="reset-user-id">
+            <div class="form-group">
+              <label class="form-label">User</label>
+              <input type="text" id="reset-user-display" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password Baru</label>
+              <input type="password" id="reset-new-password" class="form-control" required minlength="8" placeholder="Minimal 8 karakter">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Konfirmasi Password</label>
+              <input type="password" id="reset-confirm-password" class="form-control" required minlength="8" placeholder="Ulangi password baru">
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="PengaturanAplikasi.closePasswordModal()">Batal</button>
+              <button type="submit" class="btn btn-warning">
+                <i class="fas fa-key"></i> Reset Password
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     `;
   },
@@ -372,7 +437,7 @@ const PengaturanAplikasi = {
     `;
   },
 
-  renderOrgUsersTable(org) {
+  renderOrgUsersTable(org, isSuperAdmin = false) {
     console.log('Rendering org users table for org:', org);
     console.log('Org users:', org.users);
     console.log('Org users length:', org.users?.length);
@@ -381,53 +446,77 @@ const PengaturanAplikasi = {
     const users = Array.isArray(org.users) ? org.users : [];
     
     if (users.length === 0) {
-      return '<p class="text-muted">Belum ada user pada organisasi ini.</p>';
+      return `
+        <div style="padding: 2rem; text-align: center; color: #666; background: #f8f9fa; border-radius: 8px;">
+          <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+          <p>Belum ada user pada organisasi ini.</p>
+        </div>
+      `;
     }
     
     return `
-      <table style="width: 100%;">
-        <thead>
-          <tr>
-            <th>Nama</th>
-            <th>Email</th>
-            <th>Organisasi</th>
-            <th>Role</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${users
-            .map(
-              (user) => {
-                const fullName = user.user_profiles?.full_name || user.full_name || '-';
-                const email = user.user_profiles?.email || user.email || '-';
-                const role = user.role || 'manager';
-                const organizationName = user.user_profiles?.organization_name || org.name || '-';
-                const organizationCode = user.user_profiles?.organization_code || org.code || '';
-                const organizationLabel = organizationCode ? `${organizationName} (${organizationCode})` : organizationName;
-                return `
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
             <tr>
-              <td>${fullName}</td>
-              <td>${email}</td>
-              <td>${organizationLabel}</td>
-              <td>
-                <select class="form-control org-users-role" data-user-id="${user.id}" data-org="${org.id}" onchange="PengaturanAplikasi.updateUserRole('${user.id}', this.value)">
-                  ${this.renderRoleOption('superadmin', role)}
-                  ${this.renderRoleOption('admin', role)}
-                  ${this.renderRoleOption('manager', role)}
-                </select>
-              </td>
-              <td>
-                <button class="btn btn-danger btn-sm" data-action="remove-user" data-user="${user.id}" onclick="PengaturanAplikasi.removeOrgUser('${user.id}')">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>`;
-              }
-            )
-            .join('')}
-        </tbody>
-      </table>
+              <th>Nama</th>
+              <th>Email</th>
+              <th>Organisasi</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${users
+              .map(
+                (user) => {
+                  const fullName = user.user_profiles?.full_name || user.full_name || '-';
+                  const email = user.user_profiles?.email || user.email || '-';
+                  const role = user.role || 'manager';
+                  const organizationName = user.user_profiles?.organization_name || org.name || '-';
+                  const organizationCode = user.user_profiles?.organization_code || org.code || '';
+                  const organizationLabel = organizationCode ? `${organizationName} (${organizationCode})` : organizationName;
+                  const userId = user.user_id || user.id;
+                  
+                  return `
+              <tr>
+                <td>
+                  <strong>${fullName}</strong>
+                  <br><small class="text-muted">ID: ${userId ? userId.substring(0, 8) + '...' : 'N/A'}</small>
+                </td>
+                <td>${email}</td>
+                <td>${organizationLabel}</td>
+                <td>
+                  <select class="form-control org-users-role" data-user-id="${user.id}" data-org="${org.id}" data-record-id="${user.id}" onchange="PengaturanAplikasi.updateUserRole('${user.id}', this.value)">
+                    ${this.renderRoleOption('user', role)}
+                    ${this.renderRoleOption('manager', role)}
+                    ${this.renderRoleOption('admin', role)}
+                    ${isSuperAdmin ? this.renderRoleOption('superadmin', role) : ''}
+                  </select>
+                </td>
+                <td>
+                  <span class="badge badge-success">Aktif</span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    ${isSuperAdmin ? `
+                      <button class="btn btn-warning btn-sm" onclick="PengaturanAplikasi.showPasswordResetModal('${userId}', '${fullName}', '${email}')" title="Reset Password">
+                        <i class="fas fa-key"></i>
+                      </button>
+                    ` : ''}
+                    <button class="btn btn-danger btn-sm" onclick="PengaturanAplikasi.removeOrgUser('${user.id}')" title="Hapus dari Organisasi">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>`;
+                }
+              )
+              .join('')}
+          </tbody>
+        </table>
+      </div>
     `;
   },
 
@@ -494,7 +583,239 @@ const PengaturanAplikasi = {
   },
 
   renderRoleOption(role, current) {
-    return `<option value="${role}" ${role === current ? 'selected' : ''}>${role.charAt(0).toUpperCase() + role.slice(1)}</option>`;
+    const roleNames = {
+      'user': 'User',
+      'manager': 'Manager', 
+      'admin': 'Admin',
+      'superadmin': 'Super Admin'
+    };
+    return `<option value="${role}" ${role === current ? 'selected' : ''}>${roleNames[role] || role}</option>`;
+  },
+
+  renderAllUsersTable() {
+    // This will be populated by loadAllUsers function
+    return `
+      <div id="all-users-content">
+        <div style="padding: 2rem; text-align: center; color: #666;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+          <p>Memuat data semua user...</p>
+        </div>
+      </div>
+    `;
+  },
+
+  async loadAllUsers() {
+    try {
+      const apiCallFn = window.apiCall || apiCall;
+      const allUsers = await apiCallFn('/api/user-management');
+      
+      const content = document.getElementById('all-users-content');
+      if (!content) return;
+      
+      if (!allUsers || allUsers.length === 0) {
+        content.innerHTML = `
+          <div style="padding: 2rem; text-align: center; color: #666;">
+            <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+            <p>Tidak ada user yang ditemukan.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      content.innerHTML = `
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Organisasi</th>
+                <th>Status</th>
+                <th>Login Terakhir</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${allUsers.map(user => `
+                <tr>
+                  <td>
+                    <strong>${user.full_name || '-'}</strong>
+                    <br><small class="text-muted">ID: ${user.id.substring(0, 8)}...</small>
+                  </td>
+                  <td>
+                    ${user.email || '-'}
+                    ${user.email_confirmed ? 
+                      '<br><span class="badge badge-success">Terverifikasi</span>' : 
+                      '<br><span class="badge badge-warning">Belum Verifikasi</span>'
+                    }
+                  </td>
+                  <td>
+                    <span class="badge badge-${this.getRoleBadgeColor(user.role)}">
+                      ${this.getRoleDisplayName(user.role)}
+                    </span>
+                  </td>
+                  <td>
+                    ${user.organizations?.name || user.organization_name || '-'}
+                    ${user.organizations?.code ? `<br><small class="text-muted">${user.organizations.code}</small>` : ''}
+                  </td>
+                  <td>
+                    ${user.email_confirmed ? 
+                      '<span class="badge badge-success">Aktif</span>' : 
+                      '<span class="badge badge-secondary">Pending</span>'
+                    }
+                  </td>
+                  <td>
+                    ${user.last_sign_in ? 
+                      this.formatDateTime(user.last_sign_in) : 
+                      '<span class="text-muted">Belum pernah login</span>'
+                    }
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button class="btn btn-warning btn-sm" onclick="PengaturanAplikasi.showPasswordResetModal('${user.id}', '${user.full_name}', '${user.email}')" title="Reset Password">
+                        <i class="fas fa-key"></i>
+                      </button>
+                      <button class="btn btn-danger btn-sm" onclick="PengaturanAplikasi.deleteUser('${user.id}', '${user.full_name}')" title="Hapus User">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading all users:', error);
+      const content = document.getElementById('all-users-content');
+      if (content) {
+        content.innerHTML = `
+          <div style="padding: 2rem; text-align: center; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Error memuat data user: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+  },
+
+  getRoleBadgeColor(role) {
+    const colors = {
+      'superadmin': 'danger',
+      'admin': 'warning',
+      'manager': 'info',
+      'user': 'secondary'
+    };
+    return colors[role] || 'secondary';
+  },
+
+  getRoleDisplayName(role) {
+    const names = {
+      'superadmin': 'Super Admin',
+      'admin': 'Admin',
+      'manager': 'Manager',
+      'user': 'User'
+    };
+    return names[role] || role;
+  },
+
+  formatDateTime(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  },
+
+  async refreshOrgUsers(orgId) {
+    try {
+      await this.ensureOrganizationUsersLoaded(orgId, { force: true });
+      this.render();
+      alert('Data user berhasil di-refresh');
+    } catch (error) {
+      console.error('Error refreshing org users:', error);
+      alert('Error: ' + error.message);
+    }
+  },
+
+  showPasswordResetModal(userId, fullName, email) {
+    const modal = document.getElementById('password-reset-modal');
+    if (!modal) return;
+    
+    document.getElementById('reset-user-id').value = userId;
+    document.getElementById('reset-user-display').value = `${fullName} (${email})`;
+    document.getElementById('reset-new-password').value = '';
+    document.getElementById('reset-confirm-password').value = '';
+    
+    modal.style.display = 'flex';
+  },
+
+  closePasswordModal() {
+    const modal = document.getElementById('password-reset-modal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  async resetUserPassword() {
+    const userId = document.getElementById('reset-user-id').value;
+    const newPassword = document.getElementById('reset-new-password').value;
+    const confirmPassword = document.getElementById('reset-confirm-password').value;
+    
+    if (!newPassword || newPassword.length < 8) {
+      alert('Password minimal 8 karakter');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      alert('Konfirmasi password tidak cocok');
+      return;
+    }
+    
+    try {
+      const apiCallFn = window.apiCall || apiCall;
+      await apiCallFn(`/api/user-management/${userId}/reset-password`, {
+        method: 'POST',
+        body: { new_password: newPassword }
+      });
+      
+      this.closePasswordModal();
+      alert('Password berhasil direset');
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      alert('Error: ' + error.message);
+    }
+  },
+
+  async deleteUser(userId, fullName) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus user "${fullName}"?\n\nTindakan ini akan menghapus user dari semua organisasi dan tidak dapat dibatalkan.`)) {
+      return;
+    }
+    
+    try {
+      const apiCallFn = window.apiCall || apiCall;
+      await apiCallFn(`/api/user-management/${userId}`, {
+        method: 'DELETE'
+      });
+      
+      // Refresh all users table
+      await this.loadAllUsers();
+      
+      // Also refresh current organization if selected
+      if (this.selectedOrgId) {
+        await this.ensureOrganizationUsersLoaded(this.selectedOrgId, { force: true });
+        this.render();
+      }
+      
+      alert('User berhasil dihapus');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Error: ' + error.message);
+    }
   },
 
   renderInput(label, key, type = 'text') {
@@ -535,9 +856,25 @@ const PengaturanAplikasi = {
 
   bindEvents() {
     document.querySelectorAll('.settings-tab').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         this.activeTab = e.currentTarget.dataset.tab;
-        this.render();
+        
+        // Load all users when switching to users tab for superadmin
+        if (this.activeTab === 'users') {
+          const currentUser = window.currentUser || {};
+          const isSuperAdmin = currentUser.profile?.role === 'superadmin' || currentUser.email === 'mukhsin9@gmail.com';
+          
+          this.render();
+          
+          if (isSuperAdmin) {
+            // Small delay to ensure DOM is rendered
+            setTimeout(() => {
+              this.loadAllUsers();
+            }, 100);
+          }
+        } else {
+          this.render();
+        }
       });
     });
 
@@ -793,6 +1130,15 @@ const PengaturanAplikasi = {
       modalForm.addEventListener('submit', (e) => {
         e.preventDefault();
         this.assignUserToOrganization();
+      });
+    }
+    
+    // Password reset form
+    const passwordResetForm = document.getElementById('password-reset-form');
+    if (passwordResetForm) {
+      passwordResetForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.resetUserPassword();
       });
     }
   },
@@ -1055,10 +1401,60 @@ const PengaturanAplikasi = {
       const currentSelectedOrg = this.selectedOrgId;
       const currentActiveTab = this.activeTab;
       
-      await apiCall(`/api/organizations/users/${recordId}`, {
+      // Show loading state
+      const selectElement = document.querySelector(`select[data-record-id="${recordId}"]`);
+      const originalValue = selectElement ? selectElement.value : null;
+      
+      if (selectElement) {
+        selectElement.disabled = true;
+        selectElement.style.opacity = '0.6';
+      }
+      
+      console.log(`Updating user role: recordId=${recordId}, role=${role}`);
+      
+      // Store current auth state to prevent login loop
+      const currentUser = window.currentUser;
+      const currentSession = window.currentSession;
+      const isCurrentUserBeingUpdated = currentUser && currentUser.id && 
+        this.organizations.some(org => 
+          org.users && org.users.some(user => 
+            user.id === recordId && user.user_id === currentUser.id
+          )
+        );
+      
+      if (isCurrentUserBeingUpdated) {
+        console.warn('Warning: Updating role of currently logged in user');
+      }
+      
+      const response = await apiCall(`/api/organizations/users/${recordId}`, {
         method: 'PUT',
         body: { role }
       });
+      
+      console.log('Role update response:', response);
+      
+      // Small delay to ensure database is updated
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // If current user's role was changed, update their session data
+      if (isCurrentUserBeingUpdated && window.currentUser && window.currentUser.profile) {
+        console.log('Updating current user profile role in session');
+        window.currentUser.profile.role = role;
+        
+        // Also update in localStorage if it exists
+        try {
+          const storedAuth = localStorage.getItem('supabase.auth.token');
+          if (storedAuth) {
+            const authData = JSON.parse(storedAuth);
+            if (authData.user && authData.user.profile) {
+              authData.user.profile.role = role;
+              localStorage.setItem('supabase.auth.token', JSON.stringify(authData));
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to update localStorage auth data:', error);
+        }
+      }
       
       // Force reload users for the selected organization
       if (currentSelectedOrg) {
@@ -1070,10 +1466,26 @@ const PengaturanAplikasi = {
       this.activeTab = currentActiveTab;
       this.render();
       
-      alert('Role berhasil diupdate');
+      // Show success message
+      setTimeout(() => {
+        alert('Role berhasil diupdate');
+      }, 100);
+      
     } catch (error) {
       console.error('Error updating user role:', error);
+      
+      // Reset select element on error
+      const selectElement = document.querySelector(`select[data-record-id="${recordId}"]`);
+      if (selectElement && originalValue) {
+        selectElement.disabled = false;
+        selectElement.style.opacity = '1';
+        selectElement.value = originalValue;
+      }
+      
       alert('Error: ' + error.message);
+      
+      // Re-render to restore state
+      this.render();
     }
   },
 

@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Profile Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .btn { padding: 10px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        #risk-profile-content { min-height: 200px; border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .loading { text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-chart-bar"></i> Test Risk Profile Page</h1>
+    
+    <div class="test-section">
+        <h3>1. Navigation Test</h3>
+        <button class="btn btn-primary" onclick="testNavigation()">
+            <i class="fas fa-play"></i> Test Navigation to Risk Profile
+        </button>
+        <div id="navigation-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. API Test</h3>
+        <button class="btn btn-success" onclick="testAPI()">
+            <i class="fas fa-server"></i> Test API Endpoint
+        </button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Risk Profile Content</h3>
+        <div id="risk-profile" class="page-content">
+            <div id="risk-profile-content" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Ready to load...
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="testRiskProfileLoad()">
+            <i class="fas fa-chart-bar"></i> Load Risk Profile Data
+        </button>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Module Test</h3>
+        <button class="btn btn-success" onclick="testModule()">
+            <i class="fas fa-cogs"></i> Test Risk Profile Module
+        </button>
+        <div id="module-result"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/navigation.js"></script>
+    <script src="/js/risk-profile.js"></script>
+    
+    <script>
+        // Test functions
+        function testNavigation() {
+            const result = document.getElementById('navigation-result');
+            result.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing navigation...';
+            
+            try {
+                if (typeof navigateToPage === 'function') {
+                    navigateToPage('risk-profile');
+                    result.innerHTML = '<div class="success">✅ Navigation function called successfully</div>';
+                } else {
+                    result.innerHTML = '<div class="error">❌ navigateToPage function not found</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ Navigation error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testAPI() {
+            const result = document.getElementById('api-result');
+            result.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing API...';
+            
+            try {
+                const response = await fetch('/api/risk-profile/debug');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    result.innerHTML = '<div class="success">✅ API working - ' + data.count + ' items found</div>';
+                } else {
+                    result.innerHTML = '<div class="error">❌ API error: ' + (data.message || 'Unknown error') + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ API request failed: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testRiskProfileLoad() {
+            try {
+                if (typeof loadRiskProfileManually === 'function') {
+                    await loadRiskProfileManually();
+                } else if (window.RiskProfileModule && typeof window.RiskProfileModule.load === 'function') {
+                    await window.RiskProfileModule.load();
+                } else {
+                    throw new Error('No Risk Profile loader found');
+                }
+            } catch (error) {
+                console.error('Risk Profile load error:', error);
+                document.getElementById('risk-profile-content').innerHTML = 
+                    '<div class="error">❌ Load error: ' + error.message + '</div>';
+            }
+        }
+        
+        function testModule() {
+            const result = document.getElementById('module-result');
+            
+            const checks = [
+                { name: 'RiskProfileModule', exists: typeof window.RiskProfileModule !== 'undefined' },
+                { name: 'loadRiskProfileManually', exists: typeof loadRiskProfileManually === 'function' },
+                { name: 'navigateToPage', exists: typeof navigateToPage === 'function' },
+                { name: 'loadPageData', exists: typeof loadPageData === 'function' }
+            ];
+            
+            const results = checks.map(check => 
+                '<div class="' + (check.exists ? 'success' : 'error') + '">' +
+                (check.exists ? '✅' : '❌') + ' ' + check.name + '</div>'
+            ).join('');
+            
+            result.innerHTML = results;
+        }
+        
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            console.log('🧪 Risk Profile test page loaded');
+            setTimeout(testModule, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -4,7 +4,72 @@ const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { buildOrganizationFilter } = require('../utils/organization');
 
-// Public endpoint for testing (no auth required) - MUST BE FIRST
+// Debug endpoint without authentication for testing - MUST BE FIRST
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('🔍 Debug endpoint accessed for sasaran-strategi');
+    
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
+      .from('sasaran_strategi')
+      .select(`
+        *,
+        rencana_strategis(id, kode, nama_rencana),
+        swot_tows_strategi(id, tipe_strategi, strategi)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Debug query error:', error);
+      throw error;
+    }
+
+    console.log(`✅ Debug query successful, returning ${data?.length || 0} items`);
+    res.json({ 
+      success: true, 
+      data: data || [], 
+      count: data?.length || 0,
+      message: 'Debug data retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message, 
+      data: [],
+      message: 'Debug endpoint failed'
+    });
+  }
+});
+
+// Simple endpoint without complex auth for testing - MUST BE SECOND
+router.get('/simple', async (req, res) => {
+  try {
+    const clientToUse = supabaseAdmin || supabase;
+    const { data, error } = await clientToUse
+      .from('sasaran_strategi')
+      .select(`
+        id,
+        sasaran,
+        perspektif,
+        tows_strategi_id,
+        rencana_strategis(nama_rencana),
+        swot_tows_strategi(tipe_strategi, strategi)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    console.log('Simple endpoint - returning data:', data?.length || 0, 'items');
+    res.json(data || []);
+  } catch (error) {
+    console.error('Simple sasaran strategi error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public endpoint for testing (no auth required) - MUST BE THIRD
 router.get('/public', async (req, res) => {
   try {
     console.log('=== SASARAN STRATEGI PUBLIC ENDPOINT ===');
@@ -211,6 +276,275 @@ function calculateContentSimilarity(sasaranText, towsText) {
   return commonWords / Math.max(sasaranWords.length, 1) * 0.5;
 }
 
+// Get all sasaran strategi (with filters)
+router.get('/', authenticateUser, async (req, res) => {
+  try {
+    const { rencana_strategis_id, tows_strategi_id, perspektif } = req.query;
+    
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
+      .from('sasaran_strategi')
+      .select(`
+        *,
+        rencana_strategis(id, kode, nama_rencana, organization_id),
+        swot_tows_strategi(id, tipe_strategi, strategi)
+      `);
+
+    // Apply organization filter through rencana_strategis relationship
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      let rsQuery = clientToUse
+        .from('rencana_strategis')
+        .select('id');
+      rsQuery = buildOrganizationFilter(rsQuery, req.user);
+      const { data: accessibleRS } = await rsQuery;
+      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
+      
+      if (accessibleRSIds.length > 0) {
+        query = query.in('rencana_strategis_id', accessibleRSIds);
+      } else {
+        return res.json([]);
+      }
+    }
+
+    // Apply filters
+    if (rencana_strategis_id) {
+      query = query.eq('rencana_strategis_id', rencana_strategis_id);
+    }
+    if (tows_strategi_id) {
+      query = query.eq('tows_strategi_id', tows_strategi_id);
+    }
+    if (perspektif) {
+      query = query.eq('perspektif', perspektif);
+    }
+
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Sasaran strategi GET error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get by ID
+router.get('/:id', authenticateUser, async (req, res) => {
+  try {
+    const clientToUse = supabaseAdmin || supabase;
+    let query = clientToUse
+      .from('sasaran_strategi')
+      .select(`
+        *,
+        rencana_strategis(id, kode, nama_rencana, organization_id),
+        swot_tows_strategi(id, tipe_strategi, strategi)
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    // Apply organization filter through rencana_strategis relationship
+    const { data, error } = await query;
+    
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Sasaran strategi tidak ditemukan' });
+
+    // Additional check for organization access
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      if (data.rencana_strategis?.organization_id) {
+        if (!req.user.organizations.includes(data.rencana_strategis.organization_id)) {
+          return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+        }
+      }
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Sasaran strategi GET by ID error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create
+router.post('/', authenticateUser, async (req, res) => {
+  try {
+    const { rencana_strategis_id, tows_strategi_id, perspektif, sasaran } = req.body;
+
+    if (!rencana_strategis_id || !perspektif || !sasaran) {
+      return res.status(400).json({ error: 'Rencana strategis, perspektif, dan sasaran wajib diisi' });
+    }
+
+    const clientToUse = supabaseAdmin || supabase;
+
+    // Check if rencana_strategis exists and user has access
+    let rsQuery = clientToUse
+      .from('rencana_strategis')
+      .select('id, organization_id')
+      .eq('id', rencana_strategis_id)
+      .single();
+
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      rsQuery = buildOrganizationFilter(rsQuery, req.user);
+    }
+
+    const { data: rencana, error: rencanaError } = await rsQuery;
+
+    if (rencanaError || !rencana) {
+      return res.status(404).json({ error: 'Rencana strategis tidak ditemukan atau Anda tidak memiliki akses' });
+    }
+
+    const insertData = {
+      user_id: req.user.id,
+      rencana_strategis_id,
+      tows_strategi_id: tows_strategi_id || null,
+      perspektif,
+      sasaran,
+      organization_id: rencana.organization_id || req.user.organizations?.[0] || null
+    };
+
+    const { data, error } = await clientToUse
+      .from('sasaran_strategi')
+      .insert(insertData)
+      .select(`
+        *,
+        rencana_strategis(id, kode, nama_rencana),
+        swot_tows_strategi(id, tipe_strategi, strategi)
+      `)
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json({ message: 'Sasaran strategi berhasil ditambahkan', data });
+  } catch (error) {
+    console.error('Sasaran strategi POST error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update
+router.put('/:id', authenticateUser, async (req, res) => {
+  try {
+    const { rencana_strategis_id, tows_strategi_id, perspektif, sasaran } = req.body;
+
+    const clientToUse = supabaseAdmin || supabase;
+
+    // First check if record exists and user has access
+    let checkQuery = clientToUse
+      .from('sasaran_strategi')
+      .select(`
+        *,
+        rencana_strategis(id, organization_id)
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    const { data: existing, error: checkError } = await checkQuery;
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Sasaran strategi tidak ditemukan' });
+    }
+
+    // Check organization access
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      if (existing.rencana_strategis?.organization_id) {
+        if (!req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
+          return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+        }
+      }
+    }
+
+    // If rencana_strategis_id is being changed, verify access to new rencana
+    if (rencana_strategis_id && rencana_strategis_id !== existing.rencana_strategis_id) {
+      let rsQuery = clientToUse
+        .from('rencana_strategis')
+        .select('id, organization_id')
+        .eq('id', rencana_strategis_id)
+        .single();
+
+      if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+        rsQuery = buildOrganizationFilter(rsQuery, req.user);
+      }
+
+      const { data: newRencana, error: rencanaError } = await rsQuery;
+
+      if (rencanaError || !newRencana) {
+        return res.status(404).json({ error: 'Rencana strategis baru tidak ditemukan atau Anda tidak memiliki akses' });
+      }
+    }
+
+    const updateData = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (rencana_strategis_id !== undefined) updateData.rencana_strategis_id = rencana_strategis_id;
+    if (tows_strategi_id !== undefined) updateData.tows_strategi_id = tows_strategi_id || null;
+    if (perspektif !== undefined) updateData.perspektif = perspektif;
+    if (sasaran !== undefined) updateData.sasaran = sasaran;
+
+    const { data, error } = await clientToUse
+      .from('sasaran_strategi')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select(`
+        *,
+        rencana_strategis(id, kode, nama_rencana),
+        swot_tows_strategi(id, tipe_strategi, strategi)
+      `)
+      .single();
+
+    if (error) throw error;
+
+    res.json({ message: 'Sasaran strategi berhasil diupdate', data });
+  } catch (error) {
+    console.error('Sasaran strategi PUT error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete
+router.delete('/:id', authenticateUser, async (req, res) => {
+  try {
+    const clientToUse = supabaseAdmin || supabase;
+
+    // First check if record exists and user has access
+    let checkQuery = clientToUse
+      .from('sasaran_strategi')
+      .select(`
+        *,
+        rencana_strategis(id, organization_id)
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    const { data: existing, error: checkError } = await checkQuery;
+
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'Sasaran strategi tidak ditemukan' });
+    }
+
+    // Check organization access
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      if (existing.rencana_strategis?.organization_id) {
+        if (!req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
+          return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+        }
+      }
+    }
+
+    const { error } = await clientToUse
+      .from('sasaran_strategi')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
+
+    res.json({ message: 'Sasaran strategi berhasil dihapus' });
+  } catch (error) {
+    console.error('Sasaran strategi DELETE error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get report data
 router.get('/report', authenticateUser, async (req, res) => {
   try {
@@ -262,278 +596,42 @@ router.get('/report', authenticateUser, async (req, res) => {
   }
 });
 
-// Debug endpoint without auth
+// Debug endpoint without authentication for testing
 router.get('/debug', async (req, res) => {
   try {
+    console.log('🔍 Debug endpoint accessed for sasaran-strategi');
+    
     const clientToUse = supabaseAdmin || supabase;
     const { data, error } = await clientToUse
       .from('sasaran_strategi')
       .select(`
         *,
-        rencana_strategis(id, kode, nama_rencana, organization_id),
+        rencana_strategis(id, kode, nama_rencana),
         swot_tows_strategi(id, tipe_strategi, strategi)
       `)
-      .limit(5);
+      .order('created_at', { ascending: false })
+      .limit(10);
 
-    if (error) throw error;
-    
-    res.json({
-      success: true,
+    if (error) {
+      console.error('Debug query error:', error);
+      throw error;
+    }
+
+    console.log(`✅ Debug query successful, returning ${data?.length || 0} items`);
+    res.json({ 
+      success: true, 
+      data: data || [], 
       count: data?.length || 0,
-      data: data || [],
-      sample: data?.[0] || null
+      message: 'Debug data retrieved successfully'
     });
   } catch (error) {
-    console.error('Debug sasaran strategi error:', error);
+    console.error('Debug endpoint error:', error);
     res.status(500).json({ 
       success: false, 
-      error: error.message,
-      stack: error.stack 
+      error: error.message, 
+      data: [],
+      message: 'Debug endpoint failed'
     });
-  }
-});
-
-// Simple endpoint without complex auth for testing
-router.get('/simple', async (req, res) => {
-  try {
-    const clientToUse = supabaseAdmin || supabase;
-    const { data, error } = await clientToUse
-      .from('sasaran_strategi')
-      .select(`
-        id,
-        sasaran,
-        perspektif,
-        tows_strategi_id,
-        rencana_strategis(nama_rencana),
-        swot_tows_strategi(tipe_strategi, strategi)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    
-    console.log('Simple endpoint - returning data:', data?.length || 0, 'items');
-    res.json(data || []);
-  } catch (error) {
-    console.error('Simple sasaran strategi error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get all sasaran strategi
-router.get('/', authenticateUser, async (req, res) => {
-  try {
-    const { rencana_strategis_id, tows_strategi_id, perspektif } = req.query;
-    
-    const clientToUse = supabaseAdmin || supabase;
-    let query = clientToUse
-      .from('sasaran_strategi')
-      .select(`
-        *,
-        rencana_strategis(id, kode, nama_rencana, organization_id),
-        swot_tows_strategi(id, tipe_strategi, strategi)
-      `)
-      .order('created_at', { ascending: false });
-
-    // Apply organization filter through rencana_strategis relationship
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      // Get accessible rencana_strategis IDs first
-      let rsQuery = clientToUse
-        .from('rencana_strategis')
-        .select('id');
-      rsQuery = buildOrganizationFilter(rsQuery, req.user);
-      const { data: accessibleRS } = await rsQuery;
-      const accessibleRSIds = (accessibleRS || []).map(rs => rs.id);
-      
-      if (accessibleRSIds.length > 0) {
-        query = query.in('rencana_strategis_id', accessibleRSIds);
-      } else {
-        // No accessible rencana strategis, return empty
-        return res.json([]);
-      }
-    }
-
-    if (rencana_strategis_id) {
-      query = query.eq('rencana_strategis_id', rencana_strategis_id);
-    }
-    if (tows_strategi_id) {
-      query = query.eq('tows_strategi_id', tows_strategi_id);
-    }
-    if (perspektif) {
-      query = query.eq('perspektif', perspektif);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-    res.json(data || []);
-  } catch (error) {
-    console.error('Sasaran strategi error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get by ID
-router.get('/:id', authenticateUser, async (req, res) => {
-  try {
-    const clientToUse = supabaseAdmin || supabase;
-    const { data, error } = await clientToUse
-      .from('sasaran_strategi')
-      .select(`
-        *,
-        rencana_strategis(id, kode, nama_rencana, organization_id),
-        swot_tows_strategi(id, tipe_strategi, strategi)
-      `)
-      .eq('sasaran_strategi.id', req.params.id)
-      .single();
-
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
-    
-    // Check organization access through rencana_strategis
-    if (!req.user.isSuperAdmin && data.rencana_strategis?.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(data.rencana_strategis.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
-    }
-    
-    res.json(data);
-  } catch (error) {
-    console.error('Sasaran strategi error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Create
-router.post('/', authenticateUser, async (req, res) => {
-  try {
-    const {
-      rencana_strategis_id,
-      tows_strategi_id,
-      sasaran,
-      perspektif
-    } = req.body;
-
-    if (!rencana_strategis_id || !sasaran || !perspektif) {
-      return res.status(400).json({ error: 'Rencana strategis, sasaran, dan perspektif wajib diisi' });
-    }
-
-    if (!['ES', 'IBP', 'LG', 'Fin'].includes(perspektif)) {
-      return res.status(400).json({ error: 'Perspektif harus ES, IBP, LG, atau Fin' });
-    }
-
-    const clientToUse = supabaseAdmin || supabase;
-    const { data, error } = await clientToUse
-      .from('sasaran_strategi')
-      .insert({
-        user_id: req.user.id,
-        rencana_strategis_id,
-        tows_strategi_id: tows_strategi_id || null,
-        sasaran,
-        perspektif
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.json({ message: 'Sasaran strategi berhasil ditambahkan', data });
-  } catch (error) {
-    console.error('Sasaran strategi error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update
-router.put('/:id', authenticateUser, async (req, res) => {
-  try {
-    const {
-      rencana_strategis_id,
-      tows_strategi_id,
-      sasaran,
-      perspektif
-    } = req.body;
-
-    if (perspektif && !['ES', 'IBP', 'LG', 'Fin'].includes(perspektif)) {
-      return res.status(400).json({ error: 'Perspektif harus ES, IBP, LG, atau Fin' });
-    }
-
-    const clientToUse = supabaseAdmin || supabase;
-    
-    // First check access through rencana_strategis
-    const { data: existing, error: checkError } = await clientToUse
-      .from('sasaran_strategi')
-      .select('rencana_strategis(organization_id)')
-      .eq('id', req.params.id)
-      .single();
-
-    if (checkError || !existing) {
-      return res.status(404).json({ error: 'Data tidak ditemukan' });
-    }
-
-    // Check organization access through rencana_strategis
-    if (!req.user.isSuperAdmin && existing.rencana_strategis?.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
-    }
-
-    const updateData = {
-      updated_at: new Date().toISOString()
-    };
-
-    if (rencana_strategis_id !== undefined) updateData.rencana_strategis_id = rencana_strategis_id;
-    if (tows_strategi_id !== undefined) updateData.tows_strategi_id = tows_strategi_id || null;
-    if (sasaran !== undefined) updateData.sasaran = sasaran;
-    if (perspektif !== undefined) updateData.perspektif = perspektif;
-
-    const { data, error } = await clientToUse
-      .from('sasaran_strategi')
-      .update(updateData)
-      .eq('id', req.params.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
-    res.json({ message: 'Sasaran strategi berhasil diupdate', data });
-  } catch (error) {
-    console.error('Sasaran strategi error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Delete
-router.delete('/:id', authenticateUser, async (req, res) => {
-  try {
-    const clientToUse = supabaseAdmin || supabase;
-    
-    // First check access through rencana_strategis
-    const { data: existing, error: checkError } = await clientToUse
-      .from('sasaran_strategi')
-      .select('rencana_strategis(organization_id)')
-      .eq('id', req.params.id)
-      .single();
-
-    if (checkError || !existing) {
-      return res.status(404).json({ error: 'Data tidak ditemukan' });
-    }
-
-    // Check organization access through rencana_strategis
-    if (!req.user.isSuperAdmin && existing.rencana_strategis?.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(existing.rencana_strategis.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
-      }
-    }
-
-    const { error } = await clientToUse
-      .from('sasaran_strategi')
-      .delete()
-      .eq('id', req.params.id);
-
-    if (error) throw error;
-    res.json({ message: 'Sasaran strategi berhasil dihapus' });
-  } catch (error) {
-    console.error('Sasaran strategi error:', error);
-    res.status(500).json({ error: error.message });
   }
 });
 

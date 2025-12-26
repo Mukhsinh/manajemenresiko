@@ -1,0 +1,70 @@
+/* CSS untuk menyembunyikan kolom kuantitas di tabel SWOT Analisis */
+
+/* Sembunyikan kolom kuantitas di semua tabel SWOT */
+.swot-table th:nth-child(7),
+.swot-table td:nth-child(7),
+table[data-table="swot-analisis"] th:nth-child(7),
+table[data-table="swot-analisis"] td:nth-child(7),
+#swotTable th:nth-child(7),
+#swotTable td:nth-child(7) {
+    display: none !important;
+}
+
+/* Alternatif dengan class selector */
+.kuantitas-column {
+    display: none !important;
+}
+
+/* Sembunyikan berdasarkan header text */
+th:contains("Kuantitas"),
+th:contains("kuantitas"),
+th[data-field="kuantitas"] {
+    display: none !important;
+}
+
+/* Sembunyikan cell yang berisi data kuantitas */
+td[data-field="kuantitas"] {
+    display: none !important;
+}
+
+/* Untuk DataTables */
+.dataTables_wrapper .kuantitas {
+    display: none !important;
+}
+
+/* Untuk Bootstrap tables */
+.table .kuantitas-col {
+    display: none !important;
+}
+
+/* Media queries untuk responsive */
+@media (max-width: 768px) {
+    .swot-table th:nth-child(7),
+    .swot-table td:nth-child(7) {
+        display: none !important;
+    }
+}
+
+/* Styling untuk tabel SWOT yang lebih baik tanpa kolom kuantitas */
+.swot-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.swot-table th,
+.swot-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.swot-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Highlight untuk kategori SWOT */
+.swot-strength { background-color: #d4edda; }
+.swot-weakness { background-color: #f8d7da; }
+.swot-opportunity { background-color: #d1ecf1; }
+.swot-threat { background-color: #fff3cd; }

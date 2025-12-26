@@ -273,7 +273,7 @@ router.get('/work-units', authenticateUser, async (req, res) => {
     const { data, error } = await clientToUse
       .from('master_work_units')
       .select('*, organizations(name, code)')
-      .order('name');
+      .order('code');
 
     if (error) throw error;
     res.json(data);
@@ -629,12 +629,59 @@ router.post('/risk-categories/import', authenticateUser, async (req, res) => {
 // Work units template/export/import
 router.get('/work-units/template', authenticateUser, async (req, res) => {
   try {
-    await handleTemplateResponse(
-      res,
-      ['name', 'code', 'organization_code', 'manager_name', 'manager_email'],
-      'Unit Kerja',
-      'template-unit-kerja.xlsx'
-    );
+    // Create template with sample data for work units
+    const headers = ['name', 'code', 'organization_code', 'manager_name', 'manager_email', 'jenis', 'kategori'];
+    const sampleData = [
+      {
+        name: 'Unit Rawat Inap Kelas I',
+        code: 'UK001',
+        organization_code: 'RSU001',
+        manager_name: 'Dr. Ahmad Santoso',
+        manager_email: 'ahmad.santoso@hospital.com',
+        jenis: 'rawat inap',
+        kategori: 'klinis'
+      },
+      {
+        name: 'Poliklinik Umum',
+        code: 'UK002',
+        organization_code: 'RSU001',
+        manager_name: 'Dr. Siti Nurhaliza',
+        manager_email: 'siti.nurhaliza@hospital.com',
+        jenis: 'rawat jalan',
+        kategori: 'klinis'
+      },
+      {
+        name: 'Laboratorium Klinik',
+        code: 'UK003',
+        organization_code: 'RSU001',
+        manager_name: 'dr. Budi Prasetyo',
+        manager_email: 'budi.prasetyo@hospital.com',
+        jenis: 'penunjang medis',
+        kategori: 'klinis'
+      },
+      {
+        name: 'Bagian Keuangan',
+        code: 'UK004',
+        organization_code: 'RSU001',
+        manager_name: 'Andi Wijaya, SE',
+        manager_email: 'andi.wijaya@hospital.com',
+        jenis: 'administrasi',
+        kategori: 'non klinis'
+      },
+      {
+        name: 'Direktur Medis',
+        code: 'UK005',
+        organization_code: 'RSU001',
+        manager_name: 'Prof. Dr. Maria Sari',
+        manager_email: 'maria.sari@hospital.com',
+        jenis: 'manajemen',
+        kategori: 'klinis'
+      }
+    ];
+    
+    const { generateTemplateWithSamples } = require('../utils/exportHelper');
+    const buffer = generateTemplateWithSamples(headers, sampleData, 'Unit Kerja');
+    sendExcelResponse(res, buffer, 'template-unit-kerja.xlsx');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -648,7 +695,7 @@ router.get('/work-units/export', authenticateUser, async (req, res) => {
     const { data, error } = await clientToUse
       .from('master_work_units')
       .select('*, organizations(name, code)')
-      .order('name');
+      .order('code');
 
     if (error) throw error;
 
@@ -658,7 +705,9 @@ router.get('/work-units/export', authenticateUser, async (req, res) => {
       organisasi: item.organizations?.name || '',
       kode_organisasi: item.organizations?.code || '',
       nama_manajer: item.manager_name || '',
-      email_manajer: item.manager_email || ''
+      email_manajer: item.manager_email || '',
+      jenis: item.jenis || '',
+      kategori: item.kategori || ''
     }));
 
     const buffer = exportToExcel(formatted, 'Unit Kerja');
@@ -687,7 +736,9 @@ router.post('/work-units/import', authenticateUser, async (req, res) => {
         organization_code: ['organization_code', 'Kode Organisasi', 'Org Code', 'Organization Code'],
         organization_name: ['organization_name', 'Nama Organisasi'],
         manager_name: ['manager_name', 'Nama Manajer'],
-        manager_email: ['manager_email', 'Email Manajer']
+        manager_email: ['manager_email', 'Email Manajer'],
+        jenis: ['jenis', 'Jenis', 'Jenis Unit Kerja'],
+        kategori: ['kategori', 'Kategori', 'Kategori Unit Kerja']
       });
 
       if (!normalized.code) {
@@ -701,6 +752,18 @@ router.post('/work-units/import', authenticateUser, async (req, res) => {
         if (org) {
           normalized.organization_id = org.id;
         }
+      }
+
+      // Validate jenis and kategori values
+      const validJenis = ['rawat inap', 'rawat jalan', 'penunjang medis', 'administrasi', 'manajemen'];
+      const validKategori = ['klinis', 'non klinis'];
+      
+      if (normalized.jenis && !validJenis.includes(normalized.jenis.toLowerCase())) {
+        normalized.jenis = 'administrasi'; // default value
+      }
+      
+      if (normalized.kategori && !validKategori.includes(normalized.kategori.toLowerCase())) {
+        normalized.kategori = 'non klinis'; // default value
       }
 
       delete normalized.organization_code;

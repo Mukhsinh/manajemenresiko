@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Residual Risk Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        .badge-low-risk {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge-medium-risk {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .badge-high-risk {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .badge-extreme-high {
+            background-color: #f5c6cb;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .badge-secondary {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i data-lucide="pie-chart" class="text-primary"></i> Test Residual Risk Fix</h2>
+                <p class="text-muted">Testing residual risk data display</p>
+                
+                <div class="mb-3">
+                    <button class="btn btn-primary" onclick="loadData()">
+                        <i data-lucide="refresh-cw"></i> Load Data
+                    </button>
+                    <button class="btn btn-info" onclick="testAPI()">
+                        <i data-lucide="database"></i> Test API
+                    </button>
+                </div>
+
+                <div id="debug-info" class="alert alert-info">
+                    <h5>Debug Information</h5>
+                    <div id="debug-content">Ready to test...</div>
+                </div>
+
+                <div id="content-area">
+                    <div class="text-center py-5">
+                        <p class="text-muted">Click "Load Data" to start</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let residualData = [];
+        
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            log('Page loaded, ready to test');
+        });
+
+        function log(message) {
+            const debugContent = document.getElementById('debug-content');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            console.log(message);
+        }
+
+        async function testAPI() {
+            log('Testing API endpoint...');
+            
+            try {
+                const response = await fetch('/api/reports/residual-risk-simple');
+                log(`API Response Status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`API returned ${data.length} records`);
+                
+                if (data.length > 0) {
+                    log('First record structure:');
+                    log(JSON.stringify(data[0], null, 2));
+                }
+                
+                return data;
+                
+            } catch (error) {
+                log(`API Error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function loadData() {
+            try {
+                log('Starting data load...');
+                
+                const data = await testAPI();
+                residualData = data;
+                
+                log('Rendering content...');
+                renderContent();
+                
+                log('✅ Data loaded and rendered successfully');
+                
+            } catch (error) {
+                log(`❌ Error loading data: ${error.message}`);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('content-area');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <h4><i data-lucide="alert-triangle"></i> Error</h4>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadData()">
+                        <i data-lucide="refresh-cw"></i> Coba Lagi
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+        
+        function renderContent() {
+            const container = document.getElementById('content-area');
+            
+            if (residualData.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <h4><i data-lucide="info"></i> Tidak Ada Data</h4>
+                        <p>Belum ada data residual risk yang tersedia.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            
+            // Calculate statistics
+            const stats = calculateStatistics();
+            log(`Statistics calculated: ${JSON.stringify(stats)}`);
+            
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i data-lucide="pie-chart"></i> Residual Risk Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        ${renderStatistics(stats)}
+                        ${renderTable()}
+                    </div>
+                </div>
+            `;
+            
+            lucide.createIcons();
+        }
+        
+        function calculateStatistics() {
+            let totalInherent = 0;
+            let totalResidual = 0;
+            let validInherentCount = 0;
+            
+            residualData.forEach(item => {
+                const risk = item.risk_inputs || {};
+                let inherent = {};
+                
+                // Try to get inherent data
+                if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                    inherent = risk.risk_inherent_analysis[0];
+                } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+                    inherent = risk.risk_inherent_analysis;
+                }
+                
+                const inherentValue = parseFloat(inherent.risk_value) || 0;
+                const residualValue = parseFloat(item.risk_value) || 0;
+                
+                if (inherentValue > 0) {
+                    totalInherent += inherentValue;
+                    validInherentCount++;
+                }
+                totalResidual += residualValue;
+            });
+
+            const avgInherent = validInherentCount > 0 ? totalInherent / validInherentCount : 0;
+            const avgResidual = residualData.length > 0 ? totalResidual / residualData.length : 0;
+            const reduction = avgInherent > 0 ? ((avgInherent - avgResidual) / avgInherent * 100).toFixed(1) : '0.0';
+
+            return {
+                total: residualData.length,
+                avgInherent: avgInherent,
+                avgResidual: avgResidual,
+                reduction: reduction
+            };
+        }
+        
+        function renderStatistics(stats) {
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="stat-value">${stats.total}</div>
+                        <div class="stat-label">Total Residual Risk</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-value">${stats.avgInherent.toFixed(2)}</div>
+                        <div class="stat-label">Avg Inherent Value</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="stat-value">${stats.avgResidual.toFixed(2)}</div>
+                        <div class="stat-label">Avg Residual Value</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <div class="stat-value">${stats.reduction}%</div>
+                        <div class="stat-label">Risk Reduction</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderTable() {
+            return `
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem;"><i data-lucide="table"></i> Detail Residual Risk Analysis</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Kode Risiko</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Inherent</th>
+                                    <th>Residual</th>
+                                    <th>Reduction</th>
+                                    <th>Level</th>
+                                    <th>Review Status</th>
+                                    <th>Next Review</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${residualData.map(item => {
+                                    const risk = item.risk_inputs || {};
+                                    
+                                    // Get inherent data
+                                    let inherent = {};
+                                    if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                                        inherent = risk.risk_inherent_analysis[0];
+                                    } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+                                        inherent = risk.risk_inherent_analysis;
+                                    }
+                                    
+                                    const inherentValue = inherent.risk_value || 0;
+                                    const inherentLevel = inherent.risk_level || 'UNKNOWN';
+                                    const residualValue = item.risk_value || 0;
+                                    
+                                    // Calculate reduction percentage
+                                    let reduction = '-';
+                                    if (inherentValue > 0 && residualValue >= 0) {
+                                        const reductionPercent = ((inherentValue - residualValue) / inherentValue * 100);
+                                        reduction = reductionPercent.toFixed(1) + '%';
+                                    }
+                                    
+                                    return `
+                                        <tr>
+                                            <td><strong>${risk.kode_risiko || '-'}</strong></td>
+                                            <td>${risk.master_work_units?.name || '-'}</td>
+                                            <td><span class="badge-status ${getBadgeClass(inherentLevel)}">${inherentValue || '-'}</span></td>
+                                            <td><span class="badge-status ${getBadgeClass(item.risk_level)}">${residualValue || '-'}</span></td>
+                                            <td><strong style="color: #0d4f1c; font-weight: 700;">${reduction}</strong></td>
+                                            <td><span class="badge-status ${getBadgeClass(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                                            <td><span class="badge-status badge-secondary">${item.review_status || '-'}</span></td>
+                                            <td>${item.next_review_date || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getBadgeClass(level) {
+            const levelUpper = (level || '').toUpperCase();
+            
+            if (levelUpper.includes('LOW') || levelUpper.includes('RENDAH')) {
+                return 'badge-low-risk';
+            } else if (levelUpper.includes('MEDIUM') || levelUpper.includes('SEDANG')) {
+                return 'badge-medium-risk';
+            } else if (levelUpper.includes('HIGH') && !levelUpper.includes('EXTREME')) {
+                return 'badge-high-risk';
+            } else if (levelUpper.includes('EXTREME') || levelUpper.includes('VERY HIGH') || levelUpper.includes('SANGAT')) {
+                return 'badge-extreme-high';
+            } else {
+                return 'badge-secondary';
+            }
+        }
+    </script>
+</body>
+</html>

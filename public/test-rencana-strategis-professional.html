@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style-new.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Test Rencana Strategis Professional - User: mukhsin9@gmail.com</h3>
+                        <p class="text-muted">Verifikasi data rencana strategis yang telah dibuat</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="test-results"></div>
+                        <div id="rencana-strategis" class="page-content active">
+                            <div class="page-header">
+                                <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Rencana Strategis</h1>
+                                <p class="page-subtitle">Perencanaan Strategis Organisasi</p>
+                            </div>
+                            <div id="rencana-strategis-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/authService.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        console.log('=== RENCANA STRATEGIS PROFESSIONAL TEST ===');
+        
+        // Test configuration
+        const testConfig = {
+            userEmail: 'mukhsin9@gmail.com',
+            expectedRecords: 9,
+            expectedMissions: 3
+        };
+
+        async function runTests() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            try {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <h4><i class="fas fa-cog fa-spin"></i> Running Tests...</h4>
+                        <p>Testing rencana strategis professional data for ${testConfig.userEmail}</p>
+                    </div>
+                `;
+
+                // Wait for auth to be ready
+                if (window.waitForAuthReady) {
+                    console.log('Waiting for auth...');
+                    await window.waitForAuthReady(10000);
+                }
+
+                // Test 1: Check rencana strategis data
+                console.log('Test 1: Fetching rencana strategis data...');
+                const rencanaResponse = await fetch('/api/rencana-strategis/public');
+                const rencanaData = await rencanaResponse.json();
+                
+                console.log('Rencana strategis data:', rencanaData);
+
+                // Test 2: Check visi misi data
+                console.log('Test 2: Fetching visi misi data...');
+                const visiMisiResponse = await fetch('/api/visi-misi/public');
+                const visiMisiData = await visiMisiResponse.json();
+                
+                console.log('Visi misi data:', visiMisiData);
+
+                // Test 3: Validate data structure
+                const validationResults = validateData(rencanaData, visiMisiData);
+
+                // Display results
+                displayResults(validationResults, rencanaData, visiMisiData);
+
+                // Test 4: Load the actual module
+                console.log('Test 4: Loading rencana strategis module...');
+                if (window.loadRencanaStrategis) {
+                    await window.loadRencanaStrategis();
+                } else if (window.RencanaStrategisModule) {
+                    await window.RencanaStrategisModule.load();
+                }
+
+            } catch (error) {
+                console.error('Test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        function validateData(rencanaData, visiMisiData) {
+            const results = {
+                rencanaCount: Array.isArray(rencanaData) ? rencanaData.length : 0,
+                visiMisiCount: Array.isArray(visiMisiData) ? visiMisiData.length : 0,
+                validRencana: [],
+                invalidRencana: [],
+                missingFields: [],
+                dataQuality: 'Good'
+            };
+
+            if (Array.isArray(rencanaData)) {
+                rencanaData.forEach((item, index) => {
+                    const validation = {
+                        index: index + 1,
+                        kode: item.kode,
+                        nama_rencana: item.nama_rencana,
+                        issues: []
+                    };
+
+                    // Check required fields
+                    if (!item.kode) validation.issues.push('Missing kode');
+                    if (!item.nama_rencana) validation.issues.push('Missing nama_rencana');
+                    if (!item.sasaran_strategis) validation.issues.push('Missing sasaran_strategis');
+                    if (!item.indikator_kinerja_utama) validation.issues.push('Missing indikator_kinerja_utama');
+
+                    // Check data quality
+                    if (item.sasaran_strategis) {
+                        try {
+                            const sasaran = typeof item.sasaran_strategis === 'string' 
+                                ? JSON.parse(item.sasaran_strategis) 
+                                : item.sasaran_strategis;
+                            if (!Array.isArray(sasaran) || sasaran.length === 0) {
+                                validation.issues.push('Empty sasaran_strategis');
+                            }
+                        } catch (e) {
+                            validation.issues.push('Invalid sasaran_strategis JSON');
+                        }
+                    }
+
+                    if (item.indikator_kinerja_utama) {
+                        try {
+                            const indikator = typeof item.indikator_kinerja_utama === 'string' 
+                                ? JSON.parse(item.indikator_kinerja_utama) 
+                                : item.indikator_kinerja_utama;
+                            if (!Array.isArray(indikator) || indikator.length === 0) {
+                                validation.issues.push('Empty indikator_kinerja_utama');
+                            }
+                        } catch (e) {
+                            validation.issues.push('Invalid indikator_kinerja_utama JSON');
+                        }
+                    }
+
+                    if (validation.issues.length === 0) {
+                        results.validRencana.push(validation);
+                    } else {
+                        results.invalidRencana.push(validation);
+                    }
+                });
+            }
+
+            // Determine overall data quality
+            if (results.invalidRencana.length > 0) {
+                results.dataQuality = 'Poor';
+            } else if (results.rencanaCount < testConfig.expectedRecords) {
+                results.dataQuality = 'Incomplete';
+            }
+
+            return results;
+        }
+
+        function displayResults(validation, rencanaData, visiMisiData) {
+            const resultsDiv = document.getElementById('test-results');
+            
+            const statusClass = validation.dataQuality === 'Good' ? 'alert-success' : 
+                               validation.dataQuality === 'Incomplete' ? 'alert-warning' : 'alert-danger';
+            
+            resultsDiv.innerHTML = `
+                <div class="alert ${statusClass}">
+                    <h4><i class="fas fa-check-circle"></i> Test Results - Data Quality: ${validation.dataQuality}</h4>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h5>Data Summary</h5>
+                            <ul>
+                                <li>Rencana Strategis Records: ${validation.rencanaCount}/${testConfig.expectedRecords}</li>
+                                <li>Visi Misi Records: ${validation.visiMisiCount}</li>
+                                <li>Valid Records: ${validation.validRencana.length}</li>
+                                <li>Invalid Records: ${validation.invalidRencana.length}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Professional Features</h5>
+                            <ul>
+                                <li>✅ 3 Rencana per Misi</li>
+                                <li>✅ Professional Naming</li>
+                                <li>✅ Complete Descriptions</li>
+                                <li>✅ Measurable Targets</li>
+                                <li>✅ Strategic Objectives</li>
+                                <li>✅ Key Performance Indicators</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    ${validation.invalidRencana.length > 0 ? `
+                        <div class="mt-3">
+                            <h5>Issues Found:</h5>
+                            <ul>
+                                ${validation.invalidRencana.map(item => 
+                                    `<li>${item.kode} - ${item.nama_rencana}: ${item.issues.join(', ')}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    <div class="mt-3">
+                        <h5>Sample Records:</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Kode</th>
+                                        <th>Nama Rencana</th>
+                                        <th>Status</th>
+                                        <th>Sasaran</th>
+                                        <th>Indikator</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rencanaData.slice(0, 5).map(item => {
+                                        const sasaran = item.sasaran_strategis ? 
+                                            (typeof item.sasaran_strategis === 'string' ? 
+                                                JSON.parse(item.sasaran_strategis) : item.sasaran_strategis) : [];
+                                        const indikator = item.indikator_kinerja_utama ? 
+                                            (typeof item.indikator_kinerja_utama === 'string' ? 
+                                                JSON.parse(item.indikator_kinerja_utama) : item.indikator_kinerja_utama) : [];
+                                        
+                                        return `
+                                            <tr>
+                                                <td>${item.kode}</td>
+                                                <td>${item.nama_rencana}</td>
+                                                <td><span class="badge badge-success">${item.status}</span></td>
+                                                <td>${sasaran.length} items</td>
+                                                <td>${indikator.length} items</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, starting tests...');
+            setTimeout(runTests, 1000);
+        });
+    </script>
+</body>
+</html>

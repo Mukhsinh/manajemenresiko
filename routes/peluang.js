@@ -43,7 +43,88 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// Debug endpoint - temporary (no auth required) - MUST BE FIRST
+// Debug endpoint without authentication for testing - MUST BE FIRST
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('🔍 Debug endpoint accessed for peluang');
+    
+    const { supabaseAdmin } = require('../config/supabase');
+    
+    console.log('Using supabaseAdmin:', !!supabaseAdmin);
+    
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
+      .from('peluang')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Peluang debug query error:', error);
+      throw error;
+    }
+
+    console.log('Debug query result:', {
+      count: data?.length || 0,
+      hasData: data && data.length > 0,
+      firstItem: data && data.length > 0 ? {
+        id: data[0].id,
+        kode: data[0].kode,
+        nama_peluang: data[0].nama_peluang,
+        organization_id: data[0].organization_id
+      } : null
+    });
+
+    res.json({
+      success: true,
+      count: data?.length || 0,
+      data: data || [],
+      message: 'Peluang debug data retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Simple endpoint without complex auth for testing - MUST BE SECOND
+router.get('/simple', async (req, res) => {
+  try {
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
+      .from('peluang')
+      .select(`
+        *,
+        master_risk_categories (
+          name
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    console.log('Simple endpoint - returning data:', data?.length || 0, 'items');
+    res.json(data || []);
+  } catch (error) {
+    console.error('Simple peluang error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public endpoint for testing (no auth required) - MUST BE THIRD
 router.get('/debug', async (req, res) => {
   try {
     console.log('=== PELUANG DEBUG ENDPOINT ===');
@@ -266,7 +347,11 @@ router.put('/:id', authenticateUser, async (req, res) => {
       status
     } = req.body;
 
-    const { data, error } = await supabase
+    // Use supabaseAdmin for better reliability
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+
+    const { data, error } = await client
       .from('peluang')
       .update({
         nama_peluang,
@@ -281,7 +366,6 @@ router.put('/:id', authenticateUser, async (req, res) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
       .select()
       .single();
 
@@ -297,11 +381,14 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const { error } = await supabase
+    // Use supabaseAdmin for better reliability
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+
+    const { error } = await client
       .from('peluang')
       .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
+      .eq('id', req.params.id);
 
     if (error) throw error;
     res.json({ message: 'Peluang berhasil dihapus' });

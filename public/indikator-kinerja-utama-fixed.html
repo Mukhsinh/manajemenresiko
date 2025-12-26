@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indikator Kinerja Utama - Fixed</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Enhanced IKU Styles */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+        }
+        
+        .filter-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* FIXED: Table Container with proper overflow handling */
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .table-responsive {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        /* FIXED: IKU Table with proper column sizing and text handling */
+        .iku-table {
+            min-width: 1400px;
+            table-layout: fixed;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .iku-table th {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            padding: 12px 8px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.8rem;
+        }
+        
+        .iku-table td {
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 8px;
+            vertical-align: middle;
+            font-size: 0.8rem;
+        }
+        
+        /* FIXED: Column Definitions with proper text handling */
+        .col-no {
+            width: 50px;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        
+        .col-rencana {
+            width: 200px;
+            padding: 8px !important;
+        }
+        
+        .col-sasaran {
+            width: 200px;
+            padding: 8px !important;
+        }
+        
+        .col-indikator {
+            width: 250px;
+            padding: 8px !important;
+        }
+        
+        .col-baseline, .col-target {
+            width: 120px;
+            text-align: center;
+            padding: 8px !important;
+        }
+        
+        .col-progress {
+            width: 160px;
+            text-align: center;
+            padding: 8px !important;
+        }
+        
+        .col-pic {
+            width: 120px;
+            text-align: center;
+            padding: 8px !important;
+        }
+        
+        .col-aksi {
+            width: 100px;
+            text-align: center;
+            padding: 8px !important;
+        }
+        
+        /* FIXED: Text Container with proper overflow handling */
+        .text-container {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.4;
+            word-break: break-word;
+            hyphens: auto;
+            display: block;
+        }
+        
+        /* FIXED: Multi-line text container for longer content */
+        .text-container-multiline {
+            max-width: 100%;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.3;
+            word-break: break-word;
+            hyphens: auto;
+            font-size: 0.75rem;
+        }
+        
+        /* Progress Bar Styles */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 140px;
+            flex-direction: row;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-weight: 600;
+            font-size: 0.7rem;
+            min-width: 40px;
+            text-align: right;
+        }
+        
+        /* Value Display Styles */
+        .value-display {
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+        
+        .value-main {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .value-sub {
+            color: #6c757d;
+            font-size: 0.65rem;
+        }
+        
+        /* Action Buttons */
+        .btn-icon {
+            padding: 6px 8px;
+            margin: 0 2px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.7rem;
+            min-width: 32px;
+        }
+        
+        .btn-edit {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        /* Tooltip for truncated text */
+        .text-container[title]:hover {
+            cursor: help;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .iku-table {
+                font-size: 0.75rem;
+            }
+            
+            .text-container-multiline {
+                font-size: 0.7rem;
+                -webkit-line-clamp: 1;
+            }
+            
+            .col-rencana, .col-sasaran {
+                width: 150px;
+            }
+            
+            .col-indikator {
+                width: 200px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .iku-table {
+                font-size: 0.7rem;
+            }
+            
+            .text-container-multiline {
+                font-size: 0.65rem;
+            }
+            
+            .col-rencana, .col-sasaran {
+                width: 120px;
+            }
+            
+            .col-indikator {
+                width: 150px;
+            }
+        }
+        
+        /* Loading and No Data States */
+        .loading, .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .loading i, .no-data i {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-1"><i class="fas fa-chart-line"></i> Indikator Kinerja Utama (KPI)</h2>
+                        <p class="mb-0 opacity-75">Kelola indikator kinerja utama dengan tampilan yang jelas dan mudah dibaca</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+                            <button class="btn btn-success" onclick="downloadReport()">
+                                <i class="fas fa-download"></i> Unduh Laporan
+                            </button>
+                            <button class="btn btn-primary" onclick="showModal()">
+                                <i class="fas fa-plus"></i> Tambah Indikator
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Rencana Strategis</label>
+                    <select class="form-control" id="filter-rencana-strategis" onchange="applyFilter()">
+                        <option value="">Semua</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Sasaran Strategi</label>
+                    <select class="form-control" id="filter-sasaran-strategi" onchange="applyFilter()">
+                        <option value="">Semua</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter Tahun</label>
+                    <select class="form-control" id="filter-tahun" onchange="applyFilter()">
+                        <option value="">Semua Tahun</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card border-0">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="mb-0">Data Indikator Kinerja Utama</h5>
+                <small class="text-muted">Teks dalam tabel diperbaiki agar tidak overflow dan mudah dibaca</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-striped iku-table" id="ikuTable">
+                            <thead>
+                                <tr>
+                                    <th class="col-no">No</th>
+                                    <th class="col-rencana">Rencana Strategis</th>
+                                    <th class="col-sasaran">Sasaran Strategi</th>
+                                    <th class="col-indikator">Indikator</th>
+                                    <th class="col-baseline">Baseline</th>
+                                    <th class="col-target">Target</th>
+                                    <th class="col-progress">Progress</th>
+                                    <th class="col-pic">PIC</th>
+                                    <th class="col-aksi">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ikuTableBody">
+                                <tr>
+                                    <td colspan="9" class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Tambah Indikator Kinerja Utama</h3>
+                <button class="modal-close" onclick="closeModal('dataModal')">&times;</button>
+            </div>
+            <form id="ikuForm" onsubmit="saveData(event)">
+                <div style="padding: 1.5rem;">
+                    <div class="mb-3">
+                        <label class="form-label">Rencana Strategis *</label>
+                        <select class="form-control" id="rencanaStrategis" required>
+                            <option value="">Pilih Rencana Strategis</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sasaran Strategi</label>
+                        <select class="form-control" id="sasaranStrategi">
+                            <option value="">Pilih Sasaran Strategi (Opsional)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Indikator *</label>
+                        <textarea class="form-control" id="indikator" required rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Baseline Tahun</label>
+                                <input type="number" class="form-control" id="baselineTahun" value="2024">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Baseline Nilai</label>
+                                <input type="number" class="form-control" id="baselineNilai" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Target Tahun</label>
+                                <input type="number" class="form-control" id="targetTahun" value="2025">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Target Nilai</label>
+                                <input type="number" class="form-control" id="targetNilai" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Initiatif Strategi</label>
+                        <textarea class="form-control" id="initiatif" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">PIC</label>
+                        <input type="text" class="form-control" id="pic">
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('dataModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allData = [];
+        let rencanaStrategis = [];
+        let sasaranStrategi = [];
+        let currentEditId = null;
+        let filters = {
+            rencana_strategis_id: '',
+            sasaran_strategi_id: '',
+            tahun: ''
+        };
+
+        // API Configuration
+        const API_BASE_URL = window.location.origin;
+        
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            };
+            
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...defaultOptions,
+                ...options,
+                headers: { ...defaultOptions.headers, ...options.headers }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+
+        async function loadInitialData() {
+            try {
+                console.log('Loading IKU data...');
+                
+                const apiUrl = '/api/indikator-kinerja-utama?' + new URLSearchParams(filters);
+                
+                let indikator, rencana, sasaran;
+                
+                try {
+                    // Try authenticated endpoints first
+                    [indikator, rencana, sasaran] = await Promise.all([
+                        apiCall(apiUrl),
+                        apiCall('/api/rencana-strategis'),
+                        apiCall('/api/sasaran-strategi')
+                    ]);
+                } catch (authError) {
+                    console.warn('Authenticated API failed, trying fallback endpoints:', authError.message);
+                    
+                    // Fallback to public or debug endpoints
+                    try {
+                        [indikator, rencana, sasaran] = await Promise.all([
+                            apiCall('/api/indikator-kinerja-utama/public').catch(() => []),
+                            apiCall('/api/rencana-strategis/public').catch(() => []),
+                            apiCall('/api/sasaran-strategi/public').catch(() => [])
+                        ]);
+                    } catch (publicError) {
+                        console.warn('Public API failed, using empty data:', publicError.message);
+                        indikator = [];
+                        rencana = [];
+                        sasaran = [];
+                    }
+                }
+                
+                allData = indikator || [];
+                rencanaStrategis = rencana || [];
+                sasaranStrategi = sasaran || [];
+                
+                populateFilters();
+                populateFormOptions();
+                renderTable();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+
+        function populateFilters() {
+            // Populate Rencana Strategis filter
+            const rencanaSelect = document.getElementById('filter-rencana-strategis');
+            rencanaSelect.innerHTML = '<option value="">Semua</option>';
+            rencanaStrategis.forEach(r => {
+                rencanaSelect.innerHTML += `<option value="${r.id}" ${filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.nama_rencana}</option>`;
+            });
+
+            // Populate Sasaran Strategi filter
+            const sasaranSelect = document.getElementById('filter-sasaran-strategi');
+            sasaranSelect.innerHTML = '<option value="">Semua</option>';
+            sasaranStrategi.forEach(s => {
+                const shortSasaran = s.sasaran.length > 50 ? s.sasaran.substring(0, 50) + '...' : s.sasaran;
+                sasaranSelect.innerHTML += `<option value="${s.id}" ${filters.sasaran_strategi_id === s.id ? 'selected' : ''}>${shortSasaran}</option>`;
+            });
+
+            // Populate Year filter
+            const tahunSelect = document.getElementById('filter-tahun');
+            tahunSelect.innerHTML = '<option value="">Semua Tahun</option>';
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+                tahunSelect.innerHTML += `<option value="${year}" ${filters.tahun == year ? 'selected' : ''}>${year}</option>`;
+            }
+        }
+
+        function populateFormOptions() {
+            // Populate Rencana Strategis in form
+            const rencanaForm = document.getElementById('rencanaStrategis');
+            rencanaForm.innerHTML = '<option value="">Pilih Rencana Strategis</option>';
+            rencanaStrategis.forEach(r => {
+                rencanaForm.innerHTML += `<option value="${r.id}">${r.nama_rencana}</option>`;
+            });
+
+            // Populate Sasaran Strategi in form
+            const sasaranForm = document.getElementById('sasaranStrategi');
+            sasaranForm.innerHTML = '<option value="">Pilih Sasaran Strategi (Opsional)</option>';
+            sasaranStrategi.forEach(s => {
+                const shortSasaran = s.sasaran.length > 80 ? s.sasaran.substring(0, 80) + '...' : s.sasaran;
+                sasaranForm.innerHTML += `<option value="${s.id}">${shortSasaran}</option>`;
+            });
+        }
+
+        async function applyFilter() {
+            filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
+            filters.sasaran_strategi_id = document.getElementById('filter-sasaran-strategi')?.value || '';
+            filters.tahun = document.getElementById('filter-tahun')?.value || '';
+            
+            await loadInitialData();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('ikuTableBody');
+            
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="no-data"><i class="fas fa-info-circle"></i> Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allData.map((item, index) => {
+                const progress = calculateProgress(item);
+                return `
+                <tr>
+                    <td class="col-no">${index + 1}</td>
+                    <td class="col-rencana" title="${item.rencana_strategis?.nama_rencana || '-'}">
+                        <div class="text-container-multiline">
+                            ${item.rencana_strategis?.nama_rencana || '-'}
+                        </div>
+                    </td>
+                    <td class="col-sasaran" title="${item.sasaran_strategi?.sasaran || '-'}">
+                        <div class="text-container-multiline">
+                            ${item.sasaran_strategi?.sasaran || '-'}
+                        </div>
+                    </td>
+                    <td class="col-indikator" title="${item.indikator}">
+                        <div class="text-container-multiline">
+                            ${item.indikator}
+                        </div>
+                    </td>
+                    <td class="col-baseline">
+                        <div class="value-display">
+                            <div class="value-main">${item.baseline_nilai || '-'}</div>
+                            <div class="value-sub">(${item.baseline_tahun || '-'})</div>
+                        </div>
+                    </td>
+                    <td class="col-target">
+                        <div class="value-display">
+                            <div class="value-main">${item.target_nilai || '-'}</div>
+                            <div class="value-sub">(${item.target_tahun || '-'})</div>
+                        </div>
+                    </td>
+                    <td class="col-progress">
+                        ${progress !== null ? `
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(Math.abs(progress), 100)}%; background: ${getProgressColor(progress)};"></div>
+                                </div>
+                                <span class="progress-text" style="color: ${getProgressColor(progress)};">
+                                    ${progress >= 0 ? '+' : ''}${progress.toFixed(1)}%
+                                </span>
+                            </div>
+                            <div style="font-size: 0.6rem; color: #6c757d; margin-top: 2px;">
+                                ${item.baseline_nilai || 0} → ${item.target_nilai || 0}
+                            </div>
+                        ` : '<span class="text-muted" style="font-size: 0.7rem;">-</span>'}
+                    </td>
+                    <td class="col-pic" title="${item.pic || '-'}">
+                        <div class="text-container">
+                            ${item.pic || '-'}
+                        </div>
+                    </td>
+                    <td class="col-aksi">
+                        <div class="d-flex gap-1 justify-content-center">
+                            <button class="btn-icon btn-edit" onclick="editData('${item.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="deleteData('${item.id}')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function calculateProgress(item) {
+            if (!item.baseline_nilai || !item.target_nilai) {
+                return null;
+            }
+            
+            const baseline = parseFloat(item.baseline_nilai);
+            const target = parseFloat(item.target_nilai);
+            
+            if (isNaN(baseline) || isNaN(target)) {
+                return null;
+            }
+            
+            if (baseline === 0) {
+                return target > 0 ? 100 : (target < 0 ? -100 : 0);
+            }
+            
+            // Calculate progress as percentage change from baseline to target
+            const progress = ((target - baseline) / Math.abs(baseline)) * 100;
+            
+            // Cap progress at reasonable limits for display
+            return Math.max(-200, Math.min(200, progress));
+        }
+
+        function getProgressColor(progress) {
+            if (progress >= 75) return '#10b981';
+            if (progress >= 50) return '#f59e0b';
+            if (progress >= 0) return '#ef4444';
+            return '#ef4444';
+        }
+
+        function showError(message) {
+            const tbody = document.getElementById('ikuTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Modal Functions
+        function showModal(id = null) {
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = id ? 'Edit Indikator Kinerja Utama' : 'Tambah Indikator Kinerja Utama';
+            document.getElementById('ikuForm').reset();
+            
+            // Set default years
+            const currentYear = new Date().getFullYear();
+            document.getElementById('baselineTahun').value = currentYear - 1;
+            document.getElementById('targetTahun').value = currentYear + 1;
+            
+            if (id) {
+                loadForEdit(id);
+            }
+            
+            document.getElementById('dataModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        async function loadForEdit(id) {
+            try {
+                let data;
+                try {
+                    data = await apiCall(`/api/indikator-kinerja-utama/${id}`);
+                } catch (mainError) {
+                    // Fallback: find in current state data
+                    data = allData.find(item => item.id === id);
+                    if (!data) {
+                        throw new Error('Data tidak ditemukan');
+                    }
+                }
+                
+                // Populate form fields
+                document.getElementById('rencanaStrategis').value = data.rencana_strategis_id || '';
+                document.getElementById('sasaranStrategi').value = data.sasaran_strategi_id || '';
+                document.getElementById('indikator').value = data.indikator || '';
+                document.getElementById('baselineTahun').value = data.baseline_tahun || '';
+                document.getElementById('baselineNilai').value = data.baseline_nilai || '';
+                document.getElementById('targetTahun').value = data.target_tahun || '';
+                document.getElementById('targetNilai').value = data.target_nilai || '';
+                document.getElementById('initiatif').value = data.initiatif_strategi || '';
+                document.getElementById('pic').value = data.pic || '';
+                
+            } catch (error) {
+                console.error('Error loading data for edit:', error);
+                alert('Error loading data: ' + error.message);
+            }
+        }
+
+        async function saveData(event) {
+            event.preventDefault();
+            
+            try {
+                const formData = {
+                    rencana_strategis_id: document.getElementById('rencanaStrategis').value,
+                    sasaran_strategi_id: document.getElementById('sasaranStrategi').value || null,
+                    indikator: document.getElementById('indikator').value,
+                    baseline_tahun: document.getElementById('baselineTahun').value ? parseInt(document.getElementById('baselineTahun').value) : null,
+                    baseline_nilai: document.getElementById('baselineNilai').value ? parseFloat(document.getElementById('baselineNilai').value) : null,
+                    target_tahun: document.getElementById('targetTahun').value ? parseInt(document.getElementById('targetTahun').value) : null,
+                    target_nilai: document.getElementById('targetNilai').value ? parseFloat(document.getElementById('targetNilai').value) : null,
+                    initiatif_strategi: document.getElementById('initiatif').value || null,
+                    pic: document.getElementById('pic').value || null
+                };
+
+                if (currentEditId) {
+                    await apiCall(`/api/indikator-kinerja-utama/${currentEditId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(formData)
+                    });
+                } else {
+                    await apiCall('/api/indikator-kinerja-utama', {
+                        method: 'POST',
+                        body: JSON.stringify(formData)
+                    });
+                }
+
+                closeModal('dataModal');
+                await loadInitialData();
+                alert('Indikator kinerja utama berhasil disimpan');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function editData(id) {
+            showModal(id);
+        }
+
+        async function deleteData(id) {
+            if (!confirm('Yakin ingin menghapus indikator kinerja utama ini?')) return;
+            
+            try {
+                await apiCall(`/api/indikator-kinerja-utama/${id}`, { method: 'DELETE' });
+                await loadInitialData();
+                alert('Indikator kinerja utama berhasil dihapus');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function downloadReport() {
+            try {
+                if (allData.length === 0) {
+                    alert('Tidak ada data untuk diunduh');
+                    return;
+                }
+
+                // Prepare data for Excel
+                const excelData = allData.map((item, index) => ({
+                    'No': index + 1,
+                    'Rencana Strategis': item.rencana_strategis?.nama_rencana || '-',
+                    'Sasaran Strategi': item.sasaran_strategi?.sasaran || '-',
+                    'Perspektif': item.sasaran_strategi?.perspektif || '-',
+                    'Indikator': item.indikator,
+                    'Baseline Tahun': item.baseline_tahun || '-',
+                    'Baseline Nilai': item.baseline_nilai || '-',
+                    'Target Tahun': item.target_tahun || '-',
+                    'Target Nilai': item.target_nilai || '-',
+                    'Initiatif Strategi': item.initiatif_strategi || '-',
+                    'PIC': item.pic || '-',
+                    'Tanggal Dibuat': new Date(item.created_at).toLocaleDateString('id-ID'),
+                    'Terakhir Diupdate': new Date(item.updated_at).toLocaleDateString('id-ID')
+                }));
+
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelData);
+
+                // Auto-width columns
+                const colWidths = [
+                    { wch: 5 },   // No
+                    { wch: 25 },  // Rencana Strategis
+                    { wch: 30 },  // Sasaran Strategi
+                    { wch: 15 },  // Perspektif
+                    { wch: 35 },  // Indikator
+                    { wch: 15 },  // Baseline Tahun
+                    { wch: 15 },  // Baseline Nilai
+                    { wch: 15 },  // Target Tahun
+                    { wch: 15 },  // Target Nilai
+                    { wch: 35 },  // Initiatif Strategi
+                    { wch: 20 },  // PIC
+                    { wch: 15 },  // Tanggal Dibuat
+                    { wch: 15 }   // Terakhir Diupdate
+                ];
+                ws['!cols'] = colWidths;
+
+                XLSX.utils.book_append_sheet(wb, ws, 'Indikator Kinerja Utama');
+
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `Laporan_Indikator_Kinerja_Utama_${timestamp}.xlsx`;
+
+                // Download file
+                XLSX.writeFile(wb, filename);
+
+                alert('Laporan berhasil diunduh!');
+            } catch (error) {
+                console.error('Error downloading report:', error);
+                alert('Gagal mengunduh laporan: ' + error.message);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing IKU...');
+            loadInitialData();
+        });
+    </script>
+</body>
+</html>

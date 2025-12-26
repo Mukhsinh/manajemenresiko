@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Analisis SWOT - Modul Manajemen Risiko</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0066cc",
+                        "primary-dark": "#004c99",
+                        "primary-light": "#e0f2fe",
+                        "secondary": "#ffffff", 
+                        "secondary-dark": "#f8fafc",
+                        "text-main": "#1e293b",
+                        "text-secondary": "#64748b",
+                        "accent-blue": "#0ea5e9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                        'floating': '0 10px 40px -10px rgba(0,0,0,0.08)'
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .heatmap-cell {
+            transition: all 0.2s;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: #0066cc;
+        }
+        .sidebar-link.active {
+            background-color: #e0f2fe;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background-color: #0066cc;
+            border-radius: 0 4px 4px 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        .material-symbols-outlined.bold {
+            font-variation-settings: 'wght' 600;
+        }
+        
+        /* SWOT specific styles */
+        .swot-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .swot-badge.strength { background-color: #10b981; color: white; }
+        .swot-badge.weakness { background-color: #ef4444; color: white; }
+        .swot-badge.opportunity { background-color: #3b82f6; color: white; }
+        .swot-badge.threat { background-color: #f59e0b; color: white; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex text-text-main overflow-hidden">
+    <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col flex-shrink-0 h-screen overflow-y-auto z-30">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+            <div class="size-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl filled">health_and_safety</span>
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-tight text-slate-800">PINTAR MR</h1>
+                <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Hospital Risk Mgmt</p>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/">
+                <span class="material-symbols-outlined text-[20px]">space_dashboard</span>Dashboard
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analisis Strategis</div>
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm" href="/analisis-swot">
+                <span class="material-symbols-outlined text-[20px] filled">analytics</span>Analisis SWOT
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/visi-misi">
+                <span class="material-symbols-outlined text-[20px]">ads_click</span>Visi dan Misi
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/rencana-strategis">
+                <span class="material-symbols-outlined text-[20px]">account_tree</span>Rencana Strategis
+            </a>
+            <div class="pt-5 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operasional</div>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/risk-register">
+                <span class="material-symbols-outlined text-[20px]">folder_managed</span>Register Risiko
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-600" href="/risk-identification">
+                <span class="material-symbols-outlined text-[20px]">find_in_page</span>Identifikasi Risiko
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200 hover:shadow-sm">
+                <div class="size-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-200">MH</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">Muksin Hadi</p>
+                    <p class="text-[10px] text-slate-500 truncate">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+-600" href="/risk-identification">
+                <span class="material-symbols-outlined text-[20px]">find_in_page</span>Identifikasi Risiko
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200 hover:shadow-sm">
+                <div class="size-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-200">MH</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">Muksin Hadi</p>
+                    <p class="text-[10px] text-slate-500 truncate">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-white">
+        <header class="bg-white border-b border-slate-200 z-20 flex-shrink-0 h-16 sticky top-0">
+            <div class="w-full h-full px-6 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 leading-tight">Analisis SWOT</h2>
+                        <div class="flex items-center gap-1 text-xs text-slate-500">
+                            <span>Analisis Strategis</span>
+                            <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+                            <span class="text-primary font-medium">SWOT Analysis</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-800">RSUD BENDAN</p>
+                        <p class="text-xs text-slate-500">Jl. Sriwijaya 2 Pekalongan</p>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative">
+                            <span class="material-symbols-outlined text-[22px]">notifications</span>
+                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                            <span class="material-symbols-outlined text-[22px]">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-white">
+            <div class="max-w-[1600px] mx-auto space-y-8">
+                <!-- Header Section -->
+                <div class="bg-gradient-to-br from-[#0066cc] to-[#0ea5e9] rounded-2xl shadow-floating p-8 text-white relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1/2 bg-white/5 opacity-50" style="clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="absolute right-20 top-0 h-full w-1/3 bg-white/5 opacity-30" style="clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex items-start gap-6">
+                            <div class="size-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
+                                <span class="material-symbols-outlined text-white text-3xl">analytics</span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold tracking-tight">Analisis SWOT Strategis</h2>
+                                <p class="text-blue-100 mt-2 max-w-2xl text-sm leading-relaxed opacity-90">Kelola analisis Strengths, Weaknesses, Opportunities, dan Threats secara komprehensif untuk mendukung perencanaan strategis RSUD Bendan yang efektif dan terukur.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                            <div class="text-left sm:text-right">
+                                <p class="text-[10px] uppercase tracking-wider text-blue-200 font-semibold">Periode Analisis</p>
+                                <p class="font-bold text-lg">Tahun 2025</p>
+                            </div>
+                            <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
+                            <button class="bg-white text-primary hover:bg-blue-50 px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-sm" onclick="showFilterModal()">
+                                <span class="material-symbols-outlined text-[18px]">tune</span>Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="statsCards">
+                    <!-- Stats will be populated by JavaScript -->
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+                    <!-- SWOT Data Table -->
+                    <div class="xl:col-span-8 bg-white rounded-2xl shadow-card border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <div class="bg-blue-100 p-1.5 rounded-md text-primary">
+                                    <span class="material-symbols-outlined text-[20px]">table_rows</span>
+                                </div>
+                                Data Analisis SWOT
+                            </h3>
+                            <div class="flex gap-3 w-full sm:w-auto">
+                                <div class="relative flex-1 sm:w-64">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                                    <input class="w-full pl-9 h-10 rounded-xl border-slate-200 bg-white focus:border-primary focus:ring-primary text-sm transition-all shadow-sm" placeholder="Cari objek analisis..." type="text" id="searchInput" onkeyup="filterTable()"/>
+                                </div>
+                                <button class="flex items-center justify-center gap-2 h-10 px-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm" onclick="showAddModal()">
+                                    <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                                    <span class="hidden sm:inline">Tambah</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Tabs -->
+                        <div class="px-6 pt-2 border-b border-slate-100 flex gap-8 text-sm overflow-x-auto bg-white">
+                            <button class="py-3 border-b-2 border-primary text-primary font-bold whitespace-nowrap filter-tab active" data-filter="all" onclick="setActiveFilter('all')">Semua Data</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Strength" onclick="setActiveFilter('Strength')">Strengths</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Weakness" onclick="setActiveFilter('Weakness')">Weaknesses</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Opportunity" onclick="setActiveFilter('Opportunity')">Opportunities</button>
+                            <button class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium whitespace-nowrap transition-colors filter-tab" data-filter="Threat" onclick="setActiveFilter('Threat')">Threats</button>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100">
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Unit Kerja</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Kategori</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Objek Analisis</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Bobot</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Rank</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Score</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50" id="swotTableBody">
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-8 text-center text-slate-500">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <span class="material-symbols-outlined text-4xl text-slate-300">analytics</span>
+                                                <span>Memuat data analisis SWOT...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="p-4 border-t border-slate-100 flex items-center justify-between bg-white mt-auto">
+                            <span class="text-xs font-medium text-slate-500" id="tableInfo">Menampilkan data...</span>
+                            <div class="flex gap-2" id="pagination">
+                                <!-- Pagination will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SWOT Matrix & Actions -->
+                    <div class="xl:col-span-4 flex flex-col gap-8">
+                        <!-- SWOT Matrix -->
+                        <div class="bg-white rounded-2xl shadow-card border border-slate-200 p-6 flex flex-col">
+                            <div class="flex items-center justify-between mb-8">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                    <div class="bg-orange-100 p-1.5 rounded-md text-orange-600">
+                                        <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                                    </div>
+                                    Matriks SWOT
+                                </h3>
+                                <button class="text-slate-400 hover:text-primary transition-colors" onclick="showMatrixInfo()">
+                                    <span class="material-symbols-outlined text-[20px]">info</span>
+                                </button>
+                            </div>
+                            
+                            <!-- SWOT Matrix Grid -->
+                            <div class="flex justify-center relative pl-8 pb-8 self-center">
+                                <div class="absolute -left-6 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">INTERNAL</div>
+                                <div class="w-full max-w-[280px] aspect-square grid grid-cols-2 grid-rows-2 gap-2 text-[10px] font-bold text-slate-700/60 p-1 bg-slate-50 rounded-xl border border-slate-100">
+                                    <!-- SO (Strengths-Opportunities) -->
+                                    <div class="bg-emerald-100 rounded flex flex-col items-center justify-center text-emerald-800 p-4 cursor-pointer hover:bg-emerald-200 transition-colors" onclick="showQuadrantDetails('SO')">
+                                        <span class="text-lg font-bold">SO</span>
+                                        <span class="text-xs text-center mt-1">Growth Strategy</span>
+                                        <div class="mt-2 text-xs bg-emerald-200 px-2 py-1 rounded" id="soCount">0 items</div>
+                                    </div>
+                                    
+                                    <!-- WO (Weaknesses-Opportunities) -->
+                                    <div class="bg-blue-100 rounded flex flex-col items-center justify-center text-blue-800 p-4 cursor-pointer hover:bg-blue-200 transition-colors" onclick="showQuadrantDetails('WO')">
+                                        <span class="text-lg font-bold">WO</span>
+                                        <span class="text-xs text-center mt-1">Turnaround Strategy</span>
+                                        <div class="mt-2 text-xs bg-blue-200 px-2 py-1 rounded" id="woCount">0 items</div>
+                                    </div>
+                                    
+                                    <!-- ST (Strengths-Threats) -->
+                                    <div class="bg-yellow-100 rounded flex flex-col items-center justify-center text-yellow-800 p-4 cursor-pointer hover:bg-yellow-200 transition-colors" onclick="showQuadrantDetails('ST')">
+                                        <span class="text-lg font-bold">ST</span>
+                                        <span class="text-xs text-center mt-1">Diversification Strategy</span>
+                                        <div class="mt-2 text-xs bg-yellow-200 px-2 py-1 rounded" id="stCount">0 items</div>
+                                    </div>
+                                    
+                                    <!-- WT (Weaknesses-Threats) -->
+                                    <div class="bg-red-100 rounded flex flex-col items-center justify-center text-red-800 p-4 cursor-pointer hover:bg-red-200 transition-colors" onclick="showQuadrantDetails('WT')">
+                                        <span class="text-lg font-bold">WT</span>
+                                        <span class="text-xs text-center mt-1">Defensive Strategy</span>
+                                        <div class="mt-2 text-xs bg-red-200 px-2 py-1 rounded" id="wtCount">0 items</div>
+                                    </div>
+                                </div>
+                                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">EXTERNAL</div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="bg-white rounded-2xl shadow-card border border-slate-200 overflow-hidden flex-1">
+                            <div class="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quick Actions</p>
+                                    <h4 class="font-bold text-slate-800 text-base leading-tight">Kelola Data SWOT</h4>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <button class="w-full py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] flex items-center justify-center gap-2" onclick="showAddModal()">
+                                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                                    Tambah Data SWOT
+                                </button>
+                                
+                                <button class="w-full py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-2" onclick="downloadTemplate()">
+                                    <span class="material-symbols-outlined text-[18px]">download</span>
+                                    Download Template
+                                </button>
+                                
+                                <button class="w-full py-3 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98] flex items-center justify-center gap-2" onclick="showImportModal()">
+                                    <span class="material-symbols-outlined text-[18px]">upload</span>
+                                    Import Data Excel
+                                </button>
+                                
+                                <button class="w-full py-3 bg-purple-500 text-white rounded-xl text-sm font-bold hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98] flex items-center justify-center gap-2" onclick="downloadReport()">
+                                    <span class="material-symbols-outlined text-[18px]">assessment</span>
+                                    Export Laporan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="/js/analisis-swot-modern.js"></script>
+</body>
+</html>

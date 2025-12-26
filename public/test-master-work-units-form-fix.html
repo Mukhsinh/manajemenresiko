@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Master Work Units Form Fix</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #27ae60; }
+        .status-error { background-color: #e74c3c; }
+        .status-warning { background-color: #f39c12; }
+        .master-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .master-tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #ecf0f1;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .master-tab-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        .log-area {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-header">
+                <h1><i class="fas fa-tools"></i> Test Master Work Units Form Fix</h1>
+                <p>Testing form functionality after fixing button conflicts</p>
+            </div>
+            
+            <div class="test-controls">
+                <button onclick="runTests()" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Run Tests
+                </button>
+                <button onclick="clearLog()" class="btn btn-secondary">
+                    <i class="fas fa-trash"></i> Clear Log
+                </button>
+                <button onclick="testFormDirectly()" class="btn btn-success">
+                    <i class="fas fa-edit"></i> Test Form Directly
+                </button>
+            </div>
+            
+            <div id="test-log" class="log-area" style="margin-top: 20px;">
+Ready to run tests...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <h2><i class="fas fa-cogs"></i> Master Data Interface</h2>
+            </div>
+            
+            <div class="master-tabs">
+                <button class="master-tab-btn" data-master="probability">Kriteria Probabilitas</button>
+                <button class="master-tab-btn" data-master="impact">Kriteria Dampak</button>
+                <button class="master-tab-btn" data-master="categories">Kategori Risiko</button>
+                <button class="master-tab-btn active" data-master="work-units">Unit Kerja</button>
+            </div>
+            
+            <div id="master-data-content">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i> Loading master data...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/services/authService.js"></script>
+    <script src="js/master-data.js"></script>
+    
+    <script>
+        let testLog = document.getElementById('test-log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            testLog.textContent += `[${timestamp}] ${icon} ${message}\n`;
+            testLog.scrollTop = testLog.scrollHeight;
+        }
+        
+        function clearLog() {
+            testLog.textContent = 'Log cleared...\n';
+        }
+        
+        async function runTests() {
+            log('Starting Master Work Units Form Fix Tests...', 'info');
+            
+            try {
+                // Test 1: Check if button-fix.js is loaded
+                log('Test 1: Checking button-fix.js...', 'info');
+                if (typeof window.fixButtons === 'function') {
+                    log('✓ button-fix.js loaded successfully', 'success');
+                } else {
+                    log('✗ button-fix.js not loaded or fixButtons function missing', 'error');
+                }
+                
+                // Test 2: Check if master-data.js is loaded
+                log('Test 2: Checking master-data.js...', 'info');
+                if (typeof window.loadMasterData === 'function') {
+                    log('✓ master-data.js loaded successfully', 'success');
+                } else {
+                    log('✗ master-data.js not loaded or loadMasterData function missing', 'error');
+                }
+                
+                // Test 3: Check if visi-misi.js functions are isolated
+                log('Test 3: Checking visi-misi.js isolation...', 'info');
+                if (typeof window.visiMisiModule === 'object') {
+                    log('✓ visi-misi.js properly isolated in module', 'success');
+                } else {
+                    log('⚠ visi-misi.js module not found (this is OK if not loaded)', 'warning');
+                }
+                
+                // Test 4: Load master data
+                log('Test 4: Loading master data...', 'info');
+                await loadMasterData();
+                log('✓ Master data loaded successfully', 'success');
+                
+                // Test 5: Check if work-units tab is active
+                log('Test 5: Checking work-units tab...', 'info');
+                const activeTab = document.querySelector('.master-tab-btn.active');
+                if (activeTab && activeTab.dataset.master === 'work-units') {
+                    log('✓ Work-units tab is active', 'success');
+                } else {
+                    log('⚠ Work-units tab is not active, switching...', 'warning');
+                    switchMasterTab('work-units');
+                }
+                
+                // Test 6: Check for edit buttons
+                log('Test 6: Checking edit buttons...', 'info');
+                const editButtons = document.querySelectorAll('[data-action="edit"]');
+                log(`Found ${editButtons.length} edit buttons`, 'info');
+                
+                if (editButtons.length > 0) {
+                    log('✓ Edit buttons found', 'success');
+                    
+                    // Test 7: Check button event handlers
+                    log('Test 7: Checking button event handlers...', 'info');
+                    const firstEditBtn = editButtons[0];
+                    const endpoint = firstEditBtn.dataset.endpoint;
+                    
+                    if (endpoint === 'work-units') {
+                        log('✓ Edit button has correct endpoint (work-units)', 'success');
+                    } else {
+                        log(`⚠ Edit button endpoint: ${endpoint}`, 'warning');
+                    }
+                    
+                    // Check if button has master-bound attribute
+                    if (firstEditBtn.hasAttribute('data-master-bound')) {
+                        log('✓ Edit button properly bound to master data handler', 'success');
+                    } else {
+                        log('⚠ Edit button not bound to master data handler', 'warning');
+                    }
+                } else {
+                    log('⚠ No edit buttons found (might be no data)', 'warning');
+                }
+                
+                log('All tests completed!', 'success');
+                
+            } catch (error) {
+                log(`Test failed: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+        
+        async function testFormDirectly() {
+            log('Testing form directly...', 'info');
+            
+            try {
+                // Try to show the form for adding new work unit
+                if (typeof showMasterDataForm === 'function') {
+                    log('Opening work units form...', 'info');
+                    showMasterDataForm('work-units');
+                    log('✓ Work units form opened successfully', 'success');
+                    
+                    // Check if the correct form is shown
+                    setTimeout(() => {
+                        const modal = document.getElementById('master-data-form-modal');
+                        if (modal && modal.style.display === 'flex') {
+                            const title = modal.querySelector('.modal-title');
+                            if (title && title.textContent.includes('Unit Kerja')) {
+                                log('✓ Correct form title displayed: ' + title.textContent, 'success');
+                            } else {
+                                log('✗ Wrong form title: ' + (title ? title.textContent : 'No title'), 'error');
+                            }
+                            
+                            // Check for jenis and kategori fields
+                            const jenisField = document.getElementById('form-jenis');
+                            const kategoriField = document.getElementById('form-kategori');
+                            
+                            if (jenisField) {
+                                log('✓ Jenis field found', 'success');
+                            } else {
+                                log('✗ Jenis field missing', 'error');
+                            }
+                            
+                            if (kategoriField) {
+                                log('✓ Kategori field found', 'success');
+                            } else {
+                                log('✗ Kategori field missing', 'error');
+                            }
+                        } else {
+                            log('✗ Form modal not displayed', 'error');
+                        }
+                    }, 500);
+                    
+                } else {
+                    log('✗ showMasterDataForm function not found', 'error');
+                }
+                
+            } catch (error) {
+                log(`Form test failed: ${error.message}`, 'error');
+                console.error('Form test error:', error);
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, initializing...', 'info');
+            
+            // Load master data automatically
+            setTimeout(() => {
+                runTests();
+            }, 1000);
+        });
+        
+        // Add click handler for tab switching
+        document.querySelectorAll('.master-tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const type = this.dataset.master;
+                log(`Switching to ${type} tab...`, 'info');
+                
+                // Update active tab
+                document.querySelectorAll('.master-tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Switch master data
+                if (typeof switchMasterTab === 'function') {
+                    switchMasterTab(type);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

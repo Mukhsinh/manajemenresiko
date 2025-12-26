@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test User Management - Pengaturan</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-users-cog"></i> Test User Management - Pengaturan</h1>
+        
+        <div class="test-section">
+            <h3>Login Test</h3>
+            <button onclick="testLogin()" class="btn btn-primary">Test Login</button>
+            <div id="login-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Load Organizations</h3>
+            <button onclick="testLoadOrganizations()" class="btn btn-info">Load Organizations</button>
+            <div id="organizations-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Load All Users (SuperAdmin)</h3>
+            <button onclick="testLoadAllUsers()" class="btn btn-warning">Load All Users</button>
+            <div id="all-users-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Pengaturan Module Test</h3>
+            <button onclick="testPengaturanModule()" class="btn btn-success">Load Pengaturan Module</button>
+            <div id="pengaturan-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>User Management Interface</h3>
+            <button onclick="showUserManagementInterface()" class="btn btn-primary">Show User Management</button>
+            <div id="user-management-interface" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Pengaturan Content Container -->
+        <div id="pengaturan-content" style="margin-top: 2rem;"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/pengaturan.js"></script>
+
+    <script>
+        let testResults = {
+            login: null,
+            organizations: null,
+            allUsers: null
+        };
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = 'Testing login...';
+            resultDiv.className = 'test-result info';
+
+            try {
+                const response = await apiCall('/api/auth/login', {
+                    method: 'POST',
+                    body: {
+                        email: 'mukhsin9@gmail.com',
+                        password: 'password123'
+                    }
+                });
+
+                // Store token and user info
+                localStorage.setItem('token', response.access_token);
+                window.currentUser = {
+                    ...response.user,
+                    profile: response.profile
+                };
+
+                testResults.login = response;
+                resultDiv.innerHTML = `✅ Login successful!\nUser: ${response.user.email}\nRole: ${response.profile?.role}\nToken: ${response.access_token.substring(0, 20)}...`;
+                resultDiv.className = 'test-result success';
+            } catch (error) {
+                console.error('Login error:', error);
+                resultDiv.innerHTML = `❌ Login failed: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        async function testLoadOrganizations() {
+            const resultDiv = document.getElementById('organizations-result');
+            resultDiv.innerHTML = 'Loading organizations...';
+            resultDiv.className = 'test-result info';
+
+            try {
+                const organizations = await apiCall('/api/organizations');
+                testResults.organizations = organizations;
+                
+                let result = `✅ Loaded ${organizations.length} organizations:\n\n`;
+                organizations.forEach((org, index) => {
+                    result += `${index + 1}. ${org.name} (${org.code})\n`;
+                    result += `   Users: ${org.users?.length || 0}\n`;
+                    if (org.users && org.users.length > 0) {
+                        org.users.forEach(user => {
+                            const fullName = user.user_profiles?.full_name || 'Unknown';
+                            const email = user.user_profiles?.email || 'Unknown';
+                            result += `   - ${fullName} (${email}) - Role: ${user.role}\n`;
+                        });
+                    }
+                    result += '\n';
+                });
+
+                resultDiv.innerHTML = result;
+                resultDiv.className = 'test-result success';
+            } catch (error) {
+                console.error('Organizations error:', error);
+                resultDiv.innerHTML = `❌ Failed to load organizations: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        async function testLoadAllUsers() {
+            const resultDiv = document.getElementById('all-users-result');
+            resultDiv.innerHTML = 'Loading all users...';
+            resultDiv.className = 'test-result info';
+
+            try {
+                const users = await apiCall('/api/user-management');
+                testResults.allUsers = users;
+                
+                let result = `✅ Loaded ${users.length} users:\n\n`;
+                users.forEach((user, index) => {
+                    result += `${index + 1}. ${user.full_name || 'Unknown'} (${user.email})\n`;
+                    result += `   Role: ${user.role}\n`;
+                    result += `   Organization: ${user.organization_name || 'None'}\n`;
+                    result += `   Status: ${user.email_confirmed ? 'Verified' : 'Pending'}\n`;
+                    result += `   Last Login: ${user.last_sign_in ? new Date(user.last_sign_in).toLocaleString() : 'Never'}\n\n`;
+                });
+
+                resultDiv.innerHTML = result;
+                resultDiv.className = 'test-result success';
+            } catch (error) {
+                console.error('All users error:', error);
+                resultDiv.innerHTML = `❌ Failed to load all users: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        async function testPengaturanModule() {
+            const resultDiv = document.getElementById('pengaturan-result');
+            resultDiv.innerHTML = 'Testing Pengaturan module...';
+            resultDiv.className = 'test-result info';
+
+            try {
+                // Check if module is available
+                if (typeof PengaturanAplikasi === 'undefined') {
+                    throw new Error('PengaturanAplikasi module not loaded');
+                }
+
+                // Test loading the module
+                await PengaturanAplikasi.load();
+                
+                resultDiv.innerHTML = `✅ Pengaturan module loaded successfully!\nOrganizations: ${PengaturanAplikasi.organizations?.length || 0}\nActive Tab: ${PengaturanAplikasi.activeTab}`;
+                resultDiv.className = 'test-result success';
+            } catch (error) {
+                console.error('Pengaturan module error:', error);
+                resultDiv.innerHTML = `❌ Pengaturan module failed: ${error.message}`;
+                resultDiv.className = 'test-result error';
+            }
+        }
+
+        async function showUserManagementInterface() {
+            const container = document.getElementById('user-management-interface');
+            
+            try {
+                // Ensure we're logged in
+                if (!testResults.login) {
+                    container.innerHTML = '<div class="alert alert-warning">Please login first</div>';
+                    return;
+                }
+
+                // Set active tab to users and load
+                PengaturanAplikasi.activeTab = 'users';
+                await PengaturanAplikasi.load();
+
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>User Management Interface Test</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>The user management interface should be rendered in the pengaturan-content div below.</p>
+                            <button onclick="PengaturanAplikasi.activeTab = 'users'; PengaturanAplikasi.render();" class="btn btn-primary">
+                                Render User Management Tab
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Interface error:', error);
+                container.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-run basic tests on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Page loaded, running basic tests...');
+            
+            // Check if modules are loaded
+            console.log('apiCall available:', typeof apiCall);
+            console.log('PengaturanAplikasi available:', typeof PengaturanAplikasi);
+            
+            // Auto-login for testing
+            setTimeout(async () => {
+                try {
+                    await testLogin();
+                    setTimeout(() => {
+                        testLoadOrganizations();
+                    }, 1000);
+                } catch (error) {
+                    console.error('Auto-test error:', error);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

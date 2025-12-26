@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Master Data Column Order</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-sort-numeric-down"></i> Test Master Data Column Order</h1>
+            <p>Testing urutan kolom dan sorting pada halaman master-data tab unit kerja</p>
+        </div>
+
+        <div class="test-section">
+            <h2>1. Column Order Test</h2>
+            <button onclick="testColumnOrder()" class="btn btn-primary">
+                <i class="fas fa-columns"></i> Test Column Order
+            </button>
+            <div id="column-order-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Data Sorting Test</h2>
+            <button onclick="testDataSorting()" class="btn btn-success">
+                <i class="fas fa-sort-amount-down"></i> Test Data Sorting
+            </button>
+            <div id="data-sorting-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Master Data UI Test</h2>
+            <button onclick="testMasterDataUI()" class="btn btn-warning">
+                <i class="fas fa-table"></i> Test Master Data UI
+            </button>
+            <div id="ui-test-result" class="result-box"></div>
+        </div>
+
+        <!-- Master Data Container -->
+        <div id="master-data-container">
+            <div class="master-tabs">
+                <button class="master-tab-btn active" data-master="work-units">Unit Kerja</button>
+            </div>
+            <div id="master-data-content"></div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="test-section">
+            <h2>Test Summary</h2>
+            <div id="test-summary" class="summary-box">
+                <p>Jalankan semua test untuk melihat ringkasan hasil.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/master-data.js"></script>
+
+    <script>
+        let testResults = {
+            columnOrder: false,
+            dataSorting: false,
+            masterDataUI: false
+        };
+
+        async function testColumnOrder() {
+            const resultDiv = document.getElementById('column-order-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing column order...</div>';
+
+            try {
+                // Load master data to check column configuration
+                await loadMasterData();
+                
+                // Wait for rendering
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Check table headers
+                const headers = Array.from(document.querySelectorAll('#master-data-content th')).map(th => th.textContent.trim());
+                
+                const expectedOrder = [
+                    'Kode Unit Kerja',
+                    'Nama Unit Kerja', 
+                    'Jenis',
+                    'Kategori',
+                    'Organisasi',
+                    'Nama Manajer',
+                    'Email Manajer',
+                    'Aksi'
+                ];
+
+                // Check if first column is "Kode Unit Kerja"
+                const firstColumnCorrect = headers[0] === 'Kode Unit Kerja';
+                
+                // Check overall order (excluding action column)
+                const headerOrder = headers.slice(0, -1); // Remove "Aksi" column
+                const expectedHeaderOrder = expectedOrder.slice(0, -1); // Remove "Aksi" column
+                
+                const orderCorrect = JSON.stringify(headerOrder) === JSON.stringify(expectedHeaderOrder);
+
+                testResults.columnOrder = firstColumnCorrect && orderCorrect;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.columnOrder ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.columnOrder ? 'check' : 'times'}-circle"></i> 
+                            Column Order Test ${testResults.columnOrder ? 'PASSED' : 'FAILED'}</h4>
+                        <ul>
+                            <li>First column is "Kode Unit Kerja": ${firstColumnCorrect ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Column order correct: ${orderCorrect ? 'YES ✅' : 'NO ❌'}</li>
+                        </ul>
+                        
+                        <h5>Current Column Order:</h5>
+                        <ol>
+                            ${headerOrder.map((header, index) => 
+                                `<li class="${header === expectedHeaderOrder[index] ? 'correct' : 'incorrect'}">${header}</li>`
+                            ).join('')}
+                        </ol>
+                        
+                        <h5>Expected Column Order:</h5>
+                        <ol>
+                            ${expectedHeaderOrder.map(header => `<li>${header}</li>`).join('')}
+                        </ol>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.columnOrder = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Column Order Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testDataSorting() {
+            const resultDiv = document.getElementById('data-sorting-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing data sorting...</div>';
+
+            try {
+                const response = await fetch('/api/master-data/work-units');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    throw new Error('Response is not an array');
+                }
+
+                // Check if data is sorted by code
+                const codes = data.map(item => item.code);
+                const sortedCodes = [...codes].sort();
+                const isSorted = JSON.stringify(codes) === JSON.stringify(sortedCodes);
+
+                // Check code format consistency
+                const codePattern = /^UK\d{3}$/;
+                const validCodes = data.filter(item => codePattern.test(item.code));
+                const formatConsistent = validCodes.length === data.length;
+
+                testResults.dataSorting = isSorted && formatConsistent;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.dataSorting ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.dataSorting ? 'check' : 'times'}-circle"></i> 
+                            Data Sorting Test ${testResults.dataSorting ? 'PASSED' : 'FAILED'}</h4>
+                        <ul>
+                            <li>Total records: ${data.length}</li>
+                            <li>Sorted by code: ${isSorted ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Code format consistent (UK###): ${formatConsistent ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Valid codes: ${validCodes.length}/${data.length}</li>
+                        </ul>
+                        
+                        <h5>First 10 Records (sorted by code):</h5>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Unit Kerja</th>
+                                    <th>Jenis</th>
+                                    <th>Kategori</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.slice(0, 10).map(item => `
+                                    <tr>
+                                        <td><strong>${item.code}</strong></td>
+                                        <td>${item.name}</td>
+                                        <td><span class="badge badge-jenis-${(item.jenis || '').replace(' ', '-')}">${item.jenis || '-'}</span></td>
+                                        <td><span class="badge badge-kategori-${(item.kategori || '').replace(' ', '-')}">${item.kategori || '-'}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.dataSorting = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Data Sorting Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testMasterDataUI() {
+            const resultDiv = document.getElementById('ui-test-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing UI...</div>';
+
+            try {
+                // Check if table is rendered and data is displayed correctly
+                const table = document.querySelector('#master-data-content table');
+                const hasTable = !!table;
+
+                // Check if data rows exist
+                const rows = document.querySelectorAll('#master-data-content tbody tr');
+                const hasData = rows.length > 0;
+
+                // Check if first column contains codes
+                const firstColumnCells = Array.from(document.querySelectorAll('#master-data-content tbody tr td:first-child'));
+                const firstColumnHasCodes = firstColumnCells.length > 0 && 
+                    firstColumnCells.every(cell => /UK\d{3}/.test(cell.textContent));
+
+                // Check if data appears sorted in UI
+                const displayedCodes = firstColumnCells.map(cell => cell.textContent.trim());
+                const sortedDisplayedCodes = [...displayedCodes].sort();
+                const uiSorted = JSON.stringify(displayedCodes) === JSON.stringify(sortedDisplayedCodes);
+
+                testResults.masterDataUI = hasTable && hasData && firstColumnHasCodes && uiSorted;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.masterDataUI ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.masterDataUI ? 'check' : 'times'}-circle"></i> 
+                            Master Data UI Test ${testResults.masterDataUI ? 'PASSED' : 'FAILED'}</h4>
+                        <ul>
+                            <li>Table rendered: ${hasTable ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>Data displayed: ${hasData ? `YES (${rows.length} rows) ✅` : 'NO ❌'}</li>
+                            <li>First column has codes: ${firstColumnHasCodes ? 'YES ✅' : 'NO ❌'}</li>
+                            <li>UI data sorted: ${uiSorted ? 'YES ✅' : 'NO ❌'}</li>
+                        </ul>
+                        
+                        ${displayedCodes.length > 0 ? `
+                            <h5>First 5 Displayed Codes:</h5>
+                            <ul>
+                                ${displayedCodes.slice(0, 5).map(code => `<li><strong>${code}</strong></li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.masterDataUI = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Master Data UI Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result === true).length;
+            const percentage = Math.round((passedTests / totalTests) * 100);
+
+            summaryDiv.innerHTML = `
+                <div class="${percentage === 100 ? 'success' : percentage >= 66 ? 'warning' : 'error'}">
+                    <h4><i class="fas fa-chart-pie"></i> Test Summary</h4>
+                    <p><strong>Passed: ${passedTests}/${totalTests} (${percentage}%)</strong></p>
+                    <ul>
+                        ${Object.entries(testResults).map(([test, result]) => 
+                            `<li><i class="fas fa-${result ? 'check' : 'times'}"></i> ${test}: ${result ? 'PASS' : 'FAIL'}</li>`
+                        ).join('')}
+                    </ul>
+                    ${percentage === 100 ? 
+                        '<p><strong>🎉 Semua test berhasil! Kolom kode unit kerja sudah berada di posisi pertama dan data terurut dengan benar.</strong></p>' :
+                        percentage >= 66 ?
+                        '<p><strong>✅ Sebagian besar test berhasil. Periksa hasil test yang gagal.</strong></p>' :
+                        '<p><strong>⚠️ Beberapa test gagal. Periksa implementasi kolom order dan sorting.</strong></p>'
+                    }
+                </div>
+            `;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', async () => {
+            console.log('Running automated tests...');
+            await testDataSorting();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testColumnOrder();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testMasterDataUI();
+        });
+    </script>
+
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .result-box, .summary-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .loading {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+            text-align: center;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .badge-jenis-rawat-inap { background-color: #e3f2fd; color: #1976d2; }
+        .badge-jenis-rawat-jalan { background-color: #f3e5f5; color: #7b1fa2; }
+        .badge-jenis-penunjang-medis { background-color: #e8f5e8; color: #388e3c; }
+        .badge-jenis-administrasi { background-color: #fff3e0; color: #f57c00; }
+        .badge-jenis-manajemen { background-color: #fce4ec; color: #c2185b; }
+
+        .badge-kategori-klinis { background-color: #e8f5e8; color: #2e7d32; }
+        .badge-kategori-non-klinis { background-color: #f5f5f5; color: #616161; }
+
+        .master-tabs {
+            margin: 20px 0;
+        }
+
+        .master-tab-btn {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .master-tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .summary-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        #master-data-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .correct {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .incorrect {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html>

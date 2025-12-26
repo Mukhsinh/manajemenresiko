@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Monitoring & Peluang Button Layout</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style-new.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .test-section {
+            margin-bottom: 3rem;
+        }
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #0b4d88;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1 class="test-title">Test: Monitoring & Evaluasi Button Layout</h1>
+        <div id="monitoring-evaluasi-content"></div>
+    </div>
+
+    <div class="test-section">
+        <h1 class="test-title">Test: Peluang Button Layout</h1>
+        <div id="peluang-content"></div>
+    </div>
+
+    <!-- Include the JavaScript modules -->
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/monitoring-evaluasi.js"></script>
+    <script src="/js/peluang.js"></script>
+
+    <script>
+        // Mock API function for testing
+        window.apiCall = async function(url, options = {}) {
+            console.log('Mock API call:', url, options);
+            
+            if (url.includes('/api/monitoring-evaluasi')) {
+                return [
+                    {
+                        id: '1',
+                        tanggal_monitoring: '2025-01-15',
+                        status_risiko: 'Stabil',
+                        tingkat_probabilitas: 3,
+                        tingkat_dampak: 4,
+                        nilai_risiko: 12,
+                        progress_mitigasi: 75,
+                        evaluasi: 'Progress monitoring berjalan dengan baik, perlu peningkatan pada aspek dokumentasi dan pelaporan berkala.',
+                        risk_inputs: {
+                            kode_risiko: 'RSK-001'
+                        }
+                    },
+                    {
+                        id: '2',
+                        tanggal_monitoring: '2025-01-14',
+                        status_risiko: 'Meningkat',
+                        tingkat_probabilitas: 4,
+                        tingkat_dampak: 3,
+                        nilai_risiko: 12,
+                        progress_mitigasi: 45,
+                        evaluasi: 'Memerlukan perhatian khusus dan tindakan mitigasi tambahan.',
+                        risk_inputs: {
+                            kode_risiko: 'RSK-002'
+                        }
+                    }
+                ];
+            }
+            
+            if (url.includes('/api/peluang')) {
+                return [
+                    {
+                        id: '1',
+                        kode: 'PLG-001',
+                        nama_peluang: 'Peningkatan Efisiensi Operasional',
+                        probabilitas: 4,
+                        dampak_positif: 5,
+                        nilai_peluang: 20,
+                        status: 'Aktif',
+                        master_risk_categories: {
+                            name: 'Operasional'
+                        }
+                    },
+                    {
+                        id: '2',
+                        kode: 'PLG-002',
+                        nama_peluang: 'Ekspansi Pasar Digital',
+                        probabilitas: 3,
+                        dampak_positif: 4,
+                        nilai_peluang: 12,
+                        status: 'Draft',
+                        master_risk_categories: {
+                            name: 'Strategis'
+                        }
+                    },
+                    {
+                        id: '3',
+                        kode: 'PLG-003',
+                        nama_peluang: 'Optimalisasi Supply Chain',
+                        probabilitas: 5,
+                        dampak_positif: 4,
+                        nilai_peluang: 20,
+                        status: 'Selesai',
+                        master_risk_categories: {
+                            name: 'Operasional'
+                        }
+                    }
+                ];
+            }
+            
+            if (url.includes('/api/master-data/categories')) {
+                return [
+                    { id: '1', name: 'Operasional' },
+                    { id: '2', name: 'Strategis' },
+                    { id: '3', name: 'Finansial' },
+                    { id: '4', name: 'Teknologi' }
+                ];
+            }
+            
+            return [];
+        };
+
+        // Load test data
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Loading test data...');
+            
+            // Test Monitoring Evaluasi
+            if (window.monitoringEvaluasiModule) {
+                await window.monitoringEvaluasiModule.load();
+            }
+            
+            // Test Peluang
+            if (window.peluangModule) {
+                await window.peluangModule.load();
+            }
+            
+            console.log('Test data loaded successfully!');
+        });
+
+        // Test button functionality
+        function testButtonFunctionality() {
+            console.log('Testing button functionality...');
+            
+            // Test all buttons are clickable
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach((btn, index) => {
+                btn.addEventListener('click', function(e) {
+                    console.log(`Button ${index + 1} clicked:`, btn.textContent.trim());
+                });
+            });
+            
+            console.log(`Found ${buttons.length} buttons for testing`);
+        }
+
+        // Run tests after page load
+        setTimeout(testButtonFunctionality, 2000);
+    </script>
+</body>
+</html>

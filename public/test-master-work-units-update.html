@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Master Work Units Complete</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-building"></i> Test Master Work Units Complete</h1>
+            <p>Testing implementasi lengkap kolom jenis dan kategori pada master work units</p>
+        </div>
+
+        <div class="test-section">
+            <h2>1. Test Data Retrieval & Display</h2>
+            <button onclick="testDataRetrieval()" class="btn btn-primary">
+                <i class="fas fa-database"></i> Test Data Retrieval
+            </button>
+            <div id="data-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Test Master Data UI</h2>
+            <button onclick="testMasterDataUI()" class="btn btn-success">
+                <i class="fas fa-table"></i> Test Master Data UI
+            </button>
+            <div id="ui-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Test Template with Samples</h2>
+            <button onclick="testTemplateDownload()" class="btn btn-warning">
+                <i class="fas fa-download"></i> Download Template with Samples
+            </button>
+            <div id="template-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Test Export Report</h2>
+            <button onclick="testExportReport()" class="btn btn-info">
+                <i class="fas fa-file-excel"></i> Download Export Report
+            </button>
+            <div id="export-result" class="result-box"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Test Form Validation</h2>
+            <button onclick="testFormValidation()" class="btn btn-secondary">
+                <i class="fas fa-check-circle"></i> Test Form Validation
+            </button>
+            <div id="validation-result" class="result-box"></div>
+        </div>
+
+        <!-- Master Data Container -->
+        <div id="master-data-container" style="display: none;">
+            <div class="master-tabs">
+                <button class="master-tab-btn active" data-master="work-units">Unit Kerja</button>
+            </div>
+            <div id="master-data-content"></div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="test-section">
+            <h2>Test Summary</h2>
+            <div id="test-summary" class="summary-box">
+                <p>Jalankan semua test untuk melihat ringkasan hasil.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/master-data.js"></script>
+
+    <script>
+        let testResults = {
+            dataRetrieval: false,
+            masterDataUI: false,
+            templateDownload: false,
+            exportReport: false,
+            formValidation: false
+        };
+
+        async function testDataRetrieval() {
+            const resultDiv = document.getElementById('data-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing data retrieval...</div>';
+
+            try {
+                const response = await fetch('/api/master-data/work-units');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    throw new Error('Response is not an array');
+                }
+
+                // Analyze data
+                const jenisCount = {};
+                const kategoriCount = {};
+                const combinations = {};
+
+                data.forEach(item => {
+                    if (item.jenis) jenisCount[item.jenis] = (jenisCount[item.jenis] || 0) + 1;
+                    if (item.kategori) kategoriCount[item.kategori] = (kategoriCount[item.kategori] || 0) + 1;
+                    if (item.jenis && item.kategori) {
+                        const combo = `${item.jenis}-${item.kategori}`;
+                        combinations[combo] = (combinations[combo] || 0) + 1;
+                    }
+                });
+
+                const requiredJenis = ['rawat inap', 'rawat jalan', 'penunjang medis', 'administrasi', 'manajemen'];
+                const requiredKategori = ['klinis', 'non klinis'];
+                
+                const hasAllJenis = requiredJenis.every(j => jenisCount[j] > 0);
+                const hasAllKategori = requiredKategori.every(k => kategoriCount[k] > 0);
+
+                testResults.dataRetrieval = hasAllJenis && hasAllKategori;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.dataRetrieval ? 'success' : 'warning'}">
+                        <h4><i class="fas fa-${testResults.dataRetrieval ? 'check' : 'exclamation'}-circle"></i> 
+                            Data Retrieval Test ${testResults.dataRetrieval ? 'Passed' : 'Partial'}</h4>
+                        <ul>
+                            <li>Total records: ${data.length}</li>
+                            <li>Records with jenis: ${Object.values(jenisCount).reduce((a, b) => a + b, 0)}</li>
+                            <li>Records with kategori: ${Object.values(kategoriCount).reduce((a, b) => a + b, 0)}</li>
+                            <li>All required jenis present: ${hasAllJenis ? 'Yes' : 'No'}</li>
+                            <li>All required kategori present: ${hasAllKategori ? 'Yes' : 'No'}</li>
+                        </ul>
+                        
+                        <h5>Jenis Distribution:</h5>
+                        <ul>
+                            ${Object.entries(jenisCount).map(([jenis, count]) => 
+                                `<li>${jenis}: ${count}</li>`
+                            ).join('')}
+                        </ul>
+                        
+                        <h5>Kategori Distribution:</h5>
+                        <ul>
+                            ${Object.entries(kategoriCount).map(([kategori, count]) => 
+                                `<li>${kategori}: ${count}</li>`
+                            ).join('')}
+                        </ul>
+
+                        <h5>Sample Data:</h5>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Code</th>
+                                    <th>Jenis</th>
+                                    <th>Kategori</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.slice(0, 5).map(item => `
+                                    <tr>
+                                        <td>${item.name || '-'}</td>
+                                        <td>${item.code || '-'}</td>
+                                        <td><span class="badge badge-jenis-${(item.jenis || '').replace(' ', '-')}">${item.jenis || '-'}</span></td>
+                                        <td><span class="badge badge-kategori-${item.kategori || ''}">${item.kategori || '-'}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.dataRetrieval = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Data Retrieval Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testMasterDataUI() {
+            const resultDiv = document.getElementById('ui-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing UI...</div>';
+
+            try {
+                // Show master data container
+                const container = document.getElementById('master-data-container');
+                container.style.display = 'block';
+
+                // Load master data
+                await loadMasterData();
+                
+                // Wait for rendering
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Check if form has new fields
+                const jenisField = document.getElementById('form-jenis');
+                const kategoriField = document.getElementById('form-kategori');
+
+                // Check if table shows new columns
+                const tableHeaders = Array.from(document.querySelectorAll('#master-data-content th')).map(th => th.textContent);
+                const hasJenisColumn = tableHeaders.includes('Jenis');
+                const hasKategoriColumn = tableHeaders.includes('Kategori');
+
+                testResults.masterDataUI = jenisField && kategoriField && hasJenisColumn && hasKategoriColumn;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.masterDataUI ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.masterDataUI ? 'check' : 'times'}-circle"></i> 
+                            Master Data UI Test ${testResults.masterDataUI ? 'Passed' : 'Failed'}</h4>
+                        <ul>
+                            <li>Jenis form field: ${jenisField ? 'Found' : 'Missing'}</li>
+                            <li>Kategori form field: ${kategoriField ? 'Found' : 'Missing'}</li>
+                            <li>Jenis table column: ${hasJenisColumn ? 'Found' : 'Missing'}</li>
+                            <li>Kategori table column: ${hasKategoriColumn ? 'Found' : 'Missing'}</li>
+                        </ul>
+                        ${jenisField ? `
+                            <h5>Jenis Options:</h5>
+                            <ul>
+                                ${Array.from(jenisField.options).slice(1).map(opt => 
+                                    `<li>${opt.value}: ${opt.text}</li>`
+                                ).join('')}
+                            </ul>
+                        ` : ''}
+                        ${kategoriField ? `
+                            <h5>Kategori Options:</h5>
+                            <ul>
+                                ${Array.from(kategoriField.options).slice(1).map(opt => 
+                                    `<li>${opt.value}: ${opt.text}</li>`
+                                ).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.masterDataUI = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Master Data UI Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testTemplateDownload() {
+            const resultDiv = document.getElementById('template-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing template...</div>';
+
+            try {
+                const response = await fetch('/api/master-data/work-units/template');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                const isExcel = contentType && contentType.includes('spreadsheet');
+
+                if (isExcel) {
+                    // Download the file
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'template-unit-kerja-with-samples.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+
+                testResults.templateDownload = isExcel;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.templateDownload ? 'success' : 'warning'}">
+                        <h4><i class="fas fa-${testResults.templateDownload ? 'check' : 'exclamation'}-circle"></i> 
+                            Template Download Test ${testResults.templateDownload ? 'Passed' : 'Partial'}</h4>
+                        <ul>
+                            <li>Response status: ${response.status}</li>
+                            <li>Content-Type: ${contentType || 'Not set'}</li>
+                            <li>Is Excel: ${isExcel ? 'Yes' : 'No'}</li>
+                            <li>File downloaded: ${isExcel ? 'Yes' : 'No'}</li>
+                        </ul>
+                        ${isExcel ? '<p><strong>✅ Template dengan contoh data berhasil diunduh!</strong></p>' : ''}
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.templateDownload = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Template Download Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testExportReport() {
+            const resultDiv = document.getElementById('export-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing export...</div>';
+
+            try {
+                const response = await fetch('/api/master-data/work-units/export');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                const isExcel = contentType && contentType.includes('spreadsheet');
+
+                if (isExcel) {
+                    // Download the file
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'export-unit-kerja-with-jenis-kategori.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+
+                testResults.exportReport = isExcel;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.exportReport ? 'success' : 'warning'}">
+                        <h4><i class="fas fa-${testResults.exportReport ? 'check' : 'exclamation'}-circle"></i> 
+                            Export Report Test ${testResults.exportReport ? 'Passed' : 'Partial'}</h4>
+                        <ul>
+                            <li>Response status: ${response.status}</li>
+                            <li>Content-Type: ${contentType || 'Not set'}</li>
+                            <li>Is Excel: ${isExcel ? 'Yes' : 'No'}</li>
+                            <li>File downloaded: ${isExcel ? 'Yes' : 'No'}</li>
+                        </ul>
+                        ${isExcel ? '<p><strong>✅ Export dengan kolom jenis dan kategori berhasil diunduh!</strong></p>' : ''}
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.exportReport = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Export Report Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        async function testFormValidation() {
+            const resultDiv = document.getElementById('validation-result');
+            resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Testing validation...</div>';
+
+            try {
+                // Check if form fields have proper validation
+                const jenisField = document.getElementById('form-jenis');
+                const kategoriField = document.getElementById('form-kategori');
+
+                if (!jenisField || !kategoriField) {
+                    throw new Error('Form fields not found. Run Master Data UI test first.');
+                }
+
+                const jenisOptions = Array.from(jenisField.options).slice(1).map(opt => opt.value);
+                const kategoriOptions = Array.from(kategoriField.options).slice(1).map(opt => opt.value);
+
+                const expectedJenis = ['rawat inap', 'rawat jalan', 'penunjang medis', 'administrasi', 'manajemen'];
+                const expectedKategori = ['klinis', 'non klinis'];
+
+                const hasAllJenisOptions = expectedJenis.every(j => jenisOptions.includes(j));
+                const hasAllKategoriOptions = expectedKategori.every(k => kategoriOptions.includes(k));
+
+                testResults.formValidation = hasAllJenisOptions && hasAllKategoriOptions;
+                
+                resultDiv.innerHTML = `
+                    <div class="${testResults.formValidation ? 'success' : 'error'}">
+                        <h4><i class="fas fa-${testResults.formValidation ? 'check' : 'times'}-circle"></i> 
+                            Form Validation Test ${testResults.formValidation ? 'Passed' : 'Failed'}</h4>
+                        <ul>
+                            <li>Jenis options complete: ${hasAllJenisOptions ? 'Yes' : 'No'}</li>
+                            <li>Kategori options complete: ${hasAllKategoriOptions ? 'Yes' : 'No'}</li>
+                        </ul>
+                        
+                        <h5>Available Jenis Options:</h5>
+                        <ul>
+                            ${jenisOptions.map(opt => `<li>${opt}</li>`).join('')}
+                        </ul>
+                        
+                        <h5>Available Kategori Options:</h5>
+                        <ul>
+                            ${kategoriOptions.map(opt => `<li>${opt}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                updateSummary();
+            } catch (error) {
+                testResults.formValidation = false;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4><i class="fas fa-times-circle"></i> Form Validation Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                updateSummary();
+            }
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result === true).length;
+            const percentage = Math.round((passedTests / totalTests) * 100);
+
+            summaryDiv.innerHTML = `
+                <div class="${percentage === 100 ? 'success' : percentage >= 60 ? 'warning' : 'error'}">
+                    <h4><i class="fas fa-chart-pie"></i> Test Summary</h4>
+                    <p><strong>Passed: ${passedTests}/${totalTests} (${percentage}%)</strong></p>
+                    <ul>
+                        ${Object.entries(testResults).map(([test, result]) => 
+                            `<li><i class="fas fa-${result ? 'check' : 'times'}"></i> ${test}: ${result ? 'PASS' : 'FAIL'}</li>`
+                        ).join('')}
+                    </ul>
+                    ${percentage === 100 ? 
+                        '<p><strong>🎉 Semua test berhasil! Master Work Units dengan kolom jenis dan kategori sudah berfungsi dengan baik.</strong></p>' :
+                        '<p><strong>⚠️ Beberapa test gagal. Periksa hasil test di atas untuk detail.</strong></p>'
+                    }
+                </div>
+            `;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', async () => {
+            console.log('Running automated tests...');
+            await testDataRetrieval();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testMasterDataUI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testFormValidation();
+        });
+    </script>
+
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .result-box, .summary-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .loading {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+            text-align: center;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .badge-jenis-rawat-inap { background-color: #e3f2fd; color: #1976d2; }
+        .badge-jenis-rawat-jalan { background-color: #f3e5f5; color: #7b1fa2; }
+        .badge-jenis-penunjang-medis { background-color: #e8f5e8; color: #388e3c; }
+        .badge-jenis-administrasi { background-color: #fff3e0; color: #f57c00; }
+        .badge-jenis-manajemen { background-color: #fce4ec; color: #c2185b; }
+
+        .badge-kategori-klinis { background-color: #e8f5e8; color: #2e7d32; }
+        .badge-kategori-non-klinis { background-color: #f5f5f5; color: #616161; }
+
+        .master-tabs {
+            margin: 20px 0;
+        }
+
+        .master-tab-btn {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .master-tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .summary-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</body>
+</html>

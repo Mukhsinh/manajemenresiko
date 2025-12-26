@@ -65,7 +65,7 @@ router.get('/debug', async (req, res) => {
       { data: inherentAnalysis },
       { data: residualAnalysis }
     ] = await Promise.all([
-      unitIds.length > 0 ? adminClient.from('master_work_units').select('id, name, code').in('id', unitIds) : Promise.resolve({ data: [] }),
+      unitIds.length > 0 ? adminClient.from('master_work_units').select('id, name, code, jenis, kategori').in('id', unitIds) : Promise.resolve({ data: [] }),
       categoryIds.length > 0 ? adminClient.from('master_risk_categories').select('id, name').in('id', categoryIds) : Promise.resolve({ data: [] }),
       planIds.length > 0 ? adminClient.from('rencana_strategis').select('id, kode, nama_rencana, sasaran_strategis, indikator_kinerja_utama').in('id', planIds) : Promise.resolve({ data: [] }),
       adminClient.from('risk_inherent_analysis').select('*').in('risk_input_id', riskIds),
@@ -229,7 +229,7 @@ router.get('/', authenticateUser, async (req, res) => {
       { data: inherentAnalysis },
       { data: residualAnalysis }
     ] = await Promise.all([
-      unitIds.length > 0 ? supabase.from('master_work_units').select('id, name').in('id', unitIds) : Promise.resolve({ data: [] }),
+      unitIds.length > 0 ? supabase.from('master_work_units').select('id, name, jenis, kategori').in('id', unitIds) : Promise.resolve({ data: [] }),
       categoryIds.length > 0 ? supabase.from('master_risk_categories').select('id, name').in('id', categoryIds) : Promise.resolve({ data: [] }),
       planIds.length > 0 ? supabase.from('rencana_strategis').select('id, kode, nama_rencana').in('id', planIds) : Promise.resolve({ data: [] }),
       supabase.from('risk_inherent_analysis').select('*').in('risk_input_id', riskIds),

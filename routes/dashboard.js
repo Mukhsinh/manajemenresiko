@@ -51,7 +51,27 @@ router.get('/public', async (req, res) => {
     if (rencanaError) {
       console.error('Error fetching rencana strategis:', rencanaError);
     }
-    console.log('Rencana strategis found:', sampleRencanaStrategis?.length || 0);
+    // Get Visi Misi count
+    console.log('Fetching visi misi count...');
+    const { count: visiMisiCount, error: visiCountError } = await client
+      .from('visi_misi')
+      .select('*', { count: 'exact', head: true });
+    
+    if (visiCountError) {
+      console.error('Error fetching visi misi count:', visiCountError);
+    }
+    console.log('Visi misi count:', visiMisiCount);
+
+    // Get Rencana Strategis count
+    console.log('Fetching rencana strategis count...');
+    const { count: rencanaStrategisCount, error: rencanaCountError } = await client
+      .from('rencana_strategis')
+      .select('*', { count: 'exact', head: true });
+    
+    if (rencanaCountError) {
+      console.error('Error fetching rencana strategis count:', rencanaCountError);
+    }
+    console.log('Rencana strategis count:', rencanaStrategisCount);
 
     // Get risk analysis data
     console.log('Fetching inherent risks...');
@@ -63,6 +83,7 @@ router.get('/public', async (req, res) => {
       console.error('Error fetching inherent risks:', inherentError);
     }
     console.log('Inherent risks found:', inherentRisksData?.length || 0);
+    console.log('Inherent risks sample:', inherentRisksData?.slice(0, 3));
 
     console.log('Fetching residual risks...');
     const { data: residualRisksData, error: residualError } = await client
@@ -73,6 +94,7 @@ router.get('/public', async (req, res) => {
       console.error('Error fetching residual risks:', residualError);
     }
     console.log('Residual risks found:', residualRisksData?.length || 0);
+    console.log('Residual risks sample:', residualRisksData?.slice(0, 3));
 
     // Get KRI data
     console.log('Fetching KRI data...');
@@ -98,7 +120,24 @@ router.get('/public', async (req, res) => {
 
     // Count by risk level
     const countByLevel = (risks, level) => {
-      return risks?.filter(r => r.risk_level === level).length || 0;
+      if (!risks || risks.length === 0) return 0;
+      
+      // Map level names to match database values
+      const levelMap = {
+        'EXTREME HIGH': ['EXTREME HIGH', 'Very High', 'Sangat Tinggi', 'Very High Risk', 'Extreme High'],
+        'HIGH RISK': ['HIGH RISK', 'High', 'Tinggi', 'High Risk'],
+        'MEDIUM RISK': ['MEDIUM RISK', 'Medium', 'Sedang', 'Medium Risk'],
+        'LOW RISK': ['LOW RISK', 'Low', 'Rendah', 'Low Risk']
+      };
+      
+      const matchingLevels = levelMap[level] || [level];
+      return risks.filter(r => {
+        const riskLevel = r.risk_level || '';
+        return matchingLevels.some(l => 
+          riskLevel.toLowerCase() === l.toLowerCase() || 
+          riskLevel === l
+        );
+      }).length;
     };
 
     const stats = {
@@ -124,13 +163,17 @@ router.get('/public', async (req, res) => {
       sample_data: {
         visi_misi: sampleVisiMisi || [],
         rencana_strategis: sampleRencanaStrategis || []
+      },
+      counts: {
+        visi_misi: visiMisiCount || 0,
+        rencana_strategis: rencanaStrategisCount || 0
       }
     };
 
     console.log('Public dashboard stats:', {
       totalRisks: stats.total_risks,
-      visiMisiCount: stats.sample_data.visi_misi.length,
-      rencanaStrategisCount: stats.sample_data.rencana_strategis.length,
+      visiMisiCount: stats.counts.visi_misi,
+      rencanaStrategisCount: stats.counts.rencana_strategis,
       lossEvents: stats.loss_events
     });
 
@@ -243,9 +286,26 @@ router.get('/', authenticateUser, async (req, res) => {
       sampleRencanaStrategisCount: sampleRencanaStrategis?.length || 0
     });
 
-    // Count by risk level
+    // Count by risk level - handle multiple naming conventions
     const countByLevel = (risks, level) => {
-      return risks?.filter(r => r.risk_level === level).length || 0;
+      if (!risks || risks.length === 0) return 0;
+      
+      // Map level names to match database values
+      const levelMap = {
+        'EXTREME HIGH': ['EXTREME HIGH', 'Very High', 'Sangat Tinggi', 'Very High Risk', 'Extreme High'],
+        'HIGH RISK': ['HIGH RISK', 'High', 'Tinggi', 'High Risk'],
+        'MEDIUM RISK': ['MEDIUM RISK', 'Medium', 'Sedang', 'Medium Risk'],
+        'LOW RISK': ['LOW RISK', 'Low', 'Rendah', 'Low Risk']
+      };
+      
+      const matchingLevels = levelMap[level] || [level];
+      return risks.filter(r => {
+        const riskLevel = r.risk_level || '';
+        return matchingLevels.some(l => 
+          riskLevel.toLowerCase() === l.toLowerCase() || 
+          riskLevel === l
+        );
+      }).length;
     };
 
     const stats = {

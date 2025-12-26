@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Loop Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .auth-state {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .auth-item {
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .auth-item.true {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .auth-item.false {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Login Loop Fix</h1>
+        <p>Test untuk memverifikasi perbaikan infinite login loop</p>
+
+        <div class="test-section">
+            <h3>📊 Authentication State</h3>
+            <div class="auth-state" id="auth-state">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            <button onclick="refreshAuthState()">🔄 Refresh State</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Functions</h3>
+            <button onclick="testAuthGuard()">Test AuthGuard</button>
+            <button onclick="testNavigation()">Test Navigation</button>
+            <button onclick="testRouterAuth()">Test Router Auth</button>
+            <button onclick="simulateLogin()">Simulate Login</button>
+            <button onclick="simulateLogout()">Simulate Logout</button>
+            <button onclick="clearAuthState()">Clear Auth State</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Console Log</h3>
+            <div class="log" id="console-log"></div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/route-config.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/RouterErrorHandler.js"></script>
+    <script src="/js/RouterManager.js"></script>
+    <script src="/js/services/authService.js"></script>
+    <script src="/js/login-loop-fix.js"></script>
+
+    <script>
+        // Console log capture
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        
+        function logToPage(message, type = 'log') {
+            const logElement = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logElement.textContent += logEntry;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            logToPage(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            logToPage(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            logToPage(args.join(' '), 'warn');
+        };
+
+        // Test functions
+        function refreshAuthState() {
+            const authStateDiv = document.getElementById('auth-state');
+            
+            const states = {
+                'window.isAuthenticated': window.isAuthenticated,
+                'window.currentUser': !!window.currentUser,
+                'window.currentSession': !!window.currentSession,
+                'authStateManager.isUserAuthenticated()': window.authStateManager ? window.authStateManager.isUserAuthenticated() : 'N/A',
+                'localStorage auth': !!localStorage.getItem('supabase.auth.token'),
+                'sessionStorage intendedRoute': !!sessionStorage.getItem('intendedRoute')
+            };
+            
+            authStateDiv.innerHTML = '';
+            
+            Object.entries(states).forEach(([key, value]) => {
+                const div = document.createElement('div');
+                div.className = `auth-item ${value}`;
+                div.innerHTML = `<strong>${key}:</strong> ${value}`;
+                authStateDiv.appendChild(div);
+            });
+            
+            console.log('Auth state refreshed:', states);
+        }
+        
+        function addTestResult(message, success = true) {
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `status ${success ? 'success' : 'error'}`;
+            div.textContent = `${success ? '✅' : '❌'} ${message}`;
+            resultsDiv.appendChild(div);
+        }
+        
+        function testAuthGuard() {
+            console.log('🧪 Testing AuthGuard...');
+            
+            try {
+                if (!window.AuthGuard) {
+                    throw new Error('AuthGuard not available');
+                }
+                
+                const authGuard = new window.AuthGuard();
+                const testRoute = { auth: true, pattern: '/test' };
+                const publicRoute = { auth: false, pattern: '/public' };
+                
+                const protectedResult = authGuard.canActivate(testRoute);
+                const publicResult = authGuard.canActivate(publicRoute);
+                
+                addTestResult(`AuthGuard protected route: ${protectedResult}`, true);
+                addTestResult(`AuthGuard public route: ${publicResult}`, publicResult === true);
+                
+                console.log('AuthGuard test results:', { protectedResult, publicResult });
+            } catch (error) {
+                addTestResult(`AuthGuard test failed: ${error.message}`, false);
+                console.error('AuthGuard test error:', error);
+            }
+        }
+        
+        function testNavigation() {
+            console.log('🧪 Testing Navigation...');
+            
+            try {
+                if (typeof window.navigateToPage !== 'function') {
+                    throw new Error('navigateToPage function not available');
+                }
+                
+                // Test navigation to dashboard
+                window.navigateToPage('dashboard');
+                addTestResult('Navigation to dashboard executed', true);
+                
+                // Test rapid navigation (should be prevented)
+                window.navigateToPage('dashboard');
+                window.navigateToPage('dashboard');
+                addTestResult('Rapid navigation prevention test', true);
+                
+                console.log('Navigation test completed');
+            } catch (error) {
+                addTestResult(`Navigation test failed: ${error.message}`, false);
+                console.error('Navigation test error:', error);
+            }
+        }
+        
+        function testRouterAuth() {
+            console.log('🧪 Testing Router Authentication...');
+            
+            try {
+                if (!window.appRouter) {
+                    console.log('Router not available, initializing...');
+                    
+                    if (window.RouterManager) {
+                        const routerManager = window.RouterManager.getInstance();
+                        routerManager.initialize().then(success => {
+                            if (success) {
+                                addTestResult('Router initialized successfully', true);
+                                performRouterAuthTest();
+                            } else {
+                                addTestResult('Router initialization failed', false);
+                            }
+                        });
+                    } else {
+                        throw new Error('RouterManager not available');
+                    }
+                } else {
+                    performRouterAuthTest();
+                }
+            } catch (error) {
+                addTestResult(`Router auth test failed: ${error.message}`, false);
+                console.error('Router auth test error:', error);
+            }
+        }
+        
+        function performRouterAuthTest() {
+            try {
+                const router = window.appRouter;
+                if (!router) {
+                    throw new Error('Router not available');
+                }
+                
+                // Test navigation to protected route
+                router.navigate('/dashboard');
+                addTestResult('Router navigation to protected route', true);
+                
+                // Test navigation to public route
+                router.navigate('/login');
+                addTestResult('Router navigation to public route', true);
+                
+                console.log('Router auth test completed');
+            } catch (error) {
+                addTestResult(`Router auth test execution failed: ${error.message}`, false);
+                console.error('Router auth test execution error:', error);
+            }
+        }
+        
+        function simulateLogin() {
+            console.log('🧪 Simulating login...');
+            
+            try {
+                const mockUser = {
+                    id: 'test-user-id',
+                    email: 'test@example.com',
+                    user_metadata: { full_name: 'Test User' }
+                };
+                
+                const mockSession = {
+                    access_token: 'mock-access-token-' + Date.now(),
+                    refresh_token: 'mock-refresh-token',
+                    expires_at: Math.floor(Date.now() / 1000) + 3600,
+                    user: mockUser
+                };
+                
+                // Use AuthStateManager if available
+                if (window.authStateManager) {
+                    window.authStateManager.updateState(true, mockUser, mockSession);
+                } else {
+                    window.isAuthenticated = true;
+                    window.currentUser = mockUser;
+                    window.currentSession = mockSession;
+                }
+                
+                addTestResult('Login simulation completed', true);
+                refreshAuthState();
+                
+                console.log('Login simulated successfully');
+            } catch (error) {
+                addTestResult(`Login simulation failed: ${error.message}`, false);
+                console.error('Login simulation error:', error);
+            }
+        }
+        
+        function simulateLogout() {
+            console.log('🧪 Simulating logout...');
+            
+            try {
+                // Use AuthStateManager if available
+                if (window.authStateManager) {
+                    window.authStateManager.clearState();
+                } else {
+                    window.isAuthenticated = false;
+                    window.currentUser = null;
+                    window.currentSession = null;
+                }
+                
+                addTestResult('Logout simulation completed', true);
+                refreshAuthState();
+                
+                console.log('Logout simulated successfully');
+            } catch (error) {
+                addTestResult(`Logout simulation failed: ${error.message}`, false);
+                console.error('Logout simulation error:', error);
+            }
+        }
+        
+        function clearAuthState() {
+            console.log('🧪 Clearing auth state...');
+            
+            try {
+                // Clear all authentication state
+                window.isAuthenticated = false;
+                window.currentUser = null;
+                window.currentSession = null;
+                
+                // Clear storage
+                localStorage.removeItem('supabase.auth.token');
+                localStorage.removeItem('authState');
+                sessionStorage.removeItem('intendedRoute');
+                sessionStorage.removeItem('routerState');
+                
+                if (window.authStateManager) {
+                    window.authStateManager.clearState();
+                }
+                
+                addTestResult('Auth state cleared', true);
+                refreshAuthState();
+                
+                console.log('Auth state cleared successfully');
+            } catch (error) {
+                addTestResult(`Clear auth state failed: ${error.message}`, false);
+                console.error('Clear auth state error:', error);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('console-log').textContent = '';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Login Loop Fix Test initialized');
+            refreshAuthState();
+            
+            // Auto-refresh auth state every 5 seconds
+            setInterval(refreshAuthState, 5000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Residual Risk Matrix - Enhanced with Background Colors & Star Icons</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .risk-matrix-container {
+            position: relative;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .risk-matrix-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .legend-symbol {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .legend-symbol.star {
+            border-radius: 0;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .legend-symbol.triangle {
+            border-radius: 0;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .test-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-highlight {
+            background: #e8f5e8;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <!-- Test Info -->
+        <div class="test-info">
+            <h1><i data-lucide="star" class="me-3"></i>Enhanced Residual Risk Matrix Test</h1>
+            <p class="mb-0">Testing enhanced risk matrix with background colors for risk zones and star icons for residual risk points</p>
+        </div>
+
+        <!-- Feature Highlights -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="feature-highlight">
+                    <h5><i data-lucide="palette" class="me-2"></i>Background Colors</h5>
+                    <p class="mb-0">Risk zones now have colored backgrounds: Green (Low), Yellow (Medium), Orange (High), Red (Extreme)</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-highlight">
+                    <h5><i data-lucide="star" class="me-2"></i>Star Icons</h5>
+                    <p class="mb-0">Residual risk points are now displayed as gold star icons instead of black diamonds</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Matrix -->
+        <div class="risk-matrix-container">
+            <h3 class="text-center mb-4">
+                <i data-lucide="target" class="me-2"></i>
+                Enhanced Residual Risk Matrix
+            </h3>
+            
+            <div class="chart-container">
+                <canvas id="residual-risk-matrix"></canvas>
+            </div>
+            
+            <div class="risk-matrix-legend">
+                <div class="legend-item">
+                    <div class="legend-symbol circle" style="background-color: #00FFFF; border: 2px solid #000;"></div>
+                    <span><i data-lucide="circle" style="width: 16px; height: 16px;"></i> Inherent Risk Rating</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol star" style="background-color: #FFD700; border: 2px solid #000; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);"></div>
+                    <span><i data-lucide="star" style="width: 16px; height: 16px;"></i> Residual Risk Rating (★)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol triangle" style="background-color: #FFFFFF; border: 2px solid #000; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                    <span><i data-lucide="triangle" style="width: 16px; height: 16px;"></i> Risk Appetite</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="text-center mt-4">
+            <button class="btn btn-primary me-2" onclick="generateTestData()">
+                <i data-lucide="refresh-cw"></i> Generate Test Data
+            </button>
+            <button class="btn btn-success me-2" onclick="loadRealData()">
+                <i data-lucide="database"></i> Load Real Data
+            </button>
+            <button class="btn btn-info" onclick="downloadChart()">
+                <i data-lucide="download"></i> Download Chart
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let chart = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Generate initial test data
+            generateTestData();
+        });
+
+        function generateTestData() {
+            // Sample test data
+            const testData = [
+                { inherent: { x: 2, y: 3, value: 6, level: 'MEDIUM RISK' }, residual: { x: 1.5, y: 2.5, value: 4, level: 'LOW RISK' }, code: 'RSK-001' },
+                { inherent: { x: 4, y: 4, value: 16, level: 'HIGH RISK' }, residual: { x: 3, y: 3, value: 9, level: 'MEDIUM RISK' }, code: 'RSK-002' },
+                { inherent: { x: 5, y: 5, value: 25, level: 'EXTREME HIGH' }, residual: { x: 4, y: 4, value: 16, level: 'HIGH RISK' }, code: 'RSK-003' },
+                { inherent: { x: 1, y: 2, value: 2, level: 'LOW RISK' }, residual: { x: 1, y: 1.5, value: 1.5, level: 'LOW RISK' }, code: 'RSK-004' },
+                { inherent: { x: 3, y: 4, value: 12, level: 'HIGH RISK' }, residual: { x: 2, y: 3, value: 6, level: 'MEDIUM RISK' }, code: 'RSK-005' },
+                { inherent: { x: 4, y: 5, value: 20, level: 'EXTREME HIGH' }, residual: { x: 3, y: 4, value: 12, level: 'HIGH RISK' }, code: 'RSK-006' }
+            ];
+            
+            renderMatrix(testData);
+        }
+
+        async function loadRealData() {
+            try {
+                const response = await fetch('/api/reports/residual-risk-simple');
+                if (!response.ok) throw new Error('Failed to load data');
+                
+                const data = await response.json();
+                const processedData = data.slice(0, 10).map((item, index) => {
+                    const risk = item.risk_inputs || {};
+                    let inherent = {};
+                    
+                    if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                        inherent = risk.risk_inherent_analysis[0];
+                    } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+                        inherent = risk.risk_inherent_analysis;
+                    }
+                    
+                    return {
+                        inherent: {
+                            x: parseFloat(inherent.impact) || Math.random() * 4 + 1,
+                            y: parseFloat(inherent.probability) || Math.random() * 4 + 1,
+                            value: parseFloat(inherent.risk_value) || 0,
+                            level: inherent.risk_level || 'LOW RISK'
+                        },
+                        residual: {
+                            x: parseFloat(item.impact) || Math.random() * 4 + 1,
+                            y: parseFloat(item.probability) || Math.random() * 4 + 1,
+                            value: parseFloat(item.risk_value) || 0,
+                            level: item.risk_level || 'LOW RISK'
+                        },
+                        code: risk.kode_risiko || `RSK-${String(index + 1).padStart(3, '0')}`
+                    };
+                });
+                
+                renderMatrix(processedData);
+                
+            } catch (error) {
+                console.error('Error loading real data:', error);
+                alert('Failed to load real data, using test data instead');
+                generateTestData();
+            }
+        }
+
+        function renderMatrix(data) {
+            const ctx = document.getElementById('residual-risk-matrix');
+            if (!ctx || typeof Chart === 'undefined') {
+                console.error('Chart context or Chart.js not available');
+                return;
+            }
+
+            if (chart) {
+                chart.destroy();
+                chart = null;
+            }
+
+            // Prepare datasets
+            const inherentPoints = data.map(item => ({
+                x: item.inherent.x,
+                y: item.inherent.y,
+                riskId: item.code,
+                value: item.inherent.value,
+                level: item.inherent.level
+            }));
+
+            const residualPoints = data.map(item => ({
+                x: item.residual.x,
+                y: item.residual.y,
+                riskId: item.code,
+                value: item.residual.value,
+                level: item.residual.level
+            }));
+
+            const appetitePoints = data.map(item => ({
+                x: Math.max(1, item.residual.x - 0.5),
+                y: Math.max(1, item.residual.y - 0.5),
+                riskId: item.code,
+                value: Math.max(1, item.residual.value - 2),
+                level: 'LOW RISK'
+            }));
+
+            try {
+                chart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Inherent Risk Rating',
+                                data: inherentPoints,
+                                backgroundColor: '#00FFFF',
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 12,
+                                pointHoverRadius: 15,
+                                pointStyle: 'circle'
+                            },
+                            {
+                                label: 'Residual Risk Rating',
+                                data: residualPoints,
+                                backgroundColor: '#FFD700',
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 15,
+                                pointHoverRadius: 18,
+                                pointStyle: 'star'
+                            },
+                            {
+                                label: 'Risk Appetite',
+                                data: appetitePoints,
+                                backgroundColor: '#FFFFFF',
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 12,
+                                pointHoverRadius: 15,
+                                pointStyle: 'triangle'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                min: 0.5,
+                                max: 5.5,
+                                ticks: { 
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        const labels = {
+                                            1: '1 = Ringan Sekali',
+                                            2: '2 = Ringan', 
+                                            3: '3 = Sedang',
+                                            4: '4 = Berat',
+                                            5: '5 = Sangat Berat'
+                                        };
+                                        return labels[value] || value;
+                                    }
+                                },
+                                title: { display: true, text: 'Dampak (Impact)', font: { weight: 'bold', size: 14 } },
+                                grid: { color: '#e2e8f0', lineWidth: 1 }
+                            },
+                            y: {
+                                min: 0.5,
+                                max: 5.5,
+                                ticks: { 
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        const labels = {
+                                            1: '1 = Sangat Kecil ≤ 10%',
+                                            2: '2 = Kecil (10% < p < 40%)',
+                                            3: '3 = Sedang (40% < p ≤ 60%)', 
+                                            4: '4 = Besar (60% < p < 80%)',
+                                            5: '5 = Sangat Besar (> 80%)'
+                                        };
+                                        return labels[value] || value;
+                                    }
+                                },
+                                title: { display: true, text: 'Probabilitas', font: { weight: 'bold', size: 14 } },
+                                grid: { color: '#e2e8f0', lineWidth: 1 }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    generateLabels: function(chart) {
+                                        return [
+                                            {
+                                                text: 'Inherent Risk Rating',
+                                                fillStyle: '#00FFFF',
+                                                strokeStyle: '#000000',
+                                                pointStyle: 'circle'
+                                            },
+                                            {
+                                                text: 'Residual Risk Rating (★)', 
+                                                fillStyle: '#FFD700',
+                                                strokeStyle: '#000000',
+                                                pointStyle: 'star'
+                                            },
+                                            {
+                                                text: 'Risk Appetite',
+                                                fillStyle: '#FFFFFF',
+                                                strokeStyle: '#000000', 
+                                                pointStyle: 'triangle'
+                                            }
+                                        ];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const point = context.raw;
+                                        return [
+                                            `Kode: ${point.riskId}`,
+                                            `Risk Value: ${point.value}`,
+                                            `Level: ${point.level}`,
+                                            `Impact: ${point.x}`,
+                                            `Probability: ${point.y}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        // Enhanced background plugin with better colors and labels
+                        plugins: [{
+                            id: 'riskMatrixBackground',
+                            beforeDraw: function(chart) {
+                                const ctx = chart.ctx;
+                                const chartArea = chart.chartArea;
+                                
+                                if (!chartArea) return;
+                                
+                                ctx.save();
+                                
+                                // Define risk zones with enhanced colors and better coverage
+                                const zones = [
+                                    // Green zones (Low Risk) - Enhanced visibility
+                                    { xMin: 0.5, xMax: 1.5, yMin: 0.5, yMax: 5.5, color: 'rgba(34, 197, 94, 0.3)', label: 'LOW' },
+                                    { xMin: 1.5, xMax: 2.5, yMin: 0.5, yMax: 2.5, color: 'rgba(34, 197, 94, 0.3)', label: 'LOW' },
+                                    
+                                    // Yellow zones (Medium Risk) - Enhanced visibility
+                                    { xMin: 1.5, xMax: 2.5, yMin: 2.5, yMax: 3.5, color: 'rgba(234, 179, 8, 0.3)', label: 'MEDIUM' },
+                                    { xMin: 2.5, xMax: 3.5, yMin: 0.5, yMax: 2.5, color: 'rgba(234, 179, 8, 0.3)', label: 'MEDIUM' },
+                                    
+                                    // Orange zones (High Risk) - Enhanced visibility
+                                    { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                                    { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                                    { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                                    
+                                    // Red zones (Extreme Risk) - Enhanced visibility
+                                    { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'EXTREME' },
+                                    { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'EXTREME' }
+                                ];
+                                
+                                // Draw background zones with enhanced styling
+                                zones.forEach(zone => {
+                                    const xStart = chart.scales.x.getPixelForValue(zone.xMin);
+                                    const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
+                                    const yStart = chart.scales.y.getPixelForValue(zone.yMax);
+                                    const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
+                                    
+                                    // Fill background color
+                                    ctx.fillStyle = zone.color;
+                                    ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                                    
+                                    // Add subtle border
+                                    ctx.strokeStyle = zone.color.replace('0.3', '0.6').replace('0.4', '0.8');
+                                    ctx.lineWidth = 1;
+                                    ctx.strokeRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                                    
+                                    // Add zone label in center
+                                    const centerX = (xStart + xEnd) / 2;
+                                    const centerY = (yStart + yEnd) / 2;
+                                    
+                                    ctx.fillStyle = zone.color.replace('0.3', '0.8').replace('0.4', '0.9');
+                                    ctx.font = 'bold 12px Arial';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.fillText(zone.label, centerX, centerY);
+                                });
+                                
+                                ctx.restore();
+                            }
+                        }],
+                        interaction: {
+                            intersect: false,
+                            mode: 'point'
+                        }
+                    }
+                });
+
+                console.log('Enhanced risk matrix chart created successfully');
+                
+            } catch (error) {
+                console.error('Error creating enhanced risk matrix chart:', error);
+            }
+        }
+
+        function downloadChart() {
+            try {
+                const canvas = document.getElementById('residual-risk-matrix');
+                if (!canvas) {
+                    alert('Chart tidak ditemukan');
+                    return;
+                }
+
+                const link = document.createElement('a');
+                link.download = `enhanced-residual-risk-matrix-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                alert('Enhanced chart berhasil diunduh');
+            } catch (error) {
+                console.error('Error downloading chart:', error);
+                alert('Error downloading chart: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

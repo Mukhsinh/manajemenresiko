@@ -107,7 +107,11 @@ const IndikatorKinerjaUtamaModule = (() => {
     }
   }
 
-  function render() {
+  /**
+   * Renders the Indikator Kinerja Utama page with enhanced HTML content
+   * @returns {Promise<void>}
+   */
+  async function render() {
     console.log('=== RENDERING INDIKATOR KINERJA UTAMA ===');
     console.log('Render data:', {
       dataCount: state.data.length,
@@ -116,10 +120,115 @@ const IndikatorKinerjaUtamaModule = (() => {
       sampleData: state.data.length > 0 ? state.data[0] : null
     });
     
+    /** @type {HTMLElement | null} */
     const container = document.getElementById('indikator-kinerja-utama-content');
     if (!container) {
       console.error('Container not found: indikator-kinerja-utama-content');
       return;
+    }
+
+    // Try to load enhanced HTML content first
+    try {
+      /** @type {Response} */
+      const response = await fetch('/indikator-kinerja-utama-enhanced-final.html');
+      if (response.ok) {
+        /** @type {string} */
+        const htmlContent = await response.text();
+        /** @type {DOMParser} */
+        const parser = new DOMParser();
+        /** @type {Document} */
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        
+        // Extract styles from <style> tag in head
+        /** @type {HTMLStyleElement | null} */
+        const styleElement = doc.querySelector('head style');
+        if (styleElement) {
+          const styleId = 'indikator-kinerja-utama-enhanced-styles';
+          /** @type {HTMLElement | null} */
+          const existingStyle = document.getElementById(styleId);
+          if (existingStyle) {
+            existingStyle.remove();
+          }
+          
+          /** @type {HTMLStyleElement} */
+          const newStyle = document.createElement('style');
+          newStyle.id = styleId;
+          newStyle.textContent = styleElement.textContent;
+          document.head.appendChild(newStyle);
+          console.log('✓ Enhanced styles loaded for Indikator Kinerja Utama');
+        }
+        
+        // Extract body content from .container-fluid
+        /** @type {HTMLElement | null} */
+        const containerFluid = doc.querySelector('.container-fluid');
+        if (containerFluid) {
+          container.innerHTML = containerFluid.innerHTML;
+          console.log('✓ Enhanced HTML content loaded for Indikator Kinerja Utama');
+          
+          // Populate filters and table data after loading enhanced HTML
+          populateFiltersIntoEnhancedHTML(container);
+          renderTableIntoEnhancedHTML(container);
+          
+          return; // Exit early if enhanced HTML loaded successfully
+        }
+      }
+    } catch (error) {
+      /** @type {Error} */
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.warn('⚠️ Could not load enhanced HTML, using inline rendering:', err);
+    }
+
+    // Fallback: Add enhanced CSS for text overflow fix
+    const styleId = 'indikator-kinerja-utama-enhanced-styles';
+    const existingStyle = document.getElementById(styleId);
+    if (!existingStyle) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+      /* FIXED: Text Container with proper overflow handling */
+      .text-container {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        line-height: 1.4;
+        word-break: break-word;
+        hyphens: auto;
+        display: block;
+        font-size: 0.75rem;
+      }
+      
+      /* FIXED: Multi-line text container for longer content */
+      .text-container-multiline {
+        max-width: 100%;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.3;
+        word-break: break-word;
+        hyphens: auto;
+        font-size: 0.7rem;
+      }
+      
+      .iku-table {
+        table-layout: fixed;
+      }
+      
+      .table-container {
+        overflow-x: auto;
+        max-width: 100%;
+      }
+      
+      /* Responsive text handling */
+      @media (max-width: 768px) {
+        .text-container-multiline {
+          font-size: 0.65rem;
+          -webkit-line-clamp: 1;
+        }
+      }
+    `;
+      document.head.appendChild(style);
     }
 
     container.innerHTML = `
@@ -159,20 +268,20 @@ const IndikatorKinerjaUtamaModule = (() => {
               </select>
             </div>
           </div>
-          <div class="table-container" style="overflow-x: auto; max-width: 100%; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative;">
+          <div class="table-container">
             <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
-              <table class="table table-striped iku-table" style="min-width: 1200px; table-layout: fixed; margin: 0; font-size: 0.875rem;">
+              <table class="table table-striped iku-table" style="min-width: 1400px;">
                 <thead style="background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                   <tr>
-                    <th style="width: 40px; text-align: center; padding: 8px 4px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">No</th>
-                    <th style="width: 180px; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Rencana Strategis</th>
-                    <th style="width: 180px; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Sasaran Strategi</th>
-                    <th style="width: 200px; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Indikator</th>
-                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Baseline</th>
-                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Target</th>
-                    <th style="width: 140px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Progress</th>
-                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">PIC</th>
-                    <th style="width: 100px; text-align: center; padding: 8px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 0.75rem;">Aksi</th>
+                    <th style="width: 50px; text-align: center; font-size: 0.75rem;">No</th>
+                    <th style="width: 180px; font-size: 0.75rem;">Rencana Strategis</th>
+                    <th style="width: 180px; font-size: 0.75rem;">Sasaran Strategi</th>
+                    <th style="width: 200px; font-size: 0.75rem;">Indikator</th>
+                    <th style="width: 100px; text-align: center; font-size: 0.75rem;">Baseline</th>
+                    <th style="width: 100px; text-align: center; font-size: 0.75rem;">Target</th>
+                    <th style="width: 140px; text-align: center; font-size: 0.75rem;">Progress</th>
+                    <th style="width: 100px; text-align: center; font-size: 0.75rem;">PIC</th>
+                    <th style="width: 100px; text-align: center; font-size: 0.75rem;">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,61 +289,61 @@ const IndikatorKinerjaUtamaModule = (() => {
                   ${state.data.map((item, index) => {
                     const progress = calculateProgress(item);
                     return `
-                    <tr style="border-bottom: 1px solid #dee2e6; font-size: 0.8rem;">
-                      <td style="text-align: center; padding: 8px 4px; vertical-align: middle; font-size: 0.75rem;">${index + 1}</td>
-                      <td style="padding: 8px; vertical-align: middle;" title="${item.rencana_strategis?.nama_rencana || '-'}">
-                        <div style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-size: 0.75rem; word-break: break-word; hyphens: auto;">
+                    <tr style="font-size: 0.8rem;">
+                      <td style="text-align: center; font-size: 0.75rem;">${index + 1}</td>
+                      <td title="${item.rencana_strategis?.nama_rencana || '-'}">
+                        <div class="text-container-multiline">
                           ${item.rencana_strategis?.nama_rencana || '-'}
                         </div>
                       </td>
-                      <td style="padding: 8px; vertical-align: middle;" title="${item.sasaran_strategi?.sasaran || '-'}">
-                        <div style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-size: 0.75rem; word-break: break-word; hyphens: auto;">
+                      <td title="${item.sasaran_strategi?.sasaran || '-'}">
+                        <div class="text-container-multiline">
                           ${item.sasaran_strategi?.sasaran || '-'}
                         </div>
                       </td>
-                      <td style="padding: 8px; vertical-align: middle;" title="${item.indikator}">
-                        <div style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-size: 0.75rem; word-break: break-word; hyphens: auto;">
+                      <td title="${item.indikator}">
+                        <div class="text-container-multiline">
                           ${item.indikator}
                         </div>
                       </td>
-                      <td style="text-align: center; padding: 8px; vertical-align: middle;">
+                      <td style="text-align: center;">
                         <div style="font-size: 0.7rem; line-height: 1.2;">
                           <div style="font-weight: 600; color: #495057;">${item.baseline_nilai || '-'}</div>
                           <div style="color: #6c757d; font-size: 0.65rem;">(${item.baseline_tahun || '-'})</div>
                         </div>
                       </td>
-                      <td style="text-align: center; padding: 8px; vertical-align: middle;">
+                      <td style="text-align: center;">
                         <div style="font-size: 0.7rem; line-height: 1.2;">
                           <div style="font-weight: 600; color: #495057;">${item.target_nilai || '-'}</div>
                           <div style="color: #6c757d; font-size: 0.65rem;">(${item.target_tahun || '-'})</div>
                         </div>
                       </td>
-                      <td style="text-align: center; padding: 8px; vertical-align: middle; min-width: 130px;">
+                      <td style="text-align: center;">
                         ${progress !== null ? `
-                          <div class="progress-container" style="display: flex; align-items: center; gap: 0.5rem; min-width: 120px; flex-direction: row;">
-                            <div class="progress-bar" style="flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; position: relative;">
-                              <div class="progress-fill" style="height: 100%; width: ${Math.min(Math.abs(progress), 100)}%; background: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                          <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 120px;">
+                            <div style="flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                              <div style="height: 100%; width: ${Math.min(Math.abs(progress), 100)}%; background: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; border-radius: 4px; transition: width 0.3s ease;"></div>
                             </div>
-                            <span class="progress-text" style="font-weight: 600; font-size: 0.7rem; color: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; min-width: 35px; text-align: right;">
+                            <span style="font-weight: 600; font-size: 0.65rem; color: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; min-width: 35px; text-align: right;">
                               ${progress >= 0 ? '+' : ''}${progress.toFixed(1)}%
                             </span>
                           </div>
-                          <div style="font-size: 0.6rem; color: #6c757d; margin-top: 2px;">
+                          <div style="font-size: 0.55rem; color: #6c757d; margin-top: 2px;">
                             ${item.baseline_nilai || 0} → ${item.target_nilai || 0}
                           </div>
                         ` : '<span class="text-muted" style="font-size: 0.7rem;">-</span>'}
                       </td>
-                      <td style="text-align: center; padding: 8px; vertical-align: middle;" title="${item.pic || '-'}">
-                        <div style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.7rem;">
+                      <td style="text-align: center;" title="${item.pic || '-'}">
+                        <div class="text-container">
                           ${item.pic || '-'}
                         </div>
                       </td>
-                      <td style="text-align: center; padding: 8px; vertical-align: middle;">
-                        <div style="display: flex; gap: 4px; justify-content: center; align-items: center; flex-wrap: wrap;">
-                          <button class="btn btn-edit btn-sm" onclick="IndikatorKinerjaUtamaModule.edit('${item.id}')" title="Edit" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #17a2b8; color: white; border: none; cursor: pointer; transition: background-color 0.2s; min-width: 28px;">
+                      <td style="text-align: center;">
+                        <div style="display: flex; gap: 2px; justify-content: center;">
+                          <button class="btn btn-edit btn-sm" onclick="IndikatorKinerjaUtamaModule.edit('${item.id}')" title="Edit" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #17a2b8; color: white; border: none; cursor: pointer; min-width: 28px;">
                             <i class="fas fa-edit"></i>
                           </button>
-                          <button class="btn btn-delete btn-sm" onclick="IndikatorKinerjaUtamaModule.delete('${item.id}')" title="Hapus" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #dc3545; color: white; border: none; cursor: pointer; transition: background-color 0.2s; min-width: 28px;">
+                          <button class="btn btn-delete btn-sm" onclick="IndikatorKinerjaUtamaModule.delete('${item.id}')" title="Hapus" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #dc3545; color: white; border: none; cursor: pointer; min-width: 28px;">
                             <i class="fas fa-trash"></i>
                           </button>
                         </div>
@@ -249,6 +358,128 @@ const IndikatorKinerjaUtamaModule = (() => {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Populates filter dropdowns in enhanced HTML container
+   * @param {HTMLElement} container - The container element
+   * @returns {void}
+   */
+  function populateFiltersIntoEnhancedHTML(container) {
+    // Update filter dropdowns with actual data
+    /** @type {HTMLSelectElement | null} */
+    const rencanaSelect = container.querySelector('#filter-rencana-strategis, #filter-rencana');
+    if (rencanaSelect) {
+      // Clear existing options except "Semua"
+      /** @type {HTMLOptionElement | null} */
+      const allOption = rencanaSelect.querySelector('option[value=""]');
+      rencanaSelect.innerHTML = '';
+      if (allOption) rencanaSelect.appendChild(allOption);
+      
+      state.rencanaStrategis.forEach(r => {
+        /** @type {HTMLOptionElement} */
+        const option = document.createElement('option');
+        option.value = r.id;
+        option.textContent = r.nama_rencana;
+        if (state.filters.rencana_strategis_id === r.id) option.selected = true;
+        rencanaSelect.appendChild(option);
+      });
+    }
+    
+    /** @type {HTMLSelectElement | null} */
+    const sasaranSelect = container.querySelector('#filter-sasaran-strategi, #filter-sasaran');
+    if (sasaranSelect) {
+      /** @type {HTMLOptionElement | null} */
+      const allOption = sasaranSelect.querySelector('option[value=""]');
+      sasaranSelect.innerHTML = '';
+      if (allOption) sasaranSelect.appendChild(allOption);
+      
+      state.sasaranStrategi.forEach(s => {
+        /** @type {HTMLOptionElement} */
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.textContent = s.sasaran.length > 50 ? s.sasaran.substring(0, 50) + '...' : s.sasaran;
+        if (state.filters.sasaran_strategi_id === s.id) option.selected = true;
+        sasaranSelect.appendChild(option);
+      });
+    }
+  }
+
+  /**
+   * Renders table data into enhanced HTML container
+   * @param {HTMLElement} container - The container element
+   * @returns {void}
+   */
+  function renderTableIntoEnhancedHTML(container) {
+    /** @type {HTMLTableSectionElement | null} */
+    const tbody = container.querySelector('#ikuTableBody, .iku-table tbody, tbody');
+    if (!tbody) {
+      console.warn('Table body not found in enhanced HTML');
+      return;
+    }
+    
+    if (state.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center">Tidak ada data</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = state.data.map((item, index) => {
+      const progress = calculateProgress(item);
+      return `
+        <tr style="font-size: 0.8rem;">
+          <td style="text-align: center; font-size: 0.75rem;">${index + 1}</td>
+          <td title="${item.rencana_strategis?.nama_rencana || '-'}">
+            <div class="text-container-multiline">${item.rencana_strategis?.nama_rencana || '-'}</div>
+          </td>
+          <td title="${item.sasaran_strategi?.sasaran || '-'}">
+            <div class="text-container-multiline">${item.sasaran_strategi?.sasaran || '-'}</div>
+          </td>
+          <td title="${item.indikator}">
+            <div class="text-container-multiline">${item.indikator}</div>
+          </td>
+          <td style="text-align: center;">
+            <div style="font-size: 0.7rem; line-height: 1.2;">
+              <div style="font-weight: 600; color: #495057;">${item.baseline_nilai || '-'}</div>
+              <div style="color: #6c757d; font-size: 0.65rem;">(${item.baseline_tahun || '-'})</div>
+            </div>
+          </td>
+          <td style="text-align: center;">
+            <div style="font-size: 0.7rem; line-height: 1.2;">
+              <div style="font-weight: 600; color: #495057;">${item.target_nilai || '-'}</div>
+              <div style="color: #6c757d; font-size: 0.65rem;">(${item.target_tahun || '-'})</div>
+            </div>
+          </td>
+          <td style="text-align: center;">
+            ${progress !== null ? `
+              <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 120px;">
+                <div style="flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                  <div style="height: 100%; width: ${Math.min(Math.abs(progress), 100)}%; background: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                </div>
+                <span style="font-weight: 600; font-size: 0.65rem; color: ${progress >= 0 ? (progress >= 75 ? '#10b981' : progress >= 50 ? '#f59e0b' : '#ef4444') : '#ef4444'}; min-width: 35px; text-align: right;">
+                  ${progress >= 0 ? '+' : ''}${progress.toFixed(1)}%
+                </span>
+              </div>
+              <div style="font-size: 0.55rem; color: #6c757d; margin-top: 2px;">
+                ${item.baseline_nilai || 0} → ${item.target_nilai || 0}
+              </div>
+            ` : '<span class="text-muted" style="font-size: 0.7rem;">-</span>'}
+          </td>
+          <td style="text-align: center;" title="${item.pic || '-'}">
+            <div class="text-container">${item.pic || '-'}</div>
+          </td>
+          <td style="text-align: center;">
+            <div style="display: flex; gap: 2px; justify-content: center;">
+              <button class="btn btn-edit btn-sm" onclick="IndikatorKinerjaUtamaModule.edit('${item.id}')" title="Edit" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #17a2b8; color: white; border: none; cursor: pointer; min-width: 28px;">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-delete btn-sm" onclick="IndikatorKinerjaUtamaModule.delete('${item.id}')" title="Hapus" style="padding: 4px 6px; font-size: 0.65rem; border-radius: 3px; background-color: #dc3545; color: white; border: none; cursor: pointer; min-width: 28px;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   function calculateProgress(item) {

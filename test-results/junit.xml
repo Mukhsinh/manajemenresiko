@@ -1,7 +1,174 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="6" failures="6" errors="0" time="1.598">
-  <testsuite name="Property Tests - Authentication" errors="0" failures="6" skipped="0" timestamp="2025-12-19T06:06:14" time="1.365" tests="6">
-    <testcase classname="Property Tests - Authentication Property 1: Valid credentials create session" name="Property Tests - Authentication Property 1: Valid credentials create session" time="0.003">
+<testsuites name="jest tests" tests="95" failures="95" errors="0" time="4.333">
+  <testsuite name="RouterErrorHandler Unit Tests" errors="0" failures="19" skipped="0" timestamp="2025-12-26T21:23:50" time="1.255" tests="19">
+    <testcase classname="RouterErrorHandler Unit Tests Dependency Missing Errors should handle single missing dependency" name="RouterErrorHandler Unit Tests Dependency Missing Errors should handle single missing dependency" time="0.014">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Dependency Missing Errors should handle multiple missing dependencies" name="RouterErrorHandler Unit Tests Dependency Missing Errors should handle multiple missing dependencies" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Dependency Missing Errors should escalate to critical when max retries reached" name="RouterErrorHandler Unit Tests Dependency Missing Errors should escalate to critical when max retries reached" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Timeout Errors should handle timeout error" name="RouterErrorHandler Unit Tests Timeout Errors should handle timeout error" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Configuration Errors should handle configuration error" name="RouterErrorHandler Unit Tests Configuration Errors should handle configuration error" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Runtime Errors should handle runtime error" name="RouterErrorHandler Unit Tests Runtime Errors should handle runtime error" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Performance Metrics should log performance metrics" name="RouterErrorHandler Unit Tests Performance Metrics should log performance metrics" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Performance Metrics should limit performance metrics to 100 entries" name="RouterErrorHandler Unit Tests Performance Metrics should limit performance metrics to 100 entries" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Error Statistics should track error statistics" name="RouterErrorHandler Unit Tests Error Statistics should track error statistics" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Error Statistics should only count recent errors (within 1 hour)" name="RouterErrorHandler Unit Tests Error Statistics should only count recent errors (within 1 hour)" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Error Logging should log warnings correctly" name="RouterErrorHandler Unit Tests Error Logging should log warnings correctly" time="0.004">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Error Logging should log errors correctly" name="RouterErrorHandler Unit Tests Error Logging should log errors correctly" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Error Logging should log critical errors correctly" name="RouterErrorHandler Unit Tests Error Logging should log critical errors correctly" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests User-Friendly Messages should provide appropriate user messages for each error type" name="RouterErrorHandler Unit Tests User-Friendly Messages should provide appropriate user messages for each error type" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Recovery Strategies should provide appropriate recovery strategies" name="RouterErrorHandler Unit Tests Recovery Strategies should provide appropriate recovery strategies" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterErrorHandler Unit Tests Metrics Cleanup should clear all metrics" name="RouterErrorHandler Unit Tests Metrics Cleanup should clear all metrics" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="RouterManager Error Integration Tests should handle missing dependencies with error handler" name="RouterManager Error Integration Tests should handle missing dependencies with error handler" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;instance&apos;)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\unit\router-error-handling.test.js:252:27)
+    at Promise.finally.completed (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusHook (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:976:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:949:5)
+    at D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\runner.js:101:19)
+    at runTestInternal (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:275:16)
+    at runTest (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:343:7)
+    at Object.worker (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:497:12)</failure>
+    </testcase>
+    <testcase classname="RouterManager Error Integration Tests should handle configuration errors" name="RouterManager Error Integration Tests should handle configuration errors" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;instance&apos;)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\unit\router-error-handling.test.js:252:27)
+    at Promise.finally.completed (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusHook (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:976:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:949:5)
+    at D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\runner.js:101:19)
+    at runTestInternal (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:275:16)
+    at runTest (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:343:7)
+    at Object.worker (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:497:12)</failure>
+    </testcase>
+    <testcase classname="RouterManager Error Integration Tests should track performance metrics" name="RouterManager Error Integration Tests should track performance metrics" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;instance&apos;)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\unit\router-error-handling.test.js:252:27)
+    at Promise.finally.completed (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusHook (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:976:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:949:5)
+    at D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-circus\build\runner.js:101:19)
+    at runTestInternal (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:275:16)
+    at runTest (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:343:7)
+    at Object.worker (D:\APLIKASI_cursor\ManajemenResikoProject\node_modules\jest-runner\build\testWorker.js:497:12)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - Authentication" errors="0" failures="6" skipped="0" timestamp="2025-12-26T21:23:50" time="1.592" tests="6">
+    <testcase classname="Property Tests - Authentication Property 1: Valid credentials create session" name="Property Tests - Authentication Property 1: Valid credentials create session" time="0.008">
       <failure>Error: Server is not running. Please start the server before running tests.
     at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
@@ -13,7 +180,7 @@
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
     at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
     </testcase>
-    <testcase classname="Property Tests - Authentication Property 3: Logout invalidates session" name="Property Tests - Authentication Property 3: Logout invalidates session" time="0">
+    <testcase classname="Property Tests - Authentication Property 3: Logout invalidates session" name="Property Tests - Authentication Property 3: Logout invalidates session" time="0.001">
       <failure>Error: Server is not running. Please start the server before running tests.
     at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
@@ -25,13 +192,449 @@
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
     at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
     </testcase>
-    <testcase classname="Property Tests - Authentication Property: Session token validation" name="Property Tests - Authentication Property: Session token validation" time="0.001">
+    <testcase classname="Property Tests - Authentication Property: Session token validation" name="Property Tests - Authentication Property: Session token validation" time="0">
       <failure>Error: Server is not running. Please start the server before running tests.
     at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
     at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
     </testcase>
-    <testcase classname="Property Tests - Authentication Property: Password strength validation" name="Property Tests - Authentication Property: Password strength validation" time="0">
+    <testcase classname="Property Tests - Authentication Property: Password strength validation" name="Property Tests - Authentication Property: Password strength validation" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Router Initialization Property Tests" errors="0" failures="19" skipped="0" timestamp="2025-12-26T21:23:50" time="1.662" tests="19">
+    <testcase classname="Router Initialization Property Tests Property 1: Router initialization idempotence" name="Router Initialization Property Tests Property 1: Router initialization idempotence" time="0.008">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Initialization Property Tests Property 2: Retry limit enforcement" name="Router Initialization Property Tests Property 2: Retry limit enforcement" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Initialization Property Tests Property 4: Comprehensive logging behavior" name="Router Initialization Property Tests Property 4: Comprehensive logging behavior" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Initialization Property Tests RouterManager singleton behavior" name="Router Initialization Property Tests RouterManager singleton behavior" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Initialization Property Tests State management" name="Router Initialization Property Tests State management" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Initialization Property Tests Callback system" name="Router Initialization Property Tests Callback system" time="0.007">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Initialization Property Tests Fallback activation on failure" name="Router Initialization Property Tests Fallback activation on failure" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Integration Property Tests Property 3: Fallback mechanism activation" name="Router Integration Property Tests Property 3: Fallback mechanism activation" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Integration Property Tests Fallback navigation function creation" name="Router Integration Property Tests Fallback navigation function creation" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Integration Property Tests Fallback without original navigate function" name="Router Integration Property Tests Fallback without original navigate function" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Performance Property Tests Property 5: Initialization timing performance" name="Router Performance Property Tests Property 5: Initialization timing performance" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Performance Property Tests Property 6: Post-initialization functionality" name="Router Performance Property Tests Property 6: Post-initialization functionality" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Performance Property Tests Initialization timing measurement" name="Router Performance Property Tests Initialization timing measurement" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router Performance Property Tests Navigation works immediately after initialization" name="Router Performance Property Tests Navigation works immediately after initialization" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router State Persistence Property Tests Property 7: Refresh state preservation" name="Router State Persistence Property Tests Property 7: Refresh state preservation" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router State Persistence Property Tests State persistence on successful initialization" name="Router State Persistence Property Tests State persistence on successful initialization" time="0.007">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router State Persistence Property Tests State restoration from valid persisted state" name="Router State Persistence Property Tests State restoration from valid persisted state" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router State Persistence Property Tests Fresh initialization when persisted state is invalid" name="Router State Persistence Property Tests Fresh initialization when persisted state is invalid" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Router State Persistence Property Tests State cleanup on destroy" name="Router State Persistence Property Tests State cleanup on destroy" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="URL Routing Property Tests" errors="0" failures="19" skipped="0" timestamp="2025-12-26T21:23:51" time="1.02" tests="19">
+    <testcase classname="URL Routing Property Tests Property 1: Each page should have a unique URL" name="URL Routing Property Tests Property 1: Each page should have a unique URL" time="0.003">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="URL Routing Property Tests Property 5: URLs should follow consistent structure patterns" name="URL Routing Property Tests Property 5: URLs should follow consistent structure patterns" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="URL Routing Property Tests Path normalization should be consistent" name="URL Routing Property Tests Path normalization should be consistent" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="URL Routing Property Tests Path normalization should handle edge cases" name="URL Routing Property Tests Path normalization should handle edge cases" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="URL Routing Property Tests URL structure should support nested routing" name="URL Routing Property Tests URL structure should support nested routing" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Authentication Guard Property Tests Property 11: Protected routes should require authentication" name="Authentication Guard Property Tests Property 11: Protected routes should require authentication" time="0.004">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Authentication Guard Property Tests Property 4: Intended route should be preserved during authentication flow" name="Authentication Guard Property Tests Property 4: Intended route should be preserved during authentication flow" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Authentication Guard Property Tests Authentication guard should handle edge cases" name="Authentication Guard Property Tests Authentication guard should handle edge cases" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Route Configuration Property Tests Property 6: No routes should use legacy /auth/login pattern" name="Route Configuration Property Tests Property 6: No routes should use legacy /auth/login pattern" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Route Configuration Property Tests Property 7: All URLs should follow consistent naming conventions" name="Route Configuration Property Tests Property 7: All URLs should follow consistent naming conventions" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Route Configuration Property Tests Legacy page mapping should be bidirectional" name="Route Configuration Property Tests Legacy page mapping should be bidirectional" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Navigation and Deep Linking Property Tests Property 2: Direct URL access should load correct page content" name="Navigation and Deep Linking Property Tests Property 2: Direct URL access should load correct page content" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Navigation and Deep Linking Property Tests Property 9: Navigation should update URL without page reload" name="Navigation and Deep Linking Property Tests Property 9: Navigation should update URL without page reload" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Navigation and Deep Linking Property Tests URL-to-page mapping should be consistent" name="Navigation and Deep Linking Property Tests URL-to-page mapping should be consistent" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Navigation and Deep Linking Property Tests Navigation history should be maintained correctly" name="Navigation and Deep Linking Property Tests Navigation history should be maintained correctly" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Browser History Property Tests Property 8: Back and forward navigation should work correctly" name="Browser History Property Tests Property 8: Back and forward navigation should work correctly" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Browser History Property Tests Property 10: All route changes should be recorded in history" name="Browser History Property Tests Property 10: All route changes should be recorded in history" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Browser History Property Tests History replace should not increase history length" name="Browser History Property Tests History replace should not increase history length" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Browser History Property Tests History navigation boundaries should be respected" name="Browser History Property Tests History navigation boundaries should be respected" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - Error Handling" errors="0" failures="7" skipped="0" timestamp="2025-12-26T21:23:52" time="0.586" tests="7">
+    <testcase classname="Property Tests - Error Handling Property 19: API errors return structured responses" name="Property Tests - Error Handling Property 19: API errors return structured responses" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Error Handling Property 20: Validation errors show field-specific messages" name="Property Tests - Error Handling Property 20: Validation errors show field-specific messages" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Error Handling Property 21: Error logs include context" name="Property Tests - Error Handling Property 21: Error logs include context" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Error Handling Property: Authentication error handling" name="Property Tests - Error Handling Property: Authentication error handling" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Error Handling Property: Rate limiting error handling" name="Property Tests - Error Handling Property: Rate limiting error handling" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Error Handling Property: Server error handling" name="Property Tests - Error Handling Property: Server error handling" time="0.004">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Error Handling Property: Input sanitization" name="Property Tests - Error Handling Property: Input sanitization" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - Multi-Tenant Isolation" errors="0" failures="6" skipped="0" timestamp="2025-12-26T21:23:52" time="0.595" tests="6">
+    <testcase classname="Property Tests - Multi-Tenant Isolation Property 17: Automatic organization filtering" name="Property Tests - Multi-Tenant Isolation Property 17: Automatic organization filtering" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Multi-Tenant Isolation Property 18: Organization association on create" name="Property Tests - Multi-Tenant Isolation Property 18: Organization association on create" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Multi-Tenant Isolation Property: Cross-organization data isolation" name="Property Tests - Multi-Tenant Isolation Property: Cross-organization data isolation" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Multi-Tenant Isolation Property: Organization-based user filtering" name="Property Tests - Multi-Tenant Isolation Property: Organization-based user filtering" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Multi-Tenant Isolation Property: Report data isolation" name="Property Tests - Multi-Tenant Isolation Property: Report data isolation" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Multi-Tenant Isolation Property: Dashboard data isolation" name="Property Tests - Multi-Tenant Isolation Property: Dashboard data isolation" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - User Management" errors="0" failures="5" skipped="0" timestamp="2025-12-26T21:23:52" time="0.646" tests="5">
+    <testcase classname="Property Tests - User Management Property 5: User updates persist and reflect" name="Property Tests - User Management Property 5: User updates persist and reflect" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - User Management Property 6: User deletion revokes access" name="Property Tests - User Management Property 6: User deletion revokes access" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - User Management Property 7: Organization filtering in user lists" name="Property Tests - User Management Property 7: Organization filtering in user lists" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - User Management Property: User creation with organization association" name="Property Tests - User Management Property: User creation with organization association" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - User Management Property: User role management" name="Property Tests - User Management Property: User role management" time="0.004">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - Data Synchronization" errors="0" failures="5" skipped="0" timestamp="2025-12-26T21:23:53" time="0.6" tests="5">
+    <testcase classname="Property Tests - Data Synchronization Property 39: New data appears immediately in frontend" name="Property Tests - Data Synchronization Property 39: New data appears immediately in frontend" time="0.003">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Synchronization Property 40: Data updates refresh frontend components" name="Property Tests - Data Synchronization Property 40: Data updates refresh frontend components" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Synchronization Property 41: Deleted data disappears from frontend" name="Property Tests - Data Synchronization Property 41: Deleted data disappears from frontend" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Synchronization Property 42: Filters apply to database queries" name="Property Tests - Data Synchronization Property 42: Filters apply to database queries" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Synchronization Property 43: Multi-user data consistency" name="Property Tests - Data Synchronization Property 43: Multi-user data consistency" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - Button Functionality" errors="0" failures="5" skipped="0" timestamp="2025-12-26T21:23:53" time="0.565" tests="5">
+    <testcase classname="Property Tests - Button Functionality Property 34: Add data button opens functional form" name="Property Tests - Button Functionality Property 34: Add data button opens functional form" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Button Functionality Property 35: Template download generates correct files" name="Property Tests - Button Functionality Property 35: Template download generates correct files" time="0.004">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Button Functionality Property 36: Import button processes files correctly" name="Property Tests - Button Functionality Property 36: Import button processes files correctly" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Button Functionality Property 37: Report download contains current data" name="Property Tests - Button Functionality Property 37: Report download contains current data" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Button Functionality Property 38: Button failures show specific errors" name="Property Tests - Button Functionality Property 38: Button failures show specific errors" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Property Tests - Data Display Functionality" errors="0" failures="4" skipped="0" timestamp="2025-12-26T21:23:53" time="0.44" tests="4">
+    <testcase classname="Property Tests - Data Display Functionality Property 30: Data tables display complete database records" name="Property Tests - Data Display Functionality Property 30: Data tables display complete database records" time="0.001">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Display Functionality Property 31: Dashboard cards show accurate counts" name="Property Tests - Data Display Functionality Property 31: Dashboard cards show accurate counts" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Display Functionality Property 32: Charts render with real-time data" name="Property Tests - Data Display Functionality Property 32: Charts render with real-time data" time="0">
+      <failure>Error: Server is not running. Please start the server before running tests.
+    at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (D:\APLIKASI_cursor\ManajemenResikoProject\tests\setup.js:68:3)</failure>
+    </testcase>
+    <testcase classname="Property Tests - Data Display Functionality Property 33: Related data displays correctly" name="Property Tests - Data Display Functionality Property 33: Related data displays correctly" time="0">
       <failure>Error: Server is not running. Please start the server before running tests.
     at Object.setup (D:\APLIKASI_cursor\ManajemenResikoProject\tests\utils\test-helpers.js:188:13)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)

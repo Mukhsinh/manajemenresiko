@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Residual Risk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Test Residual Risk Page</h1>
+        <div id="test-content">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Testing residual risk module...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/services/apiService.js"></script>
+    <script src="js/residual-risk.js"></script>
+
+    <script>
+        // Mock authentication for testing
+        window.isAuthenticated = true;
+        window.currentUser = { email: 'test@example.com' };
+        window.currentSession = { access_token: 'test-token' };
+        
+        // Mock auth service
+        window.authService = {
+            isAuthenticated: () => true,
+            getToken: () => 'test-token'
+        };
+
+        // Mock API call for testing
+        window.apiCall = async (endpoint, options = {}) => {
+            console.log('Mock API call:', endpoint);
+            
+            if (endpoint === '/api/reports/residual-risk') {
+                // Return test data
+                return [
+                    {
+                        id: "test-1",
+                        risk_input_id: "test-input-1",
+                        probability: 3,
+                        impact: 4,
+                        risk_value: 12,
+                        risk_level: "High",
+                        probability_percentage: "51-75%",
+                        financial_impact: 200000000,
+                        department: "IGD",
+                        review_status: "Reviewed",
+                        next_review_date: "2025-07-01",
+                        risk_inputs: {
+                            id: "test-input-1",
+                            kode_risiko: "RK-001",
+                            sasaran: "Test sasaran",
+                            master_work_units: { name: "Test Unit" },
+                            master_risk_categories: { name: "Test Category" },
+                            risk_inherent_analysis: {
+                                risk_value: 20,
+                                risk_level: "Very High"
+                            }
+                        }
+                    }
+                ];
+            }
+            
+            if (endpoint === '/api/rencana-strategis') {
+                return [{ id: 1, nama_rencana: "Test Rencana" }];
+            }
+            
+            if (endpoint === '/api/master-data/work-units') {
+                return [{ id: 1, name: "Test Unit" }];
+            }
+            
+            if (endpoint === '/api/master-data/risk-categories') {
+                return [{ id: 1, name: "Test Category" }];
+            }
+            
+            return [];
+        };
+
+        // Initialize test
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Test page loaded');
+            
+            try {
+                // Test ResidualRiskModule
+                if (window.ResidualRiskModule) {
+                    console.log('ResidualRiskModule found, testing...');
+                    
+                    // Replace content div
+                    document.getElementById('test-content').innerHTML = '<div id="residual-risk-content"></div>';
+                    
+                    // Load module
+                    await window.ResidualRiskModule.load();
+                    
+                    console.log('ResidualRiskModule loaded successfully');
+                } else {
+                    console.error('ResidualRiskModule not found');
+                    document.getElementById('test-content').innerHTML = '<div class="alert alert-danger">ResidualRiskModule not found</div>';
+                }
+            } catch (error) {
+                console.error('Test error:', error);
+                document.getElementById('test-content').innerHTML = `<div class="alert alert-danger">Test error: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

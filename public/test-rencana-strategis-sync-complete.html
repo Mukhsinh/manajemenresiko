@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis - Sinkronisasi Sempurna</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style-new.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-chart-line"></i> 
+                            Test Sinkronisasi Rencana Strategis - Database vs Frontend
+                        </h3>
+                        <p class="mb-0 mt-2">Verifikasi bahwa semua data database ditampilkan sempurna di frontend</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="test-status" class="mb-4"></div>
+                        
+                        <!-- Database Data Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0"><i class="fas fa-database"></i> Data Database</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="database-data"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0"><i class="fas fa-desktop"></i> Data Frontend</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="frontend-data"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Comparison Results -->
+                        <div class="card border-warning mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="fas fa-balance-scale"></i> Hasil Perbandingan</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="comparison-results"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Live Frontend Display -->
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-eye"></i> Tampilan Frontend Live</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="rencana-strategis" class="page-content active">
+                                    <div class="page-header">
+                                        <h1 class="page-title">
+                                            <i class="page-title-icon fas fa-chart-line"></i> 
+                                            Rencana Strategis
+                                        </h1>
+                                        <p class="page-subtitle">Perencanaan Strategis Organisasi</p>
+                                    </div>
+                                    <div id="rencana-strategis-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/authService.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+
+    <script>
+        console.log('=== RENCANA STRATEGIS SYNC TEST ===');
+        
+        let databaseData = [];
+        let frontendData = [];
+        
+        async function runSyncTest() {
+            const statusDiv = document.getElementById('test-status');
+            
+            try {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <h4><i class="fas fa-cog fa-spin"></i> Running Synchronization Test...</h4>
+                        <p>Comparing database data with frontend display</p>
+                    </div>
+                `;
+
+                // Step 1: Fetch database data directly
+                console.log('Step 1: Fetching database data...');
+                const dbResponse = await fetch('/api/rencana-strategis/public');
+                if (!dbResponse.ok) throw new Error(`Database API failed: ${dbResponse.status}`);
+                databaseData = await dbResponse.json();
+                
+                displayDatabaseData(databaseData);
+
+                // Step 2: Wait for auth and load frontend
+                console.log('Step 2: Loading frontend...');
+                if (window.waitForAuthReady) {
+                    await window.waitForAuthReady(5000);
+                }
+
+                // Step 3: Load rencana strategis module
+                console.log('Step 3: Loading rencana strategis module...');
+                if (window.loadRencanaStrategis) {
+                    await window.loadRencanaStrategis();
+                } else if (window.RencanaStrategisModule) {
+                    await window.RencanaStrategisModule.load();
+                }
+
+                // Step 4: Wait for frontend to render
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Step 5: Extract frontend data
+                console.log('Step 5: Extracting frontend data...');
+                extractFrontendData();
+
+                // Step 6: Compare data
+                console.log('Step 6: Comparing data...');
+                compareData();
+
+                statusDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4><i class="fas fa-check-circle"></i> Synchronization Test Complete!</h4>
+                        <p>Database and frontend comparison finished. Check results below.</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Sync test error:', error);
+                statusDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayDatabaseData(data) {
+            const dbDiv = document.getElementById('database-data');
+            
+            if (!data || data.length === 0) {
+                dbDiv.innerHTML = '<p class="text-danger">No database data found</p>';
+                return;
+            }
+
+            const summary = `
+                <div class="mb-3">
+                    <h6>Summary:</h6>
+                    <ul>
+                        <li>Total Records: <strong>${data.length}</strong></li>
+                        <li>All have Kode: <strong>${data.every(d => d.kode) ? 'Yes' : 'No'}</strong></li>
+                        <li>All have Nama: <strong>${data.every(d => d.nama_rencana) ? 'Yes' : 'No'}</strong></li>
+                        <li>All have Sasaran: <strong>${data.every(d => d.sasaran_strategis) ? 'Yes' : 'No'}</strong></li>
+                        <li>All have Indikator: <strong>${data.every(d => d.indikator_kinerja_utama) ? 'Yes' : 'No'}</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama Rencana</th>
+                                <th>Status</th>
+                                <th>Sasaran</th>
+                                <th>Indikator</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => {
+                                const sasaran = item.sasaran_strategis ? 
+                                    (Array.isArray(item.sasaran_strategis) ? 
+                                        item.sasaran_strategis : 
+                                        JSON.parse(item.sasaran_strategis)) : [];
+                                const indikator = item.indikator_kinerja_utama ? 
+                                    (Array.isArray(item.indikator_kinerja_utama) ? 
+                                        item.indikator_kinerja_utama : 
+                                        JSON.parse(item.indikator_kinerja_utama)) : [];
+                                
+                                return `
+                                    <tr>
+                                        <td><small>${item.kode}</small></td>
+                                        <td><small>${item.nama_rencana}</small></td>
+                                        <td><span class="badge badge-success">${item.status}</span></td>
+                                        <td><small>${sasaran.length} items</small></td>
+                                        <td><small>${indikator.length} items</small></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            dbDiv.innerHTML = summary;
+        }
+
+        function extractFrontendData() {
+            const frontendDiv = document.getElementById('frontend-data');
+            
+            // Try to extract data from the rendered table
+            const tableRows = document.querySelectorAll('#rencana-strategis .data-table tbody tr');
+            
+            if (tableRows.length === 0) {
+                frontendDiv.innerHTML = '<p class="text-warning">No frontend table rows found</p>';
+                return;
+            }
+
+            frontendData = Array.from(tableRows).map(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 7) return null;
+                
+                return {
+                    kode: cells[0]?.textContent?.trim() || '',
+                    nama_rencana: cells[1]?.querySelector('strong')?.textContent?.trim() || '',
+                    target: cells[2]?.textContent?.trim() || '',
+                    periode: cells[3]?.textContent?.trim() || '',
+                    sasaran: cells[4]?.textContent?.trim() || '',
+                    indikator: cells[5]?.textContent?.trim() || '',
+                    status: cells[6]?.querySelector('.badge')?.textContent?.trim() || ''
+                };
+            }).filter(item => item !== null);
+
+            const summary = `
+                <div class="mb-3">
+                    <h6>Frontend Display:</h6>
+                    <ul>
+                        <li>Table Rows Found: <strong>${tableRows.length}</strong></li>
+                        <li>Valid Data Rows: <strong>${frontendData.length}</strong></li>
+                        <li>Table Columns: <strong>${tableRows[0]?.querySelectorAll('td').length || 0}</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama</th>
+                                <th>Status</th>
+                                <th>Has Target</th>
+                                <th>Has Sasaran</th>
+                                <th>Has Indikator</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${frontendData.map(item => `
+                                <tr>
+                                    <td><small>${item.kode}</small></td>
+                                    <td><small>${item.nama_rencana}</small></td>
+                                    <td><span class="badge badge-info">${item.status}</span></td>
+                                    <td>${item.target && item.target !== '-' ? '✅' : '❌'}</td>
+                                    <td>${item.sasaran && item.sasaran !== '-' ? '✅' : '❌'}</td>
+                                    <td>${item.indikator && item.indikator !== '-' ? '✅' : '❌'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            frontendDiv.innerHTML = summary;
+        }
+
+        function compareData() {
+            const comparisonDiv = document.getElementById('comparison-results');
+            
+            const dbCount = databaseData.length;
+            const frontendCount = frontendData.length;
+            const isCountMatch = dbCount === frontendCount;
+            
+            // Check if all database records are displayed in frontend
+            const missingInFrontend = [];
+            const extraInFrontend = [];
+            
+            databaseData.forEach(dbItem => {
+                const found = frontendData.find(fItem => fItem.kode === dbItem.kode);
+                if (!found) {
+                    missingInFrontend.push(dbItem.kode);
+                }
+            });
+            
+            frontendData.forEach(fItem => {
+                const found = databaseData.find(dbItem => dbItem.kode === fItem.kode);
+                if (!found) {
+                    extraInFrontend.push(fItem.kode);
+                }
+            });
+            
+            const isSynced = isCountMatch && missingInFrontend.length === 0 && extraInFrontend.length === 0;
+            
+            const result = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Synchronization Status:</h6>
+                        <div class="alert ${isSynced ? 'alert-success' : 'alert-warning'}">
+                            <h5>${isSynced ? '✅ PERFECTLY SYNCED' : '⚠️ SYNC ISSUES FOUND'}</h5>
+                            <ul class="mb-0">
+                                <li>Database Records: <strong>${dbCount}</strong></li>
+                                <li>Frontend Records: <strong>${frontendCount}</strong></li>
+                                <li>Count Match: <strong>${isCountMatch ? 'Yes' : 'No'}</strong></li>
+                                <li>Missing in Frontend: <strong>${missingInFrontend.length}</strong></li>
+                                <li>Extra in Frontend: <strong>${extraInFrontend.length}</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Data Quality Check:</h6>
+                        <div class="alert alert-info">
+                            <h5>📊 QUALITY METRICS</h5>
+                            <ul class="mb-0">
+                                <li>All DB records have complete data: <strong>${databaseData.every(d => d.kode && d.nama_rencana && d.sasaran_strategis && d.indikator_kinerja_utama) ? 'Yes' : 'No'}</strong></li>
+                                <li>Frontend displays all columns: <strong>${frontendData.length > 0 && frontendData[0].target ? 'Yes' : 'No'}</strong></li>
+                                <li>Status badges working: <strong>${frontendData.every(f => f.status) ? 'Yes' : 'No'}</strong></li>
+                                <li>Action buttons present: <strong>${document.querySelectorAll('.rs-view-btn, .rs-edit-btn, .rs-delete-btn').length > 0 ? 'Yes' : 'No'}</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                ${missingInFrontend.length > 0 ? `
+                    <div class="alert alert-danger">
+                        <h6>Missing in Frontend:</h6>
+                        <p>${missingInFrontend.join(', ')}</p>
+                    </div>
+                ` : ''}
+                
+                ${extraInFrontend.length > 0 ? `
+                    <div class="alert alert-warning">
+                        <h6>Extra in Frontend:</h6>
+                        <p>${extraInFrontend.join(', ')}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="mt-3">
+                    <h6>Recommendations:</h6>
+                    <ul>
+                        ${isSynced ? 
+                            '<li class="text-success">✅ Perfect synchronization! No action needed.</li>' : 
+                            '<li class="text-warning">⚠️ Refresh the page or check API endpoints.</li>'
+                        }
+                        <li>Test the view, edit, and delete buttons functionality</li>
+                        <li>Verify responsive design on mobile devices</li>
+                        <li>Check export/import functionality</li>
+                    </ul>
+                </div>
+            `;
+            
+            comparisonDiv.innerHTML = result;
+        }
+
+        // Auto-run test when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, starting sync test...');
+            setTimeout(runSyncTest, 1000);
+        });
+    </script>
+</body>
+</html>

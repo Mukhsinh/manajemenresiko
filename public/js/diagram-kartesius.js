@@ -1,12 +1,12 @@
-// Diagram Kartesius Module
+// Diagram Kartesius Module - Auto Calculation for All Units
 const DiagramKartesiusModule = (() => {
   const state = {
     data: [],
-    rencanaStrategis: [],
     unitKerja: [],
     filters: {
-      rencana_strategis_id: '',
       unit_kerja_id: '',
+      jenis: '',
+      kategori: '',
       tahun: new Date().getFullYear()
     },
     chart: null
@@ -21,18 +21,15 @@ const DiagramKartesiusModule = (() => {
 
   async function fetchInitialData() {
     try {
-      const [diagram, rencana, unitKerja] = await Promise.all([
+      const [diagram, unitKerja] = await Promise.all([
         api()('/api/diagram-kartesius?' + new URLSearchParams(state.filters)),
-        api()('/api/rencana-strategis'),
         api()('/api/master-data/work-units')
       ]);
       state.data = diagram || [];
-      state.rencanaStrategis = rencana || [];
       state.unitKerja = unitKerja || [];
     } catch (error) {
       console.error('Error fetching data:', error);
       state.data = [];
-      state.rencanaStrategis = [];
       state.unitKerja = [];
     }
   }
@@ -41,13 +38,17 @@ const DiagramKartesiusModule = (() => {
     const container = document.getElementById('diagram-kartesius-content');
     if (!container) return;
 
+    // Get unique jenis and kategori options
+    const jenisOptions = [...new Set(state.unitKerja.map(u => u.jenis).filter(Boolean))];
+    const kategoriOptions = [...new Set(state.unitKerja.map(u => u.kategori).filter(Boolean))];
+
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Diagram Kartesius SWOT</h3>
+          <h3 class="card-title">Diagram Kartesius SWOT - Auto Calculation</h3>
           <div style="display: flex; gap: 0.5rem;">
             <button class="btn btn-success" onclick="DiagramKartesiusModule.calculate()">
-              <i class="fas fa-calculator"></i> Hitung Diagram
+              <i class="fas fa-calculator"></i> Hitung Diagram Otomatis
             </button>
             ${state.data.length > 0 ? `
               <button class="btn btn-primary" onclick="DiagramKartesiusModule.downloadChart()">
@@ -59,30 +60,36 @@ const DiagramKartesiusModule = (() => {
         <div class="card-body">
           <div class="filter-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
             <div class="form-group">
-              <label>Rencana Strategis</label>
-              <select class="form-control" id="filter-rencana-strategis" onchange="DiagramKartesiusModule.applyFilter()">
-                <option value="">Semua</option>
-                ${state.rencanaStrategis.map(r => `<option value="${r.id}" ${state.filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.nama_rencana}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Unit Kerja / Level <span class="text-danger">*</span></label>
+              <label>Unit Kerja</label>
               <select class="form-control" id="filter-unit-kerja" onchange="DiagramKartesiusModule.applyFilter()">
-                <option value="">-- Pilih Unit Kerja atau Level --</option>
-                <option value="RUMAH_SAKIT" ${state.filters.unit_kerja_id === 'RUMAH_SAKIT' ? 'selected' : ''}>🏥 Rumah Sakit (Agregasi Auto)</option>
-                ${state.unitKerja.map(u => `<option value="${u.id}" ${state.filters.unit_kerja_id === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+                <option value="">Semua Unit Kerja</option>
+                ${state.unitKerja.map(u => `<option value="${u.id}" ${state.filters.unit_kerja_id === u.id ? 'selected' : ''}>${u.code} - ${u.name}</option>`).join('')}
               </select>
-              <small class="form-text text-muted">
-                <strong>Wajib pilih:</strong> "Rumah Sakit" untuk agregasi otomatis nilai tertinggi dari semua unit, atau pilih unit kerja spesifik
-              </small>
             </div>
             <div class="form-group">
-              <label>Tahun</label>
+              <label>Jenis</label>
+              <select class="form-control" id="filter-jenis" onchange="DiagramKartesiusModule.applyFilter()">
+                <option value="">Semua Jenis</option>
+                ${jenisOptions.map(j => `<option value="${j}" ${state.filters.jenis === j ? 'selected' : ''}>${j}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Kategori</label>
+              <select class="form-control" id="filter-kategori" onchange="DiagramKartesiusModule.applyFilter()">
+                <option value="">Semua Kategori</option>
+                ${kategoriOptions.map(k => `<option value="${k}" ${state.filters.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tahun <span class="text-danger">*</span></label>
               <input type="number" class="form-control" id="filter-tahun" value="${state.filters.tahun}" onchange="DiagramKartesiusModule.applyFilter()">
+              <small class="form-text text-muted">
+                <strong>🚀 Sistem akan menghitung diagram untuk unit kerja yang dipilih secara otomatis!</strong>
+              </small>
             </div>
           </div>
           ${state.data.length > 0 ? `
-            <div class="alert alert-info" style="margin-bottom: 1rem;">
+            <div class="alert alert-success" style="margin-bottom: 1rem;">
               <h5><i class="fas fa-info-circle"></i> Interpretasi Kuadran SWOT</h5>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
                 <div><span class="badge-status badge-aman">KUADRAN I</span> <strong>Growth:</strong> Kekuatan + Peluang</div>
@@ -92,7 +99,7 @@ const DiagramKartesiusModule = (() => {
               </div>
             </div>
           ` : ''}
-          <div id="diagram-chart-container" style="position: relative; height: 500px; margin-bottom: 2rem;">
+          <div id="diagram-chart-container" style="position: relative; height: 700px; margin-bottom: 2rem;">
             <canvas id="diagram-chart"></canvas>
           </div>
           <div class="table-container">
@@ -100,6 +107,7 @@ const DiagramKartesiusModule = (() => {
               <thead>
                 <tr>
                   <th>Tahun</th>
+                  <th>Kode Unit Kerja</th>
                   <th>Unit Kerja</th>
                   <th>X-Axis (Strength - Weakness)</th>
                   <th>Y-Axis (Opportunity - Threat)</th>
@@ -109,25 +117,38 @@ const DiagramKartesiusModule = (() => {
                 </tr>
               </thead>
               <tbody>
-                ${state.data.length === 0 ? '<tr><td colspan="7" class="text-center">Tidak ada data. Klik "Hitung Diagram" untuk generate dari analisis SWOT.</td></tr>' : ''}
-                ${state.data.map(item => `
-                  <tr>
-                    <td>${item.tahun}</td>
-                    <td>${item.unit_kerja_name || 'Rumah Sakit (Agregasi)'}</td>
-                    <td>${parseFloat(item.x_axis).toFixed(2)}</td>
-                    <td>${parseFloat(item.y_axis).toFixed(2)}</td>
-                    <td><span class="badge-status badge-${getKuadranColor(item.kuadran)}">KUADRAN ${item.kuadran}</span></td>
-                    <td><strong>${item.strategi}</strong></td>
-                    <td>
-                      <button class="btn btn-edit btn-sm" onclick="DiagramKartesiusModule.edit('${item.id}')">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn btn-delete btn-sm" onclick="DiagramKartesiusModule.delete('${item.id}')">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                `).join('')}
+                ${state.data.length === 0 ? '<tr><td colspan="8" class="text-center">Tidak ada data. Klik "Hitung Diagram Otomatis" untuk generate dari analisis SWOT.</td></tr>' : ''}
+                ${state.data.map(item => {
+                  const workUnit = item.master_work_units;
+                  const unitCode = workUnit?.code || (item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 'AGR' : '-');
+                  const unitName = workUnit?.name || item.unit_kerja_name || 'Unit Kerja';
+                  
+                  return `
+                    <tr>
+                      <td>${item.tahun}</td>
+                      <td><strong>${unitCode}</strong></td>
+                      <td>
+                        ${unitName}
+                        ${item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 
+                          '<span class="badge badge-primary ml-1">Agregasi</span>' : 
+                          '<span class="badge badge-secondary ml-1">Individual</span>'
+                        }
+                      </td>
+                      <td>${parseFloat(item.x_axis).toFixed(2)}</td>
+                      <td>${parseFloat(item.y_axis).toFixed(2)}</td>
+                      <td><span class="badge-status badge-${getKuadranColor(item.kuadran)}">KUADRAN ${item.kuadran}</span></td>
+                      <td><strong>${item.strategi}</strong></td>
+                      <td>
+                        <button class="btn btn-edit btn-sm" onclick="DiagramKartesiusModule.edit('${item.id}')">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-delete btn-sm" onclick="DiagramKartesiusModule.delete('${item.id}')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
           </div>
@@ -248,16 +269,22 @@ const DiagramKartesiusModule = (() => {
         fill: false
       },
       // Data points
-      ...state.data.map((item, index) => ({
-        label: `${item.tahun} - ${item.unit_kerja_name || 'Agregasi'} (Kuadran ${item.kuadran})`,
-        data: [{ x: parseFloat(item.x_axis), y: parseFloat(item.y_axis) }],
-        backgroundColor: getKuadranColorHex(item.kuadran),
-        borderColor: getKuadranColorHex(item.kuadran),
-        pointRadius: 12,
-        pointHoverRadius: 15,
-        pointBorderWidth: 3,
-        pointBorderColor: '#fff'
-      }))
+      ...state.data.map((item) => {
+        const workUnit = item.master_work_units;
+        const unitCode = workUnit?.code || (item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 'AGR' : '-');
+        const unitName = workUnit?.name || item.unit_kerja_name || 'Unit Kerja';
+        
+        return {
+          label: `${item.tahun} - ${unitCode} - ${unitName} (Kuadran ${item.kuadran})`,
+          data: [{ x: parseFloat(item.x_axis), y: parseFloat(item.y_axis) }],
+          backgroundColor: getKuadranColorHex(item.kuadran),
+          borderColor: getKuadranColorHex(item.kuadran),
+          pointRadius: item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 18 : 12,
+          pointHoverRadius: item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 22 : 16,
+          pointBorderWidth: 3,
+          pointBorderColor: '#fff'
+        };
+      })
     ];
 
     state.chart = new Chart(ctx, {
@@ -275,7 +302,7 @@ const DiagramKartesiusModule = (() => {
             title: {
               display: true,
               text: 'Strength - Weakness →',
-              font: { size: 16, weight: 'bold' },
+              font: { size: 18, weight: 'bold' },
               color: '#333'
             },
             min: -range,
@@ -289,7 +316,7 @@ const DiagramKartesiusModule = (() => {
               }
             },
             ticks: {
-              font: { size: 12 },
+              font: { size: 14 },
               color: '#666'
             }
           },
@@ -297,7 +324,7 @@ const DiagramKartesiusModule = (() => {
             title: {
               display: true,
               text: '↑ Opportunity - Threat',
-              font: { size: 16, weight: 'bold' },
+              font: { size: 18, weight: 'bold' },
               color: '#333'
             },
             min: -range,
@@ -311,7 +338,7 @@ const DiagramKartesiusModule = (() => {
               }
             },
             ticks: {
-              font: { size: 12 },
+              font: { size: 14 },
               color: '#666'
             }
           }
@@ -321,7 +348,7 @@ const DiagramKartesiusModule = (() => {
             display: true,
             position: 'bottom',
             labels: {
-              font: { size: 11 },
+              font: { size: 12 },
               filter: function(legendItem) {
                 return !legendItem.text.includes('Garis Tengah');
               },
@@ -345,9 +372,14 @@ const DiagramKartesiusModule = (() => {
             callbacks: {
               label: function(context) {
                 const item = state.data[context.datasetIndex - 6];
+                const workUnit = item.master_work_units;
+                const unitCode = workUnit?.code || (item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 'AGR' : '-');
+                const unitName = workUnit?.name || item.unit_kerja_name || 'Unit Kerja';
+                
                 return [
                   `Tahun: ${item.tahun}`,
-                  `Unit: ${item.unit_kerja_name || 'Agregasi'}`,
+                  `Kode: ${unitCode}`,
+                  `Unit: ${unitName}`,
                   `Posisi: (${parseFloat(item.x_axis).toFixed(1)}, ${parseFloat(item.y_axis).toFixed(1)})`,
                   `Kuadran: ${item.kuadran} - ${item.strategi}`
                 ];
@@ -364,12 +396,11 @@ const DiagramKartesiusModule = (() => {
         id: 'quadrantLabels',
         afterDraw: function(chart) {
           const ctx = chart.ctx;
-          const chartArea = chart.chartArea;
           const xScale = chart.scales.x;
           const yScale = chart.scales.y;
           
           ctx.save();
-          ctx.font = 'bold 14px Arial';
+          ctx.font = 'bold 16px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
@@ -377,36 +408,36 @@ const DiagramKartesiusModule = (() => {
           ctx.fillStyle = 'rgba(39, 174, 96, 0.8)';
           const q1X = xScale.getPixelForValue(range * 0.5);
           const q1Y = yScale.getPixelForValue(range * 0.5);
-          ctx.fillText('KUADRAN I', q1X, q1Y - 10);
-          ctx.font = '12px Arial';
-          ctx.fillText('GROWTH', q1X, q1Y + 10);
+          ctx.fillText('KUADRAN I', q1X, q1Y - 12);
+          ctx.font = '14px Arial';
+          ctx.fillText('GROWTH', q1X, q1Y + 12);
           
           // Quadrant II (top-left) - Stability
           ctx.fillStyle = 'rgba(52, 152, 219, 0.8)';
           const q2X = xScale.getPixelForValue(-range * 0.5);
           const q2Y = yScale.getPixelForValue(range * 0.5);
-          ctx.font = 'bold 14px Arial';
-          ctx.fillText('KUADRAN II', q2X, q2Y - 10);
-          ctx.font = '12px Arial';
-          ctx.fillText('STABILITY', q2X, q2Y + 10);
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText('KUADRAN II', q2X, q2Y - 12);
+          ctx.font = '14px Arial';
+          ctx.fillText('STABILITY', q2X, q2Y + 12);
           
           // Quadrant III (bottom-left) - Survival
           ctx.fillStyle = 'rgba(231, 76, 60, 0.8)';
           const q3X = xScale.getPixelForValue(-range * 0.5);
           const q3Y = yScale.getPixelForValue(-range * 0.5);
-          ctx.font = 'bold 14px Arial';
-          ctx.fillText('KUADRAN III', q3X, q3Y - 10);
-          ctx.font = '12px Arial';
-          ctx.fillText('SURVIVAL', q3X, q3Y + 10);
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText('KUADRAN III', q3X, q3Y - 12);
+          ctx.font = '14px Arial';
+          ctx.fillText('SURVIVAL', q3X, q3Y + 12);
           
           // Quadrant IV (bottom-right) - Diversification
           ctx.fillStyle = 'rgba(243, 156, 18, 0.8)';
           const q4X = xScale.getPixelForValue(range * 0.5);
           const q4Y = yScale.getPixelForValue(-range * 0.5);
-          ctx.font = 'bold 14px Arial';
-          ctx.fillText('KUADRAN IV', q4X, q4Y - 10);
-          ctx.font = '12px Arial';
-          ctx.fillText('DIVERSIFICATION', q4X, q4Y + 10);
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText('KUADRAN IV', q4X, q4Y - 12);
+          ctx.font = '14px Arial';
+          ctx.fillText('DIVERSIFICATION', q4X, q4Y + 12);
           
           ctx.restore();
         }
@@ -434,83 +465,83 @@ const DiagramKartesiusModule = (() => {
     return colors[kuadran] || '#95a5a6';
   }
 
-  function getKuadranInfo(kuadran) {
-    const info = {
-      'I': { name: 'Growth', color: '#27ae60', description: 'Kekuatan + Peluang' },
-      'II': { name: 'Stability', color: '#3498db', description: 'Kelemahan + Peluang' },
-      'III': { name: 'Survival', color: '#e74c3c', description: 'Kelemahan + Ancaman' },
-      'IV': { name: 'Diversification', color: '#f39c12', description: 'Kekuatan + Ancaman' }
-    };
-    return info[kuadran] || { name: 'Unknown', color: '#95a5a6', description: 'Tidak diketahui' };
-  }
-
   async function applyFilter() {
-    state.filters.rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
     state.filters.unit_kerja_id = document.getElementById('filter-unit-kerja')?.value || '';
+    state.filters.jenis = document.getElementById('filter-jenis')?.value || '';
+    state.filters.kategori = document.getElementById('filter-kategori')?.value || '';
     state.filters.tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
     await fetchInitialData();
     render();
   }
 
   async function calculate() {
-    const rencana_strategis_id = document.getElementById('filter-rencana-strategis')?.value || '';
     const unit_kerja_id = document.getElementById('filter-unit-kerja')?.value || '';
+    const jenis = document.getElementById('filter-jenis')?.value || '';
+    const kategori = document.getElementById('filter-kategori')?.value || '';
     const tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
 
-    // Validasi input
-    if (!unit_kerja_id) {
-      alert('Silakan pilih Unit Kerja atau Level terlebih dahulu');
-      return;
-    }
-
-    const levelText = unit_kerja_id === 'RUMAH_SAKIT' ? 'level Rumah Sakit (agregasi otomatis)' : 
-                     unit_kerja_id ? 'unit kerja terpilih' : 'semua unit kerja';
-    
-    // Check if data already exists
-    const existingData = state.data.find(d => 
-      d.tahun === tahun && 
-      (d.unit_kerja_id === unit_kerja_id || (unit_kerja_id === 'RUMAH_SAKIT' && d.unit_kerja_name === 'Rumah Sakit (Agregasi)'))
-    );
-
-    const action = existingData ? 'update' : 'hitung';
-    const message = existingData ? 
-      `Data diagram untuk ${levelText} tahun ${tahun} sudah ada. Apakah Anda ingin menghitung ulang (update)?` :
-      `Hitung diagram kartesius untuk tahun ${tahun} pada ${levelText}?`;
+    const message = `Hitung diagram kartesius otomatis untuk tahun ${tahun}?\n\nSistem akan menghitung diagram untuk unit kerja yang dipilih secara otomatis.`;
     
     if (!confirm(message)) return;
 
     try {
       // Show loading
-      const button = event.target;
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghitung...';
-      button.disabled = true;
+      let button = null;
+      if (window.event && window.event.target) {
+        button = window.event.target;
+      } else {
+        button = document.querySelector('button[onclick*="calculate"]');
+      }
+      
+      let originalText = '';
+      if (button) {
+        originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghitung Unit Kerja...';
+        button.disabled = true;
+      }
 
-      await api()('/api/diagram-kartesius/calculate', {
+      console.log('🔄 Auto calculating diagram for units:', {
+        unit_kerja_id: unit_kerja_id || null,
+        jenis: jenis || null,
+        kategori: kategori || null,
+        tahun
+      });
+
+      const response = await api()('/api/diagram-kartesius/calculate', {
         method: 'POST',
         body: {
-          rencana_strategis_id: rencana_strategis_id || null,
           unit_kerja_id: unit_kerja_id || null,
+          jenis: jenis || null,
+          kategori: kategori || null,
           tahun
         }
       });
       
+      console.log('✅ Auto calculation response:', response);
+      
       await load();
       
-      const successMessage = existingData ? 'Diagram berhasil diperbarui' : 'Diagram berhasil dihitung';
+      const successMessage = `Diagram berhasil dihitung!\n\n` +
+        `✅ Berhasil: ${response.summary?.successful || 0} unit\n` +
+        `❌ Gagal: ${response.summary?.failed || 0} unit\n\n` +
+        `Total unit diproses: ${response.summary?.total_processed || 0}`;
+      
       alert(successMessage);
       
       // Restore button
-      button.innerHTML = originalText;
-      button.disabled = false;
+      if (button) {
+        button.innerHTML = originalText;
+        button.disabled = false;
+      }
     } catch (error) {
       // Restore button on error
-      const button = event.target;
-      button.innerHTML = '<i class="fas fa-calculator"></i> Hitung Diagram';
-      button.disabled = false;
+      if (button) {
+        button.innerHTML = originalText || '<i class="fas fa-calculator"></i> Hitung Diagram Otomatis';
+        button.disabled = false;
+      }
       
-      console.error('Calculate error:', error);
-      alert('Error: ' + error.message);
+      console.error('❌ Auto calculate error:', error);
+      alert('Error: ' + (error.message || 'Terjadi kesalahan saat menghitung diagram'));
     }
   }
 
@@ -601,7 +632,7 @@ const DiagramKartesiusModule = (() => {
             <div class="form-group">
               <label class="form-label">Nama File</label>
               <input type="text" class="form-control" id="download-filename" 
-                     value="diagram-kartesius-${state.filters.tahun}" 
+                     value="diagram-kartesius-auto-${state.filters.tahun}" 
                      placeholder="Nama file tanpa ekstensi">
             </div>
             <div class="form-group">
@@ -631,7 +662,7 @@ const DiagramKartesiusModule = (() => {
   function executeDownload() {
     try {
       const format = document.getElementById('download-format').value;
-      const filename = document.getElementById('download-filename').value || 'diagram-kartesius';
+      const filename = document.getElementById('download-filename').value || 'diagram-kartesius-auto';
       const quality = parseFloat(document.getElementById('download-quality').value);
 
       if (format === 'pdf') {
@@ -679,22 +710,22 @@ const DiagramKartesiusModule = (() => {
     }, `image/${format}`, 0.95);
   }
 
-  function downloadAsPDF(filename, quality) {
+  function downloadAsPDF(filename) {
     // Check if jsPDF is available
     if (typeof window.jsPDF === 'undefined') {
       // Load jsPDF dynamically
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
       script.onload = function() {
-        generatePDF(filename, quality);
+        generatePDF(filename);
       };
       document.head.appendChild(script);
     } else {
-      generatePDF(filename, quality);
+      generatePDF(filename);
     }
   }
 
-  function generatePDF(filename, quality) {
+  function generatePDF(filename) {
     const canvas = document.getElementById('diagram-chart');
     if (!canvas) return;
 
@@ -704,20 +735,14 @@ const DiagramKartesiusModule = (() => {
       
       // Add title
       pdf.setFontSize(16);
-      pdf.text('Diagram Kartesius SWOT Analysis', 20, 20);
+      pdf.text('Diagram Kartesius SWOT Analysis - Auto Calculation', 20, 20);
       
       // Add metadata
       pdf.setFontSize(10);
       const currentDate = new Date().toLocaleDateString('id-ID');
       pdf.text(`Tanggal: ${currentDate}`, 20, 30);
       pdf.text(`Tahun Data: ${state.filters.tahun}`, 20, 35);
-      
-      if (state.filters.unit_kerja_id) {
-        const unitName = state.filters.unit_kerja_id === 'RUMAH_SAKIT' ? 
-          'Rumah Sakit (Agregasi)' : 
-          state.unitKerja.find(u => u.id === state.filters.unit_kerja_id)?.name || 'Unit Kerja';
-        pdf.text(`Unit Kerja: ${unitName}`, 20, 40);
-      }
+      pdf.text(`Mode: Perhitungan Otomatis Semua Unit`, 20, 40);
 
       // Convert canvas to image and add to PDF
       const imgData = canvas.toDataURL('image/png', 0.95);
@@ -752,7 +777,7 @@ const DiagramKartesiusModule = (() => {
         }
         
         pdf.text(item.tahun.toString(), 20, yPos);
-        pdf.text((item.unit_kerja_name || 'Agregasi').substring(0, 15), 50, yPos);
+        pdf.text((item.unit_kerja_name || 'Unit').substring(0, 15), 50, yPos);
         pdf.text(parseFloat(item.x_axis).toFixed(2), 120, yPos);
         pdf.text(parseFloat(item.y_axis).toFixed(2), 150, yPos);
         pdf.text(item.kuadran, 180, yPos);
@@ -786,4 +811,3 @@ async function loadDiagramKartesius() {
 }
 
 window.diagramKartesiusModule = DiagramKartesiusModule;
-

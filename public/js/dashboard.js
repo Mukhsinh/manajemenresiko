@@ -203,7 +203,7 @@ function renderDashboard(stats) {
                     <i class="fas fa-bullseye"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">${safeStats.sample_data?.visi_misi?.length || 0}</h3>
+                    <h3 class="stat-number">${safeStats.counts?.visi_misi || safeStats.sample_data?.visi_misi?.length || 0}</h3>
                     <p class="stat-label">Visi Misi</p>
                     <small class="stat-description">Visi misi aktif</small>
                 </div>
@@ -213,7 +213,7 @@ function renderDashboard(stats) {
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">${safeStats.sample_data?.rencana_strategis?.length || 0}</h3>
+                    <h3 class="stat-number">${safeStats.counts?.rencana_strategis || safeStats.sample_data?.rencana_strategis?.length || 0}</h3>
                     <p class="stat-label">Rencana Strategis</p>
                     <small class="stat-description">Rencana strategis</small>
                 </div>
@@ -322,18 +322,26 @@ function renderInherentRiskChart(data) {
         dashboardCharts.inherent.destroy();
     }
     
+    // Ensure we have valid data
+    const chartData = [
+        Math.max(data.extreme_high || 0, 0),
+        Math.max(data.high || 0, 0),
+        Math.max(data.medium || 0, 0),
+        Math.max(data.low || 0, 0)
+    ];
+    
+    // If all are zero, show a placeholder
+    if (chartData[0] === 0 && chartData[1] === 0 && chartData[2] === 0 && chartData[3] === 0) {
+        chartData[0] = 1;
+    }
+    
     try {
         dashboardCharts.inherent = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Extreme High', 'High', 'Medium', 'Low'],
                 datasets: [{
-                    data: [
-                        data.extreme_high || 0,
-                        data.high || 0,
-                        data.medium || 0,
-                        data.low || 0
-                    ],
+                    data: chartData,
                     backgroundColor: [
                         '#dc2626',
                         '#f97316',
@@ -375,18 +383,26 @@ function renderResidualRiskChart(data) {
         dashboardCharts.residual.destroy();
     }
     
+    // Ensure we have valid data
+    const chartData = [
+        Math.max(data.extreme_high || 0, 0),
+        Math.max(data.high || 0, 0),
+        Math.max(data.medium || 0, 0),
+        Math.max(data.low || 0, 0)
+    ];
+    
+    // If all are zero, show a placeholder
+    if (chartData[0] === 0 && chartData[1] === 0 && chartData[2] === 0 && chartData[3] === 0) {
+        chartData[0] = 1;
+    }
+    
     try {
         dashboardCharts.residual = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Extreme High', 'High', 'Medium', 'Low'],
             datasets: [{
-                data: [
-                    data.extreme_high || 0,
-                    data.high || 0,
-                    data.medium || 0,
-                    data.low || 0
-                ],
+                data: chartData,
                 backgroundColor: [
                     '#dc2626',
                     '#f97316',
@@ -428,17 +444,25 @@ function renderKRIChart(data) {
         dashboardCharts.kri.destroy();
     }
     
+    // Ensure we have valid data
+    const chartData = [
+        Math.max(data.aman || 0, 0),
+        Math.max(data.hati_hati || 0, 0),
+        Math.max(data.kritis || 0, 0)
+    ];
+    
+    // If all are zero, show a placeholder
+    if (chartData[0] === 0 && chartData[1] === 0 && chartData[2] === 0) {
+        chartData[0] = 1;
+    }
+    
     try {
         dashboardCharts.kri = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Aman', 'Hati-hati', 'Kritis'],
             datasets: [{
-                data: [
-                    data.aman || 0,
-                    data.hati_hati || 0,
-                    data.kritis || 0
-                ],
+                data: chartData,
                 backgroundColor: [
                     '#10b981',
                     '#f59e0b',

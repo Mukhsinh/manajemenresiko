@@ -1,0 +1,42 @@
+{
+  "files": {
+    "public/residual-risk.html": true,
+    "routes/reports.js": true,
+    "config/supabase.js": true,
+    ".env": true,
+    "server.js": true
+  },
+  "api": {
+    "/api/reports/residual-risk-simple": {
+      "success": true,
+      "status": 200,
+      "dataCount": 10
+    },
+    "/api/reports/residual-risk": {
+      "success": false,
+      "status": 401,
+      "dataCount": "N/A"
+    },
+    "/api/reports/residual-risk/excel": {
+      "success": false,
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    }
+  },
+  "functionality": {
+    "pageAccess": {
+      "success": true,
+      "status": 200,
+      "contentLength": 24093,
+      "hasDebug": true,
+      "hasBootstrap": true,
+      "hasAPI": true
+    },
+    "dataProcessing": {
+      "success": true,
+      "recordCount": 10,
+      "hasStats": true,
+      "hasTable": "RK-001"
+    }
+  }
+}
