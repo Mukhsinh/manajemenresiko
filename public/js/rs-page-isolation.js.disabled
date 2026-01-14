@@ -1,0 +1,206 @@
+/**
+ * RS PAGE ISOLATION SYSTEM v2.1
+ * Ensures Rencana Strategis content ONLY appears on RS page
+ * Prevents content leak to other pages during navigation
+ * Created: 2026-01-07
+ * Updated: 2026-01-09 - Enhanced isolation and immediate display
+ */
+
+(function() {
+    'use strict';
+    
+    console.log('🔒 RS Page Isolation System v2.1 loading...');
+    
+    // Prevent multiple initializations
+    if (window.rsPageIsolationInitialized) {
+        console.log('⚠️ RS Page Isolation already initialized');
+        return;
+    }
+    window.rsPageIsolationInitialized = true;
+    
+    /**
+     * Check if current page is Rencana Strategis
+     */
+    function isRSPage() {
+        const path = window.location.pathname;
+        const hash = window.location.hash;
+        const currentPage = window.navigationState?.currentPage || '';
+        
+        // Also check for active class on RS page element
+        const rsPageElement = document.getElementById('rencana-strategis');
+        const isRSActive = rsPageElement?.classList.contains('active');
+        
+        return path === '/rencana-strategis' || 
+               path.includes('/rencana-strategis') ||
+               hash === '#rencana-strategis' ||
+               currentPage === 'rencana-strategis' ||
+               isRSActive;
+    }
+    
+    /**
+     * Remove RS selection list content from non-RS pages
+     * ENHANCED: More aggressive cleanup
+     */
+    function cleanupRSContentFromOtherPages() {
+        if (isRSPage()) {
+            return; // Don't cleanup if on RS page
+        }
+        
+        // Get all page-content elements except RS
+        const otherPages = document.querySelectorAll('.page-content:not(#rencana-strategis)');
+        
+        otherPages.forEach(page => {
+            // Remove RS wrapper and selection elements
+            const rsElements = page.querySelectorAll(
+                '.rencana-strategis-wrapper, ' +
+                '.rencana-strategis-container, ' +
+                '.rs-selection-wrapper, ' +
+                '.rs-selection-list, ' +
+                '#rs-selection-container, ' +
+                '.rs-filter-section, ' +
+                '[data-module="RencanaStrategisModule"]'
+            );
+            
+            rsElements.forEach(el => {
+                console.log('🗑️ Removing RS element from page:', page.id);
+                el.remove();
+            });
+        });
+        
+        // Hide RS page element completely
+        const rsPage = document.getElementById('rencana-strategis');
+        if (rsPage && !rsPage.classList.contains('active')) {
+            rsPage.style.display = 'none';
+            rsPage.style.visibility = 'hidden';
+            rsPage.style.opacity = '0';
+            rsPage.style.position = 'absolute';
+            rsPage.style.left = '-99999px';
+            rsPage.style.top = '-99999px';
+        }
+    }
+    
+    /**
+     * Ensure RS content is properly visible when on RS page
+     * ENHANCED: Immediate display without refresh
+     */
+    function ensureRSContentVisible() {
+        if (!isRSPage()) return;
+        
+        const rsPage = document.getElementById('rencana-strategis');
+        const rsContent = document.getElementById('rencana-strategis-content');
+        
+        if (rsPage) {
+            // Force visibility
+            rsPage.classList.add('active');
+            rsPage.style.display = 'block';
+            rsPage.style.visibility = 'visible';
+            rsPage.style.opacity = '1';
+            rsPage.style.position = 'relative';
+            rsPage.style.left = 'auto';
+            rsPage.style.top = 'auto';
+            rsPage.style.width = 'auto';
+            rsPage.style.height = 'auto';
+            rsPage.style.overflow = 'visible';
+            rsPage.style.pointerEvents = 'auto';
+        }
+        
+        if (rsContent) {
+            rsContent.style.display = 'block';
+            rsContent.style.visibility = 'visible';
+            rsContent.style.opacity = '1';
+            rsContent.style.minHeight = '400px';
+        }
+        
+        // Ensure wrapper is visible
+        const rsWrapper = rsContent?.querySelector('.rencana-strategis-wrapper');
+        if (rsWrapper) {
+            rsWrapper.style.display = 'block';
+            rsWrapper.style.visibility = 'visible';
+            rsWrapper.style.opacity = '1';
+        }
+        
+        // Load RS module if not loaded
+        if (window.RencanaStrategisModule && !window.rencanaStrategisModuleLoaded) {
+            console.log('📋 Loading RS module for immediate display...');
+            window.RencanaStrategisModule.load();
+        }
+    }
+    
+    /**
+     * Main isolation function - called on navigation
+     */
+    function enforceRSIsolation() {
+        if (isRSPage()) {
+            ensureRSContentVisible();
+        } else {
+            cleanupRSContentFromOtherPages();
+        }
+    }
+    
+    /**
+     * Setup URL change listener
+     */
+    function setupURLChangeListener() {
+        // Listen for popstate (back/forward navigation)
+        window.addEventListener('popstate', () => {
+            setTimeout(enforceRSIsolation, 50);
+        });
+        
+        // Listen for hashchange
+        window.addEventListener('hashchange', () => {
+            setTimeout(enforceRSIsolation, 50);
+        });
+        
+        // Listen for custom navigation events
+        document.addEventListener('pageNavigated', (e) => {
+            setTimeout(enforceRSIsolation, 50);
+        });
+    }
+    
+    /**
+     * Initialize the isolation system
+     */
+    function initialize() {
+        console.log('🚀 Initializing RS Page Isolation System v2.1...');
+        
+        // Initial check
+        enforceRSIsolation();
+        
+        // Setup listeners
+        setupURLChangeListener();
+        
+        // Periodic check (less aggressive)
+        setInterval(() => {
+            if (isRSPage()) {
+                ensureRSContentVisible();
+            } else {
+                // Only cleanup if RS elements are found on other pages
+                const otherPages = document.querySelectorAll('.page-content.active:not(#rencana-strategis)');
+                otherPages.forEach(page => {
+                    const hasRSContent = page.querySelector('.rencana-strategis-wrapper, .rs-selection-wrapper');
+                    if (hasRSContent) {
+                        cleanupRSContentFromOtherPages();
+                    }
+                });
+            }
+        }, 3000);
+        
+        console.log('✅ RS Page Isolation System v2.1 initialized');
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+    
+    // Export for external use
+    window.RSPageIsolation = {
+        isRSPage,
+        cleanupRSContentFromOtherPages,
+        enforceRSIsolation,
+        ensureRSContentVisible
+    };
+    
+})();

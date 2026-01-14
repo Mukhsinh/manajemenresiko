@@ -1,0 +1,173 @@
+/**
+ * Remove Purple Colors - Global Purple to White Conversion
+ * This CSS file removes all purple colors and replaces them with white/neutral colors
+ */
+
+/* Global purple color removal */
+*[style*="purple"],
+*[style*="#ffffff"],
+*[style*="#ffffff"],
+*[style*="#f093fb"],
+*[style*="#f5576c"],
+*[style*="rgb(118, 75, 162)"],
+*[style*="rgb(102, 126, 234)"] {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+}
+
+/* Remove purple gradients */
+*[style*="linear-gradient"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Specific purple gradient patterns to white */
+*[style*="linear-gradient(135deg, #ffffff 0%, #ffffff 100%)"],
+*[style*="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"] {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+}
+
+/* Card headers - ensure all are white */
+.card-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+/* Page headers - ensure all are white */
+.page-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #2c3e50 !important;
+}
+
+/* Section headers - ensure all are white */
+.section-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+/* Modal headers - ensure all are white */
+.modal-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+/* Panel headers - ensure all are white */
+.panel-heading {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+/* Navbar - keep blue but remove purple */
+.navbar.bg-primary {
+    background: #007bff !important;
+    background-image: none !important;
+    background-color: #007bff !important;
+}
+
+/* Override any CSS classes that might use purple */
+.bg-purple,
+.purple-bg,
+.gradient-purple {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+}
+
+/* Specific component fixes */
+#visi-misi-content .card-header,
+#rencana-strategis-content .card-header,
+#swot-content .card-header,
+#risk-content .card-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+/* Test page specific fixes */
+.test-section .card-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+}
+
+/* Dynamic style override - highest priority */
+[style*="background: linear-gradient"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+[style*="background-image: linear-gradient"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Ensure buttons maintain their original colors (not affected by purple removal) */
+.btn-primary {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+}
+
+.btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
+.btn-info {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+.btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+/* Ensure text remains readable */
+.card-header,
+.page-header,
+.section-header,
+.modal-header {
+    color: #495057 !important;
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+    color: #495057 !important;
+}
+
+/* Override any JavaScript-applied purple styles */
+.card-header[style],
+.page-header[style],
+.section-header[style] {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+}

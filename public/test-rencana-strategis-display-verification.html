@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Rencana Strategis Display</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .check-item { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .check-pass { background: #d4edda; border-left: 4px solid #28a745; }
+        .check-fail { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .check-warn { background: #fff3cd; border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i>Verifikasi Rencana Strategis Display</h3>
+            </div>
+            <div class="card-body">
+                <div id="results"></div>
+                <button class="btn btn-primary mt-3" onclick="runChecks()">
+                    <i class="fas fa-sync-alt me-2"></i>Run Checks
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runChecks() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p>Running checks...</p></div>';
+            
+            const checks = [];
+            
+            // Check 1: Module file exists and correct
+            try {
+                const response = await fetch('/js/rencana-strategis.js');
+                const content = await response.text();
+                
+                if (content.includes('TIDAK menampilkan list selection')) {
+                    checks.push({ 
+                        name: 'Module Configuration', 
+                        status: 'pass', 
+                        message: 'Module configured to show cards + table only' 
+                    });
+                } else {
+                    checks.push({ 
+                        name: 'Module Configuration', 
+                        status: 'fail', 
+                        message: 'Module may still show selection list' 
+                    });
+                }
+                
+                if (content.includes('renderInterface') && !content.includes('renderSelectionList')) {
+                    checks.push({ 
+                        name: 'Render Function', 
+                        status: 'pass', 
+                        message: 'Using correct render function' 
+                    });
+                } else {
+                    checks.push({ 
+                        name: 'Render Function', 
+                        status: 'warn', 
+                        message: 'May have old render functions' 
+                    });
+                }
+            } catch (error) {
+                checks.push({ 
+                    name: 'Module File', 
+                    status: 'fail', 
+                    message: 'Cannot load module file: ' + error.message 
+                });
+            }
+            
+            // Check 2: Page structure
+            const rsPage = document.getElementById('rencana-strategis');
+            if (rsPage) {
+                checks.push({ 
+                    name: 'Page Element', 
+                    status: 'pass', 
+                    message: 'Rencana strategis page element exists' 
+                });
+            } else {
+                checks.push({ 
+                    name: 'Page Element', 
+                    status: 'fail', 
+                    message: 'Rencana strategis page element not found' 
+                });
+            }
+            
+            // Check 3: Container
+            const container = document.getElementById('rencana-strategis-content');
+            if (container) {
+                checks.push({ 
+                    name: 'Content Container', 
+                    status: 'pass', 
+                    message: 'Content container exists' 
+                });
+                
+                // Check for proper interface
+                const hasTable = container.querySelector('table');
+                const hasCards = container.querySelector('.rencana-strategis-wrapper');
+                const hasSelection = container.innerHTML.includes('Pilih Rencana Strategis');
+                
+                if (hasTable && hasCards && !hasSelection) {
+                    checks.push({ 
+                        name: 'Interface Display', 
+                        status: 'pass', 
+                        message: 'Showing cards + table (correct)' 
+                    });
+                } else if (hasSelection) {
+                    checks.push({ 
+                        name: 'Interface Display', 
+                        status: 'fail', 
+                        message: 'Showing selection list (incorrect)' 
+                    });
+                } else {
+                    checks.push({ 
+                        name: 'Interface Display', 
+                        status: 'warn', 
+                        message: 'Interface not fully loaded yet' 
+                    });
+                }
+            } else {
+                checks.push({ 
+                    name: 'Content Container', 
+                    status: 'fail', 
+                    message: 'Content container not found' 
+                });
+            }
+            
+            // Check 4: Module loaded
+            if (window.RencanaStrategisModule) {
+                checks.push({ 
+                    name: 'Module Loaded', 
+                    status: 'pass', 
+                    message: 'RencanaStrategisModule is available' 
+                });
+            } else {
+                checks.push({ 
+                    name: 'Module Loaded', 
+                    status: 'fail', 
+                    message: 'RencanaStrategisModule not loaded' 
+                });
+            }
+            
+            // Display results
+            let html = '<h5 class="mb-3">Verification Results:</h5>';
+            checks.forEach(check => {
+                const className = check.status === 'pass' ? 'check-pass' : 
+                                 check.status === 'fail' ? 'check-fail' : 'check-warn';
+                const icon = check.status === 'pass' ? 'fa-check-circle text-success' : 
+                            check.status === 'fail' ? 'fa-times-circle text-danger' : 
+                            'fa-exclamation-triangle text-warning';
+                
+                html += `
+                    <div class="check-item ${className}">
+                        <i class="fas ${icon} me-2"></i>
+                        <strong>${check.name}:</strong> ${check.message}
+                    </div>
+                `;
+            });
+            
+            const passCount = checks.filter(c => c.status === 'pass').length;
+            const totalCount = checks.length;
+            
+            html += `
+                <div class="alert alert-info mt-3">
+                    <strong>Summary:</strong> ${passCount}/${totalCount} checks passed
+                </div>
+            `;
+            
+            if (passCount === totalCount) {
+                html += '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>All checks passed!</strong> Rencana Strategis display is correct.</div>';
+            } else {
+                html += '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i><strong>Some checks failed.</strong> Please review the issues above.</div>';
+            }
+            
+            results.innerHTML = html;
+        }
+        
+        // Run checks on load
+        window.addEventListener('load', () => {
+            setTimeout(runChecks, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -516,6 +516,27 @@ router.post('/actions/import', authenticateUser, async (req, res) => {
   }
 });
 
+
+// GET /rencana-strategis - Serve page with proper initialization
+router.get('/page', async (req, res) => {
+    try {
+        // Set headers to prevent caching
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
+        // Return success to indicate page is ready
+        res.json({ 
+            status: 'ready', 
+            timestamp: Date.now(),
+            message: 'Rencana Strategis page ready for loading'
+        });
+    } catch (error) {
+        console.error('Error serving rencana-strategis page:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
 
 

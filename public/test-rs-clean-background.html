@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RS Clean Background</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/rencana-strategis-clean.css">
+    <link rel="stylesheet" href="/css/remove-rs-global-background.css">
+    <style>
+        body { background: #f5f7fa; padding: 20px; }
+        .test-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .test-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .test-result { padding: 10px; border-radius: 8px; margin: 5px 0; }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        .test-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="test-header">
+            <h1><i class="fas fa-check-circle me-2"></i>Test RS Clean Background</h1>
+            <p class="mb-0">Verifikasi bahwa global background sudah dihapus dan halaman tampil dengan benar</p>
+        </div>
+        
+        <div class="test-section">
+            <h4><i class="fas fa-list-check me-2"></i>Test Results</h4>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h4><i class="fas fa-eye me-2"></i>Preview Halaman Rencana Strategis</h4>
+            <div id="rencana-strategis" class="page-content active" style="min-height: 400px;">
+                <div class="page-header mb-3">
+                    <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Rencana Strategis</h1>
+                    <p class="page-subtitle">Perencanaan Strategis Organisasi</p>
+                </div>
+                <div id="rencana-strategis-content">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3 text-muted">Memuat modul...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h4><i class="fas fa-cog me-2"></i>Actions</h4>
+            <button class="btn btn-primary me-2" onclick="runTests()">
+                <i class="fas fa-play me-1"></i>Run Tests
+            </button>
+            <button class="btn btn-success me-2" onclick="loadRSModule()">
+                <i class="fas fa-download me-1"></i>Load RS Module
+            </button>
+            <button class="btn btn-warning me-2" onclick="testCleanup()">
+                <i class="fas fa-broom me-1"></i>Test Cleanup
+            </button>
+            <button class="btn btn-info" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mock API
+        window.apiCall = async function(endpoint) {
+            console.log('API Call:', endpoint);
+            if (endpoint.includes('rencana-strategis')) {
+                return [
+                    { id: '1', kode: 'RS-2025-001', nama_rencana: 'Program Inovasi Layanan', status: 'Aktif', target: 'Meningkatkan kualitas layanan' },
+                    { id: '2', kode: 'RS-2025-002', nama_rencana: 'Pengembangan SDM', status: 'Draft', target: 'Meningkatkan kompetensi' },
+                    { id: '3', kode: 'RS-2025-003', nama_rencana: 'Digitalisasi Proses', status: 'Selesai', target: 'Efisiensi operasional' }
+                ];
+            }
+            if (endpoint.includes('visi-misi')) {
+                return [{ id: '1', misi: '1. Misi Pertama\n2. Misi Kedua' }];
+            }
+            if (endpoint.includes('generate/kode')) {
+                return { kode: 'RS-2025-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0') };
+            }
+            return [];
+        };
+    </script>
+    <script src="/js/rencana-strategis-fast.js"></script>
+    <script src="/js/rencana-strategis-fast-loader.js"></script>
+    <script src="/js/remove-rs-global-background.js"></script>
+    <script>
+        const resultsContainer = document.getElementById('test-results');
+        
+        function addResult(name, passed, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+            div.innerHTML = `
+                <i class="fas fa-${passed ? 'check' : 'times'}-circle me-2"></i>
+                <strong>${name}:</strong> ${message}
+            `;
+            resultsContainer.appendChild(div);
+        }
+        
+        function addInfo(message) {
+            const div = document.createElement('div');
+            div.className = 'test-result test-info';
+            div.innerHTML = `<i class="fas fa-info-circle me-2"></i>${message}`;
+            resultsContainer.appendChild(div);
+        }
+        
+        function runTests() {
+            resultsContainer.innerHTML = '';
+            
+            // Test 1: CSS loaded
+            const cssLoaded = document.querySelector('link[href*="rencana-strategis-clean.css"]') !== null;
+            addResult('CSS Clean Loaded', cssLoaded, cssLoaded ? 'CSS file loaded successfully' : 'CSS file not found');
+            
+            // Test 2: RS page element exists
+            const rsPage = document.getElementById('rencana-strategis');
+            addResult('RS Page Element', rsPage !== null, rsPage ? 'RS page element found' : 'RS page element not found');
+            
+            // Test 3: RS content element exists
+            const rsContent = document.getElementById('rencana-strategis-content');
+            addResult('RS Content Element', rsContent !== null, rsContent ? 'RS content element found' : 'RS content element not found');
+            
+            // Test 4: No selection list visible
+            const selectionList = document.querySelector('.rencana-strategis-selection, .rs-selection-wrapper, .rs-selection-list');
+            const noSelectionList = selectionList === null || window.getComputedStyle(selectionList).display === 'none';
+            addResult('No Selection List', noSelectionList, noSelectionList ? 'Selection list hidden' : 'Selection list visible (should be hidden)');
+            
+            // Test 5: RS Fast module loaded
+            const moduleLoaded = typeof window.RencanaStrategisFast !== 'undefined';
+            addResult('RS Fast Module', moduleLoaded, moduleLoaded ? 'Module loaded successfully' : 'Module not loaded');
+            
+            // Test 6: Fast Loader loaded
+            const fastLoaderLoaded = typeof window.RSFastLoader !== 'undefined';
+            addResult('Fast Loader', fastLoaderLoaded, fastLoaderLoaded ? 'Fast Loader loaded' : 'Fast Loader not loaded');
+            
+            // Test 7: Background removal script loaded
+            const bgRemovalLoaded = typeof window.RemoveRSGlobalBackground !== 'undefined';
+            addResult('BG Removal Script', bgRemovalLoaded, bgRemovalLoaded ? 'Background removal script loaded' : 'Script not loaded');
+            
+            // Test 8: Page has correct background
+            if (rsPage) {
+                const bgColor = window.getComputedStyle(rsPage).backgroundColor;
+                const hasCorrectBg = bgColor.includes('248') || bgColor.includes('249') || bgColor.includes('250');
+                addResult('Correct Background', hasCorrectBg, `Background color: ${bgColor}`);
+            }
+            
+            addInfo('All tests completed. Check results above.');
+        }
+        
+        async function loadRSModule() {
+            addInfo('Loading RS Module...');
+            
+            if (window.RencanaStrategisFast && window.RencanaStrategisFast.load) {
+                try {
+                    await window.RencanaStrategisFast.load();
+                    addResult('Module Load', true, 'RS Module loaded successfully');
+                } catch (error) {
+                    addResult('Module Load', false, 'Error: ' + error.message);
+                }
+            } else {
+                addResult('Module Load', false, 'RencanaStrategisFast not found');
+            }
+        }
+        
+        function testCleanup() {
+            addInfo('Testing cleanup function...');
+            
+            if (window.RemoveRSGlobalBackground && window.RemoveRSGlobalBackground.cleanup) {
+                window.RemoveRSGlobalBackground.cleanup();
+                addResult('Cleanup', true, 'Cleanup function executed');
+            } else {
+                addResult('Cleanup', false, 'Cleanup function not found');
+            }
+        }
+        
+        // Auto-run tests on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

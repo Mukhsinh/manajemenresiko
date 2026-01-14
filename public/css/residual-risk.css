@@ -1,0 +1,472 @@
+/* Residual Risk Module Styles */
+
+/* ============================================
+   RISK LEVEL BADGES - BRIGHT SOLID COLORS
+   ============================================ */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 80px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* LOW RISK - Bright Emerald Green */
+.badge-low-risk {
+    background-color: #10B981 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #059669 !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+.badge-low-risk:hover {
+    background-color: #059669 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.5);
+}
+
+/* MEDIUM RISK - Bright Amber */
+.badge-medium-risk {
+    background-color: #F59E0B !important;
+    color: #FFFFFF !important;
+    border: 2px solid #D97706 !important;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+}
+
+.badge-medium-risk:hover {
+    background-color: #D97706 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.5);
+}
+
+/* HIGH RISK - Bright Orange */
+.badge-high-risk {
+    background-color: #F97316 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #EA580C !important;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+}
+
+.badge-high-risk:hover {
+    background-color: #EA580C !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(249, 115, 22, 0.5);
+}
+
+/* EXTREME HIGH - Bright Red */
+.badge-extreme-high {
+    background-color: #EF4444 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #DC2626 !important;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.badge-extreme-high:hover {
+    background-color: #DC2626 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.5);
+}
+
+/* Secondary/Default Badge */
+.badge-secondary {
+    background-color: #6B7280 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #4B5563 !important;
+    box-shadow: 0 2px 6px rgba(107, 114, 128, 0.4);
+}
+
+/* REVIEWED Status - Bright Blue */
+.badge-reviewed {
+    background-color: #3B82F6 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #2563EB !important;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+/* PENDING Status - Bright Purple */
+.badge-pending {
+    background-color: #8B5CF6 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #7C3AED !important;
+    box-shadow: 0 2px 6px rgba(139, 92, 246, 0.4);
+}
+
+/* ============================================
+   REVIEW STATUS WARNING - BLINKING ANIMATION
+   Untuk review yang mendekati deadline < 1 bulan
+   ============================================ */
+
+/* Blinking Animation Keyframes */
+@keyframes blink-warning {
+    0%, 100% {
+        background-color: #EF4444;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        background-color: #DC2626;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 0 30px rgba(239, 68, 68, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes blink-near-deadline {
+    0%, 100% {
+        background-color: #F97316;
+        box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+    }
+    50% {
+        background-color: #EA580C;
+        box-shadow: 0 0 15px rgba(249, 115, 22, 0.8);
+    }
+}
+
+@keyframes blink-urgent {
+    0%, 100% {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(239, 68, 68, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+        box-shadow: 0 0 25px rgba(220, 38, 38, 0.9), 0 0 40px rgba(239, 68, 68, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes blink-critical {
+    0%, 100% {
+        background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+        box-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 40px rgba(153, 27, 27, 0.5);
+        transform: scale(1);
+    }
+    25% {
+        background: linear-gradient(135deg, #B91C1C 0%, #7F1D1D 100%);
+        box-shadow: 0 0 30px rgba(185, 28, 28, 1), 0 0 50px rgba(220, 38, 38, 0.7);
+        transform: scale(1.08);
+    }
+    50% {
+        background: linear-gradient(135deg, #991B1B 0%, #450A0A 100%);
+        box-shadow: 0 0 35px rgba(153, 27, 27, 1), 0 0 60px rgba(185, 28, 28, 0.8);
+        transform: scale(1.1);
+    }
+    75% {
+        background: linear-gradient(135deg, #B91C1C 0%, #7F1D1D 100%);
+        box-shadow: 0 0 30px rgba(185, 28, 28, 1), 0 0 50px rgba(220, 38, 38, 0.7);
+        transform: scale(1.08);
+    }
+}
+
+@keyframes pulse-icon {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* REVIEWED - Safe (> 1 bulan dari deadline) - Hijau Cerah Solid */
+.badge-review-safe {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+    color: #FFFFFF !important;
+    border: 2px solid #047857 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    font-weight: 700 !important;
+}
+
+.badge-review-safe::before {
+    content: '✓ ';
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* REVIEWED - Urgent (< 1 bulan dari deadline) - Merah Solid Berkedip */
+.badge-review-urgent {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+    color: #FFFFFF !important;
+    border: 3px solid #991B1B !important;
+    animation: blink-urgent 0.8s ease-in-out infinite;
+    font-weight: 800 !important;
+}
+
+.badge-review-urgent::before {
+    content: '⚠ ';
+    font-size: 12px;
+    animation: pulse-icon 0.5s ease-in-out infinite;
+}
+
+/* REVIEWED - Critical (< 7 hari atau overdue) - Merah Gelap Berkedip Cepat */
+.badge-review-critical {
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%) !important;
+    color: #FFFFFF !important;
+    border: 3px solid #450A0A !important;
+    animation: blink-critical 0.5s ease-in-out infinite;
+    font-weight: 900 !important;
+}
+
+.badge-review-critical::before {
+    content: '🚨 ';
+    font-size: 12px;
+    animation: pulse-icon 0.3s ease-in-out infinite;
+}
+
+/* Review warning badge - less than 30 days (legacy support) */
+.badge-review-warning {
+    background-color: #EF4444 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #DC2626 !important;
+    animation: blink-warning 1s ease-in-out infinite;
+    font-weight: 800 !important;
+}
+
+.badge-review-warning::before {
+    content: "⚠ ";
+    animation: pulse-icon 0.5s ease-in-out infinite;
+}
+
+/* Near deadline - less than 14 days (legacy support) */
+.badge-review-near-deadline {
+    background-color: #F97316 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #EA580C !important;
+    animation: blink-near-deadline 0.8s ease-in-out infinite;
+    font-weight: 800 !important;
+}
+
+.badge-review-near-deadline::before {
+    content: "⏰ ";
+    animation: pulse-icon 0.4s ease-in-out infinite;
+}
+
+/* Risk Matrix Styles */
+.risk-matrix-container {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #E5E7EB;
+}
+
+.risk-matrix-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: #F9FAFB;
+    border-radius: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Smaller Legend Symbols for better visibility */
+.legend-symbol {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border: 2px solid #000;
+}
+
+.legend-symbol.circle {
+    border-radius: 50%;
+    background-color: #00E5FF;
+}
+
+.legend-symbol.star {
+    background-color: #FFD700;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.legend-symbol.triangle {
+    background-color: #FFFFFF;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* Table Styles - Enhanced */
+.residual-risk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.residual-risk-table th,
+.residual-risk-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #E5E7EB;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.residual-risk-table th {
+    background: linear-gradient(135deg, #1E3A5F 0%, #2D4A6F 100%);
+    color: #FFFFFF;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #0F2744;
+}
+
+.residual-risk-table tbody tr:hover {
+    background-color: #F0F9FF;
+}
+
+.residual-risk-table tbody tr:nth-child(even) {
+    background-color: #F9FAFB;
+}
+
+/* Filter Group */
+.filter-group {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group .form-group {
+    margin: 0;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.filter-group .form-control {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: white;
+}
+
+/* Statistics Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin: 1rem 0;
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 150px;
+    display: none;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-menu a:last-child {
+    border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .risk-matrix-legend {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .filter-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .residual-risk-table {
+        font-size: 0.75rem;
+    }
+    
+    .residual-risk-table th,
+    .residual-risk-table td {
+        padding: 6px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+}

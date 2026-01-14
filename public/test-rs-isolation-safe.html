@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RS Isolation - Safe Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .result.pass {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.fail {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        
+        .log-info { color: #4fc3f7; }
+        .log-success { color: #66bb6a; }
+        .log-error { color: #ef5350; }
+        .log-warning { color: #ffa726; }
+    </style>
+</head>
+<body>
+    <h1>🛡️ Test RS Content Isolation (Safe Version)</h1>
+    <p>Test untuk memastikan konten Rencana Strategis hanya muncul di halaman /rencana-strategis</p>
+    
+    <div class="test-card">
+        <h2>📋 Test 1: Cek Proteksi Fungsi</h2>
+        <p>Test apakah fungsi RencanaStrategisModule.load() diblokir di halaman lain</p>
+        <button class="btn" onclick="testFunctionProtection()">Jalankan Test</button>
+        <div id="test1-result"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>🧹 Test 2: Pembersihan Konten</h2>
+        <p>Test apakah konten RS dibersihkan dari halaman lain</p>
+        <button class="btn" onclick="testContentCleaning()">Jalankan Test</button>
+        <div id="test2-result"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>🔍 Test 3: Deteksi Halaman</h2>
+        <p>Test apakah sistem bisa mendeteksi halaman RS dengan benar</p>
+        <button class="btn" onclick="testPageDetection()">Jalankan Test</button>
+        <div id="test3-result"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>✅ Test 4: Verifikasi Halaman Lain</h2>
+        <p>Test apakah halaman lain masih berfungsi normal</p>
+        <button class="btn" onclick="testOtherPages()">Jalankan Test</button>
+        <div id="test4-result"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>🚀 Test Semua</h2>
+        <button class="btn btn-success" onclick="runAllTests()">Jalankan Semua Test</button>
+        <button class="btn btn-danger" onclick="clearResults()">Bersihkan Hasil</button>
+    </div>
+    
+    <div class="test-card">
+        <h2>📝 Log</h2>
+        <div class="log" id="log-container">
+            <div class="log-entry log-info">Siap untuk testing...</div>
+        </div>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function testFunctionProtection() {
+            log('Testing function protection...', 'info');
+            
+            let result = '';
+            let passed = true;
+            
+            // Test if RencanaStrategisModule exists
+            if (window.RencanaStrategisModule) {
+                result += '✅ RencanaStrategisModule exists\n';
+                
+                // Test if load function is protected
+                if (typeof window.RencanaStrategisModule.load === 'function') {
+                    result += '✅ load() function exists\n';
+                    
+                    // Try to call it (should be blocked)
+                    try {
+                        window.RencanaStrategisModule.load();
+                        result += '⚠️ load() was called (check console for block message)\n';
+                    } catch (e) {
+                        result += '❌ load() threw error: ' + e.message + '\n';
+                        passed = false;
+                    }
+                } else {
+                    result += '❌ load() function not found\n';
+                    passed = false;
+                }
+            } else {
+                result += '❌ RencanaStrategisModule not found\n';
+                passed = false;
+            }
+            
+            // Test global functions
+            if (window.loadRencanaStrategis) {
+                result += '✅ loadRencanaStrategis exists\n';
+            }
+            
+            if (window.loadRencanaStrategisSelection) {
+                result += '✅ loadRencanaStrategisSelection exists (should be blocked)\n';
+            }
+            
+            showResult('test1-result', result, passed ? 'pass' : 'fail');
+            log(passed ? 'Function protection test PASSED' : 'Function protection test FAILED', passed ? 'success' : 'error');
+        }
+        
+        function testContentCleaning() {
+            log('Testing content cleaning...', 'info');
+            
+            // Create fake RS content
+            const fakeContent = document.createElement('div');
+            fakeContent.className = 'rencana-strategis-wrapper';
+            fakeContent.innerHTML = '<h3>Fake RS Content</h3><p>This should be removed</p>';
+            document.body.appendChild(fakeContent);
+            
+            log('Created fake RS content', 'info');
+            
+            // Wait a bit then check if it's cleaned
+            setTimeout(() => {
+                const stillExists = document.querySelector('.rencana-strategis-wrapper');
+                
+                if (stillExists && stillExists === fakeContent) {
+                    showResult('test2-result', '⚠️ Fake RS content still exists (will be cleaned periodically)', 'info');
+                    log('Content cleaning: Waiting for periodic cleanup', 'warning');
+                    
+                    // Manually trigger cleanup
+                    if (window.cleanRSContentFromOtherPages) {
+                        window.cleanRSContentFromOtherPages();
+                        
+                        setTimeout(() => {
+                            const afterCleanup = document.querySelector('.rencana-strategis-wrapper');
+                            if (!afterCleanup) {
+                                showResult('test2-result', '✅ Content cleaned successfully after manual trigger', 'pass');
+                                log('Content cleaning test PASSED', 'success');
+                            } else {
+                                showResult('test2-result', '❌ Content still exists after cleanup', 'fail');
+                                log('Content cleaning test FAILED', 'error');
+                            }
+                        }, 100);
+                    }
+                } else {
+                    showResult('test2-result', '✅ Fake RS content was cleaned automatically', 'pass');
+                    log('Content cleaning test PASSED', 'success');
+                }
+            }, 500);
+        }
+        
+        function testPageDetection() {
+            log('Testing page detection...', 'info');
+            
+            const currentPath = window.location.pathname;
+            const currentHash = window.location.hash;
+            const activePage = document.querySelector('.page-content.active');
+            const activePageId = activePage ? activePage.id : 'none';
+            
+            let result = '';
+            result += `Current Path: ${currentPath}\n`;
+            result += `Current Hash: ${currentHash}\n`;
+            result += `Active Page: ${activePageId}\n`;
+            
+            const isRS = currentPath === '/rencana-strategis' || 
+                        currentHash === '#rencana-strategis' ||
+                        activePageId === 'rencana-strategis';
+            
+            result += `\nIs RS Page: ${isRS ? 'YES' : 'NO'}\n`;
+            
+            if (!isRS) {
+                result += '\n✅ Correctly detected as NON-RS page';
+                showResult('test3-result', result, 'pass');
+                log('Page detection test PASSED', 'success');
+            } else {
+                result += '\n⚠️ Detected as RS page (check if correct)';
+                showResult('test3-result', result, 'info');
+                log('Page detection: Detected as RS page', 'warning');
+            }
+        }
+        
+        function testOtherPages() {
+            log('Testing other pages functionality...', 'info');
+            
+            let result = '';
+            let passed = true;
+            
+            // Check if navigation functions exist
+            if (window.navigateToPage) {
+                result += '✅ navigateToPage function exists\n';
+            } else {
+                result += '❌ navigateToPage function not found\n';
+                passed = false;
+            }
+            
+            // Check if page containers exist
+            const pages = document.querySelectorAll('.page-content');
+            result += `✅ Found ${pages.length} page containers\n`;
+            
+            // Check specific pages
+            const testPages = ['dashboard', 'risk-profile', 'analisis-swot'];
+            testPages.forEach(pageId => {
+                const page = document.getElementById(pageId);
+                if (page) {
+                    result += `✅ ${pageId} page exists\n`;
+                } else {
+                    result += `⚠️ ${pageId} page not found\n`;
+                }
+            });
+            
+            showResult('test4-result', result, passed ? 'pass' : 'info');
+            log(passed ? 'Other pages test PASSED' : 'Other pages test completed with warnings', passed ? 'success' : 'warning');
+        }
+        
+        function runAllTests() {
+            log('='.repeat(50), 'info');
+            log('Running all tests...', 'info');
+            log('='.repeat(50), 'info');
+            
+            testFunctionProtection();
+            setTimeout(() => testContentCleaning(), 500);
+            setTimeout(() => testPageDetection(), 1500);
+            setTimeout(() => testOtherPages(), 2000);
+            
+            setTimeout(() => {
+                log('='.repeat(50), 'info');
+                log('All tests completed!', 'success');
+                log('='.repeat(50), 'info');
+            }, 3000);
+        }
+        
+        function clearResults() {
+            ['test1-result', 'test2-result', 'test3-result', 'test4-result'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            
+            document.getElementById('log-container').innerHTML = 
+                '<div class="log-entry log-info">Log cleared. Ready for testing...</div>';
+            
+            log('Results cleared', 'info');
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            log('Page loaded successfully', 'success');
+            log('RS Content Isolation (Safe) should be active', 'info');
+            log('Click buttons above to run tests', 'info');
+        });
+    </script>
+</body>
+</html>

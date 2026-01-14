@@ -115,7 +115,11 @@ router.get('/', authenticateUser, async (req, res) => {
 
     let query = clientToUse
       .from('indikator_kinerja_utama')
-      .select('*, rencana_strategis(nama_rencana, kode, organization_id), sasaran_strategi(sasaran, perspektif)')
+      .select(`
+        *,
+        rencana_strategis(nama_rencana, kode, organization_id),
+        sasaran_strategi(sasaran, perspektif)
+      `)
       .order('created_at', { ascending: false });
 
     // Apply organization filter through rencana_strategis relationship
@@ -241,8 +245,21 @@ router.post('/', authenticateUser, async (req, res) => {
       target_tahun,
       target_nilai,
       initiatif_strategi,
-      pic
+      pic,
+      // Kolom baru sesuai template Excel
+      formulas_perhitungan,
+      satuan,
+      definisi_operasional,
+      sumber_data,
+      target_2025,
+      target_2026,
+      target_2027,
+      target_2028,
+      target_2029,
+      target_2030
     } = req.body;
+    
+    console.log('Creating IKU with data:', req.body);
 
     if (!rencana_strategis_id || !indikator) {
       return res.status(400).json({ error: 'Rencana strategis dan indikator wajib diisi' });
@@ -261,7 +278,18 @@ router.post('/', authenticateUser, async (req, res) => {
         target_tahun: target_tahun ? parseInt(target_tahun) : null,
         target_nilai: target_nilai ? parseFloat(target_nilai) : null,
         initiatif_strategi: initiatif_strategi || null,
-        pic: pic || null
+        pic: pic || null,
+        // Kolom baru
+        formulas_perhitungan: formulas_perhitungan || null,
+        satuan: satuan || null,
+        definisi_operasional: definisi_operasional || null,
+        sumber_data: sumber_data || null,
+        target_2025: target_2025 ? parseFloat(target_2025) : null,
+        target_2026: target_2026 ? parseFloat(target_2026) : null,
+        target_2027: target_2027 ? parseFloat(target_2027) : null,
+        target_2028: target_2028 ? parseFloat(target_2028) : null,
+        target_2029: target_2029 ? parseFloat(target_2029) : null,
+        target_2030: target_2030 ? parseFloat(target_2030) : null
       })
       .select()
       .single();
@@ -286,7 +314,18 @@ router.put('/:id', authenticateUser, async (req, res) => {
       target_tahun,
       target_nilai,
       initiatif_strategi,
-      pic
+      pic,
+      // Kolom baru
+      formulas_perhitungan,
+      satuan,
+      definisi_operasional,
+      sumber_data,
+      target_2025,
+      target_2026,
+      target_2027,
+      target_2028,
+      target_2029,
+      target_2030
     } = req.body;
 
     const updateData = {
@@ -302,6 +341,17 @@ router.put('/:id', authenticateUser, async (req, res) => {
     if (target_nilai !== undefined) updateData.target_nilai = target_nilai ? parseFloat(target_nilai) : null;
     if (initiatif_strategi !== undefined) updateData.initiatif_strategi = initiatif_strategi || null;
     if (pic !== undefined) updateData.pic = pic || null;
+    // Kolom baru
+    if (formulas_perhitungan !== undefined) updateData.formulas_perhitungan = formulas_perhitungan || null;
+    if (satuan !== undefined) updateData.satuan = satuan || null;
+    if (definisi_operasional !== undefined) updateData.definisi_operasional = definisi_operasional || null;
+    if (sumber_data !== undefined) updateData.sumber_data = sumber_data || null;
+    if (target_2025 !== undefined) updateData.target_2025 = target_2025 ? parseFloat(target_2025) : null;
+    if (target_2026 !== undefined) updateData.target_2026 = target_2026 ? parseFloat(target_2026) : null;
+    if (target_2027 !== undefined) updateData.target_2027 = target_2027 ? parseFloat(target_2027) : null;
+    if (target_2028 !== undefined) updateData.target_2028 = target_2028 ? parseFloat(target_2028) : null;
+    if (target_2029 !== undefined) updateData.target_2029 = target_2029 ? parseFloat(target_2029) : null;
+    if (target_2030 !== undefined) updateData.target_2030 = target_2030 ? parseFloat(target_2030) : null;
 
     const clientToUse = supabaseAdmin || supabase;
     

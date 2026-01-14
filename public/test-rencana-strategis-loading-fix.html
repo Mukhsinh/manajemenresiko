@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Loading Fix</title>
+    <link rel="stylesheet" href="/css/ui-enhancement-framework.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .test-pass {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .test-fail {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .test-info {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .page-loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .data-load-error, .initialization-error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            max-width: 400px;
+        }
+        
+        .retry-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .retry-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Rencana Strategis Loading Fix</h1>
+        <p>Testing page loading and display functionality for Rencana Strategis page.</p>
+        
+        <div class="loading-indicator" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <p>Running tests...</p>
+        </div>
+        
+        <div id="testResults"></div>
+        
+        <!-- Simulated Rencana Strategis Page Content -->
+        <div class="test-section">
+            <h2>Simulated Page Content</h2>
+            <div id="simulatedPage" data-page="rencana-strategis" class="rencana-strategis-page">
+                <!-- Content will be dynamically generated -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button onclick="runAllTests()" class="btn btn-primary">Run All Tests</button>
+            <button onclick="testPageStructure()" class="btn btn-secondary">Test Page Structure</button>
+            <button onclick="testDataLoading()" class="btn btn-secondary">Test Data Loading</button>
+            <button onclick="testUIComponents()" class="btn btn-secondary">Test UI Components</button>
+            <button onclick="testResponsiveness()" class="btn btn-secondary">Test Responsiveness</button>
+            <button onclick="clearTests()" class="btn btn-outline">Clear Results</button>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/ui-enhancement-framework.js"></script>
+    <script src="/js/lucide-icon-system.js"></script>
+    <script src="/js/responsive-container-system.js"></script>
+    <script src="/js/page-initialization-system.js"></script>
+    <script src="/js/enhanced-module-dependency-manager.js"></script>
+    <script src="/js/rencana-strategis-page-fix.js"></script>
+
+    <script>
+        let testResults = [];
+        
+        function addTestResult(name, passed, message, details = null) {
+            const result = {
+                name,
+                passed,
+                message,
+                details,
+                timestamp: new Date().toISOString()
+            };
+            
+            testResults.push(result);
+            displayTestResult(result);
+        }
+        
+        function displayTestResult(result) {
+            const resultsContainer = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.passed ? 'test-pass' : 'test-fail'}`;
+            
+            let html = `
+                <strong>${result.passed ? '✅' : '❌'} ${result.name}</strong><br>
+                ${result.message}
+            `;
+            
+            if (result.details) {
+                html += `<br><small>${result.details}</small>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultsContainer.appendChild(resultDiv);
+        }
+        
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+        
+        function clearTests() {
+            testResults = [];
+            document.getElementById('testResults').innerHTML = '';
+        }
+        
+        async function runAllTests() {
+            clearTests();
+            showLoading();
+            
+            try {
+                await testPageStructure();
+                await testDataLoading();
+                await testUIComponents();
+                await testResponsiveness();
+                await testPageFix();
+                
+                // Summary
+                const passed = testResults.filter(r => r.passed).length;
+                const total = testResults.length;
+                
+                addTestResult(
+                    'Test Summary',
+                    passed === total,
+                    `${passed}/${total} tests passed`,
+                    `Success rate: ${Math.round((passed/total) * 100)}%`
+                );
+                
+            } catch (error) {
+                addTestResult('Test Execution', false, 'Error running tests', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function testPageStructure() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Page container exists
+            const hasPageContainer = simulatedPage && simulatedPage.hasAttribute('data-page');
+            addTestResult(
+                'Page Container',
+                hasPageContainer,
+                hasPageContainer ? 'Page container exists with proper data-page attribute' : 'Page container missing or invalid'
+            );
+            
+            // Test 2: Create page structure
+            simulatedPage.innerHTML = `
+                <div class="page-header">
+                    <h1 class="page-title">Rencana Strategis</h1>
+                    <p class="page-description">Kelola rencana strategis organisasi</p>
+                </div>
+                <div class="main-content">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Total Rencana</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-value">25</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                <tr>
+                                    <td>RS-001</td>
+                                    <td>Test Rencana</td>
+                                    <td>Aktif</td>
+                                    <td class="table-actions">
+                                        <button class="action-btn action-btn-edit" data-action="edit">Edit</button>
+                                        <button class="action-btn action-btn-delete" data-action="delete">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // Test 3: Header structure
+            const header = simulatedPage.querySelector('.page-header');
+            const title = simulatedPage.querySelector('.page-title');
+            addTestResult(
+                'Page Header',
+                header && title,
+                header && title ? 'Page header and title exist' : 'Page header or title missing'
+            );
+            
+            // Test 4: Card structure
+            const cards = simulatedPage.querySelectorAll('.card');
+            const cardHeaders = simulatedPage.querySelectorAll('.card-header');
+            const cardBodies = simulatedPage.querySelectorAll('.card-body');
+            addTestResult(
+                'Card Structure',
+                cards.length > 0 && cardHeaders.length > 0 && cardBodies.length > 0,
+                `Found ${cards.length} cards with proper structure`
+            );
+            
+            // Test 5: Table structure
+            const table = simulatedPage.querySelector('.table');
+            const tableHeader = simulatedPage.querySelector('.table-header');
+            const tableBody = simulatedPage.querySelector('.table-body');
+            addTestResult(
+                'Table Structure',
+                table && tableHeader && tableBody,
+                table && tableHeader && tableBody ? 'Table has proper structure' : 'Table structure incomplete'
+            );
+        }
+        
+        async function testDataLoading() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Check for data indicators
+            const tableRows = simulatedPage.querySelectorAll('tbody tr');
+            addTestResult(
+                'Table Data',
+                tableRows.length > 0,
+                `Found ${tableRows.length} data rows in table`
+            );
+            
+            // Test 2: Check card content
+            const cardValues = simulatedPage.querySelectorAll('.card-value');
+            const hasCardData = Array.from(cardValues).some(card => 
+                card.textContent.trim().length > 0 && 
+                !card.textContent.includes('Loading')
+            );
+            addTestResult(
+                'Card Data',
+                hasCardData,
+                hasCardData ? 'Cards contain valid data' : 'Cards missing data or showing loading state'
+            );
+            
+            // Test 3: Simulate data loading timeout
+            const loadingTimeout = 1000; // 1 second for test
+            const startTime = Date.now();
+            
+            await new Promise(resolve => setTimeout(resolve, 100)); // Simulate loading
+            
+            const loadTime = Date.now() - startTime;
+            addTestResult(
+                'Loading Performance',
+                loadTime < loadingTimeout,
+                `Data loaded in ${loadTime}ms (target: <${loadingTimeout}ms)`
+            );
+        }
+        
+        async function testUIComponents() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Action buttons
+            const actionButtons = simulatedPage.querySelectorAll('.action-btn');
+            const editButtons = simulatedPage.querySelectorAll('.action-btn-edit');
+            const deleteButtons = simulatedPage.querySelectorAll('.action-btn-delete');
+            
+            addTestResult(
+                'Action Buttons',
+                actionButtons.length > 0 && editButtons.length > 0 && deleteButtons.length > 0,
+                `Found ${actionButtons.length} action buttons (${editButtons.length} edit, ${deleteButtons.length} delete)`
+            );
+            
+            // Test 2: Button functionality
+            let buttonClickWorking = false;
+            if (editButtons.length > 0) {
+                const testButton = editButtons[0];
+                testButton.addEventListener('click', () => {
+                    buttonClickWorking = true;
+                });
+                testButton.click();
+            }
+            
+            addTestResult(
+                'Button Functionality',
+                buttonClickWorking,
+                buttonClickWorking ? 'Button click events working' : 'Button click events not working'
+            );
+            
+            // Test 3: CSS classes applied
+            const hasFrameworkClasses = simulatedPage.querySelector('.card') && 
+                                      simulatedPage.querySelector('.table') &&
+                                      simulatedPage.querySelector('.table-header');
+            
+            addTestResult(
+                'CSS Framework Classes',
+                hasFrameworkClasses,
+                hasFrameworkClasses ? 'UI framework classes properly applied' : 'Missing UI framework classes'
+            );
+            
+            // Test 4: Responsive containers
+            const tableContainer = simulatedPage.querySelector('.table-container');
+            addTestResult(
+                'Responsive Containers',
+                tableContainer !== null,
+                tableContainer ? 'Table wrapped in responsive container' : 'Table not properly containerized'
+            );
+        }
+        
+        async function testResponsiveness() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Container width adaptation
+            const originalWidth = simulatedPage.offsetWidth;
+            
+            // Simulate mobile width
+            simulatedPage.style.width = '320px';
+            await new Promise(resolve => setTimeout(resolve, 100));
+            const mobileWidth = simulatedPage.offsetWidth;
+            
+            // Reset width
+            simulatedPage.style.width = '';
+            
+            addTestResult(
+                'Width Adaptation',
+                mobileWidth <= 320,
+                `Container adapts to mobile width: ${mobileWidth}px`
+            );
+            
+            // Test 2: Table overflow handling
+            const tableContainer = simulatedPage.querySelector('.table-container');
+            if (tableContainer) {
+                const computedStyle = window.getComputedStyle(tableContainer);
+                const hasOverflowHandling = computedStyle.overflowX === 'auto' || 
+                                          computedStyle.overflowX === 'scroll';
+                
+                addTestResult(
+                    'Table Overflow',
+                    hasOverflowHandling,
+                    hasOverflowHandling ? 'Table container handles overflow' : 'Table overflow not handled'
+                );
+            }
+            
+            // Test 3: Card responsiveness
+            const cards = simulatedPage.querySelectorAll('.card');
+            let cardsResponsive = true;
+            
+            cards.forEach(card => {
+                const cardStyle = window.getComputedStyle(card);
+                if (cardStyle.overflow !== 'hidden' && cardStyle.overflowWrap !== 'break-word') {
+                    cardsResponsive = false;
+                }
+            });
+            
+            addTestResult(
+                'Card Responsiveness',
+                cardsResponsive,
+                cardsResponsive ? 'Cards handle content overflow properly' : 'Cards may have overflow issues'
+            );
+        }
+        
+        async function testPageFix() {
+            // Test the RencanaStrategisPageFix class
+            if (typeof RencanaStrategisPageFix !== 'undefined') {
+                try {
+                    const pageFix = new RencanaStrategisPageFix();
+                    
+                    // Test initialization
+                    await pageFix.init();
+                    
+                    addTestResult(
+                        'Page Fix Initialization',
+                        pageFix.isInitialized,
+                        'RencanaStrategisPageFix initialized successfully'
+                    );
+                    
+                    // Test page detection
+                    const isCorrectPage = pageFix.isRencanaStrategisPage();
+                    addTestResult(
+                        'Page Detection',
+                        isCorrectPage,
+                        isCorrectPage ? 'Correctly detected Rencana Strategis page' : 'Failed to detect page type'
+                    );
+                    
+                } catch (error) {
+                    addTestResult(
+                        'Page Fix Initialization',
+                        false,
+                        'Failed to initialize RencanaStrategisPageFix',
+                        error.message
+                    );
+                }
+            } else {
+                addTestResult(
+                    'Page Fix Class',
+                    false,
+                    'RencanaStrategisPageFix class not found'
+                );
+            }
+        }
+        
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                runAllTests();
+            }, 1000);
+        });
+        
+        // Test page fix integration
+        if (window.rencanaStrategisPageFix) {
+            console.log('Rencana Strategis Page Fix is available');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Single Click Fix</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modal-enhanced.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .test-button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .test-result.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .test-result.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .click-counter {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-left: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Modal Single Click Fix</h1>
+        <p>Test untuk memverifikasi bahwa tombol Batal, X, dan Simpan hanya perlu 1x klik untuk menutup modal.</p>
+        
+        <!-- Test 1: Inline onclick -->
+        <div class="test-section">
+            <h3>Test 1: Modal dengan Inline onclick (Old Style)</h3>
+            <p>Modal ini menggunakan <code>onclick="this.closest('.modal').remove()"</code></p>
+            <button class="test-button" onclick="openTestModal1()">Buka Modal Test 1</button>
+            <span class="click-counter" id="counter1">Clicks: 0</span>
+            <div id="result1"></div>
+        </div>
+        
+        <!-- Test 2: Event Listener -->
+        <div class="test-section">
+            <h3>Test 2: Modal dengan Event Listener (New Style)</h3>
+            <p>Modal ini menggunakan event listener yang proper</p>
+            <button class="test-button" onclick="openTestModal2()">Buka Modal Test 2</button>
+            <span class="click-counter" id="counter2">Clicks: 0</span>
+            <div id="result2"></div>
+        </div>
+        
+        <!-- Test 3: Form Submit -->
+        <div class="test-section">
+            <h3>Test 3: Modal dengan Form Submit</h3>
+            <p>Modal ini memiliki form yang dapat di-submit</p>
+            <button class="test-button" onclick="openTestModal3()">Buka Modal Test 3</button>
+            <span class="click-counter" id="counter3">Clicks: 0</span>
+            <div id="result3"></div>
+        </div>
+        
+        <!-- Test 4: Multiple Modals -->
+        <div class="test-section">
+            <h3>Test 4: Multiple Modals (Nested)</h3>
+            <p>Test membuka modal, menutup, lalu membuka lagi</p>
+            <button class="test-button" onclick="openTestModal4()">Buka Modal Test 4</button>
+            <span class="click-counter" id="counter4">Clicks: 0</span>
+            <div id="result4"></div>
+        </div>
+        
+        <!-- Test Results Summary -->
+        <div class="test-section" style="background: #f8fafc;">
+            <h3>📊 Test Summary</h3>
+            <div id="summary">
+                <p>Klik tombol test di atas untuk memulai testing.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/edit-form-fix.js"></script>
+    <script>
+        let clickCounts = {1: 0, 2: 0, 3: 0, 4: 0};
+        let testResults = {1: null, 2: null, 3: null, 4: null};
+        
+        function updateCounter(testNum) {
+            clickCounts[testNum]++;
+            document.getElementById(`counter${testNum}`).textContent = `Clicks: ${clickCounts[testNum]}`;
+        }
+        
+        function showResult(testNum, success) {
+            testResults[testNum] = success;
+            const resultDiv = document.getElementById(`result${testNum}`);
+            const clicks = clickCounts[testNum];
+            
+            if (success) {
+                resultDiv.innerHTML = `<div class="test-result success">✅ PASS: Modal tertutup dengan ${clicks} klik</div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="test-result fail">❌ FAIL: Memerlukan ${clicks} klik untuk menutup</div>`;
+            }
+            
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            const total = Object.keys(testResults).length;
+            const completed = Object.values(testResults).filter(r => r !== null).length;
+            const passed = Object.values(testResults).filter(r => r === true).length;
+            const failed = Object.values(testResults).filter(r => r === false).length;
+            
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = `
+                <p><strong>Total Tests:</strong> ${total}</p>
+                <p><strong>Completed:</strong> ${completed} / ${total}</p>
+                <p><strong>Passed:</strong> <span style="color: #065f46;">${passed}</span></p>
+                <p><strong>Failed:</strong> <span style="color: #991b1b;">${failed}</span></p>
+                ${completed === total ? `<p style="margin-top: 1rem; padding: 1rem; background: ${failed === 0 ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; font-weight: 600;">
+                    ${failed === 0 ? '🎉 All tests passed!' : '⚠️ Some tests failed. Check edit-form-fix.js'}
+                </p>` : ''}
+            `;
+        }
+        
+        // Test 1: Inline onclick
+        function openTestModal1() {
+            clickCounts[1] = 0;
+            updateCounter(1);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Test Modal 1 (Inline onclick)</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove(); handleModalClose(1)">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Klik tombol Batal atau X untuk menutup modal.</p>
+                        <p><strong>Expected:</strong> Modal tertutup dengan 1 klik</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove(); handleModalClose(1)">Batal</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Test 2: Event Listener
+        function openTestModal2() {
+            clickCounts[2] = 0;
+            updateCounter(2);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Test Modal 2 (Event Listener)</h3>
+                        <button class="modal-close" id="close-btn-2">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Klik tombol Batal atau X untuk menutup modal.</p>
+                        <p><strong>Expected:</strong> Modal tertutup dengan 1 klik</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="cancel-btn-2">Batal</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Add event listeners
+            document.getElementById('close-btn-2').addEventListener('click', () => {
+                modal.remove();
+                handleModalClose(2);
+            });
+            document.getElementById('cancel-btn-2').addEventListener('click', () => {
+                modal.remove();
+                handleModalClose(2);
+            });
+        }
+        
+        // Test 3: Form Submit
+        function openTestModal3() {
+            clickCounts[3] = 0;
+            updateCounter(3);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Test Modal 3 (Form Submit)</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove(); handleModalClose(3)">&times;</button>
+                    </div>
+                    <form onsubmit="handleFormSubmit(event, 3)">
+                        <div class="modal-body">
+                            <p>Klik Simpan untuk submit form dan tutup modal.</p>
+                            <div class="form-group">
+                                <label>Test Input:</label>
+                                <input type="text" class="form-control" value="Test data" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove(); handleModalClose(3)">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Test 4: Multiple Modals
+        let modal4OpenCount = 0;
+        function openTestModal4() {
+            modal4OpenCount++;
+            clickCounts[4] = 0;
+            updateCounter(4);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Test Modal 4 (Open #${modal4OpenCount})</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove(); handleModalClose(4)">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Modal dibuka ${modal4OpenCount} kali.</p>
+                        <p>Tutup modal ini, lalu buka lagi untuk test consistency.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove(); handleModalClose(4)">Batal</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function handleModalClose(testNum) {
+            updateCounter(testNum);
+            const clicks = clickCounts[testNum];
+            showResult(testNum, clicks === 1);
+        }
+        
+        function handleFormSubmit(e, testNum) {
+            e.preventDefault();
+            const modal = e.target.closest('.modal');
+            modal.remove();
+            handleModalClose(testNum);
+        }
+        
+        // Initialize summary
+        updateSummary();
+        
+        console.log('🧪 Modal Single Click Test Page Loaded');
+        console.log('📝 Instructions:');
+        console.log('1. Click each test button');
+        console.log('2. Try to close modal with Batal or X button');
+        console.log('3. Check if modal closes with single click');
+        console.log('4. Review test results');
+    </script>
+</body>
+</html>

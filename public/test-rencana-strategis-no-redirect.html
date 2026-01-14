@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis - No Redirect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .page-content {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        .test-header {
+            background: #ffffff;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+        
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .btn-test {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="test-header">
+            <h1><i class="fas fa-bug-slash"></i> Test Rencana Strategis - No Redirect Fix</h1>
+            <p class="mb-0">Testing halaman Rencana Strategis untuk memastikan tidak ada redirect yang tidak diinginkan</p>
+        </div>
+        
+        <!-- Status Section -->
+        <div class="test-section">
+            <h3><i class="fas fa-heartbeat"></i> Status Monitor</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5>Current Page</h5>
+                            <p id="current-page" class="h4 text-primary">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5>URL Path</h5>
+                            <p id="current-url" class="h6 text-info">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5>Redirect Protection</h5>
+                            <p id="redirect-status" class="h5">
+                                <span class="status-indicator status-warning"></span>
+                                Checking...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h3><i class="fas fa-play-circle"></i> Test Controls</h3>
+            <div class="btn-group-vertical w-100">
+                <button class="btn btn-primary btn-test" onclick="testLoadRencanaStrategis()">
+                    <i class="fas fa-rocket"></i> Load Rencana Strategis Module
+                </button>
+                <button class="btn btn-success btn-test" onclick="testNavigateToRencanaStrategis()">
+                    <i class="fas fa-compass"></i> Navigate to Rencana Strategis
+                </button>
+                <button class="btn btn-warning btn-test" onclick="testSimulateRedirect()">
+                    <i class="fas fa-exchange-alt"></i> Simulate Unwanted Redirect
+                </button>
+                <button class="btn btn-info btn-test" onclick="testPageVisibility()">
+                    <i class="fas fa-eye"></i> Test Page Visibility
+                </button>
+                <button class="btn btn-secondary btn-test" onclick="clearLogs()">
+                    <i class="fas fa-broom"></i> Clear Logs
+                </button>
+            </div>
+        </div>
+        
+        <!-- Logs Section -->
+        <div class="test-section">
+            <h3><i class="fas fa-terminal"></i> Test Logs</h3>
+            <div id="log-container" class="log-container">
+                <div>🔧 Test environment initialized...</div>
+                <div>⏰ Waiting for user interaction...</div>
+            </div>
+        </div>
+        
+        <!-- Mock Page Content -->
+        <div id="rencana-strategis" class="page-content">
+            <div class="test-section">
+                <h3><i class="fas fa-chart-line"></i> Rencana Strategis Content</h3>
+                <div id="rencana-strategis-content">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Mock Rencana Strategis Page</strong><br>
+                        This is a test version of the Rencana Strategis page to verify no unwanted redirects occur.
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Daftar Rencana Strategis</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Content would be loaded here by the RencanaStrategisModule.</p>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Kode</th>
+                                            <th>Nama Rencana</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>RS-2025-001</td>
+                                            <td>Test Rencana Strategis</td>
+                                            <td><span class="badge bg-success">Aktif</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="dashboard" class="page-content">
+            <div class="test-section">
+                <h3><i class="fas fa-tachometer-alt"></i> Dashboard (Should Not Show)</h3>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    If you see this while testing Rencana Strategis, there's a redirect issue!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Mock Authentication -->
+    <script>
+        // Mock authentication state
+        window.currentUser = {
+            id: 'test-user-123',
+            email: 'test@example.com',
+            role: 'admin'
+        };
+        
+        window.currentSession = {
+            access_token: 'mock-token-123',
+            expires_at: Math.floor(Date.now() / 1000) + 3600
+        };
+        
+        window.isAuthenticated = true;
+        
+        // Mock API call function
+        window.apiCall = function(endpoint, options = {}) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    if (endpoint.includes('rencana-strategis')) {
+                        resolve([
+                            {
+                                id: '1',
+                                kode: 'RS-2025-001',
+                                nama_rencana: 'Test Rencana Strategis',
+                                status: 'Aktif',
+                                target: 'Test target',
+                                periode_mulai: '2025-01-01',
+                                periode_selesai: '2025-12-31'
+                            }
+                        ]);
+                    } else if (endpoint.includes('visi-misi')) {
+                        resolve([
+                            {
+                                id: '1',
+                                visi: 'Test Visi',
+                                misi: 'Test Misi 1\nTest Misi 2'
+                            }
+                        ]);
+                    } else {
+                        resolve({ success: true });
+                    }
+                }, 100);
+            });
+        };
+        
+        // Mock auth ready function
+        window.waitForAuthReady = function(timeout = 5000) {
+            return Promise.resolve(true);
+        };
+    </script>
+    
+    <!-- Load Router and Fix -->
+    <script src="/js/router.js"></script>
+    <script src="/js/rencana-strategis-fix.js"></script>
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <script>
+        let logContainer;
+        let statusUpdateInterval;
+        
+        function log(message, type = 'info') {
+            if (!logContainer) {
+                logContainer = document.getElementById('log-container');
+            }
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : type === 'warning' ? '#ffd43b' : '#00ff00';
+            
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #888">[${timestamp}]</span> <span style="color: ${color}">${icon} ${message}</span>`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus() {
+            // Update current page
+            const activePage = document.querySelector('.page-content.active');
+            document.getElementById('current-page').textContent = activePage ? activePage.id : 'None';
+            
+            // Update URL
+            document.getElementById('current-url').textContent = window.location.pathname;
+            
+            // Update redirect protection status
+            const preventRedirect = sessionStorage.getItem('preventAutoRedirect') === 'true';
+            const statusEl = document.getElementById('redirect-status');
+            
+            if (preventRedirect) {
+                statusEl.innerHTML = '<span class="status-indicator status-success"></span>Protected';
+            } else {
+                statusEl.innerHTML = '<span class="status-indicator status-warning"></span>Not Protected';
+            }
+        }
+        
+        function testLoadRencanaStrategis() {
+            log('🚀 Testing Rencana Strategis module load...');
+            
+            // Simulate URL change
+            window.history.pushState({}, '', '/rencana-strategis');
+            
+            // Load the module
+            if (window.loadRencanaStrategis) {
+                window.loadRencanaStrategis()
+                    .then(() => {
+                        log('✅ Rencana Strategis module loaded successfully', 'success');
+                        
+                        // Check if page is still active after 2 seconds
+                        setTimeout(() => {
+                            const rencanaPage = document.getElementById('rencana-strategis');
+                            if (rencanaPage && rencanaPage.classList.contains('active')) {
+                                log('✅ Page remained active after load', 'success');
+                            } else {
+                                log('❌ Page was deactivated after load!', 'error');
+                            }
+                        }, 2000);
+                    })
+                    .catch(error => {
+                        log('❌ Failed to load module: ' + error.message, 'error');
+                    });
+            } else {
+                log('❌ loadRencanaStrategis function not found', 'error');
+            }
+        }
+        
+        function testNavigateToRencanaStrategis() {
+            log('🧭 Testing navigation to Rencana Strategis...');
+            
+            // Hide all pages first
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show dashboard briefly to simulate coming from another page
+            document.getElementById('dashboard').classList.add('active');
+            log('📄 Showing dashboard first...');
+            
+            setTimeout(() => {
+                // Now navigate to rencana strategis
+                const rencanaPage = document.getElementById('rencana-strategis');
+                document.getElementById('dashboard').classList.remove('active');
+                rencanaPage.classList.add('active');
+                
+                // Update URL
+                window.history.pushState({}, '', '/rencana-strategis');
+                
+                log('🎯 Navigated to Rencana Strategis');
+                
+                // Load the module
+                if (window.loadRencanaStrategis) {
+                    window.loadRencanaStrategis();
+                }
+                
+                // Monitor for unwanted redirects
+                let checkCount = 0;
+                const checkInterval = setInterval(() => {
+                    checkCount++;
+                    if (checkCount > 10) {
+                        clearInterval(checkInterval);
+                        log('✅ No unwanted redirects detected after 5 seconds', 'success');
+                        return;
+                    }
+                    
+                    if (!rencanaPage.classList.contains('active')) {
+                        clearInterval(checkInterval);
+                        log('❌ Unwanted redirect detected!', 'error');
+                        
+                        // Check which page is active
+                        const activePage = document.querySelector('.page-content.active');
+                        if (activePage) {
+                            log(`❌ Redirected to: ${activePage.id}`, 'error');
+                        }
+                    }
+                }, 500);
+                
+            }, 1000);
+        }
+        
+        function testSimulateRedirect() {
+            log('⚠️ Simulating unwanted redirect attempt...');
+            
+            // Ensure rencana strategis is active first
+            const rencanaPage = document.getElementById('rencana-strategis');
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            rencanaPage.classList.add('active');
+            
+            // Set protection
+            sessionStorage.setItem('preventAutoRedirect', 'true');
+            window.history.pushState({}, '', '/rencana-strategis');
+            
+            log('🛡️ Protection enabled, attempting redirect...');
+            
+            setTimeout(() => {
+                // Try to navigate away (this should be blocked)
+                if (window.navigateToPage) {
+                    window.navigateToPage('dashboard');
+                } else {
+                    // Manual attempt
+                    document.getElementById('dashboard').classList.add('active');
+                    rencanaPage.classList.remove('active');
+                }
+                
+                // Check if redirect was blocked
+                setTimeout(() => {
+                    if (rencanaPage.classList.contains('active')) {
+                        log('✅ Redirect was successfully blocked!', 'success');
+                    } else {
+                        log('❌ Redirect was not blocked!', 'error');
+                    }
+                }, 100);
+                
+            }, 1000);
+        }
+        
+        function testPageVisibility() {
+            log('👁️ Testing page visibility persistence...');
+            
+            const rencanaPage = document.getElementById('rencana-strategis');
+            
+            // Make sure page is active
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            rencanaPage.classList.add('active');
+            
+            log('📄 Page set to active, monitoring for changes...');
+            
+            // Try to hide the page multiple times
+            let attempts = 0;
+            const hideInterval = setInterval(() => {
+                attempts++;
+                if (attempts > 5) {
+                    clearInterval(hideInterval);
+                    
+                    if (rencanaPage.classList.contains('active')) {
+                        log('✅ Page visibility maintained successfully!', 'success');
+                    } else {
+                        log('❌ Page visibility was lost!', 'error');
+                    }
+                    return;
+                }
+                
+                log(`🔄 Attempt ${attempts}: Trying to hide page...`);
+                rencanaPage.classList.remove('active');
+                
+                // Check if it gets restored
+                setTimeout(() => {
+                    if (rencanaPage.classList.contains('active')) {
+                        log(`✅ Page restored automatically`, 'success');
+                    } else {
+                        log(`❌ Page not restored`, 'warning');
+                    }
+                }, 200);
+                
+            }, 1000);
+        }
+        
+        function clearLogs() {
+            if (logContainer) {
+                logContainer.innerHTML = '<div>🧹 Logs cleared...</div>';
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Test environment initialized');
+            log('📍 Current URL: ' + window.location.pathname);
+            
+            // Start status updates
+            statusUpdateInterval = setInterval(updateStatus, 1000);
+            updateStatus();
+            
+            // Set initial state
+            window.history.replaceState({}, '', '/rencana-strategis');
+            document.getElementById('rencana-strategis').classList.add('active');
+            
+            log('✅ Ready for testing');
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

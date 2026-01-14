@@ -1,0 +1,182 @@
+/**
+ * RS FINAL FIX CSS v1.0
+ * 
+ * COMPREHENSIVE CSS FIX for /rencana-strategis page display issue
+ * 
+ * PROBLEM: Page shows "Pilih Rencana Strategis" selection list with purple background
+ * SOLUTION: Force correct background and hide any selection list elements
+ * 
+ * Created: 2026-01-11
+ */
+
+/* ============================================
+   FORCE CORRECT BACKGROUND - NO PURPLE!
+   ============================================ */
+
+#rencana-strategis,
+#rencana-strategis.page-content,
+#rencana-strategis.page-content.active,
+#rencana-strategis-content {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+}
+
+/* Override ANY inline style that might set purple background */
+#rencana-strategis[style*="rgb(248"],
+#rencana-strategis[style*="248, 240"],
+#rencana-strategis-content[style*="rgb(248"],
+#rencana-strategis-content[style*="248, 240"],
+#rencana-strategis [style*="rgb(248"],
+#rencana-strategis [style*="248, 240"],
+#rencana-strategis-content [style*="rgb(248"],
+#rencana-strategis-content [style*="248, 240"] {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+}
+
+/* ============================================
+   ENSURE CORRECT DISPLAY IS VISIBLE
+   ============================================ */
+
+#rencana-strategis-content .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 100 !important;
+    background-color: #f8f9fa !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper > * {
+    display: revert !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper .card {
+    display: block !important;
+    visibility: visible !important;
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper table {
+    display: table !important;
+    visibility: visible !important;
+    background-color: #ffffff !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper form {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Loading state - always visible */
+#rencana-strategis-content > .text-center:has(.spinner-border) {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Alert state - always visible */
+#rencana-strategis-content > .alert {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* ============================================
+   HIDE SELECTION LIST - ULTRA AGGRESSIVE
+   ============================================ */
+
+/* Hide any selection list classes */
+.rencana-strategis-selection,
+.rs-selection-wrapper,
+.rs-selection-list,
+.rencana-strategis-selection-list,
+#rs-selection-container,
+#selection-section,
+[data-rs-selection-list],
+[data-rs-selection-list="true"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -99999 !important;
+}
+
+/* Hide list-group that is NOT inside wrapper */
+#rencana-strategis-content > .list-group,
+#rencana-strategis-content > div > .list-group:not(.rencana-strategis-wrapper .list-group) {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   PAGE VISIBILITY CONTROL
+   ============================================ */
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#rencana-strategis:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -99999 !important;
+}
+
+#rencana-strategis:not(.active) * {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK TO OTHER PAGES
+   ============================================ */
+
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"],
+.page-content:not(#rencana-strategis) [data-rs-module] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   CARD STYLING
+   ============================================ */
+
+#rencana-strategis-content .rencana-strategis-wrapper .card {
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    border: none !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper .card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper .card-body {
+    background-color: #ffffff !important;
+}

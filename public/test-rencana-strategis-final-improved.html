@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rencana Strategis - Final Improved Interface</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/rencana-strategis-enhanced.css">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        /* Additional improvements for the final version */
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 0;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .stats-badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .content-wrapper {
+            padding: 2rem;
+        }
+        
+        /* Enhanced card animations */
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .rencana-card {
+            animation: cardAppear 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .rencana-card:nth-child(1) { animation-delay: 0.1s; }
+        .rencana-card:nth-child(2) { animation-delay: 0.2s; }
+        .rencana-card:nth-child(3) { animation-delay: 0.3s; }
+        .rencana-card:nth-child(4) { animation-delay: 0.4s; }
+        .rencana-card:nth-child(5) { animation-delay: 0.5s; }
+        .rencana-card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-11">
+                <div class="main-container">
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <div class="container-fluid px-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h1 class="page-title">
+                                        <i class="fas fa-chess me-3"></i>
+                                        Rencana Strategis
+                                    </h1>
+                                    <p class="page-subtitle">Kelola rencana strategis organisasi dengan antarmuka yang lebih baik</p>
+                                </div>
+                                <div class="stats-badge">
+                                    <i class="fas fa-database me-2"></i>
+                                    <span id="data-count">0</span> Data
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="content-wrapper">
+                        <div id="rencana-strategis" class="page-content active">
+                            <div id="rencana-strategis-content">
+                                <!-- Content will be rendered here by JavaScript -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <h4 class="mt-4 text-muted">Memuat data rencana strategis...</h4>
+                                    <p class="text-muted">Mohon tunggu sebentar</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- API Service -->
+    <script src="/js/services/apiService.js"></script>
+    
+    <!-- Mock API for Testing -->
+    <script>
+        // Mock API function for testing
+        window.apiCall = async function(endpoint, options = {}) {
+            console.log('📡 API Call:', endpoint, options);
+            
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            if (endpoint.includes('/api/rencana-strategis')) {
+                if (endpoint.includes('/generate/kode')) {
+                    return { kode: `RS-2025-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}` };
+                }
+                
+                // Return comprehensive mock data
+                return [
+                    {
+                        id: '1',
+                        kode: 'RS-2025-001',
+                        nama_rencana: 'Peningkatan Keselamatan Pasien',
+                        deskripsi: 'Program komprehensif untuk meningkatkan keselamatan pasien melalui implementasi protokol keselamatan yang ketat, pelatihan berkelanjutan untuk seluruh staf medis, dan sistem monitoring real-time untuk mencegah insiden medis.',
+                        periode_mulai: '2025-01-01',
+                        periode_selesai: '2025-12-31',
+                        target: 'Menurunkan insiden keselamatan pasien sebesar 50% dan meningkatkan kepuasan pasien hingga 95% melalui implementasi best practices internasional',
+                        indikator_kinerja: 'Jumlah insiden per 1000 pasien, tingkat kepuasan pasien',
+                        status: 'Aktif',
+                        visi_misi: {
+                            id: '1',
+                            misi: 'Memberikan pelayanan kesehatan berkualitas tinggi dengan mengutamakan keselamatan pasien'
+                        },
+                        sasaran_strategis: ['Implementasi protokol keselamatan WHO', 'Pelatihan staf berkelanjutan', 'Sistem monitoring real-time'],
+                        indikator_kinerja_utama: ['Tingkat insiden keselamatan', 'Skor kepuasan pasien', 'Compliance rate protokol']
+                    },
+                    {
+                        id: '2',
+                        kode: 'RS-2025-002',
+                        nama_rencana: 'Transformasi Digital Rumah Sakit',
+                        deskripsi: 'Transformasi digital menyeluruh untuk meningkatkan efisiensi operasional dan kualitas pelayanan melalui implementasi sistem informasi terintegrasi, electronic medical records, dan telemedicine.',
+                        periode_mulai: '2025-02-01',
+                        periode_selesai: '2025-11-30',
+                        target: 'Implementasi 100% sistem digital dan peningkatan efisiensi operasional sebesar 40% dengan mengurangi waktu tunggu pasien hingga 30%',
+                        indikator_kinerja: 'Persentase proses yang terdigitalisasi, waktu tunggu rata-rata',
+                        status: 'Draft',
+                        visi_misi: {
+                            id: '1',
+                            misi: 'Memanfaatkan teknologi terdepan untuk memberikan pelayanan kesehatan yang optimal dan efisien'
+                        },
+                        sasaran_strategis: ['Implementasi Hospital Information System', 'Digitalisasi rekam medis', 'Layanan telemedicine'],
+                        indikator_kinerja_utama: ['Tingkat adopsi sistem digital', 'Efisiensi proses operasional', 'Kepuasan pengguna sistem']
+                    },
+                    {
+                        id: '3',
+                        kode: 'RS-2025-003',
+                        nama_rencana: 'Pengembangan SDM Berkelanjutan',
+                        deskripsi: 'Program pengembangan sumber daya manusia yang berkelanjutan untuk meningkatkan kompetensi dan profesionalisme seluruh karyawan melalui pelatihan, sertifikasi, dan program pengembangan karir.',
+                        periode_mulai: '2025-01-15',
+                        periode_selesai: '2025-12-15',
+                        target: 'Meningkatkan kompetensi 100% karyawan dan mencapai sertifikasi profesional untuk 80% staf medis dengan program mentoring yang terstruktur',
+                        indikator_kinerja: 'Jumlah pelatihan yang diselesaikan, tingkat sertifikasi staf',
+                        status: 'Selesai',
+                        visi_misi: {
+                            id: '2',
+                            misi: 'Mengembangkan sumber daya manusia yang kompeten, profesional, dan berkomitmen tinggi terhadap pelayanan kesehatan'
+                        },
+                        sasaran_strategis: ['Program pelatihan berkelanjutan', 'Sertifikasi profesional', 'Sistem mentoring', 'Pengembangan karir'],
+                        indikator_kinerja_utama: ['Tingkat kompetensi karyawan', 'Jumlah sertifikasi yang diperoleh', 'Retention rate karyawan']
+                    },
+                    {
+                        id: '4',
+                        kode: 'RS-2025-004',
+                        nama_rencana: 'Ekspansi Layanan Unggulan',
+                        deskripsi: 'Pengembangan dan ekspansi layanan unggulan rumah sakit untuk meningkatkan daya saing dan memberikan pelayanan spesialistik terbaik dengan teknologi medis terdepan.',
+                        periode_mulai: '2025-03-01',
+                        periode_selesai: '2025-10-31',
+                        target: 'Membuka 3 layanan unggulan baru (Cardiac Center, Cancer Center, Stroke Center) dan meningkatkan utilisasi layanan sebesar 60%',
+                        indikator_kinerja: 'Jumlah layanan baru yang dibuka, tingkat utilisasi layanan',
+                        status: 'Aktif',
+                        visi_misi: {
+                            id: '2',
+                            misi: 'Menyediakan layanan kesehatan spesialistik terdepan dengan teknologi medis canggih dan tim medis berpengalaman'
+                        },
+                        sasaran_strategis: ['Pengembangan Cardiac Center', 'Pembukaan Cancer Center', 'Layanan Stroke Center', 'Peningkatan kualitas layanan'],
+                        indikator_kinerja_utama: ['Jumlah layanan unggulan', 'Tingkat utilisasi', 'Kepuasan pasien layanan unggulan']
+                    },
+                    {
+                        id: '5',
+                        kode: 'RS-2025-005',
+                        nama_rencana: 'Optimalisasi Manajemen Keuangan',
+                        deskripsi: 'Program optimalisasi manajemen keuangan untuk meningkatkan efisiensi biaya operasional dan sustainability finansial rumah sakit melalui implementasi sistem ERP dan cost control yang ketat.',
+                        periode_mulai: '2025-01-01',
+                        periode_selesai: '2025-12-31',
+                        target: 'Mengurangi biaya operasional 15%, meningkatkan revenue 25%, dan mencapai profit margin 12% dengan implementasi sistem manajemen keuangan terintegrasi',
+                        indikator_kinerja: 'Rasio efisiensi biaya, pertumbuhan revenue, profit margin',
+                        status: 'Draft',
+                        visi_misi: {
+                            id: '3',
+                            misi: 'Mengelola keuangan secara efisien, transparan, dan berkelanjutan untuk mendukung operasional rumah sakit yang optimal'
+                        },
+                        sasaran_strategis: ['Implementasi sistem ERP', 'Cost control dan efisiensi', 'Diversifikasi sumber pendapatan', 'Financial planning strategis'],
+                        indikator_kinerja_utama: ['Cost efficiency ratio', 'Revenue growth rate', 'Profit margin', 'Cash flow positif']
+                    },
+                    {
+                        id: '6',
+                        kode: 'RS-2025-006',
+                        nama_rencana: 'Modernisasi Infrastruktur Medis',
+                        deskripsi: 'Modernisasi dan peningkatan infrastruktur medis untuk mendukung pelayanan kesehatan yang optimal dan sesuai standar internasional dengan teknologi medis terkini.',
+                        periode_mulai: '2025-04-01',
+                        periode_selesai: '2025-12-31',
+                        target: 'Modernisasi 100% peralatan medis kritis, renovasi 80% fasilitas, dan mencapai akreditasi internasional JCI (Joint Commission International)',
+                        indikator_kinerja: 'Persentase peralatan dan fasilitas yang dimodernisasi, status akreditasi',
+                        status: 'Aktif',
+                        visi_misi: {
+                            id: '3',
+                            misi: 'Menyediakan infrastruktur medis berstandar internasional dengan teknologi terdepan untuk mendukung pelayanan kesehatan berkualitas tinggi'
+                        },
+                        sasaran_strategis: ['Modernisasi peralatan medis', 'Renovasi fasilitas', 'Upgrade sistem utilitas', 'Persiapan akreditasi JCI'],
+                        indikator_kinerja_utama: ['Tingkat modernisasi peralatan', 'Kualitas fasilitas', 'Compliance standar internasional', 'Status akreditasi']
+                    }
+                ];
+            }
+            
+            if (endpoint.includes('/api/visi-misi')) {
+                return [
+                    {
+                        id: '1',
+                        visi: 'Menjadi rumah sakit terdepan dalam pelayanan kesehatan berkualitas tinggi dan berstandar internasional',
+                        misi: 'Memberikan pelayanan kesehatan berkualitas tinggi dengan mengutamakan keselamatan pasien\nMemanfaatkan teknologi terdepan untuk memberikan pelayanan kesehatan yang optimal dan efisien\nMengembangkan sumber daya manusia yang kompeten, profesional, dan berkomitmen tinggi',
+                        tahun: 2025
+                    },
+                    {
+                        id: '2',
+                        visi: 'Rumah sakit pilihan utama masyarakat dengan pelayanan paripurna dan berkelanjutan',
+                        misi: 'Menyediakan layanan kesehatan spesialistik terdepan dengan teknologi medis canggih\nMengelola keuangan secara efisien, transparan, dan berkelanjutan\nMenyediakan infrastruktur medis berstandar internasional dengan teknologi terdepan',
+                        tahun: 2025
+                    }
+                ];
+            }
+            
+            // Default response for other endpoints
+            return { success: true, message: 'Operation completed successfully' };
+        };
+
+        // Mock auth ready function
+        window.waitForAuthReady = async () => true;
+    </script>
+
+    <!-- Load the original Rencana Strategis module -->
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <!-- Load the improvements -->
+    <script src="/js/rencana-strategis-improvements.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initializing Final Improved Rencana Strategis Test Page...');
+            
+            try {
+                // Wait a moment for everything to be ready
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                
+                // Load the module (will use improved version automatically)
+                if (window.loadRencanaStrategis) {
+                    await window.loadRencanaStrategis();
+                } else if (window.RencanaStrategisModule) {
+                    await window.RencanaStrategisModule.load();
+                }
+                
+                // Update data count periodically
+                const updateDataCount = () => {
+                    let dataCount = 0;
+                    
+                    // Try different ways to get data count
+                    if (window.RencanaStrategisModule?.state?.data) {
+                        dataCount = window.RencanaStrategisModule.state.data.length;
+                    } else if (window.RencanaStrategisModuleEnhanced?.state?.data) {
+                        dataCount = window.RencanaStrategisModuleEnhanced.state.data.length;
+                    }
+                    
+                    const countElement = document.getElementById('data-count');
+                    if (countElement) {
+                        countElement.textContent = dataCount;
+                        
+                        // Add animation when count changes
+                        countElement.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                            countElement.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                };
+                
+                // Update count initially and periodically
+                updateDataCount();
+                setInterval(updateDataCount, 3000);
+                
+                // Add some visual feedback
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.rencana-card');
+                    cards.forEach((card, index) => {
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0) scale(1)';
+                        }, index * 100);
+                    });
+                }, 1000);
+                
+                console.log('✅ Final Improved Rencana Strategis Test Page initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing test page:', error);
+                
+                // Show error message
+                const container = document.getElementById('rencana-strategis-content');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Error Loading</h4>
+                            <p>Terjadi kesalahan saat memuat halaman: ${error.message}</p>
+                            <hr>
+                            <p class="mb-0">
+                                <button onclick="location.reload()" class="btn btn-primary">
+                                    <i class="fas fa-sync"></i> Refresh Halaman
+                                </button>
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+        });
+        
+        // Add some interactive effects
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn')) {
+                // Add ripple effect to buttons
+                const button = e.target;
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255,255,255,0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                
+                button.style.position = 'relative';
+                button.style.overflow = 'hidden';
+                button.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            }
+        });
+        
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

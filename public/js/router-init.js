@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', function() {
             title: 'Indikator Kinerja Utama - Aplikasi Manajemen Risiko',
             auth: true
         },
+        '/evaluasi-iku': {
+            handler: 'evaluasi-iku',
+            title: 'Evaluasi IKU - Aplikasi Manajemen Risiko',
+            auth: true
+        },
         
         // Risk Management - Operational
         '/risk-register': {

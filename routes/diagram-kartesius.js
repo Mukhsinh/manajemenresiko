@@ -39,7 +39,7 @@ router.post('/calculate', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Tidak ada data analisis SWOT untuk dihitung. Pastikan data SWOT sudah diinput untuk tahun yang dipilih.' });
     }
 
-    // Filter by unit kerja, jenis, kategori
+    // Filter by unit kerja, jenis, kategori (case-insensitive)
     let filteredAnalisis = analisis;
     
     if (unit_kerja_id && unit_kerja_id !== 'AGGREGATE') {
@@ -47,6 +47,12 @@ router.post('/calculate', authenticateUser, async (req, res) => {
     }
     
     if (jenis || kategori) {
+      // Normalize filter values to lowercase for comparison
+      const jenisLower = jenis ? jenis.toLowerCase().trim() : null;
+      const kategoriLower = kategori ? kategori.toLowerCase().trim() : null;
+      
+      console.log('🔍 Filtering SWOT data by jenis:', jenisLower, 'kategori:', kategoriLower);
+      
       filteredAnalisis = filteredAnalisis.filter(item => {
         const workUnit = item.master_work_units;
         if (!workUnit) return false;
@@ -54,16 +60,20 @@ router.post('/calculate', authenticateUser, async (req, res) => {
         let matchJenis = true;
         let matchKategori = true;
         
-        if (jenis) {
-          matchJenis = workUnit.jenis === jenis;
+        if (jenisLower) {
+          const itemJenis = (workUnit.jenis || '').toLowerCase().trim();
+          matchJenis = itemJenis === jenisLower;
         }
         
-        if (kategori) {
-          matchKategori = workUnit.kategori === kategori;
+        if (kategoriLower) {
+          const itemKategori = (workUnit.kategori || '').toLowerCase().trim();
+          matchKategori = itemKategori === kategoriLower;
         }
         
         return matchJenis && matchKategori;
       });
+      
+      console.log('🔍 After jenis/kategori filter:', filteredAnalisis.length, 'items');
     }
 
     // Get unique units from the filtered data
@@ -258,6 +268,8 @@ router.get('/', authenticateUser, async (req, res) => {
   try {
     const { unit_kerja_id, jenis, kategori, tahun } = req.query;
     
+    console.log('📊 GET /api/diagram-kartesius - Filters:', { unit_kerja_id, jenis, kategori, tahun });
+    
     const clientToUse = supabaseAdmin || supabase;
     let query = clientToUse
       .from('swot_diagram_kartesius')
@@ -278,6 +290,7 @@ router.get('/', authenticateUser, async (req, res) => {
       query = query.eq('unit_kerja_id', unit_kerja_id);
     }
     
+    // Filter by tahun
     if (tahun) {
       query = query.eq('tahun', parseInt(tahun));
     }
@@ -288,25 +301,43 @@ router.get('/', authenticateUser, async (req, res) => {
     
     let filteredData = data || [];
     
-    // Apply jenis and kategori filters on the result
+    console.log('📊 Raw data count:', filteredData.length);
+    
+    // Apply jenis and kategori filters on the result (case-insensitive)
     if (jenis || kategori) {
+      // Normalize filter values to lowercase for comparison
+      const jenisLower = jenis ? jenis.toLowerCase().trim() : null;
+      const kategoriLower = kategori ? kategori.toLowerCase().trim() : null;
+      
+      console.log('📊 Filtering by jenis:', jenisLower, 'kategori:', kategoriLower);
+      
       filteredData = filteredData.filter(item => {
         const workUnit = item.master_work_units;
-        if (!workUnit) return true; // Keep aggregated data
+        
+        // Keep aggregated data (no work unit) if no specific unit filter
+        if (!workUnit) {
+          return !unit_kerja_id; // Only show aggregate if no unit filter
+        }
         
         let matchJenis = true;
         let matchKategori = true;
         
-        if (jenis) {
-          matchJenis = workUnit.jenis === jenis;
+        if (jenisLower) {
+          const itemJenis = (workUnit.jenis || '').toLowerCase().trim();
+          matchJenis = itemJenis === jenisLower;
+          console.log(`  - Unit ${workUnit.code}: jenis="${itemJenis}" vs filter="${jenisLower}" => ${matchJenis}`);
         }
         
-        if (kategori) {
-          matchKategori = workUnit.kategori === kategori;
+        if (kategoriLower) {
+          const itemKategori = (workUnit.kategori || '').toLowerCase().trim();
+          matchKategori = itemKategori === kategoriLower;
+          console.log(`  - Unit ${workUnit.code}: kategori="${itemKategori}" vs filter="${kategoriLower}" => ${matchKategori}`);
         }
         
         return matchJenis && matchKategori;
       });
+      
+      console.log('📊 After jenis/kategori filter:', filteredData.length);
     }
     
     // Sort by unit kerja code (001, 002, etc.)
@@ -316,6 +347,7 @@ router.get('/', authenticateUser, async (req, res) => {
       return codeA.localeCompare(codeB);
     });
 
+    console.log('📊 Final data count:', filteredData.length);
     res.json(filteredData);
   } catch (error) {
     console.error('Diagram kartesius error:', error);

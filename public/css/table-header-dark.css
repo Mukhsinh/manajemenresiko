@@ -1,0 +1,467 @@
+/* ============================================
+   TABLE HEADER DARK - SOLID DARK BACKGROUND WITH WHITE TEXT
+   Created: January 2026
+   
+   Perubahan:
+   1. Header tabel (thead) - background warna solid gelap
+   2. Tulisan header (th) - warna putih
+   ============================================ */
+
+/* ============================================
+   GLOBAL TABLE HEADER STYLING
+   ============================================ */
+
+/* All tables - thead dark background */
+table thead,
+.table thead,
+.table-responsive table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+table thead tr,
+.table thead tr,
+.table-responsive table thead tr {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+/* All tables - th white text */
+table thead th,
+.table thead th,
+.table-responsive table thead th,
+table th,
+.table th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+    border-color: #2d4a6f !important;
+}
+
+/* ============================================
+   RENCANA STRATEGIS TABLE
+   ============================================ */
+
+.rencana-strategis-wrapper .table thead,
+.rencana-strategis-wrapper table thead,
+#rencana-strategis-content .table thead,
+#rencana-strategis-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+.rencana-strategis-wrapper .table thead tr,
+.rencana-strategis-wrapper table thead tr,
+#rencana-strategis-content .table thead tr,
+#rencana-strategis-content table thead tr {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+.rencana-strategis-wrapper .table thead th,
+.rencana-strategis-wrapper table thead th,
+#rencana-strategis-content .table thead th,
+#rencana-strategis-content table thead th,
+.rencana-strategis-wrapper .table th,
+#rencana-strategis-content .table th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 1rem !important;
+    border-bottom: 2px solid #2d4a6f !important;
+    border-color: #2d4a6f !important;
+}
+
+/* ============================================
+   RISK REGISTER TABLE
+   ============================================ */
+
+.risk-register-table thead,
+#risk-register-content .table thead,
+#risk-register-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+.risk-register-table thead th,
+#risk-register-content .table thead th,
+#risk-register-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   ANALISIS SWOT TABLE
+   ============================================ */
+
+#analisis-swot-content .table thead,
+#analisis-swot-content table thead,
+.swot-table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#analisis-swot-content .table thead th,
+#analisis-swot-content table thead th,
+.swot-table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   INDIKATOR KINERJA UTAMA TABLE
+   ============================================ */
+
+#indikator-kinerja-utama-content .table thead,
+#indikator-kinerja-utama-content table thead,
+.iku-table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#indikator-kinerja-utama-content .table thead th,
+#indikator-kinerja-utama-content table thead th,
+.iku-table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   SASARAN STRATEGI TABLE
+   ============================================ */
+
+#sasaran-strategi-content .table thead,
+#sasaran-strategi-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#sasaran-strategi-content .table thead th,
+#sasaran-strategi-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   MONITORING EVALUASI TABLE
+   ============================================ */
+
+#monitoring-evaluasi-content .table thead,
+#monitoring-evaluasi-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#monitoring-evaluasi-content .table thead th,
+#monitoring-evaluasi-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   PELUANG TABLE
+   ============================================ */
+
+#peluang-content .table thead,
+#peluang-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#peluang-content .table thead th,
+#peluang-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   KRI TABLE
+   ============================================ */
+
+#kri-content .table thead,
+#kri-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#kri-content .table thead th,
+#kri-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   RESIDUAL RISK TABLE
+   ============================================ */
+
+#residual-risk-content .table thead,
+#residual-risk-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#residual-risk-content .table thead th,
+#residual-risk-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   RISK PROFILE TABLE
+   ============================================ */
+
+#risk-profile-content .table thead,
+#risk-profile-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#risk-profile-content .table thead th,
+#risk-profile-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   MASTER DATA TABLE
+   ============================================ */
+
+#master-data-content .table thead,
+#master-data-content table thead,
+.master-data-table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#master-data-content .table thead th,
+#master-data-content table thead th,
+.master-data-table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   LAPORAN TABLE
+   ============================================ */
+
+#laporan-content .table thead,
+#laporan-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#laporan-content .table thead th,
+#laporan-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   MATRIKS TOWS TABLE
+   ============================================ */
+
+#matriks-tows-content .table thead,
+#matriks-tows-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#matriks-tows-content .table thead th,
+#matriks-tows-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   VISI MISI TABLE
+   ============================================ */
+
+#visi-misi-content .table thead,
+#visi-misi-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#visi-misi-content .table thead th,
+#visi-misi-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   PENGATURAN / USER MANAGEMENT TABLE
+   ============================================ */
+
+#pengaturan-content .table thead,
+#pengaturan-content table thead,
+#user-management-content .table thead,
+#user-management-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#pengaturan-content .table thead th,
+#pengaturan-content table thead th,
+#user-management-content .table thead th,
+#user-management-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   DASHBOARD TABLE
+   ============================================ */
+
+#dashboard-content .table thead,
+#dashboard-content table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+#dashboard-content .table thead th,
+#dashboard-content table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   CARD TABLE (tables inside cards)
+   ============================================ */
+
+.card .table thead,
+.card table thead,
+.card-body .table thead,
+.card-body table thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+.card .table thead th,
+.card table thead th,
+.card-body .table thead th,
+.card-body table thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   DATATABLE STYLING
+   ============================================ */
+
+.dataTables_wrapper .table thead,
+.dataTable thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+.dataTables_wrapper .table thead th,
+.dataTable thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   BOOTSTRAP TABLE VARIANTS OVERRIDE
+   ============================================ */
+
+.table-primary thead,
+.table-secondary thead,
+.table-light thead,
+.table-dark thead,
+.table-striped thead,
+.table-bordered thead,
+.table-hover thead {
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+.table-primary thead th,
+.table-secondary thead th,
+.table-light thead th,
+.table-dark thead th,
+.table-striped thead th,
+.table-bordered thead th,
+.table-hover thead th {
+    color: #ffffff !important;
+    background: #1e3a5f !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   ICON IN HEADER - ensure white color
+   ============================================ */
+
+table thead th i,
+table thead th svg,
+table thead th .lucide,
+.table thead th i,
+.table thead th svg,
+.table thead th .lucide {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* ============================================
+   SORT ICONS IN HEADER
+   ============================================ */
+
+table thead th .sort-icon,
+.table thead th .sort-icon,
+.sorting::after,
+.sorting_asc::after,
+.sorting_desc::after {
+    color: #ffffff !important;
+    opacity: 0.8 !important;
+}
+
+/* ============================================
+   ENSURE NO GRADIENT OR TRANSPARENCY
+   ============================================ */
+
+table thead,
+table thead tr,
+table thead th,
+.table thead,
+.table thead tr,
+.table thead th {
+    background-image: none !important;
+    opacity: 1 !important;
+}

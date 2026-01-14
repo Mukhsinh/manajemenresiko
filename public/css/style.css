@@ -1466,7 +1466,7 @@ ard Improvements */
 .page-header {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: #ffffff;
     border-radius: 12px;
     border-left: 4px solid var(--primary-red);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -4287,13 +4287,14 @@ isk Level Badge Styles - Based on Excel Reference */
 }
 
 .residual-risk-table th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #f8f9fa !important;
+    background-image: none !important;
+    color: #495057 !important;
     padding: 12px 8px;
     text-align: left;
     font-weight: 600;
     font-size: 0.875rem;
-    border-bottom: 2px solid #5a67d8;
+    border-bottom: 2px solid #dee2e6;
 }
 
 .residual-risk-table td {
@@ -4391,4 +4392,862 @@ isk Level Badge Styles - Based on Excel Reference */
         font-size: 0.7rem;
         padding: 2px 8px;
     }
+}
+
+/* Rencana Strategis Enhanced Styles */
+
+/* Card enhancements */
+.card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Statistics cards */
+.card .card-body {
+  position: relative;
+  overflow: hidden;
+}
+
+.card .card-body::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.card:hover .card-body::before {
+  transform: scale(1.2);
+}
+
+/* Form styling */
+.form-label {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+}
+
+/* Button styling */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-group .btn {
+  border-radius: 6px;
+  margin: 0 2px;
+}
+
+/* Table styling */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  border: none;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #495057;
+  font-weight: 600;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+  transform: scale(1.01);
+}
+
+.table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 500;
+  font-size: 0.85em;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Chip list styling */
+.badge.bg-light {
+  background-color: #f8f9fa !important;
+  border: 1px solid #dee2e6 !important;
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+.badge .btn-close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.badge .btn-close:hover {
+  opacity: 1;
+}
+
+/* Empty state styling */
+.empty-state {
+  padding: 3rem 2rem;
+}
+
+.empty-state i {
+  opacity: 0.5;
+}
+
+/* Card header styling */
+.card-header {
+  border-radius: 12px 12px 0 0 !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 1.25rem 1.5rem;
+}
+
+.card-header.bg-light {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+}
+
+.card-header.bg-white {
+  background: #ffffff !important;
+}
+
+/* Page header styling */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+  }
+  
+  .btn-group .btn {
+    margin: 2px 0;
+    border-radius: 6px;
+  }
+  
+  .table-responsive {
+    border-radius: 8px;
+  }
+  
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+}
+
+/* Animation for form appearance */
+#form-section {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Status badge colors */
+.badge[style*="background-color: #4caf50"] {
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.badge[style*="background-color: #ff9800"] {
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.badge[style*="background-color: #6c757d"] {
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* Input group styling */
+.input-group .btn {
+  border-left: none;
+}
+
+.input-group .form-control:focus + .btn {
+  border-color: #007bff;
+}
+
+/* Scrollbar styling */
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Focus states */
+.btn:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Success/Error states */
+.alert {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Custom spacing */
+.gap-2 > * + * {
+  margin-left: 0.5rem;
+}
+
+@media (max-width: 576px) {
+  .gap-2 {
+    flex-direction: column;
+  }
+  
+  .gap-2 > * + * {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}
+
+
+/* ============================================
+   RENCANA STRATEGIS - STAT CARDS, FORM & TABLE
+   ============================================ */
+
+/* Stat Cards Container */
+.stat-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+/* Solid colors for stat cards - no white, no gradient */
+.stat-card.aktif { background: #2e7d32; }
+.stat-card.draft { background: #f57c00; }
+.stat-card.selesai { background: #1565c0; }
+.stat-card.total { background: #7b1fa2; }
+
+.stat-card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+}
+
+/* Icon backgrounds with contrasting colors */
+.stat-card.aktif .stat-card-icon { background: rgba(255,255,255,0.2); color: #ffffff; }
+.stat-card.draft .stat-card-icon { background: rgba(255,255,255,0.2); color: #ffffff; }
+.stat-card.selesai .stat-card-icon { background: rgba(255,255,255,0.2); color: #ffffff; }
+.stat-card.total .stat-card-icon { background: rgba(255,255,255,0.2); color: #ffffff; }
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card-label {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.9);
+}
+
+/* Form Card - SOLID COLORS */
+.form-card {
+    background: #eceff1;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.form-card-header {
+    background: #1e3a5f;
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ffffff;
+}
+
+.form-card form {
+    padding: 1.5rem;
+    background: #eceff1;
+}
+
+/* Table Card - SOLID COLORS */
+.table-card {
+    background: #eceff1;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.table-card-header {
+    background: #1e3a5f;
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.table-card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ffffff;
+}
+
+.table-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.table-card-body {
+    padding: 0;
+    background: #eceff1;
+}
+
+/* Enhanced Table - SOLID COLORS */
+.table-enhanced {
+    width: 100%;
+    border-collapse: collapse;
+    background: #eceff1;
+}
+
+.table-enhanced thead {
+    background: #37474f;
+}
+
+.table-enhanced th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #ffffff;
+    border-bottom: 2px solid #263238;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-enhanced td {
+    padding: 1rem;
+    border-bottom: 1px solid #cfd8dc;
+    vertical-align: middle;
+    color: #263238;
+    background: #eceff1;
+}
+
+.table-enhanced tbody tr:hover {
+    background: #cfd8dc;
+}
+
+/* Enhanced Form Controls */
+.form-group-enhanced {
+    margin-bottom: 1rem;
+}
+
+.form-label-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.form-control-enhanced {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #90a4ae;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #cfd8dc;
+    color: #263238;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control-enhanced:focus {
+    outline: none;
+    border-color: #1565c0;
+    box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.2);
+    background: #b0bec5;
+}
+
+/* Enhanced Buttons - SOLID COLORS, NO GRADIENT */
+.btn-primary-enhanced {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary-enhanced:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary-enhanced {
+    background: #64748b;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.2s;
+}
+
+.btn-secondary-enhanced:hover {
+    background: #475569;
+}
+
+.btn-success-enhanced {
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-success-enhanced:hover {
+    background: #15803d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-outline-enhanced {
+    background: #455a64;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.btn-outline-enhanced:hover {
+    background: #37474f;
+}
+
+/* Status Badge - SOLID COLORS with contrast */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.aktif {
+    background: #2e7d32;
+    color: #ffffff;
+}
+
+.status-badge.draft {
+    background: #f57c00;
+    color: #ffffff;
+}
+
+.status-badge.selesai {
+    background: #1565c0;
+    color: #ffffff;
+}
+
+/* Action Buttons Group - SOLID COLORS */
+.action-buttons-group {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-action.edit {
+    background: #0288d1;
+    color: #ffffff;
+}
+
+.btn-action.edit:hover {
+    background: #0277bd;
+    transform: translateY(-1px);
+}
+
+.btn-action.delete {
+    background: #c62828;
+    color: #ffffff;
+}
+
+.btn-action.delete:hover {
+    background: #b71c1c;
+    transform: translateY(-1px);
+}
+
+/* Empty State - SOLID COLOR */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: #eceff1;
+    color: #37474f;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #78909c;
+}
+
+.empty-state h5 {
+    margin: 0 0 0.5rem;
+    color: #455a64;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-cards-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .table-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .table-card-actions {
+        width: 100%;
+    }
+    
+    .table-enhanced th,
+    .table-enhanced td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .action-buttons-group {
+        flex-direction: column;
+    }
+}
+
+/* Table Responsive */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Row Grid for Forms */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.5rem;
+}
+
+.row > [class*="col-"] {
+    padding: 0.5rem;
+}
+
+.col-12 { flex: 0 0 100%; max-width: 100%; }
+.col-md-6 { flex: 0 0 100%; max-width: 100%; }
+
+@media (min-width: 768px) {
+    .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+}
+
+.g-4 { gap: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.pt-3 { padding-top: 1rem; }
+.border-top { border-top: 1px solid #e2e8f0; }
+.text-danger { color: #dc2626; }
+
+/* Green Button for Visi Misi */
+.btn-success {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+    border: 1px solid #28a745 !important;
+}
+
+.btn-success:hover {
+    background-color: #218838 !important;
+    color: #ffffff !important;
+    border-color: #1e7e34 !important;
+}
+
+.btn-success:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+.btn-success:active {
+    background-color: #1e7e34 !important;
+    border-color: #1c7430 !important;
+}/* Enhan
+ced Green Button for Visi Misi */
+#btn-tambah-visi-misi {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+    border: 1px solid #28a745 !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+#btn-tambah-visi-misi:hover {
+    background-color: #218838 !important;
+    color: #ffffff !important;
+    border-color: #1e7e34 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+}
+
+#btn-tambah-visi-misi:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+#btn-tambah-visi-misi:active {
+    background-color: #1e7e34 !important;
+    border-color: #1c7430 !important;
+    transform: translateY(0);
+}
+/*
+ Visi Misi Card Header Override - Remove Purple Background */
+#visi-misi-content .card-header {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #1e3a5f !important;
+}
+
+/* Ensure no purple/gradient backgrounds on visi misi cards */
+#visi-misi-content .card-header,
+.visi-misi-page .card-header {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+/* Comprehensive Purple to White Fix */
+/* Override any remaining purple colors */
+*[style*="purple"],
+*[style*="violet"] {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Ensure all card headers are white */
+.card-header,
+.page-header,
+.section-header,
+.modal-header {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Specific overrides for visi misi and other modules */
+#visi-misi-content .card-header,
+#analisis-swot-content .card-header,
+#rencana-strategis-content .card-header,
+#residual-risk-content .card-header {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #1e3a5f !important;
+}
+
+/* Prevent any purple gradients */
+.card-header[style*="gradient"],
+.page-header[style*="gradient"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+
+/* Purple Color Removal Rules - Added by integrate-purple-removal.js */
+/* Import purple removal styles */
+@import url('remove-purple-colors.css');
+
+/* Additional global purple removal */
+* {
+    /* Remove any purple backgrounds */
+}
+
+/* Comprehensive Purple to White Fix */
+/* Override any remaining purple colors */
+*[style*="purple"],
+*[style*="violet"] {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Ensure all headers are white */
+.card-header,
+.page-header,
+.section-header,
+.modal-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #495057 !important;
 }

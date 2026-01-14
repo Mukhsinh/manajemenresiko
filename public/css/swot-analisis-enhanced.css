@@ -29,41 +29,49 @@
     padding: 8px 12px;
 }
 
-/* Category badges - fixed positioning */
+/* Category badges - soft colors */
 .badge-strength { 
-    background-color: #10b981; 
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    background-color: #dcfce7; 
+    color: #166534;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .badge-weakness { 
-    background-color: #ef4444; 
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    background-color: #fee2e2; 
+    color: #991b1b;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .badge-opportunity { 
-    background-color: #3b82f6; 
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    background-color: #dbeafe; 
+    color: #1e40af;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .badge-threat { 
-    background-color: #f59e0b; 
-    color: #1e293b;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    background-color: #fef3c7; 
+    color: #92400e;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 /* Table category column - ensure badges stay within column */
@@ -74,54 +82,55 @@
     vertical-align: middle;
 }
 
-/* Filter section - consistent with other pages */
+/* Filter section - white theme */
 .filter-section {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    padding: 1.5rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .filter-section .form-label {
     font-weight: 600;
-    color: #334155;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
 }
 
 .filter-section .form-select {
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
     background-color: white;
     transition: all 0.2s ease;
 }
 
 .filter-section .form-select:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
     outline: none;
 }
 
-/* Summary cards - enhanced with Lucide icons */
+/* Summary cards - white & compact */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
 .summary-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    background: #ffffff !important;
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    text-align: left;
     border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
 }
@@ -131,88 +140,109 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    height: 4px;
+    width: 3px;
+    height: 100%;
     background: var(--card-color);
 }
 
 .summary-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .summary-card.strength {
-    --card-color: #10b981;
+    --card-color: #16a34a;
 }
 
 .summary-card.weakness {
-    --card-color: #ef4444;
+    --card-color: #dc2626;
 }
 
 .summary-card.opportunity {
-    --card-color: #3b82f6;
+    --card-color: #2563eb;
 }
 
 .summary-card.threat {
-    --card-color: #f59e0b;
+    --card-color: #d97706;
 }
 
 .card-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 1rem;
-    background: var(--card-color);
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+}
+
+.summary-card.strength .card-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.summary-card.weakness .card-icon {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.summary-card.opportunity .card-icon {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.summary-card.threat .card-icon {
+    background: #fef3c7;
+    color: #d97706;
 }
 
 .card-title {
-    font-size: 1.125rem;
+    font-size: 11px;
     font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .card-value {
-    font-size: 2.5rem;
+    font-size: 20px;
     font-weight: 700;
-    color: var(--card-color);
-    margin-bottom: 0.5rem;
-    line-height: 1;
+    color: #1e293b;
+    margin-bottom: 2px;
+    line-height: 1.2;
 }
 
 .card-subtitle {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 1rem;
+    font-size: 10px;
+    color: #94a3b8;
+    margin-bottom: 6px;
 }
 
 .card-stats {
     display: flex;
     justify-content: space-between;
-    padding-top: 1rem;
-    border-top: 1px solid #e2e8f0;
+    padding-top: 6px;
+    border-top: 1px solid #f1f5f9;
+    gap: 12px;
 }
 
 .card-stat {
-    text-align: center;
+    flex: 1;
 }
 
 .card-stat-label {
-    font-size: 0.75rem;
-    color: #64748b;
+    font-size: 9px;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
+    margin-bottom: 2px;
 }
 
 .card-stat-value {
-    font-size: 1rem;
+    font-size: 12px;
     font-weight: 600;
-    color: #1e293b;
+    color: #475569;
 }
 
 /* Loading and no data states */
@@ -325,12 +355,14 @@ cana Strategis column styling */
     font-weight: 500;
 }
 
-/* Table container */
+/* Table container - white */
 .table-container {
     overflow-x: auto;
-    margin-top: 20px;
+    margin-top: 16px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
 }
 
 /* Loading and no data states */

@@ -1,0 +1,331 @@
+/**
+ * RENCANA STRATEGIS CSS v7.1
+ * 
+ * Single clean CSS file for /rencana-strategis page
+ * Created: 2026-01-11
+ * Updated: 2026-01-11 - v7.1 Enhanced display enforcement
+ */
+
+/* ============================================
+   PAGE CONTAINER
+   ============================================ */
+
+#rencana-strategis {
+    background: #f8f9fa !important;
+    min-height: 100vh;
+}
+
+#rencana-strategis-content {
+    min-height: 400px;
+    background: #f8f9fa !important;
+}
+
+.rs-v7-wrapper {
+    background: #f8f9fa !important;
+    min-height: 100%;
+}
+
+/* Alias for backward compatibility */
+.rencana-strategis-wrapper {
+    background: #f8f9fa !important;
+    min-height: 100%;
+}
+
+/* ============================================
+   STAT CARDS
+   ============================================ */
+
+.rencana-strategis-wrapper .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rencana-strategis-wrapper .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* ============================================
+   FORM SECTION
+   ============================================ */
+
+#rs-form-section .card-header {
+    border-radius: 12px 12px 0 0;
+}
+
+#rs-form-section .form-control:focus,
+#rs-form-section .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+#rs-form-section .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+#rs-form-section .btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   TABLE SECTION
+   ============================================ */
+
+.rencana-strategis-wrapper .table {
+    margin-bottom: 0;
+}
+
+.rencana-strategis-wrapper .table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+}
+
+.rencana-strategis-wrapper .table td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+}
+
+.rencana-strategis-wrapper .table tbody tr:hover {
+    background-color: #f1f3f5 !important;
+}
+
+/* ============================================
+   BADGES - Fixed overflow
+   ============================================ */
+
+.rencana-strategis-wrapper .badge,
+.rs-v7-wrapper .badge {
+    font-weight: 500;
+    padding: 0.3rem 0.5rem !important;
+    display: inline-block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 0.7rem !important;
+    border-radius: 12px !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+/* Kode badge specific */
+.rencana-strategis-wrapper .badge.bg-light.text-dark,
+.rs-v7-wrapper .badge.bg-light.text-dark {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.5rem !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Status badges */
+.rencana-strategis-wrapper .badge.bg-success,
+.rs-v7-wrapper .badge.bg-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+}
+
+.rencana-strategis-wrapper .badge.bg-warning,
+.rs-v7-wrapper .badge.bg-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: white !important;
+}
+
+.rencana-strategis-wrapper .badge.bg-secondary,
+.rs-v7-wrapper .badge.bg-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+    color: white !important;
+}
+
+/* Table cell constraints */
+.rencana-strategis-wrapper .table td,
+.rs-v7-wrapper .table td {
+    vertical-align: middle !important;
+    padding: 0.75rem !important;
+    overflow: hidden !important;
+}
+
+/* Kode column */
+.rencana-strategis-wrapper .table td:nth-child(1),
+.rs-v7-wrapper .table td:nth-child(1) {
+    min-width: 100px !important;
+    max-width: 130px !important;
+}
+
+/* Status column */
+.rencana-strategis-wrapper .table td:nth-child(5),
+.rs-v7-wrapper .table td:nth-child(5) {
+    min-width: 90px !important;
+    max-width: 110px !important;
+}
+
+/* Action column */
+.rencana-strategis-wrapper .table td:nth-child(6),
+.rs-v7-wrapper .table td:nth-child(6) {
+    min-width: 120px !important;
+    white-space: nowrap !important;
+}
+
+/* Table responsive */
+.rencana-strategis-wrapper .table-responsive,
+.rs-v7-wrapper .table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* ============================================
+   ACTION BUTTONS - Fixed
+   ============================================ */
+
+.rencana-strategis-wrapper .btn-group-sm,
+.rs-v7-wrapper .btn-group-sm {
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+}
+
+.rencana-strategis-wrapper .btn-group-sm .btn,
+.rs-v7-wrapper .btn-group-sm .btn {
+    padding: 0.3rem 0.5rem !important;
+    border-radius: 6px !important;
+    font-size: 0.75rem !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    margin: 0 1px !important;
+    cursor: pointer !important;
+}
+
+.rencana-strategis-wrapper .btn-group-sm .btn:focus,
+.rs-v7-wrapper .btn-group-sm .btn:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-info,
+.rs-v7-wrapper .btn-outline-info {
+    color: #0ea5e9 !important;
+    background: transparent !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-info:hover,
+.rs-v7-wrapper .btn-outline-info:hover {
+    background: #0ea5e9 !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+.rencana-strategis-wrapper .btn-outline-warning,
+.rs-v7-wrapper .btn-outline-warning {
+    color: #f59e0b !important;
+    background: transparent !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-warning:hover,
+.rs-v7-wrapper .btn-outline-warning:hover {
+    background: #f59e0b !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+.rencana-strategis-wrapper .btn-outline-danger,
+.rs-v7-wrapper .btn-outline-danger {
+    color: #ef4444 !important;
+    background: transparent !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-danger:hover,
+.rs-v7-wrapper .btn-outline-danger:hover {
+    background: #ef4444 !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+/* Action button click feedback */
+.rencana-strategis-wrapper .btn-group-sm .btn:active,
+.rs-v7-wrapper .btn-group-sm .btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+
+#rs-detail-modal .modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#rs-detail-modal .modal-header {
+    border-bottom: none;
+}
+
+#rs-detail-modal .modal-footer {
+    border-top: 1px solid #e9ecef;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+#rencana-strategis-content .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .rencana-strategis-wrapper {
+        padding: 1rem !important;
+    }
+    
+    .rencana-strategis-wrapper .card-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .rencana-strategis-wrapper .btn-group {
+        width: 100%;
+    }
+    
+    .rencana-strategis-wrapper .btn-group .btn {
+        flex: 1;
+    }
+}
+
+/* ============================================
+   CRITICAL: HIDE SELECTION LIST
+   This ensures the wrong display never shows
+   ============================================ */
+
+/* Hide selection list elements that appear incorrectly */
+#rencana-strategis-content > .list-group:not(.rs-v7-wrapper .list-group),
+#rencana-strategis-content > div.card:not(.rs-v7-wrapper .card):not(.alert) {
+    display: none !important;
+}
+
+/* Hide any "Pilih Rencana Strategis" text that appears outside wrapper */
+#rencana-strategis-content > h5,
+#rencana-strategis-content > .card > .card-header {
+    /* Only hide if it contains selection text - handled by JS */
+    visibility: visible;
+}
+
+/* Ensure correct wrapper is always visible */
+#rencana-strategis-content .rs-v7-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force table to be visible */
+#rencana-strategis-content .rs-v7-wrapper table.table {
+    display: table !important;
+    visibility: visible !important;
+}

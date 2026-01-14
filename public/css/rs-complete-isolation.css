@@ -1,0 +1,284 @@
+/**
+ * RS COMPLETE ISOLATION CSS v2.0
+ * Comprehensive CSS to prevent RS content from appearing on other pages
+ * Fixes z-index, positioning, and layering issues
+ * Created: 2026-01-09
+ */
+
+/* ============================================
+   CRITICAL: Page Content Isolation
+   ============================================ */
+
+/* Ensure all page-content elements are properly isolated */
+.page-content {
+    position: relative !important;
+    z-index: 1 !important;
+    contain: layout style paint !important;
+    isolation: isolate !important;
+}
+
+/* Hidden pages should be completely invisible */
+.page-content:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Active page should be visible */
+.page-content.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* ============================================
+   RS Page Specific Styles
+   ============================================ */
+
+/* RS page container */
+#rencana-strategis {
+    position: relative !important;
+    z-index: 1 !important;
+    contain: layout style paint !important;
+    isolation: isolate !important;
+}
+
+/* RS page when active */
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* RS content container */
+#rencana-strategis-content {
+    position: relative !important;
+    z-index: 1 !important;
+    contain: layout style !important;
+    min-height: 400px !important;
+}
+
+/* RS wrapper - ONLY visible inside RS page */
+#rencana-strategis .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* ============================================
+   CRITICAL: Hide RS Content on Other Pages
+   ============================================ */
+
+/* Hide RS wrapper on ALL non-RS pages */
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) #rs-selection-container,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Hide RS elements that might escape to body or main-content */
+body > .rencana-strategis-wrapper,
+body > .rencana-strategis-container,
+body > .rs-selection-wrapper,
+body > [data-module="RencanaStrategisModule"],
+.main-content > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper),
+.content-area > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper) {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   Z-Index Layering Control
+   ============================================ */
+
+/* Main content area */
+.main-content {
+    position: relative !important;
+    z-index: 1 !important;
+    isolation: isolate !important;
+}
+
+/* Content area */
+.content-area {
+    position: relative !important;
+    z-index: 1 !important;
+    isolation: isolate !important;
+}
+
+/* Ensure no page has higher z-index than others */
+.page-content.active {
+    z-index: 1 !important;
+}
+
+/* Modals and overlays should be above pages */
+.modal,
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+/* ============================================
+   RS Filter Section Styles
+   ============================================ */
+
+.rs-filter-section {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    margin-bottom: 1rem !important;
+}
+
+.rs-filter-section .form-control,
+.rs-filter-section .form-select {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.rs-filter-section .form-control:focus,
+.rs-filter-section .form-select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+    outline: none !important;
+}
+
+.rs-filter-section .btn {
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+.rs-filter-section .btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.rs-filter-section .btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.rs-filter-section .btn-outline-secondary {
+    border: 1px solid #e2e8f0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+}
+
+.rs-filter-section .btn-outline-secondary:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #475569 !important;
+}
+
+.rs-filter-section .btn-outline-info {
+    border: 1px solid #0ea5e9 !important;
+    color: #0ea5e9 !important;
+    background: transparent !important;
+}
+
+.rs-filter-section .btn-outline-info:hover {
+    background: #0ea5e9 !important;
+    color: white !important;
+}
+
+/* Active filters badges */
+#rs-active-filters .badge {
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    padding: 0.35rem 0.6rem !important;
+    border-radius: 6px !important;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 992px) {
+    .rs-filter-section .row {
+        gap: 0.5rem !important;
+    }
+    
+    .rs-filter-section .d-flex {
+        justify-content: flex-start !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .rs-filter-section .col-lg-4,
+    .rs-filter-section .col-lg-2 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .rs-filter-section .d-flex {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .rs-filter-section .btn {
+        flex: 1 !important;
+        min-width: 100px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .rs-filter-section .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    .rs-filter-section .form-label {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+    .page-content:not(.active) {
+        display: none !important;
+    }
+    
+    .rs-filter-section {
+        display: none !important;
+    }
+    
+    .page-content:not(#rencana-strategis) .rencana-strategis-wrapper {
+        display: none !important;
+    }
+}

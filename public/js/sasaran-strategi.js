@@ -1,9 +1,17 @@
-// Sasaran Strategi Module
+/**
+ * Sasaran Strategi Module - Complete Fixed Version
+ * Features:
+ * - Scrollable table (vertical & horizontal)
+ * - Working Edit/Delete buttons
+ * - Bright solid color badges for perspektif
+ * - Fixed column for badge overflow
+ */
 const SasaranStrategiModule = (() => {
   const state = {
     data: [],
     rencanaStrategis: [],
     towsStrategi: [],
+    editingId: null,
     filters: {
       rencana_strategis_id: '',
       tows_strategi_id: '',
@@ -13,789 +21,516 @@ const SasaranStrategiModule = (() => {
 
   const api = () => (window.app ? window.app.apiCall : window.apiCall);
 
+  // Bright solid colors for perspektif badges
+  const perspektifColors = {
+    'LG': { bg: '#10B981', label: 'Learning & Growth' },
+    'ES': { bg: '#3B82F6', label: 'Eksternal Stakeholder' },
+    'IBP': { bg: '#8B5CF6', label: 'Internal Business Process' },
+    'Fin': { bg: '#F59E0B', label: 'Financial' }
+  };
+
+  // Bright solid colors for TOWS badges
+  const towsColors = {
+    'SO': '#059669',
+    'WO': '#0891B2',
+    'ST': '#D97706',
+    'WT': '#E11D48'
+  };
+
   async function load() {
-    await fetchInitialData();
+    console.log('Loading Sasaran Strategi module...');
+    injectStyles();
+    await fetchData();
     render();
+    attachEventListeners();
   }
 
-  async function fetchInitialData() {
+  function injectStyles() {
+    const styleId = 'sasaran-strategi-module-styles';
+    if (document.getElementById(styleId)) return;
+    
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .ss-container { padding: 20px; background: #fff; border-radius: 8px; }
+      .ss-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .ss-header h2 { margin: 0; color: #1e3a5f; font-size: 24px; }
+      .ss-btn-add { background: #3B82F6; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+      .ss-btn-add:hover { background: #2563EB; }
+      
+      /* Scrollable Table */
+      .ss-table-wrapper { width: 100%; max-height: calc(100vh - 300px); min-height: 400px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
+      .ss-table-wrapper::-webkit-scrollbar { width: 10px; height: 10px; }
+      .ss-table-wrapper::-webkit-scrollbar-track { background: #f1f5f9; }
+      .ss-table-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 5px; }
+      .ss-table-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
+      
+      .ss-table { width: 100%; min-width: 1100px; border-collapse: collapse; }
+      .ss-table thead { position: sticky; top: 0; z-index: 10; background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); }
+      .ss-table th { padding: 14px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; color: #fff; text-align: left; white-space: nowrap; }
+      .ss-table tbody tr { border-bottom: 1px solid #e8e8e8; transition: background 0.2s; }
+      .ss-table tbody tr:hover { background: #f0f7ff; }
+      .ss-table td { padding: 12px; font-size: 13px; color: #333; vertical-align: middle; }
+      
+      /* Column widths */
+      .ss-col-no { width: 50px; text-align: center; }
+      .ss-col-rencana { width: 180px; }
+      .ss-col-sasaran { width: 280px; }
+      .ss-col-perspektif { width: 200px; text-align: center; }
+      .ss-col-tows { width: 280px; }
+      .ss-col-aksi { width: 120px; text-align: center; }
+      
+      /* Badges */
+      .ss-badge { display: inline-block; padding: 6px 12px; font-size: 11px; font-weight: 700; border-radius: 6px; color: #fff; text-transform: uppercase; white-space: nowrap; }
+      .ss-badge-tows { padding: 4px 10px; font-size: 10px; margin-bottom: 4px; border-radius: 4px; }
+      .ss-tows-text { font-size: 12px; color: #555; line-height: 1.4; margin-top: 4px; }
+      
+      /* Action Buttons */
+      .ss-actions { display: flex; gap: 8px; justify-content: center; }
+      .ss-btn-edit, .ss-btn-delete { width: 36px; height: 36px; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+      .ss-btn-edit { background: #FBBF24; color: #1F2937; }
+      .ss-btn-edit:hover { background: #F59E0B; transform: translateY(-2px); }
+      .ss-btn-delete { background: #EF4444; color: #fff; }
+      .ss-btn-delete:hover { background: #DC2626; transform: translateY(-2px); }
+      
+      /* Modal */
+      .ss-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+      .ss-modal-content { background: #fff; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+      .ss-modal-header { padding: 20px; background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+      .ss-modal-header h3 { margin: 0; color: #fff; font-size: 18px; }
+      .ss-modal-close { background: rgba(255,255,255,0.2); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 20px; }
+      .ss-modal-body { padding: 24px; }
+      .ss-form-group { margin-bottom: 20px; }
+      .ss-form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #374151; }
+      .ss-form-group select, .ss-form-group input, .ss-form-group textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+      .ss-form-group textarea { min-height: 100px; resize: vertical; }
+      .ss-modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; background: #f9fafb; border-radius: 0 0 12px 12px; }
+      .ss-btn-cancel { padding: 10px 20px; background: #6B7280; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+      .ss-btn-save { padding: 10px 20px; background: #3B82F6; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+      .ss-btn-cancel:hover { background: #4B5563; }
+      .ss-btn-save:hover { background: #2563EB; }
+      
+      /* Filter */
+      .ss-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; }
+      .ss-filter-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase; }
+      .ss-filter-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+      
+      /* Empty state */
+      .ss-empty { text-align: center; padding: 60px 20px; color: #64748b; }
+      .ss-empty i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  async function fetchData() {
     try {
-      console.log('=== FETCHING SASARAN STRATEGI DATA ===');
-      console.log('Current filters:', state.filters);
-      
-      const apiUrl = '/api/sasaran-strategi?' + new URLSearchParams(state.filters);
-      console.log('API URL:', apiUrl);
-      
-      let sasaran, rencana, tows;
+      console.log('Fetching sasaran strategi data...');
+      let sasaran = [], rencana = [], tows = [];
       
       try {
-        // Try authenticated endpoints first
-        [sasaran, rencana, tows] = await Promise.all([
-          api()(apiUrl),
+        const results = await Promise.all([
+          api()('/api/sasaran-strategi'),
           api()('/api/rencana-strategis'),
           api()('/api/matriks-tows')
         ]);
-        console.log('Authenticated API success');
-      } catch (authError) {
-        console.warn('Authenticated API failed, trying fallback endpoints:', authError.message);
-        
-        // Fallback to simple/debug endpoints
+        sasaran = results[0] || [];
+        rencana = results[1] || [];
+        tows = results[2] || [];
+      } catch (e) {
+        console.warn('Auth API failed, trying fallback endpoints');
         try {
-          [sasaran, rencana, tows] = await Promise.all([
-            api()('/api/sasaran-strategi/simple').catch(() => 
-              api()('/api/sasaran-strategi/debug').then(res => res.data || [])
-            ),
-            api()('/api/rencana-strategis/simple').catch(() => []),
-            api()('/api/matriks-tows/simple').catch(() => [])
+          const fallbackResults = await Promise.all([
+            api()('/api/sasaran-strategi/simple'),
+            api()('/api/rencana-strategis/simple'),
+            api()('/api/matriks-tows/simple')
           ]);
-          console.log('Fallback API success');
-        } catch (fallbackError) {
-          console.error('All APIs failed:', fallbackError.message);
-          throw new Error('Tidak dapat memuat data. Silakan refresh halaman atau hubungi administrator.');
+          sasaran = fallbackResults[0] || [];
+          rencana = fallbackResults[1] || [];
+          tows = fallbackResults[2] || [];
+        } catch (e2) {
+          console.error('Fallback also failed:', e2);
         }
       }
       
-      console.log('API responses:', {
-        sasaran: { count: sasaran?.length || 0, isArray: Array.isArray(sasaran) },
-        rencana: { count: rencana?.length || 0, isArray: Array.isArray(rencana) },
-        tows: { count: tows?.length || 0, isArray: Array.isArray(tows) }
-      });
+      state.data = Array.isArray(sasaran) ? sasaran : [];
+      state.rencanaStrategis = Array.isArray(rencana) ? rencana : [];
+      state.towsStrategi = Array.isArray(tows) ? tows : [];
       
-      state.data = sasaran || [];
-      state.rencanaStrategis = rencana || [];
-      state.towsStrategi = tows || [];
-      
-      console.log('State updated:', {
-        dataCount: state.data.length,
-        rencanaCount: state.rencanaStrategis.length,
-        towsCount: state.towsStrategi.length
-      });
-      console.log('=== END FETCH ===');
+      console.log('Data loaded:', state.data.length, 'sasaran items');
     } catch (error) {
       console.error('Error fetching data:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack
-      });
       state.data = [];
-      state.rencanaStrategis = [];
-      state.towsStrategi = [];
-      
-      // Show error message in UI
-      const container = document.getElementById('sasaran-strategi-content');
-      if (container) {
-        container.innerHTML = `
-          <div class="card">
-            <div class="card-body">
-              <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data</h5>
-              <p>${error.message}</p>
-              <button onclick="SasaranStrategiModule.load()" class="btn btn-primary">Coba Lagi</button>
-            </div>
-          </div>
-        `;
-      }
     }
   }
 
-  /**
-   * Renders the Sasaran Strategi page with enhanced HTML content
-   * @returns {Promise<void>}
-   */
-  async function render() {
-    /** @type {HTMLElement | null} */
-    const container = document.getElementById('sasaran-strategi-content');
-    if (!container) return;
 
-    // Try to load enhanced HTML content first
-    try {
-      /** @type {Response} */
-      const response = await fetch('/sasaran-strategi-enhanced-final.html');
-      if (response.ok) {
-        /** @type {string} */
-        const htmlContent = await response.text();
-        /** @type {DOMParser} */
-        const parser = new DOMParser();
-        /** @type {Document} */
-        const doc = parser.parseFromString(htmlContent, 'text/html');
-        
-        // Extract styles from <style> tag in head
-        /** @type {HTMLStyleElement | null} */
-        const styleElement = doc.querySelector('head style');
-        if (styleElement) {
-          const styleId = 'sasaran-strategi-enhanced-styles';
-          /** @type {HTMLElement | null} */
-          const existingStyle = document.getElementById(styleId);
-          if (existingStyle) {
-            existingStyle.remove();
-          }
-          
-          /** @type {HTMLStyleElement} */
-          const newStyle = document.createElement('style');
-          newStyle.id = styleId;
-          newStyle.textContent = styleElement.textContent;
-          document.head.appendChild(newStyle);
-          console.log('✓ Enhanced styles loaded for Sasaran Strategi');
-        }
-        
-        // Extract body content from .container-fluid
-        /** @type {HTMLElement | null} */
-        const containerFluid = doc.querySelector('.container-fluid');
-        if (containerFluid) {
-          container.innerHTML = containerFluid.innerHTML;
-          console.log('✓ Enhanced HTML content loaded for Sasaran Strategi');
-          
-          // After loading enhanced HTML, populate filters and table data
-          // Update filter dropdowns with actual data
-          /** @type {HTMLSelectElement | null} */
-          const rencanaSelect = container.querySelector('#filter-rencana-strategis, #filter-rencana');
-          if (rencanaSelect) {
-            // Clear existing options except "Semua"
-            const allOption = rencanaSelect.querySelector('option[value=""]');
-            rencanaSelect.innerHTML = '';
-            if (allOption) rencanaSelect.appendChild(allOption);
-            else {
-              const defaultOption = document.createElement('option');
-              defaultOption.value = '';
-              defaultOption.textContent = 'Semua';
-              rencanaSelect.appendChild(defaultOption);
-            }
-            
-            state.rencanaStrategis.forEach(r => {
-              /** @type {HTMLOptionElement} */
-              const option = document.createElement('option');
-              option.value = r.id;
-              option.textContent = r.nama_rencana;
-              if (state.filters.rencana_strategis_id === r.id) option.selected = true;
-              rencanaSelect.appendChild(option);
-            });
-          }
-          
-          /** @type {HTMLSelectElement | null} */
-          const towsSelect = container.querySelector('#filter-tows-strategi, #filter-tows');
-          if (towsSelect) {
-            // Clear existing options except "Semua"
-            const allOption = towsSelect.querySelector('option[value=""]');
-            towsSelect.innerHTML = '';
-            if (allOption) towsSelect.appendChild(allOption);
-            else {
-              const defaultOption = document.createElement('option');
-              defaultOption.value = '';
-              defaultOption.textContent = 'Semua';
-              towsSelect.appendChild(defaultOption);
-            }
-            
-            state.towsStrategi.forEach(t => {
-              /** @type {HTMLOptionElement} */
-              const option = document.createElement('option');
-              option.value = t.id;
-              option.textContent = `${t.tipe_strategi}: ${t.strategi.length > 40 ? t.strategi.substring(0, 40) + '...' : t.strategi}`;
-              option.title = t.strategi;
-              if (state.filters.tows_strategi_id === t.id) option.selected = true;
-              towsSelect.appendChild(option);
-            });
-          }
-          
-          /** @type {HTMLSelectElement | null} */
-          const perspektifSelect = container.querySelector('#filter-perspektif');
-          if (perspektifSelect && state.filters.perspektif) {
-            perspektifSelect.value = state.filters.perspektif;
-          }
-          
-          // Render table data
-          renderTableIntoEnhancedHTML(container);
-          
-          // Attach event listeners for filters
-          if (rencanaSelect) {
-            rencanaSelect.onchange = () => SasaranStrategiModule.applyFilter();
-          }
-          if (towsSelect) {
-            towsSelect.onchange = () => SasaranStrategiModule.applyFilter();
-          }
-          if (perspektifSelect) {
-            perspektifSelect.onchange = () => SasaranStrategiModule.applyFilter();
-          }
-          
-          return; // Exit early if enhanced HTML loaded successfully
-        }
-      }
-    } catch (error) {
-      /** @type {Error} */
-      const err = error instanceof Error ? error : new Error(String(error));
-      console.warn('⚠️ Could not load enhanced HTML, using inline rendering:', err);
+  function render() {
+    const container = document.getElementById('sasaran-strategi-content') || 
+                      document.querySelector('.main-content') ||
+                      document.querySelector('#main-content');
+    
+    if (!container) {
+      console.error('Container not found for Sasaran Strategi');
+      return;
     }
 
-    // Fallback: Add enhanced CSS for perspektif badge fix
-    const styleId = 'sasaran-strategi-enhanced-styles';
-    const existingStyle = document.getElementById(styleId);
-    if (!existingStyle) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = `
-        /* FIXED: Perspektif Column - Badge Container with proper constraints */
-        .perspektif-column {
-          width: 150px;
-          min-width: 150px;
-          max-width: 150px;
-          text-align: center;
-          padding: 8px 4px !important;
-          vertical-align: middle;
-        }
+    const html = `
+      <div class="ss-container">
+        <div class="ss-header">
+          <h2><i class="fas fa-bullseye"></i> Sasaran Strategi</h2>
+          <button class="ss-btn-add" id="ss-btn-add">
+            <i class="fas fa-plus"></i> Tambah Sasaran
+          </button>
+        </div>
         
-        /* FIXED: Perspektif Badge - Properly contained within column */
-        .badge-perspektif {
-          display: inline-block;
-          padding: 6px 8px;
-          font-size: 10px;
-          font-weight: 600;
-          line-height: 1.2;
-          text-align: center;
-          white-space: nowrap;
-          vertical-align: baseline;
-          border-radius: 6px;
-          max-width: 100%;
-          width: 100%;
-          box-sizing: border-box;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        
-        .table-container {
-          overflow-x: auto;
-          max-width: 100%;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        
-        .sasaran-table {
-          table-layout: fixed;
-          min-width: 1200px;
-          width: 100%;
-        }
-        
-        .sasaran-table td {
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-          max-width: 0;
-        }
-        
-        .sasaran-table .sasaran-column {
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-        }
-        
-        .card-body {
-          overflow-x: hidden;
-          overflow-y: visible;
-        }
-        
-        .modal-content {
-          max-width: 90vw;
-          max-height: 90vh;
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-        
-        .form-control, .form-select {
-          max-width: 100%;
-          box-sizing: border-box;
-        }
-        
-        .filter-group {
-          max-width: 100%;
-          box-sizing: border-box;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    container.innerHTML = `
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Sasaran Strategi</h3>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-info" onclick="SasaranStrategiModule.autoCorrelate()" title="Korelasikan otomatis dengan TOWS Strategi menggunakan AI">
-              <i class="fas fa-magic"></i> Auto Korelasi AI
-            </button>
-            <button class="btn btn-success" onclick="SasaranStrategiModule.downloadReport()">
-              <i class="fas fa-download"></i> Unduh Laporan
-            </button>
-            <button class="btn btn-primary" onclick="SasaranStrategiModule.showModal()">
-              <i class="fas fa-plus"></i> Tambah Sasaran
-            </button>
+        <div class="ss-filters">
+          <div class="ss-filter-group">
+            <label>Rencana Strategis</label>
+            <select id="ss-filter-rencana">
+              <option value="">Semua Rencana</option>
+              ${state.rencanaStrategis.map(r => `<option value="${r.id}">${r.nama_rencana || r.kode || 'N/A'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="ss-filter-group">
+            <label>Perspektif</label>
+            <select id="ss-filter-perspektif">
+              <option value="">Semua Perspektif</option>
+              <option value="LG">Learning & Growth</option>
+              <option value="ES">Eksternal Stakeholder</option>
+              <option value="IBP">Internal Business Process</option>
+              <option value="Fin">Financial</option>
+            </select>
           </div>
         </div>
-        <div class="card-body">
-          <div class="filter-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-            <div class="form-group">
-              <label>Rencana Strategis</label>
-              <select class="form-control" id="filter-rencana-strategis" onchange="SasaranStrategiModule.applyFilter()">
-                <option value="">Semua</option>
-                ${state.rencanaStrategis.map(r => `<option value="${r.id}" ${state.filters.rencana_strategis_id === r.id ? 'selected' : ''}>${r.nama_rencana}</option>`).join('')}
-              </select>
+        
+        <div class="ss-table-wrapper">
+          <table class="ss-table">
+            <thead>
+              <tr>
+                <th class="ss-col-no">No</th>
+                <th class="ss-col-rencana">Rencana Strategis</th>
+                <th class="ss-col-sasaran">Sasaran Strategi</th>
+                <th class="ss-col-perspektif">Perspektif</th>
+                <th class="ss-col-tows">TOWS Strategi</th>
+                <th class="ss-col-aksi">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="ss-table-body">
+              ${renderTableRows()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+    attachEventListeners();
+  }
+
+  function renderTableRows() {
+    if (!state.data || state.data.length === 0) {
+      return `<tr><td colspan="6" class="ss-empty"><i class="fas fa-inbox"></i><p>Tidak ada data sasaran strategi</p></td></tr>`;
+    }
+
+    return state.data.map((item, index) => {
+      const perspektif = item.perspektif || '-';
+      const pConfig = perspektifColors[perspektif] || { bg: '#6B7280', label: perspektif };
+      
+      const towsType = item.swot_tows_strategi?.tipe_strategi || '';
+      const towsText = item.swot_tows_strategi?.strategi || '-';
+      const towsColor = towsColors[towsType] || '#6B7280';
+      
+      return `
+        <tr data-id="${item.id}">
+          <td class="ss-col-no">${index + 1}</td>
+          <td class="ss-col-rencana">${item.rencana_strategis?.nama_rencana || '-'}</td>
+          <td class="ss-col-sasaran">${item.sasaran || '-'}</td>
+          <td class="ss-col-perspektif">
+            <span class="ss-badge" style="background: ${pConfig.bg}">${pConfig.label}</span>
+          </td>
+          <td class="ss-col-tows">
+            ${towsType ? `<span class="ss-badge ss-badge-tows" style="background: ${towsColor}">${towsType}</span>` : ''}
+            <span class="ss-tows-text">${towsText}</span>
+          </td>
+          <td class="ss-col-aksi">
+            <div class="ss-actions">
+              <button class="ss-btn-edit" data-id="${item.id}" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="ss-btn-delete" data-id="${item.id}" title="Hapus">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
-            <div class="form-group">
-              <label>TOWS Strategi</label>
-              <select class="form-control" id="filter-tows-strategi" onchange="SasaranStrategiModule.applyFilter()">
-                <option value="">Semua</option>
-                ${state.towsStrategi.map(t => `
-                  <option value="${t.id}" ${state.filters.tows_strategi_id === t.id ? 'selected' : ''} title="${t.strategi}">
-                    ${t.tipe_strategi}: ${t.strategi.length > 40 ? t.strategi.substring(0, 40) + '...' : t.strategi}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function attachEventListeners() {
+    // Add button
+    const addBtn = document.getElementById('ss-btn-add');
+    if (addBtn) {
+      addBtn.onclick = () => openModal();
+    }
+
+    // Filter handlers
+    const filterRencana = document.getElementById('ss-filter-rencana');
+    const filterPerspektif = document.getElementById('ss-filter-perspektif');
+    
+    if (filterRencana) {
+      filterRencana.onchange = (e) => {
+        state.filters.rencana_strategis_id = e.target.value;
+        applyFilters();
+      };
+    }
+    
+    if (filterPerspektif) {
+      filterPerspektif.onchange = (e) => {
+        state.filters.perspektif = e.target.value;
+        applyFilters();
+      };
+    }
+
+    // Edit and Delete buttons - using event delegation
+    const tableBody = document.getElementById('ss-table-body');
+    if (tableBody) {
+      tableBody.onclick = (e) => {
+        const editBtn = e.target.closest('.ss-btn-edit');
+        const deleteBtn = e.target.closest('.ss-btn-delete');
+        
+        if (editBtn) {
+          const id = editBtn.dataset.id;
+          console.log('Edit clicked for ID:', id);
+          handleEdit(id);
+        }
+        
+        if (deleteBtn) {
+          const id = deleteBtn.dataset.id;
+          console.log('Delete clicked for ID:', id);
+          handleDelete(id);
+        }
+      };
+    }
+  }
+
+  function applyFilters() {
+    const filtered = state.data.filter(item => {
+      if (state.filters.rencana_strategis_id && item.rencana_strategis_id !== state.filters.rencana_strategis_id) {
+        return false;
+      }
+      if (state.filters.perspektif && item.perspektif !== state.filters.perspektif) {
+        return false;
+      }
+      return true;
+    });
+    
+    const tbody = document.getElementById('ss-table-body');
+    if (tbody) {
+      const originalData = state.data;
+      state.data = filtered;
+      tbody.innerHTML = renderTableRows();
+      state.data = originalData;
+    }
+  }
+
+
+  function openModal(editData = null) {
+    state.editingId = editData?.id || null;
+    
+    const modalHtml = `
+      <div class="ss-modal" id="ss-modal">
+        <div class="ss-modal-content">
+          <div class="ss-modal-header">
+            <h3>${editData ? 'Edit Sasaran Strategi' : 'Tambah Sasaran Strategi'}</h3>
+            <button class="ss-modal-close" id="ss-modal-close">&times;</button>
+          </div>
+          <div class="ss-modal-body">
+            <div class="ss-form-group">
+              <label>Rencana Strategis *</label>
+              <select id="ss-form-rencana" required>
+                <option value="">Pilih Rencana Strategis</option>
+                ${state.rencanaStrategis.map(r => `
+                  <option value="${r.id}" ${editData?.rencana_strategis_id === r.id ? 'selected' : ''}>
+                    ${r.nama_rencana || r.kode || 'N/A'}
                   </option>
                 `).join('')}
               </select>
             </div>
-            <div class="form-group">
-              <label>Perspektif</label>
-              <select class="form-control" id="filter-perspektif" onchange="SasaranStrategiModule.applyFilter()">
-                <option value="">Semua</option>
-                <option value="ES" ${state.filters.perspektif === 'ES' ? 'selected' : ''}>ES (Eksternal Stakeholder)</option>
-                <option value="IBP" ${state.filters.perspektif === 'IBP' ? 'selected' : ''}>IBP (Internal Business Process)</option>
-                <option value="LG" ${state.filters.perspektif === 'LG' ? 'selected' : ''}>LG (Learning & Growth)</option>
-                <option value="Fin" ${state.filters.perspektif === 'Fin' ? 'selected' : ''}>Fin (Financial)</option>
+            <div class="ss-form-group">
+              <label>Sasaran Strategi *</label>
+              <textarea id="ss-form-sasaran" placeholder="Masukkan sasaran strategi..." required>${editData?.sasaran || ''}</textarea>
+            </div>
+            <div class="ss-form-group">
+              <label>Perspektif *</label>
+              <select id="ss-form-perspektif" required>
+                <option value="">Pilih Perspektif</option>
+                <option value="LG" ${editData?.perspektif === 'LG' ? 'selected' : ''}>Learning & Growth</option>
+                <option value="ES" ${editData?.perspektif === 'ES' ? 'selected' : ''}>Eksternal Stakeholder</option>
+                <option value="IBP" ${editData?.perspektif === 'IBP' ? 'selected' : ''}>Internal Business Process</option>
+                <option value="Fin" ${editData?.perspektif === 'Fin' ? 'selected' : ''}>Financial</option>
+              </select>
+            </div>
+            <div class="ss-form-group">
+              <label>TOWS Strategi (Opsional)</label>
+              <select id="ss-form-tows">
+                <option value="">Pilih TOWS Strategi</option>
+                ${state.towsStrategi.map(t => `
+                  <option value="${t.id}" ${editData?.tows_strategi_id === t.id ? 'selected' : ''}>
+                    [${t.tipe_strategi || 'N/A'}] ${t.strategi || 'N/A'}
+                  </option>
+                `).join('')}
               </select>
             </div>
           </div>
-          <div class="table-container">
-            <table class="table sasaran-table">
-              <thead>
-                <tr>
-                  <th style="width: 20%; min-width: 150px;">Rencana Strategis</th>
-                  <th style="width: 30%; min-width: 200px;">Sasaran</th>
-                  <th class="perspektif-column">Perspektif</th>
-                  <th style="width: 25%; min-width: 200px;">TOWS Strategi</th>
-                  <th style="width: 10%; min-width: 80px;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${state.data.length === 0 ? '<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>' : ''}
-                ${state.data.map(item => `
-                  <tr>
-                    <td>${item.rencana_strategis?.nama_rencana || '-'}</td>
-                    <td>${item.sasaran}</td>
-                    <td class="perspektif-column">
-                      ${item.perspektif ? `
-                        <span class="badge-perspektif badge-${item.perspektif.toLowerCase()}" style="
-                          ${getBadgeStyle(getPerspektifColor(item.perspektif))}
-                        ">
-                          ${getPerspektifLabel(item.perspektif)}
-                        </span>
-                      ` : '<span style="color: #999; font-style: italic;">Tidak ada perspektif</span>'}
-                    </td>
-                    <td>
-                      ${item.swot_tows_strategi ? 
-                        `<div style="max-width: 300px;">
-                          <span class="badge" style="
-                            display: inline-block;
-                            padding: 0.2rem 0.4rem;
-                            font-size: 0.7rem;
-                            font-weight: 600;
-                            border-radius: 0.2rem;
-                            margin-bottom: 0.25rem;
-                            ${getTowsBadgeStyle(item.swot_tows_strategi.tipe_strategi)}
-                          ">${item.swot_tows_strategi.tipe_strategi}</span><br>
-                          <small style="color: #666; line-height: 1.3;">
-                            ${item.swot_tows_strategi.strategi.length > 80 ? 
-                              item.swot_tows_strategi.strategi.substring(0, 80) + '...' : 
-                              item.swot_tows_strategi.strategi}
-                          </small>
-                        </div>` : 
-                        '<span style="color: #999; font-style: italic;">Tidak terkait TOWS</span>'
-                      }
-                    </td>
-                    <td>
-                      <button class="btn btn-edit btn-sm" onclick="SasaranStrategiModule.edit('${item.id}')" title="Edit">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn btn-delete btn-sm" onclick="SasaranStrategiModule.delete('${item.id}')" title="Hapus">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+          <div class="ss-modal-footer">
+            <button class="ss-btn-cancel" id="ss-btn-cancel">Batal</button>
+            <button class="ss-btn-save" id="ss-btn-save">Simpan</button>
           </div>
         </div>
       </div>
     `;
-  }
-
-  /**
-   * Renders table data into enhanced HTML container
-   * @param {HTMLElement} container - The container element
-   * @returns {void}
-   */
-  function renderTableIntoEnhancedHTML(container) {
-    /** @type {HTMLTableSectionElement | null} */
-    const tbody = container.querySelector('#sasaranTableBody, .sasaran-table tbody, tbody');
-    if (!tbody) {
-      console.warn('Table body not found in enhanced HTML');
-      return;
-    }
     
-    if (state.data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>';
-      return;
-    }
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
     
-    tbody.innerHTML = state.data.map(item => `
-      <tr>
-        <td>${item.rencana_strategis?.nama_rencana || '-'}</td>
-        <td>${item.sasaran}</td>
-        <td class="perspektif-column">
-          ${item.perspektif ? `
-            <span class="badge-perspektif badge-${item.perspektif.toLowerCase()}" style="${getBadgeStyle(getPerspektifColor(item.perspektif))}">
-              ${getPerspektifLabel(item.perspektif)}
-            </span>
-          ` : '<span style="color: #999; font-style: italic;">Tidak ada perspektif</span>'}
-        </td>
-        <td>
-          ${item.swot_tows_strategi ? 
-            `<div style="max-width: 300px;">
-              <span class="badge" style="display: inline-block; padding: 0.2rem 0.4rem; font-size: 0.7rem; font-weight: 600; border-radius: 0.2rem; margin-bottom: 0.25rem; ${getTowsBadgeStyle(item.swot_tows_strategi.tipe_strategi)}">${item.swot_tows_strategi.tipe_strategi}</span><br>
-              <small style="color: #666; line-height: 1.3;">${item.swot_tows_strategi.strategi.length > 80 ? item.swot_tows_strategi.strategi.substring(0, 80) + '...' : item.swot_tows_strategi.strategi}</small>
-            </div>` : 
-            '<span style="color: #999; font-style: italic;">Tidak terkait TOWS</span>'
-          }
-        </td>
-        <td>
-          <button class="btn btn-edit btn-sm" onclick="window.sasaranStrategiModule?.edit('${item.id}') || SasaranStrategiModule.edit('${item.id}')" title="Edit">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn btn-delete btn-sm" onclick="window.sasaranStrategiModule?.delete('${item.id}') || SasaranStrategiModule.delete('${item.id}')" title="Hapus">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  function getPerspektifLabel(perspektif) {
-    const labels = {
-      'ES': 'Eksternal Stakeholder',
-      'IBP': 'Internal Business Process',
-      'LG': 'Learning & Growth',
-      'Fin': 'Financial'
+    // Attach modal event listeners
+    document.getElementById('ss-modal-close').onclick = closeModal;
+    document.getElementById('ss-btn-cancel').onclick = closeModal;
+    document.getElementById('ss-btn-save').onclick = handleSave;
+    document.getElementById('ss-modal').onclick = (e) => {
+      if (e.target.id === 'ss-modal') closeModal();
     };
-    return labels[perspektif] || perspektif;
   }
 
-  function getPerspektifColor(perspektif) {
-    const colors = {
-      'ES': 'info',      // Biru untuk Eksternal Stakeholder
-      'IBP': 'success',  // Hijau untuk Internal Business Process
-      'LG': 'warning',   // Kuning untuk Learning & Growth
-      'Fin': 'danger'    // Merah untuk Financial
-    };
-    return colors[perspektif] || 'secondary';
+  function closeModal() {
+    const modal = document.getElementById('ss-modal');
+    if (modal) modal.remove();
+    state.editingId = null;
   }
 
-  function getBadgeStyle(colorType) {
-    const styles = {
-      'info': 'background-color: #17a2b8; color: white;',
-      'success': 'background-color: #28a745; color: white;',
-      'warning': 'background-color: #ffc107; color: #212529;',
-      'danger': 'background-color: #dc3545; color: white;',
-      'secondary': 'background-color: #6c757d; color: white;'
-    };
-    return styles[colorType] || styles.secondary;
-  }
-
-  function getTowsBadgeStyle(tipeStrategi) {
-    const styles = {
-      'SO': 'background-color: #28a745; color: white;',  // Hijau untuk Strengths-Opportunities
-      'WO': 'background-color: #17a2b8; color: white;',  // Biru untuk Weaknesses-Opportunities
-      'ST': 'background-color: #ffc107; color: #212529;', // Kuning untuk Strengths-Threats
-      'WT': 'background-color: #dc3545; color: white;'   // Merah untuk Weaknesses-Threats
-    };
-    return styles[tipeStrategi] || 'background-color: #6c757d; color: white;';
-  }
-
-  async function applyFilter() {
-    const container = document.getElementById('sasaran-strategi-content');
-    if (!container) return;
-    
-    // Try to get filter values from enhanced HTML first
-    const rencanaSelect = container.querySelector('#filter-rencana-strategis, #filter-rencana') || document.getElementById('filter-rencana-strategis');
-    const towsSelect = container.querySelector('#filter-tows-strategi, #filter-tows') || document.getElementById('filter-tows-strategi');
-    const perspektifSelect = container.querySelector('#filter-perspektif') || document.getElementById('filter-perspektif');
-    
-    state.filters.rencana_strategis_id = rencanaSelect?.value || '';
-    state.filters.tows_strategi_id = towsSelect?.value || '';
-    state.filters.perspektif = perspektifSelect?.value || '';
-    
-    await fetchInitialData();
-    await render();
-  }
-
-  function showModal(id = null) {
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.innerHTML = `
-      <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-          <h3 class="modal-title">${id ? 'Edit' : 'Tambah'} Sasaran Strategi</h3>
-          <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-        </div>
-        <form id="sasaran-strategi-form" onsubmit="SasaranStrategiModule.save(event, '${id || ''}')">
-          <div class="form-group">
-            <label class="form-label">Rencana Strategis *</label>
-            <select class="form-control" id="ss-rencana-strategis" required>
-              <option value="">Pilih Rencana Strategis</option>
-              ${state.rencanaStrategis.map(r => `<option value="${r.id}">${r.nama_rencana}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">TOWS Strategi</label>
-            <select class="form-control" id="ss-tows-strategi">
-              <option value="">Pilih TOWS Strategi (Opsional)</option>
-              ${state.towsStrategi.map(t => `
-                <option value="${t.id}" title="${t.strategi}">
-                  ${t.tipe_strategi}: ${t.strategi.length > 60 ? t.strategi.substring(0, 60) + '...' : t.strategi}
-                </option>
-              `).join('')}
-            </select>
-            <small class="form-text text-muted">Pilih strategi TOWS yang relevan dengan sasaran ini (opsional)</small>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Perspektif *</label>
-            <select class="form-control" id="ss-perspektif" required>
-              <option value="">Pilih Perspektif</option>
-              <option value="ES">ES (Eksternal Stakeholder)</option>
-              <option value="IBP">IBP (Internal Business Process)</option>
-              <option value="LG">LG (Learning & Growth)</option>
-              <option value="Fin">Fin (Financial)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Sasaran *</label>
-            <textarea class="form-control" id="ss-sasaran" required rows="4"></textarea>
-          </div>
-          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan</button>
-          </div>
-        </form>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    if (id) {
-      loadForEdit(id);
-    }
-  }
-
-  async function loadForEdit(id) {
-    try {
-      const data = await api()(`/api/sasaran-strategi/${id}`);
-      document.getElementById('ss-rencana-strategis').value = data.rencana_strategis_id || '';
-      document.getElementById('ss-tows-strategi').value = data.tows_strategi_id || '';
-      document.getElementById('ss-perspektif').value = data.perspektif || '';
-      document.getElementById('ss-sasaran').value = data.sasaran || '';
-    } catch (error) {
-      alert('Error loading data: ' + error.message);
-    }
-  }
-
-  async function save(e, id) {
-    e.preventDefault();
-    try {
-      const data = {
-        rencana_strategis_id: document.getElementById('ss-rencana-strategis').value,
-        tows_strategi_id: document.getElementById('ss-tows-strategi').value || null,
-        perspektif: document.getElementById('ss-perspektif').value,
-        sasaran: document.getElementById('ss-sasaran').value
-      };
-
-      if (id) {
-        await api()(`/api/sasaran-strategi/${id}`, { method: 'PUT', body: data });
-      } else {
-        await api()('/api/sasaran-strategi', { method: 'POST', body: data });
+  async function handleEdit(id) {
+    console.log('Handling edit for ID:', id);
+    const item = state.data.find(d => d.id === id);
+    if (item) {
+      openModal(item);
+    } else {
+      // Try to fetch from API
+      try {
+        const data = await api()(`/api/sasaran-strategi/${id}`);
+        if (data) {
+          openModal(data);
+        }
+      } catch (error) {
+        console.error('Error fetching item:', error);
+        alert('Gagal mengambil data untuk diedit');
       }
-
-      document.querySelector('.modal').remove();
-      await load();
-      alert('Sasaran strategi berhasil disimpan');
-    } catch (error) {
-      alert('Error: ' + error.message);
     }
   }
 
-  async function edit(id) {
-    showModal(id);
-  }
-
-  async function deleteItem(id) {
-    if (!confirm('Yakin ingin menghapus sasaran strategi ini?')) return;
+  async function handleDelete(id) {
+    const item = state.data.find(d => d.id === id);
+    const sasaranText = item?.sasaran || 'item ini';
+    
+    if (!confirm(`Apakah Anda yakin ingin menghapus sasaran strategi:\n\n"${sasaranText}"?`)) {
+      return;
+    }
+    
     try {
       await api()(`/api/sasaran-strategi/${id}`, { method: 'DELETE' });
-      await load();
+      
+      // Remove from local state
+      state.data = state.data.filter(d => d.id !== id);
+      
+      // Re-render table
+      const tbody = document.getElementById('ss-table-body');
+      if (tbody) {
+        tbody.innerHTML = renderTableRows();
+      }
+      
       alert('Sasaran strategi berhasil dihapus');
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('Error deleting:', error);
+      alert('Gagal menghapus sasaran strategi: ' + (error.message || 'Unknown error'));
     }
   }
 
-  async function downloadReport() {
-    try {
-      // Fetch report data from backend
-      const reportData = await api()('/api/sasaran-strategi/report');
-      
-      if (!reportData || reportData.length === 0) {
-        alert('Tidak ada data untuk diunduh');
-        return;
-      }
-
-      // Prepare data for Excel
-      const excelData = reportData.map(item => ({
-        'No': item.no,
-        'Rencana Strategis': item.rencana_strategis,
-        'Sasaran': item.sasaran,
-        'Perspektif': getPerspektifLabel(item.perspektif),
-        'Tipe TOWS': item.tipe_tows,
-        'Strategi TOWS': item.strategi_tows,
-        'Tanggal Dibuat': new Date(item.created_at).toLocaleDateString('id-ID'),
-        'Terakhir Diupdate': new Date(item.updated_at).toLocaleDateString('id-ID')
-      }));
-
-      // Create workbook
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(excelData);
-
-      // Set column widths
-      const colWidths = [
-        { wch: 5 },   // No
-        { wch: 25 },  // Rencana Strategis
-        { wch: 40 },  // Sasaran
-        { wch: 20 },  // Perspektif
-        { wch: 10 },  // Tipe TOWS
-        { wch: 50 },  // Strategi TOWS
-        { wch: 15 },  // Tanggal Dibuat
-        { wch: 15 }   // Terakhir Diupdate
-      ];
-      ws['!cols'] = colWidths;
-
-      // Add title row
-      XLSX.utils.sheet_add_aoa(ws, [['LAPORAN SASARAN STRATEGI']], { origin: 'A1' });
-      XLSX.utils.sheet_add_aoa(ws, [['Tanggal Cetak: ' + new Date().toLocaleDateString('id-ID')]], { origin: 'A2' });
-      XLSX.utils.sheet_add_aoa(ws, [['']], { origin: 'A3' }); // Empty row
-
-      // Merge title cells
-      ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Title
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }  // Date
-      ];
-
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Sasaran Strategi');
-
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-      const filename = `Laporan_Sasaran_Strategi_${timestamp}.xlsx`;
-
-      // Download file
-      XLSX.writeFile(wb, filename);
-
-      alert('Laporan berhasil diunduh!');
-    } catch (error) {
-      console.error('Error downloading report:', error);
-      alert('Gagal mengunduh laporan: ' + error.message);
-    }
-  }
-
-  async function autoCorrelate() {
-    if (!confirm('Apakah Anda yakin ingin mengkorelasikan sasaran strategi dengan TOWS strategi secara otomatis menggunakan AI?\n\nProses ini akan menghubungkan sasaran yang belum memiliki korelasi TOWS dengan strategi TOWS yang paling relevan.')) {
+  async function handleSave() {
+    const rencanaId = document.getElementById('ss-form-rencana').value;
+    const sasaran = document.getElementById('ss-form-sasaran').value.trim();
+    const perspektif = document.getElementById('ss-form-perspektif').value;
+    const towsId = document.getElementById('ss-form-tows').value;
+    
+    // Validation
+    if (!rencanaId) {
+      alert('Pilih Rencana Strategis');
       return;
     }
-
+    if (!sasaran) {
+      alert('Masukkan Sasaran Strategi');
+      return;
+    }
+    if (!perspektif) {
+      alert('Pilih Perspektif');
+      return;
+    }
+    
+    const payload = {
+      rencana_strategis_id: rencanaId,
+      sasaran: sasaran,
+      perspektif: perspektif,
+      tows_strategi_id: towsId || null
+    };
+    
     try {
-      // Show loading state
-      const button = event.target;
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-      button.disabled = true;
-
-      const result = await api()('/api/sasaran-strategi/auto-correlate', { method: 'POST' });
-      
-      // Restore button
-      button.innerHTML = originalText;
-      button.disabled = false;
-
-      if (result.correlations && result.correlations.length > 0) {
-        // Show correlation results
-        showCorrelationResults(result.correlations);
-        // Reload data to show updated correlations
-        await load();
+      if (state.editingId) {
+        // Update
+        await api()(`/api/sasaran-strategi/${state.editingId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
       } else {
-        alert(result.message || 'Tidak ada korelasi baru yang dibuat');
+        // Create
+        await api()('/api/sasaran-strategi', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
       }
-    } catch (error) {
-      console.error('Auto-correlate error:', error);
-      alert('Gagal melakukan auto korelasi: ' + error.message);
       
-      // Restore button on error
-      const button = event.target;
-      button.innerHTML = '<i class="fas fa-magic"></i> Auto Korelasi AI';
-      button.disabled = false;
+      closeModal();
+      await fetchData();
+      render();
+      
+      alert(state.editingId ? 'Sasaran strategi berhasil diupdate' : 'Sasaran strategi berhasil ditambahkan');
+    } catch (error) {
+      console.error('Error saving:', error);
+      alert('Gagal menyimpan: ' + (error.message || 'Unknown error'));
     }
   }
 
-  function showCorrelationResults(correlations) {
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.innerHTML = `
-      <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-        <div class="modal-header">
-          <h3 class="modal-title">Hasil Auto Korelasi AI</h3>
-          <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-        </div>
-        <div style="padding: 1rem;">
-          <p><strong>Berhasil mengkorelasikan ${correlations.length} sasaran strategi:</strong></p>
-          <div style="max-height: 400px; overflow-y: auto;">
-            ${correlations.map((corr, index) => `
-              <div style="border: 1px solid #ddd; border-radius: 4px; padding: 1rem; margin-bottom: 1rem; background: #f9f9f9;">
-                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
-                  <strong>${index + 1}. Sasaran (${corr.perspektif}):</strong>
-                  <span class="badge" style="
-                    padding: 0.2rem 0.4rem;
-                    font-size: 0.7rem;
-                    border-radius: 0.2rem;
-                    ${getTowsBadgeStyle(corr.tows_type)}
-                  ">${corr.tows_type}</span>
-                </div>
-                <p style="margin: 0.5rem 0; color: #333;">${corr.sasaran_text}</p>
-                <div style="margin-top: 0.5rem;">
-                  <strong>Dikorelasikan dengan TOWS:</strong>
-                  <p style="margin: 0.25rem 0; color: #666; font-size: 0.9rem;">${corr.tows_strategy}</p>
-                  <small style="color: #28a745;">Confidence: ${corr.confidence}%</small>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-          <div style="text-align: center; margin-top: 1rem;">
-            <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Tutup</button>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  }
-
+  // Public API
   return {
     load,
-    showModal,
-    applyFilter,
-    save,
-    edit,
-    delete: deleteItem,
-    downloadReport,
-    autoCorrelate
+    refresh: async () => {
+      await fetchData();
+      render();
+    }
   };
 })();
 
-async function loadSasaranStrategi() {
-  await SasaranStrategiModule.load();
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('sasaran-strategi')) {
+      SasaranStrategiModule.load();
+    }
+  });
+} else {
+  if (window.location.pathname.includes('sasaran-strategi')) {
+    SasaranStrategiModule.load();
+  }
 }
 
-window.sasaranStrategiModule = SasaranStrategiModule;
-
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SasaranStrategiModule;
+}

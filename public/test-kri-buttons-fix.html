@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test KRI Buttons Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid #333;
+        }
+        .log-success { color: #4ec9b0; }
+        .log-error { color: #f14c4c; }
+        .log-warning { color: #cca700; }
+        .log-info { color: #3794ff; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            margin: 0 3px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-action.btn-edit { background: #17a2b8; color: white; }
+        .btn-action.btn-delete { background: #dc3545; color: white; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-vial"></i> Test KRI Buttons Fix</h1>
+        
+        <div class="test-section">
+            <h3>1. Test API Endpoints</h3>
+            <button class="btn btn-primary" onclick="testEndpoints()">
+                <i class="fas fa-play"></i> Run API Tests
+            </button>
+            <div id="api-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Test KRI Module</h3>
+            <button class="btn btn-success" onclick="testKRIModule()">
+                <i class="fas fa-check"></i> Check KRI Module
+            </button>
+            <button class="btn btn-info" onclick="loadKRIData()">
+                <i class="fas fa-download"></i> Load KRI Data
+            </button>
+            <div id="kri-content"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Test Edit & Delete Buttons</h3>
+            <p>Click the edit or delete buttons in the table above to test functionality.</p>
+            <div id="button-test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Console Log</h3>
+            <button class="btn btn-warning" onclick="clearLog()">
+                <i class="fas fa-trash"></i> Clear Log
+            </button>
+            <div class="log-container" id="log-container"></div>
+        </div>
+    </div>
+    
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load config and auth -->
+    <script src="/js/config.js"></script>
+    <script src="/js/auth-state-manager.js"></script>
+    
+    <!-- Load KRI module -->
+    <script src="/js/kri.js"></script>
+    
+    <!-- Load edit form fix -->
+    <script src="/js/edit-form-fix.js"></script>
+    
+    <script>
+        // Custom logger
+        const logContainer = document.getElementById('log-container');
+        
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Also log to console
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+        
+        function clearLog() {
+            logContainer.innerHTML = '';
+        }
+        
+        // Test API endpoints
+        async function testEndpoints() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p>Testing endpoints...</p>';
+            
+            const endpoints = [
+                { url: '/api/kri/simple', name: 'KRI Simple (no auth)' },
+                { url: '/api/kri/public', name: 'KRI Public (no auth)' },
+                { url: '/api/kri/test-no-auth', name: 'KRI Test No Auth' },
+                { url: '/api/kri/debug', name: 'KRI Debug' }
+            ];
+            
+            let html = '<table><tr><th>Endpoint</th><th>Status</th><th>Result</th></tr>';
+            
+            for (const ep of endpoints) {
+                try {
+                    log(`Testing ${ep.name}...`, 'info');
+                    const response = await fetch(ep.url);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        const count = Array.isArray(data) ? data.length : (data.data?.length || 'N/A');
+                        html += `<tr>
+                            <td>${ep.name}</td>
+                            <td><span class="status-badge status-success">OK (${response.status})</span></td>
+                            <td>${count} records</td>
+                        </tr>`;
+                        log(`${ep.name}: OK - ${count} records`, 'success');
+                    } else {
+                        html += `<tr>
+                            <td>${ep.name}</td>
+                            <td><span class="status-badge status-error">Error (${response.status})</span></td>
+                            <td>${data.error || 'Unknown error'}</td>
+                        </tr>`;
+                        log(`${ep.name}: Error - ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    html += `<tr>
+                        <td>${ep.name}</td>
+                        <td><span class="status-badge status-error">Failed</span></td>
+                        <td>${error.message}</td>
+                    </tr>`;
+                    log(`${ep.name}: Failed - ${error.message}`, 'error');
+                }
+            }
+            
+            html += '</table>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Test KRI module
+        function testKRIModule() {
+            log('Checking KRI module...', 'info');
+            
+            const checks = [
+                { name: 'window.KRI', value: typeof window.KRI },
+                { name: 'window.kriModule', value: typeof window.kriModule },
+                { name: 'KRI.load', value: typeof window.KRI?.load },
+                { name: 'KRI.edit', value: typeof window.KRI?.edit },
+                { name: 'KRI.confirmDelete', value: typeof window.KRI?.confirmDelete },
+                { name: 'KRI.executeDelete', value: typeof window.KRI?.executeDelete },
+                { name: 'KRI.showModal', value: typeof window.KRI?.showModal },
+                { name: 'KRI.save', value: typeof window.KRI?.save }
+            ];
+            
+            let allOk = true;
+            checks.forEach(check => {
+                if (check.value === 'function' || check.value === 'object') {
+                    log(`✓ ${check.name}: ${check.value}`, 'success');
+                } else {
+                    log(`✗ ${check.name}: ${check.value}`, 'error');
+                    allOk = false;
+                }
+            });
+            
+            if (allOk) {
+                log('All KRI module checks passed!', 'success');
+            } else {
+                log('Some KRI module checks failed!', 'error');
+            }
+        }
+        
+        // Load KRI data
+        async function loadKRIData() {
+            log('Loading KRI data...', 'info');
+            
+            try {
+                // Try to load data
+                const response = await fetch('/api/kri/simple');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`Loaded ${data.length} KRI records`, 'success');
+                
+                // Render table
+                const content = document.getElementById('kri-content');
+                if (data.length === 0) {
+                    content.innerHTML = '<p>No KRI data found.</p>';
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Indikator</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                `;
+                
+                data.slice(0, 5).forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.kode || '-'}</td>
+                            <td>${item.nama_indikator || '-'}</td>
+                            <td>${item.status_indikator || '-'}</td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="testEdit('${item.id}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="testDelete('${item.id}', '${item.kode}')" title="Hapus">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</table>';
+                content.innerHTML = html;
+                
+            } catch (error) {
+                log(`Error loading KRI data: ${error.message}`, 'error');
+                document.getElementById('kri-content').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Test edit function
+        async function testEdit(id) {
+            log(`Testing edit for ID: ${id}`, 'info');
+            
+            try {
+                if (window.KRI && typeof window.KRI.edit === 'function') {
+                    await window.KRI.edit(id);
+                    log('Edit function called successfully', 'success');
+                } else {
+                    log('KRI.edit function not available', 'error');
+                }
+            } catch (error) {
+                log(`Edit error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test delete function
+        function testDelete(id, kode) {
+            log(`Testing delete for ID: ${id}, Kode: ${kode}`, 'info');
+            
+            try {
+                if (window.KRI && typeof window.KRI.confirmDelete === 'function') {
+                    window.KRI.confirmDelete(id, kode);
+                    log('Delete confirmation modal opened', 'success');
+                } else {
+                    log('KRI.confirmDelete function not available', 'error');
+                }
+            } catch (error) {
+                log(`Delete error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded', 'info');
+            log('Waiting for modules to initialize...', 'info');
+            
+            setTimeout(() => {
+                testKRIModule();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+/**
+ * Rencana Strategis Page Fix v2.2
+ * Fixes: 1. Stat Cards, 2. Badge overflow, 3. Kode column
+ * Date: 2026-01-14
+ * 
+ * CRITICAL: Uses !important extensively to override any conflicting styles
+ */
+
+/* ============================================
+   1. STAT CARDS FIX - Ensure content visible
+   ============================================ */
+
+/* Target the RS page wrapper */
+.rs-v7-wrapper,
+.rencana-strategis-wrapper,
+#rencana-strategis-content {
+  background: #f8f9fa !important;
+}
+
+/* Force stat cards row to display properly */
+.rs-v7-wrapper .row.g-3.mb-4,
+#rencana-strategis-content .row.g-3.mb-4 {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Stat card container */
+.rs-v7-wrapper .row.g-3.mb-4 > div > .card,
+#rencana-strategis-content .row.g-3.mb-4 > div > .card {
+  height: 100% !important;
+  min-height: 90px !important;
+  max-height: 100px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* Card body layout */
+.rs-v7-wrapper .row.g-3.mb-4 .card-body,
+#rencana-strategis-content .row.g-3.mb-4 .card-body {
+  padding: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  height: 90px !important;
+}
+
+/* CRITICAL: Force white text on stat cards */
+.rs-v7-wrapper .row.g-3.mb-4 .card-body span,
+.rs-v7-wrapper .row.g-3.mb-4 .card-body h3,
+.rs-v7-wrapper .row.g-3.mb-4 .card-body p,
+#rencana-strategis-content .row.g-3.mb-4 .card-body span,
+#rencana-strategis-content .row.g-3.mb-4 .card-body h3,
+#rencana-strategis-content .row.g-3.mb-4 .card-body p {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Icon styling */
+.rs-v7-wrapper .row.g-3.mb-4 .card-body i,
+#rencana-strategis-content .row.g-3.mb-4 .card-body i {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* ============================================
+   2. TABLE STRUCTURE FIX
+   ============================================ */
+
+/* Table container */
+.rs-v7-wrapper .table-responsive,
+#rencana-strategis-content .table-responsive {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Table base */
+.rs-v7-wrapper .table,
+#rencana-strategis-content .table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin-bottom: 0 !important;
+}
+
+/* Table header */
+.rs-v7-wrapper .table thead,
+#rencana-strategis-content .table thead {
+  background: #f8fafc !important;
+}
+
+.rs-v7-wrapper .table thead th,
+#rencana-strategis-content .table thead th {
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: #475569 !important;
+  padding: 14px 10px !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+/* Column widths */
+.rs-v7-wrapper .table th:nth-child(1),
+.rs-v7-wrapper .table td:nth-child(1),
+#rencana-strategis-content .table th:nth-child(1),
+#rencana-strategis-content .table td:nth-child(1) {
+  width: 130px !important;
+  min-width: 110px !important;
+}
+
+.rs-v7-wrapper .table th:nth-child(5),
+.rs-v7-wrapper .table td:nth-child(5),
+#rencana-strategis-content .table th:nth-child(5),
+#rencana-strategis-content .table td:nth-child(5) {
+  width: 120px !important;
+  min-width: 110px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.rs-v7-wrapper .table th:nth-child(6),
+.rs-v7-wrapper .table td:nth-child(6),
+#rencana-strategis-content .table th:nth-child(6),
+#rencana-strategis-content .table td:nth-child(6) {
+  width: 130px !important;
+  min-width: 120px !important;
+  text-align: center !important;
+}
+
+/* Table cells */
+.rs-v7-wrapper .table td,
+#rencana-strategis-content .table td {
+  padding: 12px 10px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #334155 !important;
+  font-size: 0.875rem !important;
+}
+
+/* ============================================
+   3. KODE COLUMN FIX
+   ============================================ */
+
+/* Kode badge styling - FORCE DISPLAY */
+.rs-v7-wrapper .table td:nth-child(1) span,
+#rencana-strategis-content .table td:nth-child(1) span {
+  display: inline-block !important;
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e2e8f0 !important;
+  white-space: nowrap !important;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace !important;
+  letter-spacing: 0.5px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ============================================
+   4. STATUS BADGE FIX - CRITICAL
+   ============================================ */
+
+/* Status badge container */
+.rs-v7-wrapper .table td:nth-child(5),
+#rencana-strategis-content .table td:nth-child(5) {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* All status badges - FORCE DISPLAY */
+.rs-v7-wrapper .table td:nth-child(5) span,
+#rencana-strategis-content .table td:nth-child(5) span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Status badge icons */
+.rs-v7-wrapper .table td:nth-child(5) span i,
+#rencana-strategis-content .table td:nth-child(5) span i {
+  margin-right: 5px !important;
+  font-size: 0.65rem !important;
+  color: #ffffff !important;
+}
+
+/* Aktif badge - Green */
+.rs-v7-wrapper .table td:nth-child(5) span[style*="#22c55e"],
+#rencana-strategis-content .table td:nth-child(5) span[style*="#22c55e"] {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+/* Draft badge - Orange */
+.rs-v7-wrapper .table td:nth-child(5) span[style*="#f59e0b"],
+#rencana-strategis-content .table td:nth-child(5) span[style*="#f59e0b"] {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+/* Selesai badge - Blue */
+.rs-v7-wrapper .table td:nth-child(5) span[style*="#3b82f6"],
+#rencana-strategis-content .table td:nth-child(5) span[style*="#3b82f6"] {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* ============================================
+   5. ACTION BUTTONS FIX
+   ============================================ */
+
+.rs-v7-wrapper .table td:nth-child(6),
+#rencana-strategis-content .table td:nth-child(6) {
+  white-space: nowrap !important;
+}
+
+.rs-v7-wrapper .table td:nth-child(6) button,
+#rencana-strategis-content .table td:nth-child(6) button {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.rs-v7-wrapper .table td:nth-child(6) button i,
+#rencana-strategis-content .table td:nth-child(6) button i {
+  color: #ffffff !important;
+}
+
+/* View button - Blue */
+.rs-v7-wrapper .rs-view-btn,
+#rencana-strategis-content .rs-view-btn {
+  background: #0ea5e9 !important;
+}
+
+/* Edit button - Orange */
+.rs-v7-wrapper .rs-edit-btn,
+#rencana-strategis-content .rs-edit-btn {
+  background: #f59e0b !important;
+}
+
+/* Delete button - Red */
+.rs-v7-wrapper .rs-delete-btn,
+#rencana-strategis-content .rs-delete-btn {
+  background: #ef4444 !important;
+}
+
+/* ============================================
+   6. ENSURE VISIBILITY
+   ============================================ */
+
+#rencana-strategis,
+#rencana-strategis-content,
+.rs-v7-wrapper {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.rs-v7-wrapper *,
+#rencana-strategis-content * {
+  visibility: visible !important;
+}
+
+/* ============================================
+   7. RESPONSIVE FIXES
+   ============================================ */
+
+@media (max-width: 991.98px) {
+  .rs-v7-wrapper .row.g-3.mb-4 > div,
+  #rencana-strategis-content .row.g-3.mb-4 > div {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+  
+  .rs-v7-wrapper .table,
+  #rencana-strategis-content .table {
+    min-width: 900px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .rs-v7-wrapper .row.g-3.mb-4 > div,
+  #rencana-strategis-content .row.g-3.mb-4 > div {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}

@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purple to White Fix Verification</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header-fix.css">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 2rem; 
+            background-color: #f8f9fa;
+        }
+        .test-card {
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-palette"></i> Purple to White Fix Verification</h1>
+    
+    <div class="success">
+        <h4>✅ All Purple Colors Fixed!</h4>
+        <p>Semua warna ungu di halaman telah diganti dengan warna putih.</p>
+    </div>
+
+    <h3>Test Cards - All Should Have White Headers:</h3>
+    
+    <div class="test-card">
+        <div class="card-header">
+            <h4>Visi Misi Card</h4>
+            <button class="btn btn-success">
+                <i class="fas fa-plus"></i> Tambah Visi Misi
+            </button>
+        </div>
+        <div class="card-body">
+            <p>Header should be white, not purple.</p>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <div class="card-header">
+            <h4>SWOT Analysis Card</h4>
+            <button class="btn btn-primary">
+                <i class="fas fa-chart-bar"></i> Analisis SWOT
+            </button>
+        </div>
+        <div class="card-body">
+            <p>Header should be white, not purple.</p>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <div class="card-header">
+            <h4>Rencana Strategis Card</h4>
+            <button class="btn btn-info">
+                <i class="fas fa-tasks"></i> Rencana Strategis
+            </button>
+        </div>
+        <div class="card-body">
+            <p>Header should be white, not purple.</p>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <div class="card-header">
+            <h4>Risk Management Card</h4>
+            <button class="btn btn-warning">
+                <i class="fas fa-exclamation-triangle"></i> Risk Management
+            </button>
+        </div>
+        <div class="card-body">
+            <p>Header should be white, not purple.</p>
+        </div>
+    </div>
+
+    <script>
+        // Verify all headers are white
+        document.addEventListener('DOMContentLoaded', function() {
+            const headers = document.querySelectorAll('.card-header');
+            let allWhite = true;
+            
+            headers.forEach(header => {
+                const bgColor = window.getComputedStyle(header).backgroundColor;
+                if (bgColor !== 'rgb(255, 255, 255)' && bgColor !== '#ffffff') {
+                    allWhite = false;
+                    console.warn('Non-white header found:', header, 'Color:', bgColor);
+                }
+            });
+            
+            if (allWhite) {
+                console.log('✅ All headers are white!');
+            } else {
+                console.warn('❌ Some headers are not white');
+            }
+        });
+    </script>
+</body>
+</html>

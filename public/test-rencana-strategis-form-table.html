@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis - Form & Table View</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
+        .page-content { padding: 2rem; }
+        .page-header { background: #ffffff; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 8px; border-left: 4px solid #8B0000; }
+        .test-info { background: #d4edda; border: 1px solid #28a745; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+        .test-error { background: #f8d7da; border: 1px solid #dc3545; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="test-info">
+            <h4><i class="fas fa-check-circle text-success"></i> Test Rencana Strategis - Form & Table View</h4>
+            <p class="mb-0">Halaman ini menguji bahwa modul Rencana Strategis menampilkan <strong>Form Input dan Tabel</strong>, bukan list selection.</p>
+        </div>
+
+        <div id="test-status" class="mb-3">
+            <span class="badge bg-warning">Loading...</span>
+        </div>
+
+        <div id="rencana-strategis" class="page-content">
+            <div class="page-header">
+                <h1><i class="fas fa-chart-line"></i> Rencana Strategis</h1>
+                <p class="text-muted mb-0">Perencanaan Strategis Organisasi</p>
+            </div>
+            <div id="rencana-strategis-content">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-3 text-muted">Memuat modul...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Mock API
+        window.apiCall = async (url, options = {}) => {
+            console.log('API Call:', url);
+            await new Promise(r => setTimeout(r, 300));
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return [
+                    { id: '1', kode: 'RS-2025-001', nama_rencana: 'Peningkatan Kualitas Pelayanan', status: 'Aktif', periode_mulai: '2025-01-01', periode_selesai: '2025-12-31', target: 'Meningkatkan kepuasan pasien', deskripsi: 'Program peningkatan kualitas' },
+                    { id: '2', kode: 'RS-2025-002', nama_rencana: 'Digitalisasi Sistem', status: 'Draft', periode_mulai: '2025-02-01', periode_selesai: '2025-11-30', target: 'Sistem terintegrasi 100%', deskripsi: 'Implementasi sistem digital' },
+                    { id: '3', kode: 'RS-2025-003', nama_rencana: 'Pengembangan SDM', status: 'Selesai', periode_mulai: '2024-01-01', periode_selesai: '2024-12-31', target: 'Pelatihan 100% karyawan', deskripsi: 'Program pelatihan SDM' }
+                ];
+            }
+            if (url.includes('/api/visi-misi')) {
+                return [{ id: '1', visi: 'Menjadi rumah sakit terdepan', misi: 'Memberikan pelayanan terbaik' }];
+            }
+            if (url.includes('/generate/kode')) {
+                return { kode: 'RS-2025-004' };
+            }
+            return [];
+        };
+        
+        window.waitForAuthReady = async () => true;
+    </script>
+    
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <script>
+        function updateStatus(status, message, isError = false) {
+            const el = document.getElementById('test-status');
+            el.innerHTML = `<span class="badge bg-${isError ? 'danger' : 'success'}">${message}</span>`;
+        }
+        
+        function verifyDisplay() {
+            const container = document.getElementById('rencana-strategis-content');
+            const hasTable = container.querySelector('table');
+            const hasStatCards = container.querySelector('.rencana-strategis-wrapper');
+            const hasSelectionList = container.querySelector('.selection-list, .rencana-selection');
+            
+            console.log('Verification:', { hasTable: !!hasTable, hasStatCards: !!hasStatCards, hasSelectionList: !!hasSelectionList });
+            
+            if (hasTable && hasStatCards && !hasSelectionList) {
+                updateStatus('success', '✅ PASS: Form & Table displayed correctly');
+                return true;
+            } else if (hasSelectionList) {
+                updateStatus('error', '❌ FAIL: Selection list displayed (should be Form & Table)', true);
+                return false;
+            } else {
+                updateStatus('warning', '⚠️ WARNING: Content not fully loaded');
+                return false;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                updateStatus('warning', 'Loading module...');
+                
+                if (window.RencanaStrategisModule) {
+                    await window.RencanaStrategisModule.load();
+                    
+                    setTimeout(() => {
+                        verifyDisplay();
+                    }, 500);
+                } else {
+                    updateStatus('error', '❌ Module not found', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('error', '❌ Error: ' + error.message, true);
+            }
+        });
+    </script>
+</body>
+</html>

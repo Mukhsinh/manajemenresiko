@@ -1,0 +1,130 @@
+/**
+ * REMOVE RS GLOBAL BACKGROUND v2.0
+ * Menghapus tampilan "Pilih Rencana Strategis" dari semua halaman
+ * Updated: 2026-01-10
+ */
+
+/* ============================================
+   HIDE RS SELECTION LIST GLOBALLY
+   ============================================ */
+
+/* Sembunyikan selection list yang muncul sebagai background */
+.rencana-strategis-selection,
+.rs-selection-wrapper,
+.rs-selection-list,
+#rs-selection-container,
+[data-rs-selection-list] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ============================================
+   HALAMAN RENCANA STRATEGIS - CLEAN BACKGROUND
+   ============================================ */
+
+#rencana-strategis {
+    background-color: #f8f9fa !important;
+}
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#rencana-strategis-content {
+    background-color: #f8f9fa !important;
+    min-height: 400px;
+}
+
+/* ============================================
+   HIDE RS PAGE WHEN NOT ACTIVE
+   ============================================ */
+
+#rencana-strategis:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
+
+#rencana-strategis:not(.active) * {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK TO OTHER PAGES
+   ============================================ */
+
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -99999px !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   ENSURE OTHER PAGES ARE CLEAN
+   ============================================ */
+
+#dashboard.active,
+#analisis-swot.active,
+#visi-misi.active,
+#diagram-kartesius.active,
+#matriks-tows.active,
+#sasaran-strategi.active,
+#strategic-map.active,
+#indikator-kinerja-utama.active {
+    background-color: #f8f9fa !important;
+}
+
+/* ============================================
+   WRAPPER STYLING
+   ============================================ */
+
+.rencana-strategis-wrapper {
+    background-color: #f8f9fa !important;
+    padding: 1rem !important;
+}
+
+/* ============================================
+   Z-INDEX OVERRIDE
+   ============================================ */
+
+.page-content.active {
+    z-index: 1 !important;
+    position: relative !important;
+}
+
+.page-content:not(.active) {
+    z-index: -9999 !important;
+    position: absolute !important;
+    left: -99999px !important;
+}

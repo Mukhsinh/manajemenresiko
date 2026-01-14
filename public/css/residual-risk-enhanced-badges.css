@@ -1,0 +1,379 @@
+/* ============================================
+   RESIDUAL RISK ENHANCED BADGES & MATRIX
+   Warna cerah solid dengan warning berkedip
+   ============================================ */
+
+/* ============================================
+   SOLID BRIGHT BADGE COLORS
+   ============================================ */
+
+/* Badge Base Styles */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 80px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* LOW RISK - Bright Green Solid */
+.badge-low-risk,
+.badge-aman,
+.badge-rendah {
+    background-color: #10B981 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #059669 !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+.badge-low-risk:hover,
+.badge-aman:hover,
+.badge-rendah:hover {
+    background-color: #059669 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.5);
+}
+
+/* MEDIUM RISK - Bright Yellow/Amber Solid */
+.badge-medium-risk,
+.badge-normal,
+.badge-sedang {
+    background-color: #F59E0B !important;
+    color: #FFFFFF !important;
+    border: 2px solid #D97706 !important;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+}
+
+.badge-medium-risk:hover,
+.badge-normal:hover,
+.badge-sedang:hover {
+    background-color: #D97706 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.5);
+}
+
+/* HIGH RISK - Bright Orange Solid */
+.badge-high-risk,
+.badge-hati-hati,
+.badge-tinggi {
+    background-color: #F97316 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #EA580C !important;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+}
+
+.badge-high-risk:hover,
+.badge-hati-hati:hover,
+.badge-tinggi:hover {
+    background-color: #EA580C !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(249, 115, 22, 0.5);
+}
+
+/* EXTREME HIGH - Bright Red Solid */
+.badge-extreme-high,
+.badge-kritis,
+.badge-sangat-tinggi {
+    background-color: #EF4444 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #DC2626 !important;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.badge-extreme-high:hover,
+.badge-kritis:hover,
+.badge-sangat-tinggi:hover {
+    background-color: #DC2626 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.5);
+}
+
+/* SECONDARY/NEUTRAL Badge */
+.badge-secondary,
+.badge-neutral {
+    background-color: #6B7280 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #4B5563 !important;
+    box-shadow: 0 2px 6px rgba(107, 114, 128, 0.4);
+}
+
+/* REVIEWED Badge - Bright Blue */
+.badge-reviewed {
+    background-color: #3B82F6 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #2563EB !important;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+/* PENDING Badge - Bright Purple */
+.badge-pending {
+    background-color: #8B5CF6 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #7C3AED !important;
+    box-shadow: 0 2px 6px rgba(139, 92, 246, 0.4);
+}
+
+/* ============================================
+   REVIEW STATUS WARNING - BLINKING ANIMATION
+   Untuk review yang mendekati deadline < 1 bulan
+   ============================================ */
+
+/* Warning Badge - Blinking Red */
+.badge-review-warning,
+.badge-review-urgent {
+    background-color: #EF4444 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #DC2626 !important;
+    animation: blink-warning 1s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+}
+
+/* Blinking Animation */
+@keyframes blink-warning {
+    0%, 100% {
+        background-color: #EF4444;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        background-color: #DC2626;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 0 30px rgba(239, 68, 68, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+/* Pulse Animation for Icon */
+@keyframes pulse-warning {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Warning Icon inside badge */
+.badge-review-warning::before,
+.badge-review-urgent::before {
+    content: "⚠ ";
+    animation: pulse-warning 0.5s ease-in-out infinite;
+}
+
+/* Near Deadline Badge - Less urgent (1-2 weeks) */
+.badge-review-near-deadline {
+    background-color: #F97316 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #EA580C !important;
+    animation: blink-near-deadline 1.5s ease-in-out infinite;
+}
+
+@keyframes blink-near-deadline {
+    0%, 100% {
+        background-color: #F97316;
+        box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+    }
+    50% {
+        background-color: #EA580C;
+        box-shadow: 0 0 15px rgba(249, 115, 22, 0.8);
+    }
+}
+
+/* ============================================
+   RISK MATRIX ENHANCED COLORS
+   Warna lebih cerah dan solid
+   ============================================ */
+
+.risk-matrix-container {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #E5E7EB;
+}
+
+/* Matrix Legend with smaller icons */
+.risk-matrix-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: #F9FAFB;
+    border-radius: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Smaller Legend Symbols */
+.legend-symbol {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border: 2px solid #000;
+}
+
+.legend-symbol.circle {
+    border-radius: 50%;
+    background-color: #00E5FF;
+}
+
+.legend-symbol.star {
+    background-color: #FFD700;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.legend-symbol.triangle {
+    background-color: #FFFFFF;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* ============================================
+   TABLE ENHANCEMENTS
+   ============================================ */
+
+.residual-risk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.residual-risk-table th {
+    background: linear-gradient(135deg, #1E3A5F 0%, #2D4A6F 100%);
+    color: #FFFFFF;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #0F2744;
+}
+
+.residual-risk-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #E5E7EB;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.residual-risk-table tbody tr:hover {
+    background-color: #F0F9FF;
+}
+
+.residual-risk-table tbody tr:nth-child(even) {
+    background-color: #F9FAFB;
+}
+
+/* ============================================
+   STATISTICS CARDS ENHANCEMENT
+   ============================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    font-weight: 500;
+}
+
+/* Stat Card Colors */
+.stat-card.total {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card.inherent {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-card.residual {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-card.reduction {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .badge-status {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        min-width: 60px;
+    }
+    
+    .legend-symbol {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .risk-matrix-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}

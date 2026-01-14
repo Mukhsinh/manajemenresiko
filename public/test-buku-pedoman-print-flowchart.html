@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Buku Pedoman - Print & Flowchart Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/buku-pedoman.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .test-header h1 {
+            margin: 0 0 10px 0;
+        }
+        .test-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        .status-log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .status-log .error { color: #ff6b6b; }
+        .status-log .success { color: #51cf66; }
+        .status-log .info { color: #74c0fc; }
+        .status-log .warning { color: #ffd43b; }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checklist li.pass { background: #d4edda; color: #155724; }
+        .checklist li.fail { background: #f8d7da; color: #721c24; }
+        .checklist li.pending { background: #fff3cd; color: #856404; }
+        #buku-pedoman-content {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-book"></i> Test Buku Pedoman - Print & Flowchart</h1>
+        <p>Verifikasi perbaikan fungsi tombol Cetak dan Lihat Flowchart</p>
+    </div>
+
+    <div class="test-section">
+        <h2><i class="fas fa-vial"></i> Test Functions</h2>
+        <p>Klik tombol di bawah untuk menguji fungsi yang telah diperbaiki:</p>
+        
+        <div class="test-buttons">
+            <button class="btn btn-primary" onclick="testInitialize()">
+                <i class="fas fa-play"></i> Initialize Manager
+            </button>
+            <button class="btn btn-info" onclick="testPrint()">
+                <i class="fas fa-print"></i> Test Cetak
+            </button>
+            <button class="btn btn-success" onclick="testFlowchart()">
+                <i class="fas fa-project-diagram"></i> Test Flowchart
+            </button>
+            <button class="btn btn-warning" onclick="testDownloadPDF()">
+                <i class="fas fa-file-pdf"></i> Test Download PDF
+            </button>
+        </div>
+        
+        <div class="status-log" id="statusLog">
+            <div class="info">[INFO] Test page loaded. Click buttons to test functions.</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2><i class="fas fa-clipboard-check"></i> Test Checklist</h2>
+        <ul class="checklist" id="checklist">
+            <li class="pending" id="check-init">
+                <i class="fas fa-hourglass-half"></i>
+                <span>BukuPedomanManager initialized</span>
+            </li>
+            <li class="pending" id="check-data">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Handbook data loaded</span>
+            </li>
+            <li class="pending" id="check-print">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Print function works</span>
+            </li>
+            <li class="pending" id="check-flowchart">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Flowchart modal opens</span>
+            </li>
+            <li class="pending" id="check-flowchart-close">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Flowchart modal closes</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2><i class="fas fa-book-open"></i> Buku Pedoman Content</h2>
+        <div id="buku-pedoman-content">
+            <p style="color: #666; text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading buku pedoman content...
+            </p>
+        </div>
+    </div>
+
+    <script src="/js/buku-pedoman.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('statusLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateChecklist(id, status) {
+            const item = document.getElementById(id);
+            if (item) {
+                item.className = status;
+                const icon = item.querySelector('i');
+                if (status === 'pass') {
+                    icon.className = 'fas fa-check-circle';
+                } else if (status === 'fail') {
+                    icon.className = 'fas fa-times-circle';
+                }
+            }
+        }
+
+        async function testInitialize() {
+            log('Initializing BukuPedomanManager...', 'info');
+            try {
+                if (typeof initializeBukuPedoman === 'function') {
+                    await initializeBukuPedoman();
+                    log('BukuPedomanManager initialized successfully', 'success');
+                    updateChecklist('check-init', 'pass');
+                    
+                    // Check if data is loaded
+                    if (window.bukuPedomanManager && window.bukuPedomanManager.handbookData) {
+                        log('Handbook data loaded: ' + window.bukuPedomanManager.handbookData.title, 'success');
+                        updateChecklist('check-data', 'pass');
+                    } else {
+                        log('Handbook data not loaded yet', 'warning');
+                    }
+                } else {
+                    log('initializeBukuPedoman function not found', 'error');
+                    updateChecklist('check-init', 'fail');
+                }
+            } catch (error) {
+                log('Error initializing: ' + error.message, 'error');
+                updateChecklist('check-init', 'fail');
+            }
+        }
+
+        function testPrint() {
+            log('Testing print function...', 'info');
+            try {
+                if (window.bukuPedomanManager && typeof window.bukuPedomanManager.printHandbook === 'function') {
+                    window.bukuPedomanManager.printHandbook();
+                    log('Print function called successfully', 'success');
+                    updateChecklist('check-print', 'pass');
+                } else {
+                    log('bukuPedomanManager.printHandbook not available', 'error');
+                    updateChecklist('check-print', 'fail');
+                }
+            } catch (error) {
+                log('Print error: ' + error.message, 'error');
+                updateChecklist('check-print', 'fail');
+            }
+        }
+
+        function testFlowchart() {
+            log('Testing flowchart modal...', 'info');
+            try {
+                if (window.bukuPedomanManager && typeof window.bukuPedomanManager.showFlowchart === 'function') {
+                    window.bukuPedomanManager.showFlowchart();
+                    
+                    // Check if modal is visible
+                    setTimeout(() => {
+                        const modal = document.getElementById('flowchart-modal');
+                        if (modal && modal.style.display === 'flex') {
+                            log('Flowchart modal opened successfully', 'success');
+                            updateChecklist('check-flowchart', 'pass');
+                        } else {
+                            log('Flowchart modal may not be visible', 'warning');
+                        }
+                    }, 500);
+                } else {
+                    log('bukuPedomanManager.showFlowchart not available', 'error');
+                    updateChecklist('check-flowchart', 'fail');
+                }
+            } catch (error) {
+                log('Flowchart error: ' + error.message, 'error');
+                updateChecklist('check-flowchart', 'fail');
+            }
+        }
+
+        function testCloseFlowchart() {
+            log('Testing close flowchart...', 'info');
+            try {
+                if (window.bukuPedomanManager && typeof window.bukuPedomanManager.closeFlowchart === 'function') {
+                    window.bukuPedomanManager.closeFlowchart();
+                    
+                    setTimeout(() => {
+                        const modal = document.getElementById('flowchart-modal');
+                        if (!modal || modal.style.display === 'none') {
+                            log('Flowchart modal closed successfully', 'success');
+                            updateChecklist('check-flowchart-close', 'pass');
+                        }
+                    }, 300);
+                }
+            } catch (error) {
+                log('Close flowchart error: ' + error.message, 'error');
+            }
+        }
+
+        async function testDownloadPDF() {
+            log('Testing PDF download...', 'info');
+            try {
+                if (window.bukuPedomanManager && typeof window.bukuPedomanManager.downloadPDF === 'function') {
+                    await window.bukuPedomanManager.downloadPDF();
+                    log('PDF download initiated', 'success');
+                } else {
+                    log('bukuPedomanManager.downloadPDF not available', 'error');
+                }
+            } catch (error) {
+                log('PDF download error: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-initialize on page load
+        window.addEventListener('load', async () => {
+            log('Page loaded, auto-initializing...', 'info');
+            await testInitialize();
+        });
+
+        // Listen for escape key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                testCloseFlowchart();
+            }
+        });
+    </script>
+</body>
+</html>

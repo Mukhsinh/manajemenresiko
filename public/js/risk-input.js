@@ -78,7 +78,7 @@ const RiskInputModule = (() => {
   }
 
   function populatePlanSelect() {
-    const select = getEl('rencana-strategis');
+    const select = getEl('risk-rencana-strategis');
     if (!select) return;
     select.innerHTML = '<option value="">Pilih Rencana Strategis</option>';
     state.plans.forEach((plan) => {
@@ -137,7 +137,7 @@ const RiskInputModule = (() => {
     const form = getEl('risk-input-form');
     const resetBtn = getEl('reset-form-btn');
     const categorySelect = getEl('kategori-risiko');
-    const planSelect = getEl('rencana-strategis');
+    const planSelect = getEl('risk-rencana-strategis');
     const inherentBtn = getEl('btn-save-inherent');
     const residualBtn = getEl('btn-save-residual');
     const newBtn = getEl('btn-new-risk');
@@ -278,7 +278,7 @@ const RiskInputModule = (() => {
     const payload = {
       nama_unit_kerja_id: getValue('nama-unit-kerja') || null,
       kategori_risiko_id: getValue('kategori-risiko') || null,
-      rencana_strategis_id: getValue('rencana-strategis') || null,
+      rencana_strategis_id: getValue('risk-rencana-strategis') || null,
       sasaran: getValue('sasaran'),
       tanggal_registrasi: getValue('tanggal-registrasi') || null,
       penyebab_risiko: getValue('penyebab-risiko'),
@@ -330,7 +330,7 @@ const RiskInputModule = (() => {
     };
     setValue('nama-unit-kerja', risk.nama_unit_kerja_id);
     setValue('kategori-risiko', risk.kategori_risiko_id);
-    setValue('rencana-strategis', risk.rencana_strategis_id);
+    setValue('risk-rencana-strategis', risk.rencana_strategis_id);
     setValue('sasaran', risk.sasaran);
     setValue('tanggal-registrasi', risk.tanggal_registrasi ? risk.tanggal_registrasi.substring(0, 10) : '');
     setValue('penyebab-risiko', risk.penyebab_risiko);

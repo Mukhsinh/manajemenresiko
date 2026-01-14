@@ -1,0 +1,112 @@
+/**
+ * RS FORCE CORRECT DISPLAY CSS v1.0
+ * 
+ * CRITICAL: Force correct display for /rencana-strategis page
+ * Hide any selection list / dropdown that shouldn't be there
+ * 
+ * Created: 2026-01-11
+ */
+
+/* ============================================
+   FORCE CORRECT BACKGROUND - NO PURPLE!
+   ============================================ */
+
+#rencana-strategis,
+#rencana-strategis.page-content,
+#rencana-strategis.page-content.active,
+#rencana-strategis-content {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+}
+
+/* Override any inline purple background */
+#rencana-strategis[style],
+#rencana-strategis-content[style] {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+}
+
+/* ============================================
+   HIDE SELECTION LIST AGGRESSIVELY
+   ============================================ */
+
+/* Hide any element that looks like a selection list */
+#rencana-strategis-content > .card:not(:has(.rencana-strategis-wrapper)):not(:has(table)):not(:has(form)) {
+    display: none !important;
+}
+
+/* Hide list-group that is NOT inside wrapper */
+#rencana-strategis-content > .list-group,
+#rencana-strategis-content > div > .list-group {
+    display: none !important;
+}
+
+/* Hide any div that contains "Pilih Rencana Strategis" text but no table */
+#rencana-strategis-content > div:not(.rencana-strategis-wrapper):not(.text-center):not(.alert) {
+    /* Only hide if it doesn't have a table */
+}
+
+/* ============================================
+   ENSURE CORRECT DISPLAY IS VISIBLE
+   ============================================ */
+
+#rencana-strategis-content .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 100 !important;
+    background-color: #f8f9fa !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper .card {
+    display: block !important;
+    visibility: visible !important;
+    background-color: #ffffff !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper table {
+    display: table !important;
+    visibility: visible !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper form {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Loading state */
+#rencana-strategis-content > .text-center {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Alert state */
+#rencana-strategis-content > .alert {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* ============================================
+   PAGE VISIBILITY
+   ============================================ */
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#rencana-strategis:not(.active) {
+    display: none !important;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK
+   ============================================ */
+
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper {
+    display: none !important;
+}

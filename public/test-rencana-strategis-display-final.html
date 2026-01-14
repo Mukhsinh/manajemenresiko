@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Display - Final</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/rencana-strategis.css">
+    <link rel="stylesheet" href="/css/rencana-strategis-improved.css">
+    <style>
+        body {
+            background: #f5f7fa;
+            padding: 2rem;
+        }
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .test-status {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-info { background: #cce5ff; color: #004085; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h2><i class="fas fa-chart-line text-primary me-2"></i>Test Tampilan Rencana Strategis</h2>
+            <p class="text-muted mb-0">Verifikasi tampilan halaman rencana strategis dengan data sample</p>
+            <div class="test-status">
+                <span class="status-badge status-success"><i class="fas fa-check me-1"></i>CSS Loaded</span>
+                <span class="status-badge status-info"><i class="fas fa-info-circle me-1"></i>Module v4.0</span>
+            </div>
+        </div>
+
+        <!-- Simulated Page Content -->
+        <div id="rencana-strategis" class="page-content active">
+            <div class="page-header mb-4">
+                <h1 class="page-title"><i class="page-title-icon fas fa-chart-line me-2"></i>Rencana Strategis</h1>
+                <p class="page-subtitle text-muted">Perencanaan Strategis Organisasi</p>
+            </div>
+            <div id="rencana-strategis-content">
+                <!-- Content will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mock API function
+        window.apiCall = async function(url) {
+            console.log('API Call:', url);
+            
+            if (url.includes('/api/rencana-strategis/generate/kode')) {
+                return { kode: 'RS-2026-001' };
+            }
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return [
+                    {
+                        id: '1',
+                        kode: 'RS-2026-001',
+                        nama_rencana: 'Peningkatan Mutu Pelayanan Kesehatan',
+                        deskripsi: 'Program strategis untuk meningkatkan kualitas pelayanan kesehatan di seluruh unit kerja rumah sakit',
+                        target: 'Mencapai akreditasi paripurna dan kepuasan pasien 90%',
+                        periode_mulai: '2026-01-01',
+                        periode_selesai: '2026-12-31',
+                        status: 'Aktif'
+                    },
+                    {
+                        id: '2',
+                        kode: 'RS-2026-002',
+                        nama_rencana: 'Transformasi Digital Rumah Sakit',
+                        deskripsi: 'Implementasi sistem informasi terintegrasi untuk mendukung operasional rumah sakit',
+                        target: 'Digitalisasi 100% proses administrasi',
+                        periode_mulai: '2026-01-01',
+                        periode_selesai: '2027-06-30',
+                        status: 'Draft'
+                    },
+                    {
+                        id: '3',
+                        kode: 'RS-2025-003',
+                        nama_rencana: 'Pengembangan SDM Kesehatan',
+                        deskripsi: 'Program pelatihan dan pengembangan kompetensi tenaga kesehatan',
+                        target: 'Peningkatan kompetensi 80% tenaga kesehatan',
+                        periode_mulai: '2025-01-01',
+                        periode_selesai: '2025-12-31',
+                        status: 'Selesai'
+                    },
+                    {
+                        id: '4',
+                        kode: 'RS-2026-004',
+                        nama_rencana: 'Efisiensi Operasional',
+                        deskripsi: 'Optimalisasi proses bisnis untuk meningkatkan efisiensi operasional',
+                        target: 'Pengurangan biaya operasional 15%',
+                        periode_mulai: '2026-03-01',
+                        periode_selesai: '2026-12-31',
+                        status: 'Aktif'
+                    }
+                ];
+            }
+            
+            if (url.includes('/api/visi-misi')) {
+                return [
+                    {
+                        id: 'vm-1',
+                        visi: 'Menjadi Rumah Sakit Terdepan dalam Pelayanan Kesehatan',
+                        misi: '1. Memberikan pelayanan kesehatan berkualitas\n2. Mengembangkan SDM profesional\n3. Menerapkan teknologi terkini',
+                        tahun: 2026
+                    }
+                ];
+            }
+            
+            return [];
+        };
+
+        // Load the module
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inline module for testing
+            const RencanaStrategisModule = (() => {
+                const state = {
+                    data: [],
+                    missions: [],
+                    currentId: null,
+                    formValues: {},
+                    isLoading: false,
+                    isInitialized: false,
+                    showForm: false
+                };
+
+                const getEl = (id) => document.getElementById(id);
+
+                async function load() {
+                    console.log('🚀 Loading Rencana Strategis Module...');
+                    
+                    const container = getEl('rencana-strategis-content');
+                    if (!container) return;
+
+                    container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-3 text-muted">Memuat data...</p></div>';
+
+                    // Fetch data
+                    state.data = await window.apiCall('/api/rencana-strategis');
+                    state.missions = await window.apiCall('/api/visi-misi');
+
+                    // Render
+                    renderInterface();
+                    console.log('✅ Module loaded successfully');
+                }
+
+                function renderInterface() {
+                    const container = getEl('rencana-strategis-content');
+                    if (!container) return;
+
+                    let html = '<div class="rencana-strategis-wrapper p-3">';
+                    html += renderStatCards();
+                    if (state.showForm) html += renderFormCard();
+                    html += renderTableCard();
+                    html += '</div>';
+
+                    container.innerHTML = html;
+                    bindEvents();
+                }
+
+                function renderStatCards() {
+                    const aktif = state.data.filter(i => i.status === 'Aktif').length;
+                    const draft = state.data.filter(i => i.status === 'Draft').length;
+                    const selesai = state.data.filter(i => i.status === 'Selesai').length;
+                    const total = state.data.length;
+
+                    return `
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);">
+                                    <div class="card-body text-center py-4">
+                                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: rgba(40, 167, 69, 0.2);">
+                                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                                        </div>
+                                        <h2 class="fw-bold text-success mb-1">${aktif}</h2>
+                                        <p class="text-muted mb-0 small">Rencana Aktif</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);">
+                                    <div class="card-body text-center py-4">
+                                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: rgba(255, 193, 7, 0.2);">
+                                            <i class="fas fa-edit fa-2x text-warning"></i>
+                                        </div>
+                                        <h2 class="fw-bold text-warning mb-1">${draft}</h2>
+                                        <p class="text-muted mb-0 small">Draft</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%);">
+                                    <div class="card-body text-center py-4">
+                                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: rgba(0, 123, 255, 0.2);">
+                                            <i class="fas fa-flag-checkered fa-2x text-primary"></i>
+                                        </div>
+                                        <h2 class="fw-bold text-primary mb-1">${selesai}</h2>
+                                        <p class="text-muted mb-0 small">Selesai</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%);">
+                                    <div class="card-body text-center py-4">
+                                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: rgba(108, 117, 125, 0.2);">
+                                            <i class="fas fa-list fa-2x text-secondary"></i>
+                                        </div>
+                                        <h2 class="fw-bold text-secondary mb-1">${total}</h2>
+                                        <p class="text-muted mb-0 small">Total Rencana</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                function renderFormCard() {
+                    return `
+                        <div class="card mb-4 shadow-sm" id="rs-form-section">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Tambah Rencana Strategis Baru</h5>
+                                <button type="button" class="btn btn-light btn-sm" id="rs-close-form"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="card-body">
+                                <form id="rs-form">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold"><i class="fas fa-barcode me-1"></i> Kode</label>
+                                            <input type="text" class="form-control bg-light" value="RS-2026-005" readonly>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold"><i class="fas fa-flag me-1"></i> Status</label>
+                                            <select class="form-select">
+                                                <option value="Draft" selected>Draft</option>
+                                                <option value="Aktif">Aktif</option>
+                                                <option value="Selesai">Selesai</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold"><i class="fas fa-bullseye me-1"></i> Misi</label>
+                                            <select class="form-select">
+                                                <option value="">-- Pilih Misi --</option>
+                                                <option>Memberikan pelayanan kesehatan berkualitas</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold"><i class="fas fa-file-alt me-1"></i> Nama Rencana <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="Masukkan nama rencana strategis">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold"><i class="fas fa-calendar-alt me-1"></i> Periode Mulai</label>
+                                            <input type="date" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold"><i class="fas fa-calendar-check me-1"></i> Periode Selesai</label>
+                                            <input type="date" class="form-control">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold"><i class="fas fa-align-left me-1"></i> Deskripsi</label>
+                                            <textarea class="form-control" rows="3" placeholder="Masukkan deskripsi"></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold"><i class="fas fa-crosshairs me-1"></i> Target</label>
+                                            <textarea class="form-control" rows="2" placeholder="Masukkan target"></textarea>
+                                        </div>
+                                        <div class="col-12 pt-3 border-top">
+                                            <button type="submit" class="btn btn-primary me-2"><i class="fas fa-save me-1"></i> Simpan</button>
+                                            <button type="button" class="btn btn-outline-secondary"><i class="fas fa-undo me-1"></i> Reset</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                function renderTableCard() {
+                    return `
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 flex-wrap gap-2">
+                                <h5 class="mb-0"><i class="fas fa-table text-primary me-2"></i>Daftar Rencana Strategis</h5>
+                                <div class="btn-group">
+                                    <button class="btn btn-success" id="rs-add-new"><i class="fas fa-plus me-1"></i> Tambah Baru</button>
+                                    <button class="btn btn-outline-primary" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                                    <button class="btn btn-outline-success" title="Export Excel"><i class="fas fa-file-excel"></i></button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 120px;">Kode</th>
+                                                <th>Nama Rencana</th>
+                                                <th style="width: 150px;">Target</th>
+                                                <th style="width: 180px;">Periode</th>
+                                                <th style="width: 100px;">Status</th>
+                                                <th style="width: 140px; text-align: center;">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${renderTableRows()}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                function renderTableRows() {
+                    if (!state.data || state.data.length === 0) {
+                        return `
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="py-4">
+                                        <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted">Belum ada data rencana strategis</h5>
+                                        <p class="text-muted mb-3">Klik tombol "Tambah Baru" untuk menambahkan data</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+
+                    return state.data.map(item => {
+                        const statusBadge = getStatusBadge(item.status);
+                        const periode = formatPeriode(item.periode_mulai, item.periode_selesai);
+                        
+                        return `
+                            <tr>
+                                <td><span class="badge bg-light text-dark border">${item.kode || '-'}</span></td>
+                                <td>
+                                    <div class="fw-semibold">${item.nama_rencana || '-'}</div>
+                                    ${item.deskripsi ? `<small class="text-muted">${truncateText(item.deskripsi, 60)}</small>` : ''}
+                                </td>
+                                <td><small>${truncateText(item.target || '-', 40)}</small></td>
+                                <td><small class="text-muted">${periode}</small></td>
+                                <td>${statusBadge}</td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-info" title="Lihat"><i class="fas fa-eye"></i></button>
+                                        <button class="btn btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                function getStatusBadge(status) {
+                    if (status === 'Aktif') return '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Aktif</span>';
+                    if (status === 'Draft') return '<span class="badge bg-warning text-dark"><i class="fas fa-edit me-1"></i>Draft</span>';
+                    if (status === 'Selesai') return '<span class="badge bg-secondary"><i class="fas fa-flag-checkered me-1"></i>Selesai</span>';
+                    return `<span class="badge bg-light text-dark">${status || 'Draft'}</span>`;
+                }
+
+                function formatPeriode(mulai, selesai) {
+                    if (!mulai && !selesai) return '-';
+                    const formatDate = (d) => {
+                        if (!d) return '';
+                        return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                    };
+                    return `${formatDate(mulai)} - ${formatDate(selesai)}`;
+                }
+
+                function truncateText(text, maxLength) {
+                    if (!text) return '';
+                    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+                }
+
+                function bindEvents() {
+                    const addBtn = getEl('rs-add-new');
+                    if (addBtn) {
+                        addBtn.addEventListener('click', () => {
+                            state.showForm = !state.showForm;
+                            renderInterface();
+                        });
+                    }
+
+                    const closeBtn = getEl('rs-close-form');
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', () => {
+                            state.showForm = false;
+                            renderInterface();
+                        });
+                    }
+                }
+
+                return { load };
+            })();
+
+            // Load module
+            RencanaStrategisModule.load();
+        });
+    </script>
+</body>
+</html>

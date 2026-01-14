@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Strategic Map Enhanced</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/strategic-map-enhanced.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1e3a5f;
+            margin-bottom: 15px;
+        }
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Strategic Map Enhanced</h1>
+    
+    <!-- Test 1: Badge Colors -->
+    <div class="test-section">
+        <h2>1. Badge Perspektif - Warna Solid Cerah</h2>
+        <div class="badge-row">
+            <span class="badge-perspektif badge-eksternal-stakeholder">EKSTERNAL STAKEHOLDER</span>
+            <span class="badge-perspektif badge-internal-business-process">INTERNAL BUSINESS PROCESS</span>
+            <span class="badge-perspektif badge-learning-growth">LEARNING & GROWTH</span>
+            <span class="badge-perspektif badge-financial">FINANCIAL</span>
+            <span class="badge-perspektif badge-default">DEFAULT</span>
+        </div>
+        <p>✅ Badge harus memiliki warna solid cerah: Biru, Hijau, Kuning/Orange, Merah</p>
+    </div>
+    
+    <!-- Test 2: Scrollable Table -->
+    <div class="test-section" id="strategic-map">
+        <h2>2. Tabel Scrollable</h2>
+        <div class="strategic-map-table-container" style="max-height: 300px;">
+            <table class="strategic-map-table">
+                <thead>
+                    <tr>
+                        <th style="width: 200px;">Perspektif</th>
+                        <th>Sasaran Strategi</th>
+                        <th style="width: 100px;">Posisi X</th>
+                        <th style="width: 100px;">Posisi Y</th>
+                        <th style="width: 120px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge-perspektif badge-eksternal-stakeholder">EKSTERNAL STAKEHOLDER</span></td>
+                        <td>Terwujudnya implementasi sistem AI powered patient safety monitoring dengan tingkat akurasi prediksi risiko ≥ 95%</td>
+                        <td style="text-align: center;">100</td>
+                        <td style="text-align: center;">100</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('1')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('1')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-perspektif badge-internal-business-process">INTERNAL BUSINESS PROCESS</span></td>
+                        <td>Terwujudnya implementasi comprehensive electronic health record dengan interoperability 100%</td>
+                        <td style="text-align: center;">400</td>
+                        <td style="text-align: center;">100</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('2')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('2')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-perspektif badge-learning-growth">LEARNING & GROWTH</span></td>
+                        <td>Terwujudnya pengembangan program pelatihan berbasis VR/AR simulation dengan 500 peserta didik per tahun</td>
+                        <td style="text-align: center;">700</td>
+                        <td style="text-align: center;">100</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('3')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('3')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-perspektif badge-financial">FINANCIAL</span></td>
+                        <td>Terwujudnya hasil 20 publikasi ilmiah terakreditasi dan 5 inovasi teknologi kesehatan</td>
+                        <td style="text-align: center;">1000</td>
+                        <td style="text-align: center;">100</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('4')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('4')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- More rows for scroll testing -->
+                    <tr>
+                        <td><span class="badge-perspektif badge-eksternal-stakeholder">EKSTERNAL STAKEHOLDER</span></td>
+                        <td>Sasaran strategi tambahan untuk testing scroll</td>
+                        <td style="text-align: center;">100</td>
+                        <td style="text-align: center;">200</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('5')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('5')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-perspektif badge-internal-business-process">INTERNAL BUSINESS PROCESS</span></td>
+                        <td>Sasaran strategi tambahan untuk testing scroll</td>
+                        <td style="text-align: center;">400</td>
+                        <td style="text-align: center;">200</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('6')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('6')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-perspektif badge-learning-growth">LEARNING & GROWTH</span></td>
+                        <td>Sasaran strategi tambahan untuk testing scroll</td>
+                        <td style="text-align: center;">700</td>
+                        <td style="text-align: center;">200</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('7')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('7')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-perspektif badge-financial">FINANCIAL</span></td>
+                        <td>Sasaran strategi tambahan untuk testing scroll</td>
+                        <td style="text-align: center;">1000</td>
+                        <td style="text-align: center;">200</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-action-edit" onclick="testEdit('8')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-action-delete" onclick="testDelete('8')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>✅ Tabel harus bisa di-scroll naik dan turun. Header tetap sticky di atas.</p>
+    </div>
+    
+    <!-- Test 3: Edit Button -->
+    <div class="test-section">
+        <h2>3. Tombol Edit</h2>
+        <p>Klik tombol edit (biru) di tabel untuk membuka modal edit.</p>
+        <div id="edit-result" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 4px; display: none;"></div>
+    </div>
+    
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+    
+    <script>
+        function testEdit(id) {
+            const resultDiv = document.getElementById('edit-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<strong>✅ Tombol Edit berfungsi!</strong><br>ID yang diklik: ${id}`;
+            
+            // Show modal
+            showEditModal(id);
+        }
+        
+        function testDelete(id) {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                alert('Delete ID: ' + id);
+            }
+        }
+        
+        function showEditModal(id) {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.innerHTML = `
+                <div class="sm-modal-overlay" id="test-modal" onclick="if(event.target === this) this.remove()">
+                    <div class="sm-modal-content">
+                        <div class="sm-modal-header">
+                            <h3 class="sm-modal-title">Edit Posisi Strategic Map</h3>
+                            <button class="sm-modal-close" onclick="document.getElementById('test-modal').remove()">&times;</button>
+                        </div>
+                        <form onsubmit="event.preventDefault(); alert('Simpan berhasil!'); document.getElementById('test-modal').remove();">
+                            <div class="sm-form-group">
+                                <label class="sm-form-label">Perspektif</label>
+                                <input type="text" class="sm-form-input" value="EKSTERNAL STAKEHOLDER" disabled style="background: #f1f5f9;">
+                            </div>
+                            <div class="sm-form-group">
+                                <label class="sm-form-label">Sasaran Strategi</label>
+                                <input type="text" class="sm-form-input" value="Sasaran Strategi ${id}" disabled style="background: #f1f5f9;">
+                            </div>
+                            <div class="sm-form-group">
+                                <label class="sm-form-label">Posisi X</label>
+                                <input type="number" class="sm-form-input" value="100" step="1" required>
+                            </div>
+                            <div class="sm-form-group">
+                                <label class="sm-form-label">Posisi Y</label>
+                                <input type="number" class="sm-form-input" value="100" step="1" required>
+                            </div>
+                            <div class="sm-form-group">
+                                <label class="sm-form-label">Warna</label>
+                                <input type="color" class="sm-form-input" value="#0ea5e9" style="height: 45px; padding: 4px;">
+                            </div>
+                            <div class="sm-modal-actions">
+                                <button type="button" class="sm-btn sm-btn-secondary" onclick="document.getElementById('test-modal').remove()">Batal</button>
+                                <button type="submit" class="sm-btn sm-btn-primary">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+    
+    <style>
+        /* Modal styles for test */
+        .sm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .sm-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sm-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .sm-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+        }
+        
+        .sm-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.8;
+        }
+        
+        .sm-modal-close:hover { opacity: 1; }
+        
+        .sm-modal-content form {
+            padding: 20px;
+        }
+        
+        .sm-form-group {
+            margin-bottom: 16px;
+        }
+        
+        .sm-form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .sm-form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            box-sizing: border-box;
+        }
+        
+        .sm-form-input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+        
+        .sm-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .sm-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .sm-btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .sm-btn-secondary:hover { background: #e2e8f0; }
+        
+        .sm-btn-primary {
+            background: #0ea5e9;
+            color: white;
+        }
+        
+        .sm-btn-primary:hover { background: #0284c7; }
+        
+        /* Badge styles */
+        .badge-perspektif {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        
+        .badge-eksternal-stakeholder {
+            background-color: #0ea5e9 !important;
+            color: #ffffff !important;
+        }
+        
+        .badge-internal-business-process {
+            background-color: #22c55e !important;
+            color: #ffffff !important;
+        }
+        
+        .badge-learning-growth {
+            background-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+        
+        .badge-financial {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+        }
+        
+        .badge-default {
+            background-color: #6b7280 !important;
+            color: #ffffff !important;
+        }
+        
+        /* Table styles */
+        .strategic-map-table-container {
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        .strategic-map-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .strategic-map-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .strategic-map-table thead th {
+            background: #1e3a5f;
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .strategic-map-table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .strategic-map-table tbody tr:hover {
+            background-color: #f0f9ff;
+        }
+        
+        .strategic-map-table tbody td {
+            padding: 12px 16px;
+            vertical-align: middle;
+        }
+        
+        /* Action buttons */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            margin: 0 3px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .btn-action-edit {
+            background-color: #0ea5e9;
+            color: white;
+        }
+        
+        .btn-action-edit:hover {
+            background-color: #0284c7;
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+        }
+        
+        .btn-action-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .btn-action-delete:hover {
+            background-color: #dc2626;
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+    </style>
+</body>
+</html>

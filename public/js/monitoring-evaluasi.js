@@ -1,43 +1,66 @@
 // Monitoring & Evaluasi Risiko Module
+// Enhanced version with fixed edit/delete buttons, bright colors, and scrollable table
 const MonitoringEvaluasi = {
+    currentData: [],
+    _boundClickHandler: null, // Store bound handler for proper removal
+    
     async load() {
         try {
             console.log('=== LOADING MONITORING EVALUASI ===');
-            let data;
             
-            try {
-                // Try authenticated endpoint first
-                data = await apiCall('/api/monitoring-evaluasi');
-                console.log('Authenticated API success:', data?.length || 0);
-            } catch (authError) {
-                console.warn('Authenticated API failed, trying test endpoint:', authError.message);
-                
-                // Fallback to test endpoint
+            // Load enhanced CSS
+            if (!document.querySelector('link[href*="monitoring-evaluasi-enhanced.css"]')) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '/css/monitoring-evaluasi-enhanced.css';
+                document.head.appendChild(link);
+            }
+            
+            const content = document.getElementById('monitoring-evaluasi-content');
+            if (!content) {
+                console.error('Content container not found');
+                return;
+            }
+            
+            // Show loading
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <div class="loading-spinner mx-auto mb-3" style="width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                        <p>Memuat data...</p>
+                        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+                    </div>
+                </div>
+            `;
+            
+            let data = [];
+            
+            // Try multiple endpoints
+            const endpoints = [
+                '/api/monitoring-evaluasi',
+                '/api/monitoring-evaluasi/test',
+                '/api/monitoring-evaluasi/simple'
+            ];
+            
+            for (const endpoint of endpoints) {
                 try {
-                    data = await apiCall('/api/monitoring-evaluasi/test');
-                    console.log('Test API success:', data?.length || 0);
-                } catch (testError) {
-                    console.warn('Test API failed, trying debug endpoint:', testError.message);
-                    
-                    // Final fallback to debug endpoint
-                    try {
-                        const debugResponse = await apiCall('/api/debug-monitoring');
-                        data = debugResponse.data || [];
-                        console.log('Debug API success:', data?.length || 0);
-                    } catch (debugError) {
-                        console.error('All APIs failed:', debugError.message);
-                        throw new Error('Tidak dapat memuat data monitoring evaluasi. Silakan refresh halaman.');
-                    }
+                    data = await apiCall(endpoint);
+                    console.log(`Success from ${endpoint}:`, data?.length || 0);
+                    break;
+                } catch (err) {
+                    console.warn(`Failed ${endpoint}:`, err.message);
                 }
             }
             
+            this.currentData = data || [];
             this.render(data);
         } catch (error) {
             console.error('Error loading monitoring evaluasi:', error);
             document.getElementById('monitoring-evaluasi-content').innerHTML = `
                 <div class="card">
-                    <div class="card-body">
-                        <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error memuat data</h5>
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size:3rem;"></i>
+                        <h5 class="mt-3 text-danger">Error memuat data</h5>
                         <p>${error.message}</p>
                         <button onclick="MonitoringEvaluasi.load()" class="btn btn-primary">Coba Lagi</button>
                     </div>
@@ -46,14 +69,46 @@ const MonitoringEvaluasi = {
         }
     },
 
+    // Helper functions for badges
+    getStatusBadge(status) {
+        const statusLower = (status || '').toLowerCase();
+        let badgeClass = 'status-default';
+        
+        if (statusLower.includes('stabil')) badgeClass = 'status-stabil';
+        else if (statusLower.includes('meningkat')) badgeClass = 'status-meningkat';
+        else if (statusLower.includes('menurun')) badgeClass = 'status-menurun';
+        
+        return `<span class="status-badge ${badgeClass}">${status || '-'}</span>`;
+    },
+    
+    getProgressBadge(progress) {
+        const value = parseInt(progress) || 0;
+        let badgeClass = 'progress-low';
+        
+        if (value >= 100) badgeClass = 'progress-complete';
+        else if (value >= 75) badgeClass = 'progress-high';
+        else if (value >= 50) badgeClass = 'progress-medium';
+        else if (value >= 25) badgeClass = 'progress-medium';
+        
+        return `
+            <span class="progress-badge ${badgeClass}">
+                <div class="progress-bar-mini">
+                    <div class="fill" style="width: ${Math.min(value, 100)}%"></div>
+                </div>
+                <span>${value}%</span>
+            </span>
+        `;
+    },
+
     render(data) {
         const content = document.getElementById('monitoring-evaluasi-content');
+        if (!content) return;
         
         // Calculate statistics
         const stats = {
             total: data.length,
-            completed: data.filter(d => d.progress_mitigasi >= 100).length,
-            inProgress: data.filter(d => d.progress_mitigasi > 0 && d.progress_mitigasi < 100).length,
+            completed: data.filter(d => (d.progress_mitigasi || 0) >= 100).length,
+            inProgress: data.filter(d => (d.progress_mitigasi || 0) > 0 && (d.progress_mitigasi || 0) < 100).length,
             notStarted: data.filter(d => !d.progress_mitigasi || d.progress_mitigasi === 0).length,
             avgProgress: data.length > 0 ? (data.reduce((sum, d) => sum + (d.progress_mitigasi || 0), 0) / data.length).toFixed(1) : 0
         };
@@ -63,95 +118,83 @@ const MonitoringEvaluasi = {
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <h3 class="card-title" style="margin: 0;"><i class="fas fa-tasks"></i> Monitoring & Evaluasi Risiko</h3>
                     <div class="action-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-                        <button class="btn btn-warning btn-sm" onclick="MonitoringEvaluasi.downloadTemplate()" title="Unduh Template">
-                            <i class="fas fa-download"></i> <span class="btn-text">Unduh Template</span>
+                        <button class="btn btn-warning btn-sm btn-monitoring-download-template" title="Unduh Template">
+                            <i class="fas fa-download"></i> <span class="btn-text">Template</span>
                         </button>
-                        <button class="btn btn-success btn-sm" onclick="MonitoringEvaluasi.showImportModal()" title="Import Data">
-                            <i class="fas fa-upload"></i> <span class="btn-text">Import Data</span>
+                        <button class="btn btn-success btn-sm btn-monitoring-import" title="Import Data">
+                            <i class="fas fa-upload"></i> <span class="btn-text">Import</span>
                         </button>
-                        <button class="btn btn-primary btn-sm" onclick="MonitoringEvaluasi.showAddModal()" title="Tambah Monitoring">
-                            <i class="fas fa-plus"></i> <span class="btn-text">Tambah Monitoring</span>
+                        <button class="btn btn-primary btn-sm btn-monitoring-add" title="Tambah Monitoring">
+                            <i class="fas fa-plus"></i> <span class="btn-text">Tambah</span>
                         </button>
-                        <button class="btn btn-info btn-sm" onclick="MonitoringEvaluasi.downloadReport()" title="Unduh Laporan">
-                            <i class="fas fa-file-pdf"></i> <span class="btn-text">Unduh Laporan</span>
+                        <button class="btn btn-info btn-sm btn-monitoring-report" title="Unduh Laporan">
+                            <i class="fas fa-file-pdf"></i> <span class="btn-text">Laporan</span>
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Statistics -->
-                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.total}</div>
-                            <div style="font-size: 0.875rem; opacity: 0.9;">Total Monitoring</div>
+                    <!-- Statistics with Bright Solid Colors -->
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="stat-card" style="background: #10B981; padding: 1.25rem; border-radius: 8px; color: white; text-align: center;">
+                            <div style="font-size: 1.75rem; font-weight: bold;">${stats.total}</div>
+                            <div style="font-size: 0.75rem;">Total</div>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.completed}</div>
-                            <div style="font-size: 0.875rem; opacity: 0.9;">Completed (100%)</div>
+                        <div class="stat-card" style="background: #3B82F6; padding: 1.25rem; border-radius: 8px; color: white; text-align: center;">
+                            <div style="font-size: 1.75rem; font-weight: bold;">${stats.completed}</div>
+                            <div style="font-size: 0.75rem;">Selesai (100%)</div>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.inProgress}</div>
-                            <div style="font-size: 0.875rem; opacity: 0.9;">In Progress</div>
+                        <div class="stat-card" style="background: #F59E0B; padding: 1.25rem; border-radius: 8px; color: white; text-align: center;">
+                            <div style="font-size: 1.75rem; font-weight: bold;">${stats.inProgress}</div>
+                            <div style="font-size: 0.75rem;">Dalam Proses</div>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.avgProgress}%</div>
-                            <div style="font-size: 0.875rem; opacity: 0.9;">Avg Progress</div>
+                        <div class="stat-card" style="background: #EF4444; padding: 1.25rem; border-radius: 8px; color: white; text-align: center;">
+                            <div style="font-size: 1.75rem; font-weight: bold;">${stats.notStarted}</div>
+                            <div style="font-size: 0.75rem;">Belum Mulai</div>
                         </div>
                     </div>
                     
-                    <!-- Progress Chart -->
-                    ${data.length > 0 ? `
-                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-                        <h4 style="margin-bottom: 1rem;"><i class="fas fa-chart-line"></i> Progress Mitigasi Risiko</h4>
-                        <div style="position: relative; height: 300px;">
-                            <canvas id="monitoring-progress-chart"></canvas>
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Table -->
-                    <div class="table-container">
-                        <table class="table monitoring-table">
-                            <thead>
+                    <!-- Scrollable Table Container -->
+                    <div class="monitoring-table-container" style="max-height: 500px; overflow-y: auto; overflow-x: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <table class="monitoring-table" style="width: 100%; border-collapse: collapse; min-width: 900px;">
+                            <thead style="position: sticky; top: 0; z-index: 10;">
                                 <tr>
-                                    <th>Tanggal</th>
-                                    <th>Kode Risiko</th>
-                                    <th>Status Risiko</th>
-                                    <th>Nilai Risiko</th>
-                                    <th>Progress Mitigasi</th>
-                                    <th>Evaluasi</th>
-                                    <th>Aksi</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: left; font-weight: 600;">Tanggal</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: left; font-weight: 600;">Kode Risiko</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: left; font-weight: 600;">Status Risiko</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: center; font-weight: 600;">Nilai</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: left; font-weight: 600;">Progress Mitigasi</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: left; font-weight: 600;">Evaluasi</th>
+                                    <th style="background: #2c3e50; color: #fff; padding: 12px 10px; text-align: center; font-weight: 600;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${data.length === 0 ? '<tr><td colspan="7" class="text-center">Tidak ada data</td></tr>' : ''}
-                                ${data.map(item => {
-                                    const progressColor = item.progress_mitigasi >= 75 ? '#27ae60' : 
-                                                        item.progress_mitigasi >= 50 ? '#3498db' :
-                                                        item.progress_mitigasi >= 25 ? '#f39c12' : '#e74c3c';
+                                ${data.length === 0 ? `
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 2rem;">
+                                            <i class="fas fa-inbox" style="font-size: 2rem; color: #9ca3af;"></i>
+                                            <p style="margin-top: 0.5rem; color: #6b7280;">Tidak ada data</p>
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                                ${data.map((item, index) => {
                                     const evaluasiText = item.evaluasi || '-';
-                                    const shortEvaluasi = evaluasiText.length > 100 ? evaluasiText.substring(0, 100) + '...' : evaluasiText;
+                                    const shortEvaluasi = evaluasiText.length > 50 ? evaluasiText.substring(0, 50) + '...' : evaluasiText;
+                                    const rowBg = index % 2 === 0 ? '#fff' : '#f8f9fa';
                                     
                                     return `
-                                    <tr>
-                                        <td>${item.tanggal_monitoring || '-'}</td>
-                                        <td><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
-                                        <td><span class="badge-status badge-${getStatusColor(item.status_risiko)}">${item.status_risiko || '-'}</span></td>
-                                        <td style="text-align: center;">${item.nilai_risiko || '-'}</td>
-                                        <td>
-                                            <div class="progress-container">
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill" style="width:${item.progress_mitigasi || 0}%;background:${progressColor};"></div>
-                                                </div>
-                                                <span class="progress-text" style="color:${progressColor};">${item.progress_mitigasi || 0}%</span>
-                                            </div>
-                                        </td>
-                                        <td class="evaluasi-cell" title="${evaluasiText}">${shortEvaluasi}</td>
-                                        <td>
-                                            <div style="display: flex; gap: 0.25rem;">
-                                                <button class="btn btn-edit btn-sm" onclick="MonitoringEvaluasi.edit('${item.id}')" title="Edit">
+                                    <tr style="background: ${rowBg};" onmouseover="this.style.background='#e8f4fd'" onmouseout="this.style.background='${rowBg}'">
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">${item.tanggal_monitoring || '-'}</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;"><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">${this.getStatusBadge(item.status_risiko)}</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: center;">${item.nilai_risiko || '-'}</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">${this.getProgressBadge(item.progress_mitigasi)}</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${evaluasiText}">${shortEvaluasi}</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+                                            <div style="display: flex; gap: 6px; justify-content: center;">
+                                                <button class="btn-monitoring-edit" data-id="${item.id}" title="Edit" style="width: 32px; height: 32px; border-radius: 6px; border: none; background: #3B82F6; color: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button class="btn btn-delete btn-sm" onclick="MonitoringEvaluasi.delete('${item.id}')" title="Hapus">
+                                                <button class="btn-monitoring-delete" data-id="${item.id}" title="Hapus" style="width: 32px; height: 32px; border-radius: 6px; border: none; background: #EF4444; color: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -166,20 +209,91 @@ const MonitoringEvaluasi = {
             </div>
         `;
         
-        // Render progress chart - wait for Chart.js
-        if (data.length > 0) {
-            if (typeof Chart !== 'undefined') {
-                setTimeout(() => this.renderProgressChart(data), 100);
-            } else {
-                const checkChart = setInterval(() => {
-                    if (typeof Chart !== 'undefined') {
-                        clearInterval(checkChart);
-                        setTimeout(() => this.renderProgressChart(data), 100);
-                    }
-                }, 100);
-                setTimeout(() => clearInterval(checkChart), 5000);
-            }
+        // Add event delegation for edit and delete buttons
+        this.attachButtonListeners();
+    },
+    
+    // Attach event listeners using event delegation
+    attachButtonListeners() {
+        const content = document.getElementById('monitoring-evaluasi-content');
+        if (!content) {
+            console.error('Content container not found for event listeners');
+            return;
         }
+        
+        // Remove existing listener if exists (using stored bound handler)
+        if (this._boundClickHandler) {
+            content.removeEventListener('click', this._boundClickHandler);
+        }
+        
+        // Create and store bound handler
+        this._boundClickHandler = (e) => {
+            const target = e.target;
+            const editBtn = target.closest('.btn-monitoring-edit');
+            const deleteBtn = target.closest('.btn-monitoring-delete');
+            const addBtn = target.closest('.btn-monitoring-add');
+            const importBtn = target.closest('.btn-monitoring-import');
+            const templateBtn = target.closest('.btn-monitoring-download-template');
+            const reportBtn = target.closest('.btn-monitoring-report');
+            
+            if (editBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = editBtn.getAttribute('data-id');
+                console.log('🔵 Edit button clicked, ID:', id);
+                if (id) {
+                    MonitoringEvaluasi.edit(id);
+                }
+                return;
+            }
+            
+            if (deleteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = deleteBtn.getAttribute('data-id');
+                console.log('🔴 Delete button clicked, ID:', id);
+                if (id) {
+                    MonitoringEvaluasi.confirmDelete(id);
+                }
+                return;
+            }
+            
+            if (addBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('➕ Add button clicked');
+                MonitoringEvaluasi.showAddModal();
+                return;
+            }
+            
+            if (importBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📥 Import button clicked');
+                MonitoringEvaluasi.showImportModal();
+                return;
+            }
+            
+            if (templateBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📄 Download template button clicked');
+                MonitoringEvaluasi.downloadTemplate();
+                return;
+            }
+            
+            if (reportBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📊 Download report button clicked');
+                MonitoringEvaluasi.downloadReport();
+                return;
+            }
+        };
+        
+        // Add event listener
+        content.addEventListener('click', this._boundClickHandler);
+        console.log('✅ Button event listeners attached for monitoring-evaluasi');
     },
     
     renderProgressChart(data) {
@@ -258,83 +372,141 @@ const MonitoringEvaluasi = {
     },
 
     async showModal(id = null) {
-        const risks = await apiCall('/api/risks');
+        // Remove existing modal first
+        const existingModal = document.querySelector('.modal.active, .monitoring-modal');
+        if (existingModal) existingModal.remove();
+        
+        let risks = [];
+        try {
+            risks = await apiCall('/api/risks');
+        } catch (err) {
+            console.warn('Could not load risks:', err.message);
+        }
+        
         const modal = document.createElement('div');
         modal.className = 'modal active';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width:800px;">
-                <div class="modal-header">
-                    <h3 class="modal-title">${id ? 'Edit' : 'Tambah'} Monitoring & Evaluasi</h3>
-                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            <div class="modal-content" style="background:#fff;border-radius:12px;max-width:700px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div class="modal-header" style="padding:20px 24px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;background:#f8f9fa;border-radius:12px 12px 0 0;">
+                    <h3 class="modal-title" style="margin:0;font-size:1.25rem;font-weight:600;">${id ? 'Edit' : 'Tambah'} Monitoring & Evaluasi</h3>
+                    <button class="modal-close btn-close-modal" style="width:36px;height:36px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
                 </div>
-                <form id="monitoring-form" onsubmit="MonitoringEvaluasi.save(event, '${id || ''}')">
-                    <div class="form-group">
-                        <label class="form-label">Risiko *</label>
-                        <select class="form-control" id="monitoring-risk" required>
+                <form id="monitoring-form" style="padding:24px;">
+                    <input type="hidden" id="monitoring-id" value="${id || ''}">
+                    
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Risiko *</label>
+                        <select class="form-control" id="monitoring-risk" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
                             <option value="">Pilih Risiko</option>
-                            ${risks.map(r => `<option value="${r.id}">${r.kode_risiko} - ${r.sasaran?.substring(0,50)}</option>`).join('')}
+                            ${risks.map(r => `<option value="${r.id}">${r.kode_risiko} - ${(r.sasaran || '').substring(0,40)}</option>`).join('')}
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Tanggal Monitoring *</label>
-                        <input type="date" class="form-control" id="monitoring-tanggal" required>
+                    
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Tanggal Monitoring *</label>
+                            <input type="date" class="form-control" id="monitoring-tanggal" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Status Risiko</label>
+                            <select class="form-control" id="monitoring-status" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                                <option value="Stabil">Stabil</option>
+                                <option value="Meningkat">Meningkat</option>
+                                <option value="Menurun">Menurun</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Status Risiko</label>
-                        <select class="form-control" id="monitoring-status">
-                            <option value="Stabil">Stabil</option>
-                            <option value="Meningkat">Meningkat</option>
-                            <option value="Menurun">Menurun</option>
-                        </select>
+                    
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Probabilitas</label>
+                            <input type="number" class="form-control" id="monitoring-probabilitas" min="1" max="5" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Dampak</label>
+                            <input type="number" class="form-control" id="monitoring-dampak" min="1" max="5" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Nilai Risiko</label>
+                            <input type="number" class="form-control" id="monitoring-nilai" min="1" max="25" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Probabilitas</label>
-                        <input type="number" class="form-control" id="monitoring-probabilitas" min="1" max="5">
+                    
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Tindakan Mitigasi</label>
+                        <textarea class="form-control" id="monitoring-tindakan" rows="2" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;resize:vertical;"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Dampak</label>
-                        <input type="number" class="form-control" id="monitoring-dampak" min="1" max="5">
+                    
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Progress Mitigasi (%)</label>
+                            <input type="number" class="form-control" id="monitoring-progress" min="0" max="100" value="0" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Status Data</label>
+                            <select class="form-control" id="monitoring-status-data" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;">
+                                <option value="Aktif">Aktif</option>
+                                <option value="Tutup">Tutup</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Nilai Risiko</label>
-                        <input type="number" class="form-control" id="monitoring-nilai" min="1" max="25">
+                    
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label class="form-label" style="display:block;margin-bottom:6px;font-weight:500;">Evaluasi</label>
+                        <textarea class="form-control" id="monitoring-evaluasi-text" rows="3" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;resize:vertical;"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Tindakan Mitigasi</label>
-                        <textarea class="form-control" id="monitoring-tindakan" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Progress Mitigasi (%)</label>
-                        <input type="number" class="form-control" id="monitoring-progress" min="0" max="100">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Evaluasi</label>
-                        <textarea class="form-control" id="monitoring-evaluasi-text" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status Data</label>
-                        <select class="form-control" id="monitoring-status-data">
-                            <option value="Aktif">Aktif</option>
-                            <option value="Tutup">Tutup</option>
-                        </select>
-                    </div>
-                    <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1.5rem;">
-                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid #e0e0e0;">
+                        <button type="button" class="btn btn-secondary btn-close-modal" style="padding:10px 20px;border-radius:8px;background:#e5e7eb;color:#374151;border:none;cursor:pointer;">Batal</button>
+                        <button type="submit" class="btn btn-primary" style="padding:10px 20px;border-radius:8px;background:#3b82f6;color:#fff;border:none;cursor:pointer;">
+                            <i class="fas fa-save"></i> Simpan
+                        </button>
                     </div>
                 </form>
             </div>
         `;
         document.body.appendChild(modal);
-        if (id) await this.loadForEdit(id);
+        
+        // Add close button event listeners
+        modal.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.addEventListener('click', () => modal.remove());
+        });
+        
+        // Add form submit handler
+        document.getElementById('monitoring-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.save(e, id || '');
+        });
+        
+        // Set default date
+        if (!id) {
+            document.getElementById('monitoring-tanggal').value = new Date().toISOString().split('T')[0];
+        } else {
+            await this.loadForEdit(id);
+        }
     },
 
     async save(e, id) {
-        e.preventDefault();
+        if (e) e.preventDefault();
+        
+        const riskId = document.getElementById('monitoring-risk').value;
+        const tanggal = document.getElementById('monitoring-tanggal').value;
+        
+        if (!riskId) {
+            alert('Pilih risiko terlebih dahulu!');
+            return;
+        }
+        
+        if (!tanggal) {
+            alert('Tanggal monitoring harus diisi!');
+            return;
+        }
+        
         try {
             const data = {
-                risk_input_id: document.getElementById('monitoring-risk').value,
-                tanggal_monitoring: document.getElementById('monitoring-tanggal').value,
+                risk_input_id: riskId,
+                tanggal_monitoring: tanggal,
                 status_risiko: document.getElementById('monitoring-status').value,
                 tingkat_probabilitas: parseInt(document.getElementById('monitoring-probabilitas').value) || null,
                 tingkat_dampak: parseInt(document.getElementById('monitoring-dampak').value) || null,
@@ -347,48 +519,103 @@ const MonitoringEvaluasi = {
 
             if (id) {
                 await apiCall(`/api/monitoring-evaluasi/${id}`, { method: 'PUT', body: data });
+                alert('Data berhasil diupdate!');
             } else {
                 await apiCall('/api/monitoring-evaluasi', { method: 'POST', body: data });
+                alert('Data berhasil ditambahkan!');
             }
 
-            document.querySelector('.modal').remove();
+            const modal = document.querySelector('.modal');
+            if (modal) modal.remove();
+            
             await this.load();
-            alert('Monitoring berhasil disimpan');
         } catch (error) {
-            alert('Error: ' + error.message);
+            console.error('Save error:', error);
+            alert('Gagal menyimpan: ' + error.message);
+        }
+    },
+
+    confirmDelete(id) {
+        console.log('Delete clicked for ID:', id);
+        if (!id) {
+            console.error('No ID provided for delete');
+            alert('ID tidak valid');
+            return;
+        }
+        if (confirm('Yakin ingin menghapus data monitoring evaluasi ini?')) {
+            this.delete(id);
         }
     },
 
     async delete(id) {
-        if (!confirm('Yakin ingin menghapus?')) return;
         try {
+            console.log('Deleting monitoring evaluasi ID:', id);
             await apiCall(`/api/monitoring-evaluasi/${id}`, { method: 'DELETE' });
+            alert('Data berhasil dihapus!');
             await this.load();
-            alert('Data berhasil dihapus');
         } catch (error) {
-            alert('Error: ' + error.message);
+            console.error('Delete error:', error);
+            alert('Gagal menghapus: ' + error.message);
         }
     },
 
     async edit(id) {
-        await this.showModal(id);
+        console.log('Edit clicked for ID:', id);
+        if (!id) {
+            console.error('No ID provided for edit');
+            alert('ID tidak valid');
+            return;
+        }
+        try {
+            await this.showModal(id);
+        } catch (error) {
+            console.error('Error opening edit modal:', error);
+            alert('Gagal membuka form edit: ' + error.message);
+        }
     },
 
     async loadForEdit(id) {
         try {
+            console.log('Loading data for edit, ID:', id);
             const data = await apiCall(`/api/monitoring-evaluasi/${id}`);
-            document.getElementById('monitoring-risk').value = data.risk_input_id || '';
-            document.getElementById('monitoring-tanggal').value = data.tanggal_monitoring || '';
-            document.getElementById('monitoring-status').value = data.status_risiko || 'Stabil';
-            document.getElementById('monitoring-probabilitas').value = data.tingkat_probabilitas || '';
-            document.getElementById('monitoring-dampak').value = data.tingkat_dampak || '';
-            document.getElementById('monitoring-nilai').value = data.nilai_risiko || '';
-            document.getElementById('monitoring-tindakan').value = data.tindakan_mitigasi || '';
-            document.getElementById('monitoring-progress').value = data.progress_mitigasi || '';
-            document.getElementById('monitoring-evaluasi-text').value = data.evaluasi || '';
-            document.getElementById('monitoring-status-data').value = data.status || 'Aktif';
+            console.log('Loaded data:', data);
+            
+            if (data) {
+                // Set risk dropdown - need to wait for options to be available
+                const riskSelect = document.getElementById('monitoring-risk');
+                if (riskSelect && data.risk_input_id) {
+                    // Check if option exists, if not add it
+                    let optionExists = false;
+                    for (let option of riskSelect.options) {
+                        if (option.value === data.risk_input_id) {
+                            optionExists = true;
+                            break;
+                        }
+                    }
+                    if (!optionExists && data.risk_inputs) {
+                        const newOption = document.createElement('option');
+                        newOption.value = data.risk_input_id;
+                        newOption.textContent = `${data.risk_inputs.kode_risiko || 'Unknown'} - ${(data.risk_inputs.sasaran || '').substring(0, 40)}`;
+                        riskSelect.appendChild(newOption);
+                    }
+                    riskSelect.value = data.risk_input_id;
+                }
+                
+                document.getElementById('monitoring-tanggal').value = data.tanggal_monitoring || '';
+                document.getElementById('monitoring-status').value = data.status_risiko || 'Stabil';
+                document.getElementById('monitoring-probabilitas').value = data.tingkat_probabilitas || '';
+                document.getElementById('monitoring-dampak').value = data.tingkat_dampak || '';
+                document.getElementById('monitoring-nilai').value = data.nilai_risiko || '';
+                document.getElementById('monitoring-tindakan').value = data.tindakan_mitigasi || '';
+                document.getElementById('monitoring-progress').value = data.progress_mitigasi || 0;
+                document.getElementById('monitoring-evaluasi-text').value = data.evaluasi || '';
+                document.getElementById('monitoring-status-data').value = data.status || 'Aktif';
+                
+                console.log('Form populated successfully');
+            }
         } catch (error) {
-            alert('Error loading data: ' + error.message);
+            console.error('Error loading data for edit:', error);
+            alert('Gagal memuat data: ' + error.message);
         }
     },
 
@@ -420,7 +647,7 @@ const MonitoringEvaluasi = {
             <div class="modal-content" style="max-width:600px;">
                 <div class="modal-header">
                     <h3 class="modal-title">Import Data Monitoring & Evaluasi</h3>
-                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                    <button class="modal-close btn-close-modal" style="width:36px;height:36px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -443,12 +670,21 @@ const MonitoringEvaluasi = {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
-                    <button type="button" class="btn btn-primary" onclick="MonitoringEvaluasi.processImport()">Import Data</button>
+                    <button type="button" class="btn btn-secondary btn-close-modal" style="padding:10px 20px;border-radius:8px;background:#e5e7eb;color:#374151;border:none;cursor:pointer;">Batal</button>
+                    <button type="button" class="btn btn-primary btn-process-import" style="padding:10px 20px;border-radius:8px;background:#3b82f6;color:#fff;border:none;cursor:pointer;">Import Data</button>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
+        
+        // Add event listeners for modal buttons
+        modal.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.addEventListener('click', () => modal.remove());
+        });
+        
+        modal.querySelector('.btn-process-import')?.addEventListener('click', () => {
+            MonitoringEvaluasi.processImport();
+        });
     },
     
     async processImport() {
@@ -594,4 +830,43 @@ function getStatusColor(status) {
     return colorMap[status] || 'secondary';
 }
 
+// Export module to window for global access
+window.MonitoringEvaluasi = MonitoringEvaluasi;
 window.monitoringEvaluasiModule = MonitoringEvaluasi;
+
+// Ensure module is available immediately
+console.log('✅ MonitoringEvaluasi module loaded and exported to window');
+
+// Add global click handler as ultimate fallback
+document.addEventListener('click', function(e) {
+    // Only handle if MonitoringEvaluasi exists
+    if (!window.MonitoringEvaluasi) return;
+    
+    const target = e.target;
+    
+    // Check for edit button
+    if (target.closest('.btn-monitoring-edit')) {
+        const btn = target.closest('.btn-monitoring-edit');
+        const id = btn.getAttribute('data-id');
+        if (id) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔵 [Global Handler] Edit clicked, ID:', id);
+            window.MonitoringEvaluasi.edit(id);
+        }
+        return;
+    }
+    
+    // Check for delete button
+    if (target.closest('.btn-monitoring-delete')) {
+        const btn = target.closest('.btn-monitoring-delete');
+        const id = btn.getAttribute('data-id');
+        if (id) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔴 [Global Handler] Delete clicked, ID:', id);
+            window.MonitoringEvaluasi.confirmDelete(id);
+        }
+        return;
+    }
+}, true); // Use capture phase for priority

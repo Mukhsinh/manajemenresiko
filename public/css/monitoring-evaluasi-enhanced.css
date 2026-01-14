@@ -1,0 +1,462 @@
+/* Monitoring Evaluasi Enhanced Styles */
+
+/* Table Container - Scrollable */
+.monitoring-table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    margin-top: 1rem;
+}
+
+.monitoring-table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.monitoring-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.monitoring-table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.monitoring-table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Table Styles */
+.monitoring-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.monitoring-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #2c3e50;
+}
+
+.monitoring-table thead th {
+    background: #2c3e50 !important;
+    color: #fff !important;
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-bottom: 2px solid #1a252f;
+    white-space: nowrap;
+}
+
+.monitoring-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.monitoring-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.monitoring-table tbody tr:hover {
+    background-color: #e8f4fd;
+}
+
+.monitoring-table tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+/* Status Risiko Badges - Bright Solid Colors */
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    min-width: 80px;
+}
+
+.status-badge.status-stabil {
+    background-color: #10B981 !important;
+    color: #fff !important;
+}
+
+.status-badge.status-meningkat {
+    background-color: #EF4444 !important;
+    color: #fff !important;
+}
+
+.status-badge.status-menurun {
+    background-color: #3B82F6 !important;
+    color: #fff !important;
+}
+
+.status-badge.status-default {
+    background-color: #6B7280 !important;
+    color: #fff !important;
+}
+
+/* Progress Mitigasi Badges - Bright Solid Colors */
+.progress-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.progress-badge.progress-complete {
+    background-color: #10B981 !important;
+    color: #fff !important;
+}
+
+.progress-badge.progress-high {
+    background-color: #3B82F6 !important;
+    color: #fff !important;
+}
+
+.progress-badge.progress-medium {
+    background-color: #F59E0B !important;
+    color: #fff !important;
+}
+
+.progress-badge.progress-low {
+    background-color: #EF4444 !important;
+    color: #fff !important;
+}
+
+/* Progress Bar inside Badge */
+.progress-bar-mini {
+    width: 50px;
+    height: 6px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-mini .fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Action Buttons */
+.action-btn-group {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-action.btn-edit {
+    background-color: #3B82F6 !important;
+    color: #fff !important;
+}
+
+.btn-action.btn-edit:hover {
+    background-color: #2563EB !important;
+}
+
+.btn-action.btn-delete {
+    background-color: #EF4444 !important;
+    color: #fff !important;
+}
+
+.btn-action.btn-delete:hover {
+    background-color: #DC2626 !important;
+}
+
+/* Modal Styles */
+.monitoring-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.monitoring-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.monitoring-modal .modal-content {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.monitoring-modal.active .modal-content {
+    transform: translateY(0);
+}
+
+.monitoring-modal .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+
+.monitoring-modal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.monitoring-modal .modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.monitoring-modal .modal-close:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+.monitoring-modal .modal-body {
+    padding: 24px;
+}
+
+.monitoring-modal .form-group {
+    margin-bottom: 16px;
+}
+
+.monitoring-modal .form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.monitoring-modal .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.monitoring-modal .form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.monitoring-modal .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+
+.monitoring-modal .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.monitoring-modal .btn-secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.monitoring-modal .btn-secondary:hover {
+    background: #d1d5db;
+}
+
+.monitoring-modal .btn-primary {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.monitoring-modal .btn-primary:hover {
+    background: #2563eb;
+}
+
+/* Form Grid Layout */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Evaluasi Cell */
+.evaluasi-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+
+/* Edit and Delete Button Styles - Enhanced */
+.btn-monitoring-edit,
+.btn-monitoring-delete {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.btn-monitoring-edit {
+    background-color: #3B82F6 !important;
+    color: #fff !important;
+}
+
+.btn-monitoring-edit:hover {
+    background-color: #2563EB !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-monitoring-delete {
+    background-color: #EF4444 !important;
+    color: #fff !important;
+}
+
+.btn-monitoring-delete:hover {
+    background-color: #DC2626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Header Action Buttons */
+.btn-monitoring-add,
+.btn-monitoring-import,
+.btn-monitoring-download-template,
+.btn-monitoring-report {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-monitoring-add:hover,
+.btn-monitoring-import:hover,
+.btn-monitoring-download-template:hover,
+.btn-monitoring-report:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Ensure buttons are clickable */
+.btn-monitoring-edit,
+.btn-monitoring-delete,
+.btn-monitoring-add,
+.btn-monitoring-import,
+.btn-monitoring-download-template,
+.btn-monitoring-report {
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+/* Button icon alignment */
+.btn-monitoring-edit i,
+.btn-monitoring-delete i {
+    pointer-events: none;
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Risiko - Race Condition Fixed</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- KOP Header -->
+    <div id="kop-header" class="d-none">
+        <!-- KOP content will be loaded here -->
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt"></i> Manajemen Risiko
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="#" onclick="navigateToPage('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a class="nav-link" href="#" onclick="navigateToPage('rencana-strategis')">
+                    <i class="fas fa-chart-line"></i> Rencana Strategis
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="app-container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page-content">
+            <div class="container-fluid">
+                <h2>Dashboard</h2>
+                <p>Selamat datang di Sistem Manajemen Risiko</p>
+            </div>
+        </div>
+
+        <!-- Rencana Strategis Page -->
+        <div id="rencana-strategis" class="page-content">
+            <div class="container-fluid">
+                <div id="rencana-strategis-content">
+                    <!-- Content will be loaded here by race condition fix -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Core Scripts -->
+    <script src="/js/auth-state-manager.js"></script>
+    <script src="/js/config.js"></script>
+    
+    <!-- Race Condition Fix (NEW) -->
+    <script src="/js/rencana-strategis-race-condition-fix.js"></script>
+    
+    <!-- Integration Test -->
+    <script src="/js/integration-test.js"></script>
+    
+    <!-- Main App -->
+    <script src="/js/app.js"></script>
+
+    <script>
+        // Page navigation function
+        function navigateToPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                targetPage.style.display = 'block';
+                
+                // Load page-specific content
+                if (pageId === 'rencana-strategis') {
+                    // Use race condition safe loading
+                    if (window.loadRencanaStrategisSafe) {
+                        window.loadRencanaStrategisSafe();
+                    } else {
+                        console.error('Race condition fix not loaded!');
+                    }
+                }
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 App initialized with race condition fix');
+            
+            // Show dashboard by default
+            navigateToPage('dashboard');
+            
+            // Test race condition fix after 1 second
+            setTimeout(() => {
+                console.log('🧪 Testing race condition fix...');
+                navigateToPage('rencana-strategis');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

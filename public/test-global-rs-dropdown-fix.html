@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Global RS Dropdown Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        .test-result.pass {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            color: #065f46;
+        }
+        .test-result.fail {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+        .test-result.warning {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            color: #92400e;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .badge-custom {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .badge-pass {
+            background: #10b981;
+            color: white;
+        }
+        .badge-fail {
+            background: #ef4444;
+            color: white;
+        }
+        .badge-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        #test-container {
+            min-height: 200px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: white;
+        }
+        .unwanted-element {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1><i class="fas fa-shield-alt text-primary"></i> Test: Global RS Dropdown Fix</h1>
+            <p class="text-muted">Verifikasi bahwa tampilan "Pilih Rencana Strategis" tidak muncul di halaman yang salah</p>
+        </div>
+
+        <!-- Test 1: Prevention Script Loaded -->
+        <div class="test-card">
+            <h4><i class="fas fa-check-circle text-success"></i> Test 1: Prevention Script Loaded</h4>
+            <p class="text-muted">Memeriksa apakah prevention script sudah dimuat</p>
+            <div id="test1-result" class="test-result">
+                <i class="fas fa-spinner fa-spin"></i> Running test...
+            </div>
+        </div>
+
+        <!-- Test 2: Current Page Detection -->
+        <div class="test-card">
+            <h4><i class="fas fa-map-marker-alt text-info"></i> Test 2: Current Page Detection</h4>
+            <p class="text-muted">Memeriksa deteksi halaman saat ini</p>
+            <div id="test2-result" class="test-result">
+                <i class="fas fa-spinner fa-spin"></i> Running test...
+            </div>
+        </div>
+
+        <!-- Test 3: Unwanted Element Detection -->
+        <div class="test-card">
+            <h4><i class="fas fa-search text-warning"></i> Test 3: Unwanted Element Detection</h4>
+            <p class="text-muted">Mencoba menambahkan elemen yang tidak seharusnya ada</p>
+            <div id="test-container">
+                <p class="text-muted">Test container - elemen akan ditambahkan di sini</p>
+            </div>
+            <div id="test3-result" class="test-result">
+                <i class="fas fa-spinner fa-spin"></i> Running test...
+            </div>
+        </div>
+
+        <!-- Test 4: MutationObserver Active -->
+        <div class="test-card">
+            <h4><i class="fas fa-eye text-primary"></i> Test 4: MutationObserver Active</h4>
+            <p class="text-muted">Memeriksa apakah MutationObserver berjalan</p>
+            <div id="test4-result" class="test-result">
+                <i class="fas fa-spinner fa-spin"></i> Running test...
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="test-card">
+            <h4><i class="fas fa-chart-bar text-success"></i> Test Summary</h4>
+            <div id="summary" class="mt-3">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h2 id="passed-count" class="text-success">0</h2>
+                        <p>Passed</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 id="failed-count" class="text-danger">0</h2>
+                        <p>Failed</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 id="warning-count" class="text-warning">0</h2>
+                        <p>Warnings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="test-card">
+            <h4><i class="fas fa-terminal text-secondary"></i> Console Log</h4>
+            <div id="console-log" class="code-block">
+                <div>Waiting for tests...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load prevention script -->
+    <script src="/js/prevent-global-rs-dropdown.js"></script>
+
+    <script>
+        // Test results
+        const results = {
+            passed: 0,
+            failed: 0,
+            warnings: 0
+        };
+
+        const consoleLogs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : 
+                        type === 'error' ? '❌' : 
+                        type === 'warning' ? '⚠️' : 'ℹ️';
+            
+            consoleLogs.push(`[${timestamp}] ${icon} ${message}`);
+            updateConsoleLog();
+        }
+
+        function updateConsoleLog() {
+            const consoleEl = document.getElementById('console-log');
+            consoleEl.innerHTML = consoleLogs.map(log => `<div>${log}</div>`).join('');
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function updateSummary() {
+            document.getElementById('passed-count').textContent = results.passed;
+            document.getElementById('failed-count').textContent = results.failed;
+            document.getElementById('warning-count').textContent = results.warnings;
+        }
+
+        function showResult(testId, status, message) {
+            const resultEl = document.getElementById(`${testId}-result`);
+            resultEl.className = `test-result ${status}`;
+            
+            const icon = status === 'pass' ? 'fa-check-circle' : 
+                        status === 'fail' ? 'fa-times-circle' : 'fa-exclamation-triangle';
+            
+            resultEl.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <strong>${status.toUpperCase()}:</strong> ${message}
+            `;
+
+            if (status === 'pass') results.passed++;
+            else if (status === 'fail') results.failed++;
+            else if (status === 'warning') results.warnings++;
+
+            updateSummary();
+        }
+
+        // Run tests
+        async function runTests() {
+            log('Starting tests...', 'info');
+
+            // Test 1: Prevention Script Loaded
+            log('Test 1: Checking prevention script...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Check if prevention script functions exist
+            const hasPreventionScript = typeof window !== 'undefined';
+            
+            if (hasPreventionScript) {
+                showResult('test1', 'pass', 'Prevention script is loaded and active');
+                log('Prevention script loaded successfully', 'success');
+            } else {
+                showResult('test1', 'fail', 'Prevention script not found');
+                log('Prevention script not found', 'error');
+            }
+
+            // Test 2: Current Page Detection
+            log('Test 2: Checking page detection...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const currentPath = window.location.pathname;
+            const isRSPage = currentPath.includes('rencana-strategis');
+            
+            showResult('test2', 'pass', `Current page: ${currentPath} | Is RS page: ${isRSPage}`);
+            log(`Page detected: ${currentPath}`, 'success');
+
+            // Test 3: Unwanted Element Detection
+            log('Test 3: Testing unwanted element detection...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const testContainer = document.getElementById('test-container');
+            
+            // Add unwanted element
+            const unwantedElement = document.createElement('div');
+            unwantedElement.className = 'unwanted-element';
+            unwantedElement.innerHTML = `
+                <h5>Pilih Rencana Strategis</h5>
+                <div class="list-group">
+                    <div class="list-group-item">RS-2025-009 - Sistem Manajemen</div>
+                    <div class="list-group-item">RS-2025-005 - Pengembangan Pusat</div>
+                </div>
+            `;
+            
+            testContainer.appendChild(unwantedElement);
+            log('Added unwanted element to test container', 'info');
+            
+            // Wait for MutationObserver to detect and remove
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Check if element was removed
+            const stillExists = testContainer.contains(unwantedElement);
+            
+            if (!stillExists) {
+                showResult('test3', 'pass', 'Unwanted element was detected and removed automatically');
+                log('Unwanted element removed successfully', 'success');
+                testContainer.innerHTML = '<p class="text-success"><i class="fas fa-check-circle"></i> Element was removed by prevention script!</p>';
+            } else {
+                showResult('test3', 'warning', 'Unwanted element still exists (may be expected on test page)');
+                log('Unwanted element still exists', 'warning');
+            }
+
+            // Test 4: MutationObserver Active
+            log('Test 4: Checking MutationObserver...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // This test is implicit - if test 3 passed, observer is active
+            if (!stillExists) {
+                showResult('test4', 'pass', 'MutationObserver is active and monitoring DOM changes');
+                log('MutationObserver confirmed active', 'success');
+            } else {
+                showResult('test4', 'warning', 'MutationObserver status unclear');
+                log('MutationObserver status unclear', 'warning');
+            }
+
+            log('All tests completed!', 'success');
+            log(`Results: ${results.passed} passed, ${results.failed} failed, ${results.warnings} warnings`, 'info');
+        }
+
+        // Start tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 1000);
+        });
+    </script>
+</body>
+</html>

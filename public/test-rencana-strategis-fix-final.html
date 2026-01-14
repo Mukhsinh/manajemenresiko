@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Fix - Kode, Status, Badge, Tombol Aksi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/rencana-strategis.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; padding: 20px; }
+        .test-section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .test-title { font-weight: 600; color: #1e40af; margin-bottom: 15px; }
+        .test-result { padding: 10px; border-radius: 8px; margin: 5px 0; }
+        .test-pass { background: #d1fae5; color: #065f46; }
+        .test-fail { background: #fee2e2; color: #991b1b; }
+        .test-info { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h2 class="mb-4"><i class="fas fa-vial me-2"></i>Test Perbaikan Rencana Strategis</h2>
+        
+        <!-- Test Results -->
+        <div class="test-section">
+            <h5 class="test-title"><i class="fas fa-clipboard-check me-2"></i>Hasil Test</h5>
+            <div id="test-results"></div>
+        </div>
+        
+        <!-- Simulated Table -->
+        <div class="test-section">
+            <h5 class="test-title"><i class="fas fa-table me-2"></i>Preview Tabel dengan Data</h5>
+            <div id="rencana-strategis-content" class="rencana-strategis-wrapper">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Console Log -->
+        <div class="test-section">
+            <h5 class="test-title"><i class="fas fa-terminal me-2"></i>Console Log</h5>
+            <div id="console-log" style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: monospace; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Console log capture
+        const consoleLog = document.getElementById('console-log');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addLog(type, ...args) {
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ef4444' : type === 'warn' ? '#f59e0b' : '#10b981';
+            consoleLog.innerHTML += `<div style="color: ${color}">[${time}] ${args.join(' ')}</div>`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+        
+        console.log = (...args) => { originalLog(...args); addLog('log', ...args); };
+        console.error = (...args) => { originalError(...args); addLog('error', ...args); };
+        console.warn = (...args) => { originalWarn(...args); addLog('warn', ...args); };
+        
+        // Test results
+        const testResults = document.getElementById('test-results');
+        function addTestResult(name, passed, message) {
+            testResults.innerHTML += `
+                <div class="test-result ${passed ? 'test-pass' : 'test-fail'}">
+                    <i class="fas fa-${passed ? 'check-circle' : 'times-circle'} me-2"></i>
+                    <strong>${name}:</strong> ${message}
+                </div>
+            `;
+        }
+        
+        // Mock API
+        window.apiCall = async (endpoint, options = {}) => {
+            console.log('API Call:', endpoint, options?.method || 'GET');
+            
+            if (endpoint === '/api/rencana-strategis' || endpoint === '/api/rencana-strategis/public') {
+                return [
+                    { id: '1', kode: 'RS-2025-001', nama_rencana: 'Sistem Manajemen Pengetahuan', deskripsi: 'Mengembangkan sistem manajemen pengetahuan yang komprehensif', target: 'Membangun knowledge management system', status: 'Aktif', periode_mulai: '2025-01-01', periode_selesai: '2025-12-31' },
+                    { id: '2', kode: 'RS-2025-002', nama_rencana: 'Pengembangan Pusat Pendidikan', deskripsi: 'Mengembangkan pusat pendidikan dan pelatihan', target: 'Menjadi teaching hospital terakreditasi', status: 'Draft', periode_mulai: '2025-01-01', periode_selesai: '2025-12-31' },
+                    { id: '3', kode: 'RS-2025-003', nama_rencana: 'Program Inovasi Layanan', deskripsi: 'Mengembangkan program riset dan inovasi', target: 'Menghasilkan 20 publikasi ilmiah', status: 'Selesai', periode_mulai: '2025-01-01', periode_selesai: '2025-12-31' },
+                    { id: '4', kode: null, nama_rencana: 'Test Tanpa Kode', deskripsi: 'Test data tanpa kode', target: 'Test target', status: null, periode_mulai: null, periode_selesai: null }
+                ];
+            }
+            
+            if (endpoint === '/api/visi-misi' || endpoint === '/api/visi-misi/public') {
+                return [{ id: 'vm1', visi: 'Visi Test', misi: '1. Misi pertama\n2. Misi kedua' }];
+            }
+            
+            if (endpoint === '/api/rencana-strategis/generate/kode/public') {
+                return { kode: 'RS-2025-005' };
+            }
+            
+            if (options?.method === 'DELETE') {
+                console.log('Delete operation simulated');
+                return { success: true };
+            }
+            
+            return [];
+        };
+        
+        // Load module
+        const script = document.createElement('script');
+        script.src = '/js/rencana-strategis.js';
+        script.onload = async () => {
+            console.log('Module loaded, starting tests...');
+            
+            // Wait for module to initialize
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Load the module
+            if (window.RencanaStrategisModule) {
+                await window.RencanaStrategisModule.load();
+                
+                // Wait for render
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // Run tests
+                runTests();
+            } else {
+                addTestResult('Module Load', false, 'RencanaStrategisModule not found');
+            }
+        };
+        document.body.appendChild(script);
+        
+        function runTests() {
+            console.log('Running tests...');
+            
+            // Test 1: Check if table exists
+            const table = document.querySelector('.rencana-strategis-wrapper table');
+            addTestResult('Tabel Exists', !!table, table ? 'Tabel ditemukan' : 'Tabel tidak ditemukan');
+            
+            // Test 2: Check kode column
+            const kodeCells = document.querySelectorAll('.rencana-strategis-wrapper table tbody td:first-child');
+            let kodeOk = true;
+            kodeCells.forEach((cell, i) => {
+                const badge = cell.querySelector('.badge');
+                if (!badge || badge.textContent.trim() === '' || badge.textContent.trim() === '-') {
+                    // Check if it's the test data without kode (should show fallback)
+                    if (i === 3) {
+                        // This is expected for test data without kode
+                    } else {
+                        kodeOk = false;
+                    }
+                }
+            });
+            addTestResult('Kolom Kode', kodeOk, kodeOk ? 'Semua kode ditampilkan dengan benar' : 'Ada kode yang kosong');
+            
+            // Test 3: Check status column
+            const statusCells = document.querySelectorAll('.rencana-strategis-wrapper table tbody td:nth-child(5)');
+            let statusOk = true;
+            statusCells.forEach(cell => {
+                const badge = cell.querySelector('.badge');
+                if (!badge || badge.textContent.trim() === '') {
+                    statusOk = false;
+                }
+            });
+            addTestResult('Kolom Status', statusOk, statusOk ? 'Semua status ditampilkan dengan benar' : 'Ada status yang kosong');
+            
+            // Test 4: Check badge overflow
+            const badges = document.querySelectorAll('.rencana-strategis-wrapper table .badge');
+            let overflowOk = true;
+            badges.forEach(badge => {
+                const style = window.getComputedStyle(badge);
+                const parent = badge.parentElement;
+                if (badge.offsetWidth > parent.offsetWidth + 10) {
+                    overflowOk = false;
+                }
+            });
+            addTestResult('Badge Overflow', overflowOk, overflowOk ? 'Tidak ada badge yang overflow' : 'Ada badge yang overflow');
+            
+            // Test 5: Check action buttons
+            const actionBtns = document.querySelectorAll('.rencana-strategis-wrapper .rs-action-btn');
+            addTestResult('Tombol Aksi', actionBtns.length > 0, `Ditemukan ${actionBtns.length} tombol aksi`);
+            
+            // Test 6: Check action button data attributes
+            let dataAttrOk = true;
+            actionBtns.forEach(btn => {
+                if (!btn.getAttribute('data-action') || !btn.getAttribute('data-id')) {
+                    dataAttrOk = false;
+                }
+            });
+            addTestResult('Data Attributes', dataAttrOk, dataAttrOk ? 'Semua tombol memiliki data attributes' : 'Ada tombol tanpa data attributes');
+            
+            // Test 7: Test view button click
+            const viewBtn = document.querySelector('.rs-action-btn[data-action="view"]');
+            if (viewBtn) {
+                viewBtn.click();
+                setTimeout(() => {
+                    const modal = document.getElementById('rs-detail-modal');
+                    addTestResult('View Button', !!modal, modal ? 'Modal detail muncul' : 'Modal detail tidak muncul');
+                    if (modal) {
+                        const closeBtn = modal.querySelector('[data-bs-dismiss="modal"]');
+                        if (closeBtn) closeBtn.click();
+                    }
+                }, 500);
+            }
+            
+            console.log('Tests completed!');
+        }
+    </script>
+</body>
+</html>

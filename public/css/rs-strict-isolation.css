@@ -1,0 +1,138 @@
+/**
+ * RS STRICT ISOLATION CSS v2.0
+ * Ensures Rencana Strategis content ONLY appears on RS page
+ * Prevents any content leak to other pages
+ * Created: 2026-01-09
+ */
+
+/* ============================================
+   CRITICAL: Page Content Isolation
+   Note: Base styles in style.css handle display:none/block
+   This CSS adds extra isolation for RS content
+   ============================================ */
+
+/* Ensure non-active pages are completely hidden */
+.page-content:not(.active) {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Active page should be fully visible */
+.page-content.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    left: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+    z-index: 1 !important;
+}
+
+/* ============================================
+   RS Content Containment
+   ============================================ */
+
+/* RS page container - use CSS containment */
+#rencana-strategis {
+    contain: layout style !important;
+    isolation: isolate !important;
+}
+
+/* RS content wrapper */
+#rencana-strategis-content {
+    contain: layout !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* RS wrapper must stay inside its container */
+.rencana-strategis-wrapper {
+    contain: layout !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* ============================================
+   Prevent RS Elements Outside RS Page
+   ============================================ */
+
+/* Hide any RS elements that appear outside RS page */
+body > .rencana-strategis-wrapper,
+.main-content > .rencana-strategis-wrapper:not(#rencana-strategis .rencana-strategis-wrapper),
+.content-area > .rencana-strategis-wrapper:not(#rencana-strategis .rencana-strategis-wrapper) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Hide RS selection elements on non-RS pages */
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) #rs-selection-container,
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ============================================
+   RS Page Specific Styles When Active
+   ============================================ */
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#rencana-strategis.active #rencana-strategis-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 400px !important;
+}
+
+#rencana-strategis.active .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+    .rencana-strategis-wrapper {
+        padding: 0.5rem !important;
+    }
+    
+    .rencana-strategis-wrapper .card {
+        margin-bottom: 1rem !important;
+    }
+    
+    .rencana-strategis-wrapper .row.g-3 > div {
+        padding: 0.25rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .rencana-strategis-wrapper .card-header {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    
+    .rencana-strategis-wrapper .btn-group {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Rencana Strategis - Tabel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        .debug-info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .debug-info h5 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .debug-info pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h2 class="mb-4">
+            <i class="fas fa-bug text-danger"></i>
+            Debug Rencana Strategis - Tabel Tidak Muncul
+        </h2>
+
+        <!-- Debug Info -->
+        <div class="debug-info">
+            <h5><i class="fas fa-info-circle"></i> Status Loading</h5>
+            <pre id="debug-status">Memulai...</pre>
+        </div>
+
+        <div class="debug-info">
+            <h5><i class="fas fa-database"></i> Data dari API</h5>
+            <pre id="debug-data">Belum ada data...</pre>
+        </div>
+
+        <div class="debug-info">
+            <h5><i class="fas fa-code"></i> Container Status</h5>
+            <pre id="debug-container">Belum dicek...</pre>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-table"></i>
+                    Halaman Rencana Strategis
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- This is where the module should render -->
+                <div id="rencana-strategis-content" class="p-3" style="min-height: 400px; background: #f8f9fa;">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Memuat modul Rencana Strategis...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Config -->
+    <script src="/js/config.js"></script>
+    
+    <!-- Auth Service -->
+    <script src="/js/services/authService.js"></script>
+    
+    <!-- API Service -->
+    <script src="/js/services/apiService.js"></script>
+
+    <!-- Debug Script -->
+    <script>
+        const debugLog = (section, message) => {
+            const el = document.getElementById(`debug-${section}`);
+            if (el) {
+                const timestamp = new Date().toLocaleTimeString();
+                el.textContent += `\n[${timestamp}] ${message}`;
+            }
+            console.log(`[DEBUG ${section}]`, message);
+        };
+
+        // Initialize
+        debugLog('status', 'Halaman dimuat');
+        
+        // Check container
+        setTimeout(() => {
+            const container = document.getElementById('rencana-strategis-content');
+            if (container) {
+                debugLog('container', `✅ Container ditemukan: ${container.id}`);
+                debugLog('container', `   - innerHTML length: ${container.innerHTML.length}`);
+                debugLog('container', `   - Children count: ${container.children.length}`);
+            } else {
+                debugLog('container', '❌ Container TIDAK ditemukan!');
+            }
+        }, 100);
+
+        // Wait for auth and load data
+        async function testDataLoad() {
+            try {
+                debugLog('status', 'Menunggu auth ready...');
+                
+                // Wait for auth
+                if (window.waitForAuthReady) {
+                    await window.waitForAuthReady(3000);
+                    debugLog('status', '✅ Auth ready');
+                } else {
+                    debugLog('status', '⚠️ waitForAuthReady tidak tersedia');
+                }
+
+                // Test API call
+                debugLog('status', 'Memanggil API /api/rencana-strategis/public...');
+                
+                const response = await fetch('/api/rencana-strategis/public');
+                const data = await response.json();
+                
+                debugLog('data', `✅ Data diterima: ${data.length} records`);
+                debugLog('data', JSON.stringify(data.slice(0, 2), null, 2));
+
+                // Try to load module
+                debugLog('status', 'Mencoba load module...');
+                
+                if (window.RencanaStrategisModuleEnhanced) {
+                    debugLog('status', '✅ Module ditemukan, memanggil load()...');
+                    await window.RencanaStrategisModuleEnhanced.load();
+                    debugLog('status', '✅ Module.load() selesai');
+                    
+                    // Check if table rendered
+                    setTimeout(() => {
+                        const container = document.getElementById('rencana-strategis-content');
+                        const table = container?.querySelector('table');
+                        if (table) {
+                            debugLog('container', `✅ Tabel berhasil dirender!`);
+                            debugLog('container', `   - Rows: ${table.querySelectorAll('tbody tr').length}`);
+                        } else {
+                            debugLog('container', '❌ Tabel TIDAK dirender!');
+                            debugLog('container', `   - Container HTML: ${container?.innerHTML.substring(0, 200)}...`);
+                        }
+                    }, 1000);
+                } else {
+                    debugLog('status', '❌ Module TIDAK ditemukan!');
+                }
+
+            } catch (error) {
+                debugLog('status', `❌ Error: ${error.message}`);
+                console.error('Test error:', error);
+            }
+        }
+
+        // Load module script
+        const script = document.createElement('script');
+        script.src = '/js/rencana-strategis.js';
+        script.onload = () => {
+            debugLog('status', '✅ Script rencana-strategis.js loaded');
+            testDataLoad();
+        };
+        script.onerror = () => {
+            debugLog('status', '❌ Gagal load script rencana-strategis.js');
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

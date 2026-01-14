@@ -1112,12 +1112,167 @@ router.get('/strategic-map/excel', authenticateUser, async (req, res) => {
 // PDF Export endpoints (structure ready - returns JSON for now)
 router.get('/risk-register/pdf', authenticateUser, async (req, res) => {
   try {
-    res.status(501).json({ 
-      error: 'PDF export not yet implemented',
-      message: 'PDF export untuk Risk Register belum diimplementasikan. Silakan gunakan Excel export.',
-      availableFormats: ['excel'],
-      suggestion: 'Gunakan endpoint /api/reports/risk-register/excel untuk download Excel'
-    });
+    const puppeteer = require('puppeteer');
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    // Get risk register data
+    let query = client
+      .from('risk_inputs')
+      .select(`
+        *,
+        master_work_units(name),
+        master_risk_categories(name)
+      `)
+      .order('created_at', { ascending: false });
+    
+    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
+      const orgIds = Array.isArray(req.user.organizations) ? req.user.organizations : [];
+      const validOrgIds = orgIds.filter(id => id && typeof id === 'string');
+      if (validOrgIds.length > 0) {
+        query = query.in('organization_id', validOrgIds);
+      }
+    }
+    
+    const { data: riskInputs, error: riskError } = await query;
+    if (riskError) throw riskError;
+
+    const riskIds = (riskInputs || []).map(r => r.id);
+    
+    // Get analysis data
+    const [inherentResult, residualResult] = await Promise.all([
+      client.from('risk_inherent_analysis').select('*').in('risk_input_id', riskIds),
+      client.from('risk_residual_analysis').select('*').in('risk_input_id', riskIds)
+    ]);
+
+    // Merge data
+    const mergedData = (riskInputs || []).map(risk => ({
+      ...risk,
+      inherent: (inherentResult.data || []).find(a => a.risk_input_id === risk.id),
+      residual: (residualResult.data || []).find(a => a.risk_input_id === risk.id)
+    }));
+
+    // Generate HTML for PDF
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Risk Register Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            .stats { display: flex; justify-content: space-around; margin: 20px 0; }
+            .stat-box { text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; }
+            .stat-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+            .stat-label { font-size: 11px; color: #666; margin-top: 5px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 10px; }
+            th { background-color: #3498db; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .risk-low { background-color: #d4edda; color: #155724; }
+            .risk-medium { background-color: #fff3cd; color: #856404; }
+            .risk-high { background-color: #f8d7da; color: #721c24; }
+            .risk-extreme { background-color: #dc3545; color: white; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📋 Risk Register Report</h1>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value">${mergedData.length}</div>
+                <div class="stat-label">Total Risks</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">${mergedData.filter(r => r.inherent?.risk_level === 'HIGH RISK' || r.inherent?.risk_level === 'EXTREME HIGH').length}</div>
+                <div class="stat-label">High/Extreme Risks</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">${mergedData.filter(r => r.residual).length}</div>
+                <div class="stat-label">With Residual Analysis</div>
+            </div>
+        </div>
+        
+        <h2>Risk Register Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Risiko</th>
+                    <th>Unit Kerja</th>
+                    <th>Kategori</th>
+                    <th>Sasaran</th>
+                    <th>Inherent Risk</th>
+                    <th>Residual Risk</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${mergedData.map((item, idx) => {
+                  const getRiskClass = (level) => {
+                    const classes = { 'EXTREME HIGH': 'risk-extreme', 'HIGH RISK': 'risk-high', 'MEDIUM RISK': 'risk-medium', 'LOW RISK': 'risk-low' };
+                    return classes[level] || '';
+                  };
+                  return `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${item.kode_risiko || '-'}</strong></td>
+                        <td>${item.master_work_units?.name || '-'}</td>
+                        <td>${item.master_risk_categories?.name || '-'}</td>
+                        <td>${(item.sasaran || '').substring(0, 40)}${(item.sasaran || '').length > 40 ? '...' : ''}</td>
+                        <td class="${getRiskClass(item.inherent?.risk_level)}">${item.inherent?.risk_level || '-'}</td>
+                        <td class="${getRiskClass(item.residual?.risk_level)}">${item.residual?.risk_level || '-'}</td>
+                        <td>${item.status_risiko || 'Active'}</td>
+                    </tr>
+                  `;
+                }).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    // Generate PDF
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        landscape: true,
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+      browser = null;
+
+      const filename = `risk-register-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
   } catch (error) {
     console.error('Export risk register PDF error:', error);
     res.status(500).json({ error: error.message });
@@ -1125,11 +1280,148 @@ router.get('/risk-register/pdf', authenticateUser, async (req, res) => {
 });
 
 router.get('/risk-profile/pdf', authenticateUser, async (req, res) => {
-  res.status(501).json({ 
-    error: 'PDF export not yet implemented',
-    message: 'PDF export untuk Risk Profile belum diimplementasikan. Silakan gunakan Excel export.',
-    availableFormats: ['excel']
-  });
+  try {
+    const puppeteer = require('puppeteer');
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    // Get risk profile data
+    let risksQuery = client
+      .from('risk_inputs')
+      .select(`id, kode_risiko, sasaran, master_work_units(name), master_risk_categories(name)`);
+    risksQuery = buildOrganizationFilter(risksQuery, req.user);
+    const { data: userRisks } = await risksQuery;
+    const riskIds = (userRisks || []).map(r => r.id);
+
+    const { data: analysisData } = await client
+      .from('risk_inherent_analysis')
+      .select('*')
+      .in('risk_input_id', riskIds);
+
+    const mergedData = (analysisData || []).map(analysis => {
+      const risk = (userRisks || []).find(r => r.id === analysis.risk_input_id);
+      return { ...analysis, risk_inputs: risk || null };
+    });
+
+    // Calculate statistics
+    const stats = {
+      total: mergedData.length,
+      extreme: mergedData.filter(d => d.risk_level === 'EXTREME HIGH').length,
+      high: mergedData.filter(d => d.risk_level === 'HIGH RISK').length,
+      medium: mergedData.filter(d => d.risk_level === 'MEDIUM RISK').length,
+      low: mergedData.filter(d => d.risk_level === 'LOW RISK').length
+    };
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Risk Profile Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            .stats { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; }
+            .stat-box { text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin: 5px; min-width: 100px; }
+            .stat-value { font-size: 24px; font-weight: bold; }
+            .stat-label { font-size: 11px; color: #666; margin-top: 5px; }
+            .extreme { background: #dc3545; color: white; }
+            .high { background: #fd7e14; color: white; }
+            .medium { background: #ffc107; color: #333; }
+            .low { background: #28a745; color: white; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 10px; }
+            th { background-color: #6c5ce7; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📊 Risk Profile Report</h1>
+            <p>Inherent Risk Analysis</p>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box"><div class="stat-value">${stats.total}</div><div class="stat-label">Total Risks</div></div>
+            <div class="stat-box extreme"><div class="stat-value">${stats.extreme}</div><div class="stat-label">Extreme High</div></div>
+            <div class="stat-box high"><div class="stat-value">${stats.high}</div><div class="stat-label">High Risk</div></div>
+            <div class="stat-box medium"><div class="stat-value">${stats.medium}</div><div class="stat-label">Medium Risk</div></div>
+            <div class="stat-box low"><div class="stat-value">${stats.low}</div><div class="stat-label">Low Risk</div></div>
+        </div>
+        
+        <h2>Risk Profile Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Risiko</th>
+                    <th>Unit Kerja</th>
+                    <th>Kategori</th>
+                    <th>Probabilitas</th>
+                    <th>Dampak</th>
+                    <th>Risk Value</th>
+                    <th>Risk Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${mergedData.map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
+                        <td>${item.risk_inputs?.master_work_units?.name || '-'}</td>
+                        <td>${item.risk_inputs?.master_risk_categories?.name || '-'}</td>
+                        <td>${item.probability || '-'}</td>
+                        <td>${item.impact || '-'}</td>
+                        <td>${item.risk_value || '-'}</td>
+                        <td><strong>${item.risk_level || '-'}</strong></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+      browser = null;
+
+      const filename = `risk-profile-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
+  } catch (error) {
+    console.error('Export risk profile PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.get('/residual-risk/pdf', authenticateUser, async (req, res) => {
@@ -1406,43 +1698,526 @@ router.get('/residual-risk/pdf', authenticateUser, async (req, res) => {
 });
 
 router.get('/risk-appetite/pdf', authenticateUser, async (req, res) => {
-  res.status(501).json({ 
-    error: 'PDF export not yet implemented',
-    message: 'PDF export untuk Risk Appetite belum diimplementasikan. Silakan gunakan Excel export.',
-    availableFormats: ['excel']
-  });
+  try {
+    const puppeteer = require('puppeteer');
+    
+    let query = supabase
+      .from('risk_appetite')
+      .select(`*, risk_inputs(id, kode_risiko, sasaran, organization_id)`);
+    query = buildOrganizationFilter(query, req.user, 'risk_inputs.organization_id');
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Risk Appetite Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
+            th { background-color: #e74c3c; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📈 Risk Appetite Report</h1>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Risiko</th>
+                    <th>Risk Level</th>
+                    <th>Threshold</th>
+                    <th>Current Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${(data || []).map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
+                        <td>${item.risk_level || '-'}</td>
+                        <td>${item.threshold || '-'}</td>
+                        <td>${item.current_value || '-'}</td>
+                        <td>${item.status || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+
+      const filename = `risk-appetite-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
+  } catch (error) {
+    console.error('Export risk appetite PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.get('/kri/pdf', authenticateUser, async (req, res) => {
-  res.status(501).json({ 
-    error: 'PDF export not yet implemented',
-    message: 'PDF export untuk KRI belum diimplementasikan. Silakan gunakan Excel export.',
-    availableFormats: ['excel']
-  });
+  try {
+    const puppeteer = require('puppeteer');
+    
+    let query = supabase
+      .from('key_risk_indicator')
+      .select(`*, master_risk_categories(name), master_work_units(name), risk_inputs(kode_risiko)`);
+    query = buildOrganizationFilter(query, req.user);
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>KRI Dashboard Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
+            th { background-color: #27ae60; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📊 KRI Dashboard Report</h1>
+            <p>Key Risk Indicators</p>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode</th>
+                    <th>Nama Indikator</th>
+                    <th>Kategori</th>
+                    <th>Unit Kerja</th>
+                    <th>Nilai Aktual</th>
+                    <th>Status</th>
+                    <th>Periode</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${(data || []).map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${item.kode || '-'}</strong></td>
+                        <td>${item.nama_indikator || '-'}</td>
+                        <td>${item.master_risk_categories?.name || '-'}</td>
+                        <td>${item.master_work_units?.name || '-'}</td>
+                        <td>${item.nilai_aktual || '-'}</td>
+                        <td>${item.status_indikator || '-'}</td>
+                        <td>${item.periode_pengukuran || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        landscape: true,
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+
+      const filename = `kri-dashboard-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
+  } catch (error) {
+    console.error('Export KRI PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.get('/monitoring/pdf', authenticateUser, async (req, res) => {
-  res.status(501).json({ 
-    error: 'PDF export not yet implemented',
-    message: 'PDF export untuk Monitoring & Evaluasi belum diimplementasikan. Silakan gunakan Excel export.',
-    availableFormats: ['excel']
-  });
+  try {
+    const puppeteer = require('puppeteer');
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    let query = client
+      .from('monitoring_evaluasi_risiko')
+      .select(`*, risk_inputs(kode_risiko, sasaran, organization_id)`)
+      .order('tanggal_monitoring', { ascending: false });
+    query = buildOrganizationFilter(query, req.user, 'risk_inputs.organization_id');
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Monitoring & Evaluasi Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
+            th { background-color: #9b59b6; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📋 Monitoring & Evaluasi Report</h1>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Kode Risiko</th>
+                    <th>Sasaran</th>
+                    <th>Status Risiko</th>
+                    <th>Nilai Risiko</th>
+                    <th>Progress Mitigasi</th>
+                    <th>Evaluasi</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${(data || []).map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${item.tanggal_monitoring || '-'}</td>
+                        <td><strong>${item.risk_inputs?.kode_risiko || '-'}</strong></td>
+                        <td>${(item.risk_inputs?.sasaran || '').substring(0, 30)}...</td>
+                        <td>${item.status_risiko || '-'}</td>
+                        <td>${item.nilai_risiko || '-'}</td>
+                        <td>${item.progress_mitigasi || '-'}</td>
+                        <td>${(item.evaluasi || '').substring(0, 40)}...</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        landscape: true,
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+
+      const filename = `monitoring-evaluasi-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
+  } catch (error) {
+    console.error('Export monitoring PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.get('/loss-event/pdf', authenticateUser, async (req, res) => {
-  res.status(501).json({ 
-    error: 'PDF export not yet implemented',
-    message: 'PDF export untuk Loss Event belum diimplementasikan. Silakan gunakan Excel export.',
-    availableFormats: ['excel']
-  });
+  try {
+    const puppeteer = require('puppeteer');
+    
+    let query = supabase
+      .from('loss_event')
+      .select(`*, master_risk_categories(name), master_work_units(name), risk_inputs(kode_risiko)`);
+    query = buildOrganizationFilter(query, req.user);
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Loss Event Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
+            th { background-color: #e74c3c; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>⚠️ Loss Event Report</h1>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode</th>
+                    <th>Tanggal Kejadian</th>
+                    <th>Kategori</th>
+                    <th>Unit Kerja</th>
+                    <th>Deskripsi</th>
+                    <th>Nilai Kerugian</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${(data || []).map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${item.kode || '-'}</strong></td>
+                        <td>${item.tanggal_kejadian || '-'}</td>
+                        <td>${item.master_risk_categories?.name || '-'}</td>
+                        <td>${item.master_work_units?.name || '-'}</td>
+                        <td>${(item.deskripsi_kejadian || '').substring(0, 40)}...</td>
+                        <td>${item.nilai_kerugian ? 'Rp ' + Number(item.nilai_kerugian).toLocaleString('id-ID') : '-'}</td>
+                        <td>${item.status || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        landscape: true,
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+
+      const filename = `loss-event-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
+  } catch (error) {
+    console.error('Export loss event PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.get('/strategic-map/pdf', authenticateUser, async (req, res) => {
-  res.status(501).json({ 
-    error: 'PDF export not yet implemented',
-    message: 'PDF export untuk Strategic Map belum diimplementasikan. Silakan gunakan Excel export.',
-    availableFormats: ['excel']
-  });
+  try {
+    const puppeteer = require('puppeteer');
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    let query = client
+      .from('strategic_map')
+      .select('*')
+      .order('created_at', { ascending: false });
+    query = buildOrganizationFilter(query, req.user);
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Strategic Map Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #2c3e50; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
+            th { background-color: #3498db; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🗺️ Strategic Map Report</h1>
+            <p>Balanced Scorecard Perspectives</p>
+            <p>Generated: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Perspektif</th>
+                    <th>Tujuan Strategis</th>
+                    <th>Indikator</th>
+                    <th>Target</th>
+                    <th>Aktual</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${(data || []).map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${item.perspektif || '-'}</strong></td>
+                        <td>${item.tujuan_strategis || '-'}</td>
+                        <td>${item.indikator || '-'}</td>
+                        <td>${item.target || '-'}</td>
+                        <td>${item.aktual || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Risk Management System - Generated Report</p>
+            <p>© ${new Date().getFullYear()} Risk Management Application</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
+        printBackground: true
+      });
+      
+      await browser.close();
+
+      const filename = `strategic-map-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.end(pdfBuffer);
+    } catch (pdfError) {
+      if (browser) await browser.close();
+      throw new Error('Failed to generate PDF: ' + pdfError.message);
+    }
+  } catch (error) {
+    console.error('Export strategic map PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // DEBUG: PDF without auth for testing

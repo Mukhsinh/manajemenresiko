@@ -1,0 +1,311 @@
+/* Diagram Kartesius Enhanced Styles */
+
+/* Badge Kuadran dengan warna solid cerah */
+.badge-kuadran {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  min-width: 110px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.badge-kuadran-i {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+.badge-kuadran-ii {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.badge-kuadran-iii {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.badge-kuadran-iv {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+}
+
+/* Strategi badges dengan warna solid */
+.badge-strategi {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.badge-strategi-growth {
+  background-color: #16a34a !important;
+  color: #ffffff !important;
+}
+
+.badge-strategi-stability {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.badge-strategi-survival {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.badge-strategi-diversification {
+  background-color: #ea580c !important;
+  color: #ffffff !important;
+}
+
+/* Table styling untuk diagram kartesius */
+#diagram-kartesius-content .table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+#diagram-kartesius-content .table th,
+#diagram-kartesius-content .table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  overflow: visible;
+}
+
+/* Kolom widths untuk mencegah overflow */
+#diagram-kartesius-content .table th:nth-child(1),
+#diagram-kartesius-content .table td:nth-child(1) {
+  width: 70px; /* Tahun */
+}
+
+#diagram-kartesius-content .table th:nth-child(2),
+#diagram-kartesius-content .table td:nth-child(2) {
+  width: 80px; /* Kode */
+}
+
+#diagram-kartesius-content .table th:nth-child(3),
+#diagram-kartesius-content .table td:nth-child(3) {
+  width: 180px; /* Unit Kerja */
+}
+
+#diagram-kartesius-content .table th:nth-child(4),
+#diagram-kartesius-content .table td:nth-child(4) {
+  width: 100px; /* X-Axis */
+}
+
+#diagram-kartesius-content .table th:nth-child(5),
+#diagram-kartesius-content .table td:nth-child(5) {
+  width: 100px; /* Y-Axis */
+}
+
+#diagram-kartesius-content .table th:nth-child(6),
+#diagram-kartesius-content .table td:nth-child(6) {
+  width: 120px; /* Kuadran */
+  text-align: center;
+}
+
+#diagram-kartesius-content .table th:nth-child(7),
+#diagram-kartesius-content .table td:nth-child(7) {
+  width: 130px; /* Strategi */
+  text-align: center;
+}
+
+#diagram-kartesius-content .table th:nth-child(8),
+#diagram-kartesius-content .table td:nth-child(8) {
+  width: 100px; /* Aksi */
+  text-align: center;
+}
+
+/* Responsive table container */
+#diagram-kartesius-content .table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+/* Interpretasi kuadran styling */
+#diagram-kartesius-content .alert-success {
+  background-color: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+}
+
+#diagram-kartesius-content .alert-success h5 {
+  color: #166534;
+  margin-bottom: 0.5rem;
+}
+
+/* Badge status untuk interpretasi */
+.badge-status.badge-aman {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-status.badge-normal {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-status.badge-kritis {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-status.badge-hati-hati {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Button styling */
+#diagram-kartesius-content .btn-edit,
+#diagram-kartesius-content .btn-delete {
+  padding: 6px 10px;
+  margin: 2px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#diagram-kartesius-content .btn-edit {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+#diagram-kartesius-content .btn-edit:hover {
+  background-color: #2563eb;
+}
+
+#diagram-kartesius-content .btn-delete {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+#diagram-kartesius-content .btn-delete:hover {
+  background-color: #dc2626;
+}
+
+/* Filter group styling */
+#diagram-kartesius-content .filter-group {
+  background-color: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+#diagram-kartesius-content .filter-group .form-group {
+  margin-bottom: 0;
+}
+
+#diagram-kartesius-content .filter-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Chart container */
+#diagram-chart-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide legend di bawah grafik */
+#diagram-kartesius-content .chart-legend-hidden {
+  display: none !important;
+}
+
+/* Modal styling */
+#diagram-kartesius-content .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#diagram-kartesius-content .modal.active {
+  display: flex;
+}
+
+#diagram-kartesius-content .modal-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+}
+
+#diagram-kartesius-content .modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#diagram-kartesius-content .modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+#diagram-kartesius-content .modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+#diagram-kartesius-content .modal-close:hover {
+  color: #111827;
+}
+
+/* Agregasi badge */
+.badge-primary {
+  background-color: #8b5cf6 !important;
+  color: white !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.badge-secondary {
+  background-color: #6b7280 !important;
+  color: white !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}

@@ -1,0 +1,46 @@
+
+// Prevent old module conflicts
+(function() {
+    'use strict';
+    
+    console.log('🛡️ Rencana Strategis Conflict Prevention Active');
+    
+    // Remove any old modules that might be loaded
+    const oldModuleNames = [
+        'RencanaStrategisModule',
+        'RencanaStrategisRaceConditionFix',
+        'RencanaStrategisStateManager'
+    ];
+    
+    oldModuleNames.forEach(name => {
+        if (window[name]) {
+            delete window[name];
+            console.log('🧹 Removed old module:', name);
+        }
+    });
+    
+    // Prevent old modules from being re-added
+    const originalDefineProperty = Object.defineProperty;
+    Object.defineProperty = function(obj, prop, descriptor) {
+        if (obj === window && oldModuleNames.includes(prop)) {
+            console.warn('🚫 Blocked attempt to add old module:', prop);
+            return obj;
+        }
+        return originalDefineProperty.call(this, obj, prop, descriptor);
+    };
+    
+    // Clear any old cached states
+    const keysToRemove = [];
+    Object.keys(localStorage).forEach(key => {
+        if (key.includes('rencana') && key.includes('strategis') && !key.includes('enhanced')) {
+            keysToRemove.push(key);
+        }
+    });
+    
+    keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('🧹 Cleared old localStorage:', key);
+    });
+    
+    console.log('✅ Conflict prevention setup complete');
+})();

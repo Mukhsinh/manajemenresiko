@@ -1,0 +1,192 @@
+/* Analisis SWOT Badge - Solid Bright Colors */
+
+/* Badge Kategori - Solid Colors tanpa Outline */
+.badge-kategori,
+.badge-strength,
+.badge-weakness,
+.badge-opportunity,
+.badge-threat {
+  display: inline-block;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Strength - Hijau Cerah Solid */
+.badge-strength,
+.badge-kategori.badge-strength,
+span.badge-strength {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+/* Weakness - Merah Cerah Solid */
+.badge-weakness,
+.badge-kategori.badge-weakness,
+span.badge-weakness {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+/* Opportunity - Biru Cerah Solid */
+.badge-opportunity,
+.badge-kategori.badge-opportunity,
+span.badge-opportunity {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+/* Threat - Kuning/Orange Cerah Solid */
+.badge-threat,
+.badge-kategori.badge-threat,
+span.badge-threat {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+/* Override untuk tabel SWOT */
+.swot-table .badge-strength,
+.swot-table .badge-weakness,
+.swot-table .badge-opportunity,
+.swot-table .badge-threat,
+#swotTableBody .badge-strength,
+#swotTableBody .badge-weakness,
+#swotTableBody .badge-opportunity,
+#swotTableBody .badge-threat {
+  padding: 5px 10px;
+  font-size: 10px;
+  min-width: 85px;
+  text-align: center;
+}
+
+/* Kolom Kategori */
+.kategori-column {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Action Buttons - Solid Colors */
+.btn-icon.btn-edit,
+.btn-edit {
+  background-color: #0ea5e9 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon.btn-edit:hover,
+.btn-edit:hover {
+  background-color: #0284c7 !important;
+  transform: translateY(-1px);
+}
+
+.btn-icon.btn-delete,
+.btn-delete {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon.btn-delete:hover,
+.btn-delete:hover {
+  background-color: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+/* Aksi Column */
+.aksi-column {
+  white-space: nowrap;
+  text-align: center !important;
+}
+
+.aksi-column .btn-icon {
+  margin: 0 2px;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.active {
+  display: flex !important;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 8px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #ef4444;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 8px 8px;
+}

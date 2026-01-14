@@ -1,0 +1,1056 @@
+// Cache-Busting Version: 1766809178187
+// Complete Interface Version - Form + Table
+
+// Rencana Strategis Module - Complete Interface Version
+const RencanaStrategisModule = (() => {
+  const state = {
+    data: [],
+    missions: [],
+    currentId: null,
+    formValues: getDefaultForm(),
+    sasaranList: [],
+    indikatorList: []
+  };
+
+  const api = () => (window.app ? window.app.apiCall : window.apiCall);
+  const getEl = (id) => document.getElementById(id);
+
+  function getDefaultForm() {
+    return {
+      kode: '',
+      visi_misi_id: '',
+      nama_rencana: '',
+      deskripsi: '',
+      periode_mulai: '',
+      periode_selesai: '',
+      target: '',
+      indikator_kinerja: '',
+      status: 'Draft'
+    };
+  }
+
+  async function load() {
+    console.log('🚀 Loading Rencana Strategis Module (Complete Interface - Optimized)...');
+    
+    try {
+      // Check if already loaded to prevent duplicate loading
+      if (window.rencanaStrategisLoaded) {
+        console.log('⚠️ Rencana Strategis already loaded, skipping...');
+        return;
+      }
+      
+      // Mark as loaded
+      window.rencanaStrategisLoaded = true;
+      
+      // Set flag to prevent router redirects
+      sessionStorage.setItem('currentModule', 'rencana-strategis');
+      sessionStorage.setItem('moduleLoadTime', Date.now().toString());
+      sessionStorage.setItem('preventAutoRedirect', 'true');
+      
+      // Ensure the page is visible first
+      const rencanaPage = document.getElementById('rencana-strategis');
+      if (rencanaPage) {
+        rencanaPage.classList.add('active');
+        
+        // Hide other pages that might be interfering
+        document.querySelectorAll('.page-content').forEach(page => {
+          if (page.id !== 'rencana-strategis') {
+            page.classList.remove('active');
+          }
+        });
+      }
+      
+      // Skip auth wait if already authenticated
+      if (!window.supabaseClient?.auth?.user && window.waitForAuthReady) {
+        await window.waitForAuthReady(3000); // Reduced timeout
+      }
+      
+      // Fetch initial data with parallel requests for better performance
+      await fetchInitialDataOptimized();
+      
+      // Initialize form with default values
+      state.formValues = getDefaultForm();
+      await generateKode();
+      
+      // Render the complete interface
+      render();
+      
+      // Ensure page stays visible
+      ensurePageVisibility();
+      
+      console.log('✅ Rencana Strategis Module loaded successfully (optimized)');
+    } catch (error) {
+      console.error('❌ Error loading Rencana Strategis Module:', error);
+      showError(error.message);
+    }
+  }
+
+  function ensurePageVisibility() {
+    // Make sure the rencana strategis page stays active
+    const rencanaPage = document.getElementById('rencana-strategis');
+    if (rencanaPage) {
+      rencanaPage.classList.add('active');
+      
+      // Hide other pages that might be interfering
+      document.querySelectorAll('.page-content').forEach(page => {
+        if (page.id !== 'rencana-strategis') {
+          page.classList.remove('active');
+        }
+      });
+      
+      // Update URL if needed without triggering navigation
+      if (window.location.pathname !== '/rencana-strategis') {
+        window.history.replaceState(
+          { path: '/rencana-strategis', module: 'rencana-strategis' }, 
+          'Rencana Strategis', 
+          '/rencana-strategis'
+        );
+      }
+      
+      console.log('✅ Rencana Strategis page visibility ensured');
+    }
+  }
+
+  async function fetchInitialData() {
+    try {
+      console.log('📡 Fetching rencana strategis data...');
+      
+      // Try multiple endpoints
+      const endpoints = [
+        '/api/rencana-strategis/public',
+        '/api/rencana-strategis'
+      ];
+      
+      let rencanaData = [];
+      for (const endpoint of endpoints) {
+        try {
+          const response = await api()(endpoint);
+          rencanaData = Array.isArray(response) ? response : (response.data || []);
+          console.log(`✅ Got ${rencanaData.length} rencana strategis from ${endpoint}`);
+          break;
+        } catch (error) {
+          console.warn(`⚠️ Failed to fetch from ${endpoint}:`, error.message);
+          continue;
+        }
+      }
+      
+      // Fetch visi misi data
+      const visiMisiEndpoints = [
+        '/api/visi-misi/public',
+        '/api/visi-misi'
+      ];
+      
+      let visiMisiData = [];
+      for (const endpoint of visiMisiEndpoints) {
+        try {
+          const response = await api()(endpoint);
+          visiMisiData = Array.isArray(response) ? response : (response.data || []);
+          console.log(`✅ Got ${visiMisiData.length} visi misi from ${endpoint}`);
+          break;
+        } catch (error) {
+          console.warn(`⚠️ Failed to fetch visi misi from ${endpoint}:`, error.message);
+          continue;
+        }
+      }
+      
+      state.data = rencanaData;
+      state.missions = visiMisiData;
+      
+      console.log('📊 Data loaded:', {
+        rencanaCount: state.data.length,
+        visiMisiCount: state.missions.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Error fetching initial data:', error);
+      state.data = [];
+      state.missions = [];
+    }
+  }
+
+  async function fetchInitialDataOptimized() {
+    try {
+      console.log('📡 Fetching rencana strategis data (optimized)...');
+      
+      // Use parallel requests for better performance
+      const [rencanaPromise, visiMisiPromise] = await Promise.allSettled([
+        // Rencana strategis data
+        Promise.race([
+          api()('/api/rencana-strategis/public'),
+          api()('/api/rencana-strategis')
+        ]).catch(error => {
+          console.warn('⚠️ Failed to fetch rencana strategis:', error.message);
+          return [];
+        }),
+        
+        // Visi misi data
+        Promise.race([
+          api()('/api/visi-misi/public'),
+          api()('/api/visi-misi')
+        ]).catch(error => {
+          console.warn('⚠️ Failed to fetch visi misi:', error.message);
+          return [];
+        })
+      ]);
+      
+      // Process results
+      const rencanaData = rencanaPromise.status === 'fulfilled' ? 
+        (Array.isArray(rencanaPromise.value) ? rencanaPromise.value : (rencanaPromise.value?.data || [])) : [];
+      
+      const visiMisiData = visiMisiPromise.status === 'fulfilled' ? 
+        (Array.isArray(visiMisiPromise.value) ? visiMisiPromise.value : (visiMisiPromise.value?.data || [])) : [];
+      
+      state.data = rencanaData;
+      state.missions = visiMisiData;
+      
+      console.log('📊 Data loaded (optimized):', {
+        rencanaCount: state.data.length,
+        visiMisiCount: state.missions.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Error fetching initial data (optimized):', error);
+      state.data = [];
+      state.missions = [];
+    }
+  }
+
+  function render() {
+    console.log('🎨 Rendering Rencana Strategis with Complete Interface...');
+    
+    const container = findContainer();
+    if (!container) {
+      console.error('❌ Container not found!');
+      return;
+    }
+    
+    // Clear any existing content first
+    container.innerHTML = '';
+    
+    // Show both table and form sections with proper functionality
+    const content = `
+      <!-- Quick Actions Bar -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card bg-primary text-white">
+            <div class="card-body py-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="mb-1"><i class="fas fa-chart-line me-2"></i>Manajemen Rencana Strategis</h5>
+                  <p class="mb-0 opacity-75">Kelola rencana strategis organisasi dengan mudah</p>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-light btn-sm" id="rs-toggle-view">
+                    <i class="fas fa-eye"></i> <span id="view-toggle-text">Lihat Form</span>
+                  </button>
+                  <button class="btn btn-success btn-sm" id="rs-add-new">
+                    <i class="fas fa-plus"></i> Tambah Baru
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card bg-success text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-check-circle fa-2x mb-2"></i>
+              <h4>${state.data.filter(item => item.status === 'Aktif').length}</h4>
+              <p class="mb-0">Rencana Aktif</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-edit fa-2x mb-2"></i>
+              <h4>${state.data.filter(item => item.status === 'Draft').length}</h4>
+              <p class="mb-0">Draft</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-flag-checkered fa-2x mb-2"></i>
+              <h4>${state.data.filter(item => item.status === 'Selesai').length}</h4>
+              <p class="mb-0">Selesai</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-secondary text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-list fa-2x mb-2"></i>
+              <h4>${state.data.length}</h4>
+              <p class="mb-0">Total Rencana</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Section - Always Visible -->
+      <div class="card mb-4" id="form-section">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="card-title">
+                <i class="fas fa-plus-circle text-primary me-2"></i>
+                ${state.currentId ? 'Edit' : 'Tambah'} Rencana Strategis
+              </h3>
+              <p class="text-muted mb-0">Lengkapi form di bawah untuk ${state.currentId ? 'mengubah' : 'menambahkan'} rencana strategis</p>
+            </div>
+            <div class="btn-group">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="rs-reset-btn">
+                <i class="fas fa-undo"></i> Reset
+              </button>
+              ${state.currentId ? `
+                <button type="button" class="btn btn-sm btn-secondary" id="rs-cancel-edit">
+                  <i class="fas fa-times"></i> Batal Edit
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          ${renderForm()}
+        </div>
+      </div>
+      
+      <!-- Data Table Section -->
+      <div class="card" id="table-section">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="card-title">
+                <i class="fas fa-table text-info me-2"></i>
+                Daftar Rencana Strategis
+              </h3>
+              <p class="text-muted mb-0">Total: ${state.data.length} rencana strategis</p>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-warning btn-sm" id="rs-download-template">
+                <i class="fas fa-download"></i> Template
+              </button>
+              <button class="btn btn-success btn-sm" id="rs-import-btn">
+                <i class="fas fa-upload"></i> Import
+              </button>
+              <button class="btn btn-info btn-sm" id="rs-export-btn">
+                <i class="fas fa-file-excel"></i> Export
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <input type="file" id="rs-import-input" hidden accept=".xlsx,.xls">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th style="width: 120px;">Kode</th>
+                  <th>Nama Rencana</th>
+                  <th style="width: 150px;">Target</th>
+                  <th style="width: 200px;">Periode</th>
+                  <th style="width: 100px;">Status</th>
+                  <th style="width: 150px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${renderTableRows()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Set content with proper error handling
+    try {
+      container.innerHTML = content;
+      bindEvents();
+      
+      console.log('✅ Rencana Strategis rendered successfully with complete interface');
+    } catch (error) {
+      console.error('❌ Error rendering content:', error);
+      container.innerHTML = `
+        <div class="alert alert-danger">
+          <h5><i class="fas fa-exclamation-triangle"></i> Error Rendering</h5>
+          <p>Terjadi kesalahan saat merender halaman: ${error.message}</p>
+          <button onclick="location.reload()" class="btn btn-primary">Refresh Halaman</button>
+        </div>
+      `;
+    }
+  }
+
+  function renderTableRows() {
+    if (!state.data || state.data.length === 0) {
+      return `
+        <tr>
+          <td colspan="6" class="text-center py-4">
+            <div class="empty-state">
+              <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">Belum ada data rencana strategis</h5>
+              <p class="text-muted">Klik tombol "Tambah Baru" untuk menambahkan rencana strategis pertama</p>
+              <button class="btn btn-primary" id="rs-add-first">
+                <i class="fas fa-plus"></i> Tambah Rencana Strategis
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+    
+    return state.data.map(item => {
+      const statusBadge = item.status === 'Aktif' ? 'success' : 
+                         item.status === 'Draft' ? 'warning' : 'secondary';
+      
+      const periode = item.periode_mulai && item.periode_selesai ? 
+        `${formatDate(item.periode_mulai)} - ${formatDate(item.periode_selesai)}` : '-';
+      
+      return `
+        <tr>
+          <td><strong>${item.kode}</strong></td>
+          <td>
+            <div>
+              <strong>${item.nama_rencana || '-'}</strong>
+              ${item.deskripsi ? `<br><small class="text-muted">${truncateText(item.deskripsi, 100)}</small>` : ''}
+            </div>
+          </td>
+          <td>${item.target || '-'}</td>
+          <td><small>${periode}</small></td>
+          <td>
+            <span class="badge badge-${statusBadge}">${item.status || 'Draft'}</span>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-info btn-sm" onclick="viewDetail('${item.id}')" title="Lihat Detail">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-warning btn-sm" onclick="startEdit('${item.id}')" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteRencana('${item.id}')" title="Hapus">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderForm() {
+    return `
+      <form id="rs-form" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Kode Rencana</label>
+          <input type="text" class="form-control" id="rs-kode" value="${state.formValues.kode}" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="rs-status">
+            <option value="Draft" ${state.formValues.status === 'Draft' ? 'selected' : ''}>Draft</option>
+            <option value="Aktif" ${state.formValues.status === 'Aktif' ? 'selected' : ''}>Aktif</option>
+            <option value="Selesai" ${state.formValues.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Misi Strategis</label>
+          <select class="form-control" id="rs-misi">
+            <option value="">Pilih Misi</option>
+            ${renderMissionOptions()}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nama Rencana Strategis</label>
+          <input type="text" class="form-control" id="rs-nama" value="${state.formValues.nama_rencana}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Periode Mulai</label>
+          <input type="date" class="form-control" id="rs-mulai" value="${state.formValues.periode_mulai}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Periode Selesai</label>
+          <input type="date" class="form-control" id="rs-selesai" value="${state.formValues.periode_selesai}">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Deskripsi</label>
+          <textarea class="form-control" id="rs-deskripsi" rows="3">${state.formValues.deskripsi}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Target</label>
+          <textarea class="form-control" id="rs-target" rows="2">${state.formValues.target}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Indikator Kinerja</label>
+          <input type="text" class="form-control" id="rs-indikator" value="${state.formValues.indikator_kinerja}">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Sasaran Strategis</label>
+          <div class="input-group mb-2">
+            <input type="text" class="form-control" id="rs-sasaran-input" placeholder="Masukkan sasaran strategis">
+            <button type="button" class="btn btn-primary" id="rs-sasaran-add">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+          <div id="rs-sasaran-list">${renderChipList(state.sasaranList, 'sasaran')}</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Indikator Kinerja Utama</label>
+          <div class="input-group mb-2">
+            <input type="text" class="form-control" id="rs-indikator-input" placeholder="Masukkan indikator kinerja utama">
+            <button type="button" class="btn btn-primary" id="rs-indikator-add">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+          <div id="rs-indikator-list">${renderChipList(state.indikatorList, 'indikator')}</div>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> ${state.currentId ? 'Update' : 'Simpan'} Rencana
+          </button>
+          <button type="button" class="btn btn-secondary" id="rs-reset-btn">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+        </div>
+      </form>
+    `;
+  }
+
+  function renderMissionOptions() {
+    if (!state.missions || state.missions.length === 0) {
+      return '<option value="">Tidak ada misi tersedia</option>';
+    }
+    
+    return state.missions.map(mission => {
+      if (!mission.misi) return '';
+      
+      const misiArray = mission.misi.split('\n').filter(m => m.trim());
+      return misiArray.map((misi, index) => {
+        const cleanMisi = misi.replace(/^\d+\.\s*/, '').trim();
+        const value = `${mission.id}|${index}|${encodeURIComponent(cleanMisi)}`;
+        const selected = state.formValues.visi_misi_id === value ? 'selected' : '';
+        return `<option value="${value}" ${selected}>${cleanMisi}</option>`;
+      }).join('');
+    }).join('');
+  }
+
+  function renderChipList(items, type) {
+    if (!items || items.length === 0) {
+      return '<p class="text-muted small">Belum ada item</p>';
+    }
+    
+    return items.map((item, index) => `
+      <span class="badge badge-secondary me-1 mb-1">
+        ${item}
+        <button type="button" class="btn-close btn-close-white ms-1" 
+                onclick="removeListItem('${type}', ${index})" 
+                style="font-size: 0.7em;"></button>
+      </span>
+    `).join('');
+  }
+
+  function findContainer() {
+    // Try multiple possible container IDs/selectors
+    const possibleContainers = [
+      'rencana-strategis-content',
+      'rencana-strategis',
+      '#rencana-strategis .page-content',
+      '#rencana-strategis-content',
+      '.page-content.active'
+    ];
+    
+    for (const selector of possibleContainers) {
+      const container = selector.startsWith('#') || selector.includes(' ') ? 
+        document.querySelector(selector) : 
+        document.getElementById(selector);
+      
+      if (container) {
+        console.log(`✅ Found container: ${selector}`);
+        return container;
+      }
+    }
+    
+    // If no container found, create one
+    console.warn('⚠️ No container found, creating fallback container');
+    const rencanaPage = document.getElementById('rencana-strategis');
+    if (rencanaPage) {
+      let contentDiv = rencanaPage.querySelector('#rencana-strategis-content');
+      if (!contentDiv) {
+        contentDiv = document.createElement('div');
+        contentDiv.id = 'rencana-strategis-content';
+        contentDiv.className = 'container-fluid';
+        rencanaPage.appendChild(contentDiv);
+      }
+      return contentDiv;
+    }
+    
+    console.error('❌ Could not find or create container for rencana-strategis');
+    return null;
+  }
+
+  function bindEvents() {
+    // Form events
+    getEl('rs-form')?.addEventListener('submit', handleSubmit);
+    getEl('rs-reset-btn')?.addEventListener('click', resetForm);
+    getEl('rs-cancel-edit')?.addEventListener('click', cancelEdit);
+    
+    // Button events
+    getEl('rs-add-new')?.addEventListener('click', showAddForm);
+    getEl('rs-add-first')?.addEventListener('click', showAddForm);
+    getEl('rs-toggle-view')?.addEventListener('click', toggleView);
+    
+    // List management
+    getEl('rs-sasaran-add')?.addEventListener('click', () => addListItem('sasaran'));
+    getEl('rs-indikator-add')?.addEventListener('click', () => addListItem('indikator'));
+    
+    // Enter key support
+    getEl('rs-sasaran-input')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addListItem('sasaran');
+      }
+    });
+    getEl('rs-indikator-input')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addListItem('indikator');
+      }
+    });
+    
+    // File operations
+    getEl('rs-download-template')?.addEventListener('click', () => 
+      downloadFile('/api/rencana-strategis/actions/template', 'template-rencana-strategis.xlsx'));
+    getEl('rs-export-btn')?.addEventListener('click', () => 
+      downloadFile('/api/rencana-strategis/actions/export', 'rencana-strategis.xlsx'));
+    getEl('rs-import-btn')?.addEventListener('click', () => getEl('rs-import-input')?.click());
+    getEl('rs-import-input')?.addEventListener('change', handleImport);
+  }
+
+  function toggleView() {
+    const formSection = getEl('form-section');
+    const tableSection = getEl('table-section');
+    const toggleText = getEl('view-toggle-text');
+    
+    if (formSection.style.display === 'none') {
+      formSection.style.display = 'block';
+      tableSection.style.display = 'block';
+      toggleText.textContent = 'Sembunyikan Form';
+    } else {
+      formSection.style.display = 'none';
+      toggleText.textContent = 'Lihat Form';
+    }
+  }
+
+  function showAddForm() {
+    state.currentId = null;
+    state.formValues = getDefaultForm();
+    state.sasaranList = [];
+    state.indikatorList = [];
+    
+    generateKode().then(() => {
+      render(); // Re-render to show the form with new data
+      
+      // Scroll to form
+      const formSection = getEl('form-section');
+      if (formSection) {
+        formSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+
+  function cancelEdit() {
+    state.currentId = null;
+    state.formValues = getDefaultForm();
+    state.sasaranList = [];
+    state.indikatorList = [];
+    render(); // Re-render to clear the form
+  }
+
+  function resetForm() {
+    state.formValues = getDefaultForm();
+    state.sasaranList = [];
+    state.indikatorList = [];
+    generateKode().then(() => {
+      render(); // Re-render with fresh form
+    });
+  }
+
+  async function generateKode() {
+    try {
+      const response = await api()('/api/rencana-strategis/generate/kode/public');
+      state.formValues.kode = response.kode;
+    } catch (error) {
+      console.warn('Failed to generate kode:', error);
+      const year = new Date().getFullYear();
+      const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      state.formValues.kode = `RS-${year}-${random}`;
+    }
+  }
+
+  function addListItem(type) {
+    const inputId = type === 'sasaran' ? 'rs-sasaran-input' : 'rs-indikator-input';
+    const value = getEl(inputId)?.value.trim();
+    if (!value) return;
+    
+    if (type === 'sasaran') {
+      state.sasaranList.push(value);
+    } else {
+      state.indikatorList.push(value);
+    }
+    
+    getEl(inputId).value = '';
+    render();
+  }
+
+  function removeListItem(type, index) {
+    if (type === 'sasaran') {
+      state.sasaranList.splice(index, 1);
+    } else {
+      state.indikatorList.splice(index, 1);
+    }
+    render();
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    
+    // Capture form values
+    state.formValues = {
+      kode: getEl('rs-kode')?.value || '',
+      visi_misi_id: getEl('rs-misi')?.value || '',
+      nama_rencana: getEl('rs-nama')?.value || '',
+      deskripsi: getEl('rs-deskripsi')?.value || '',
+      periode_mulai: getEl('rs-mulai')?.value || '',
+      periode_selesai: getEl('rs-selesai')?.value || '',
+      target: getEl('rs-target')?.value || '',
+      indikator_kinerja: getEl('rs-indikator')?.value || '',
+      status: getEl('rs-status')?.value || 'Draft'
+    };
+    
+    // Extract visi_misi_id from encoded value
+    let visiMisiId = state.formValues.visi_misi_id;
+    if (visiMisiId && visiMisiId.includes('|')) {
+      visiMisiId = visiMisiId.split('|')[0];
+    }
+    
+    const payload = {
+      visi_misi_id: visiMisiId || null,
+      nama_rencana: state.formValues.nama_rencana,
+      deskripsi: state.formValues.deskripsi,
+      periode_mulai: state.formValues.periode_mulai || null,
+      periode_selesai: state.formValues.periode_selesai || null,
+      target: state.formValues.target,
+      indikator_kinerja: state.formValues.indikator_kinerja,
+      status: state.formValues.status,
+      sasaran_strategis: state.sasaranList,
+      indikator_kinerja_utama: state.indikatorList
+    };
+    
+    if (!state.currentId) {
+      payload.kode = state.formValues.kode;
+    }
+    
+    if (!payload.nama_rencana) {
+      alert('Nama rencana wajib diisi');
+      return;
+    }
+    
+    try {
+      if (state.currentId) {
+        await api()(`/api/rencana-strategis/${state.currentId}`, { 
+          method: 'PUT', 
+          body: payload 
+        });
+        alert('Rencana strategis berhasil diupdate');
+      } else {
+        await api()('/api/rencana-strategis', { 
+          method: 'POST', 
+          body: payload 
+        });
+        alert('Rencana strategis berhasil disimpan');
+      }
+      
+      await fetchInitialData();
+      cancelEdit(); // This will clear the form and re-render
+      render();
+    } catch (error) {
+      console.error('Error saving:', error);
+      alert('Gagal menyimpan: ' + error.message);
+    }
+  }
+
+  function viewDetail(id) {
+    const record = state.data.find(item => item.id === id);
+    if (!record) return;
+    
+    const sasaran = safeArray(record.sasaran_strategis);
+    const indikator = safeArray(record.indikator_kinerja_utama);
+    
+    alert(`Detail Rencana Strategis:
+    
+Kode: ${record.kode}
+Nama: ${record.nama_rencana}
+Status: ${record.status}
+Target: ${record.target || '-'}
+Periode: ${record.periode_mulai} s/d ${record.periode_selesai}
+Deskripsi: ${record.deskripsi || '-'}
+
+Sasaran Strategis: ${sasaran.join(', ') || '-'}
+Indikator Kinerja Utama: ${indikator.join(', ') || '-'}`);
+  }
+
+  function startEdit(id) {
+    const record = state.data.find(item => item.id === id);
+    if (!record) return;
+    
+    state.currentId = id;
+    state.formValues = {
+      kode: record.kode,
+      visi_misi_id: record.visi_misi_id || '',
+      nama_rencana: record.nama_rencana,
+      deskripsi: record.deskripsi || '',
+      periode_mulai: record.periode_mulai ? record.periode_mulai.substring(0, 10) : '',
+      periode_selesai: record.periode_selesai ? record.periode_selesai.substring(0, 10) : '',
+      target: record.target || '',
+      indikator_kinerja: record.indikator_kinerja || '',
+      status: record.status || 'Draft'
+    };
+    
+    state.sasaranList = safeArray(record.sasaran_strategis);
+    state.indikatorList = safeArray(record.indikator_kinerja_utama);
+    
+    render(); // Re-render to show the form with edit data
+    
+    // Scroll to form
+    const formSection = getEl('form-section');
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  async function deleteRencana(id) {
+    if (!confirm('Hapus rencana strategis ini?')) return;
+    
+    try {
+      await api()(`/api/rencana-strategis/${id}`, { method: 'DELETE' });
+      alert('Rencana strategis berhasil dihapus');
+      await fetchInitialData();
+      render();
+    } catch (error) {
+      console.error('Error deleting:', error);
+      alert('Gagal menghapus: ' + error.message);
+    }
+  }
+
+  async function downloadFile(endpoint, filename) {
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Gagal mengunduh berkas');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Gagal mengunduh: ' + error.message);
+    }
+  }
+
+  async function handleImport(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const data = await readExcel(file);
+      await api()('/api/rencana-strategis/actions/import', { 
+        method: 'POST', 
+        body: { items: data } 
+      });
+      alert('Import berhasil');
+      await fetchInitialData();
+      render();
+    } catch (error) {
+      console.error('Import error:', error);
+      alert('Gagal mengimpor data');
+    } finally {
+      event.target.value = '';
+    }
+  }
+
+  function readExcel(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const workbook = XLSX.read(e.target.result, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+          resolve(rows);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsBinaryString(file);
+    });
+  }
+
+  function showError(message) {
+    const container = findContainer();
+    if (container) {
+      container.innerHTML = `
+        <div class="alert alert-danger" role="alert">
+          <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+          <p>${message}</p>
+          <button onclick="location.reload()" class="btn btn-primary">
+            <i class="fas fa-sync"></i> Refresh Halaman
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  // Utility functions
+  function safeArray(value) {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID');
+    } catch {
+      return dateString;
+    }
+  }
+
+  function truncateText(text, maxLength) {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+
+  return {
+    load,
+    viewDetail,
+    startEdit,
+    deleteRencana,
+    removeListItem,
+    state
+  };
+})();
+
+// Global functions for onclick handlers
+window.viewDetail = (id) => {
+  if (window.RencanaStrategisModule) {
+    window.RencanaStrategisModule.viewDetail(id);
+  }
+};
+
+window.startEdit = (id) => {
+  if (window.RencanaStrategisModule) {
+    window.RencanaStrategisModule.startEdit(id);
+  }
+};
+
+window.deleteRencana = (id) => {
+  if (window.RencanaStrategisModule) {
+    window.RencanaStrategisModule.deleteRencana(id);
+  }
+};
+
+window.removeListItem = (type, index) => {
+  if (window.RencanaStrategisModule) {
+    window.RencanaStrategisModule.removeListItem(type, index);
+  }
+};
+
+// Auto-load when page is ready
+async function loadRencanaStrategis() {
+  console.log('🚀 Loading Rencana Strategis with Complete Interface...');
+  
+  // Set preservation flags to prevent router interference
+  sessionStorage.setItem('preserveRoute', '/rencana-strategis');
+  sessionStorage.setItem('preserveRouteTimestamp', Date.now().toString());
+  sessionStorage.setItem('preventAutoRedirect', 'true');
+  
+  // Wait for auth
+  if (window.waitForAuthReady) {
+    await window.waitForAuthReady(5000);
+  }
+  
+  // Check if page is active or should be made active
+  const rencanaPage = document.getElementById('rencana-strategis');
+  if (!rencanaPage) {
+    console.error('❌ Rencana strategis page element not found');
+    return;
+  }
+  
+  // Force page to be active
+  rencanaPage.classList.add('active');
+  
+  // Hide other pages
+  document.querySelectorAll('.page-content').forEach(page => {
+    if (page.id !== 'rencana-strategis') {
+      page.classList.remove('active');
+    }
+  });
+  
+  try {
+    await RencanaStrategisModule.load();
+    
+    // Double-check page visibility after load
+    setTimeout(() => {
+      if (rencanaPage) {
+        rencanaPage.classList.add('active');
+        console.log('✅ Rencana Strategis page visibility confirmed with complete interface');
+      }
+    }, 100);
+    
+  } catch (error) {
+    console.error('❌ Failed to load rencana strategis:', error);
+  }
+}
+        rencanaPage.classList.add('active');
+        console.log('✅ Rencana Strategis page visibility confirmed with table view');
+      }
+    }, 100);
+    
+  } catch (error) {
+    console.error('❌ Failed to load rencana strategis:', error);
+  }
+}
+
+// Export to window
+window.RencanaStrategisModule = RencanaStrategisModule;
+window.loadRencanaStrategis = loadRencanaStrategis;
+
+// Auto-initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const rencanaPage = document.getElementById('rencana-strategis');
+    if (rencanaPage && rencanaPage.classList.contains('active')) {
+      loadRencanaStrategis();
+    }
+  }, 500);
+});
+
+console.log('✅ Rencana Strategis Complete Interface module loaded');

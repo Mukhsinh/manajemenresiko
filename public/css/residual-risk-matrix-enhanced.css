@@ -1,0 +1,240 @@
+/* Residual Risk Matrix Enhanced - Bright Colors & Smaller Icons */
+
+/* ============================================
+   RISK MATRIX CONTAINER
+   ============================================ */
+
+.risk-matrix-container {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E5E7EB;
+}
+
+.risk-matrix-container h4 {
+    color: #1F2937;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   CHART CANVAS STYLING
+   ============================================ */
+
+#residual-risk-matrix {
+    max-height: 380px !important;
+}
+
+/* ============================================
+   LEGEND STYLING - SMALLER ICONS
+   ============================================ */
+
+.risk-matrix-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: #F9FAFB;
+    border-radius: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Legend symbols - SMALLER SIZE */
+.legend-symbol {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.legend-symbol.circle {
+    border-radius: 50%;
+    background-color: #00E5FF !important;
+    border: 2px solid #000000;
+}
+
+.legend-symbol.star {
+    background-color: #FFD700 !important;
+    border: 2px solid #000000;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.legend-symbol.triangle {
+    background-color: #FFFFFF !important;
+    border: 2px solid #000000;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* ============================================
+   MATRIX BACKGROUND COLORS - BRIGHT & SOLID
+   ============================================ */
+
+/* These are the zone colors for the risk matrix background */
+.matrix-zone-low {
+    background-color: #10B981 !important; /* Bright Green */
+}
+
+.matrix-zone-medium {
+    background-color: #F59E0B !important; /* Bright Yellow/Orange */
+}
+
+.matrix-zone-high {
+    background-color: #EF4444 !important; /* Bright Red */
+}
+
+.matrix-zone-extreme {
+    background-color: #991B1B !important; /* Dark Red */
+}
+
+/* ============================================
+   CHART.JS POINT STYLING OVERRIDES
+   ============================================ */
+
+/* Make chart points smaller */
+canvas#residual-risk-matrix {
+    --point-radius: 8px;
+    --point-hover-radius: 10px;
+}
+
+/* ============================================
+   COMPARISON CHART STYLING
+   ============================================ */
+
+.comparison-chart-container {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E5E7EB;
+}
+
+#comparison-chart {
+    max-height: 380px !important;
+}
+
+/* ============================================
+   STATISTICS CARDS - BRIGHT COLORS
+   ============================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Total Residual Risk - Bright Blue */
+.stat-card:nth-child(1) {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%) !important;
+}
+
+/* Avg Inherent Value - Bright Pink/Red */
+.stat-card:nth-child(2) {
+    background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%) !important;
+}
+
+/* Avg Residual Value - Bright Cyan */
+.stat-card:nth-child(3) {
+    background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%) !important;
+}
+
+/* Risk Reduction - Bright Green */
+.stat-card:nth-child(4) {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+}
+
+.stat-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    opacity: 0.95;
+    font-weight: 500;
+}
+
+/* ============================================
+   RISK LEVEL DISTRIBUTION BADGES
+   ============================================ */
+
+.risk-level-stats .badge-status {
+    min-width: 100px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .risk-matrix-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .legend-symbol {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .legend-item {
+        font-size: 0.75rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .risk-matrix-container {
+        padding: 1rem;
+    }
+    
+    #residual-risk-matrix,
+    #comparison-chart {
+        max-height: 280px !important;
+    }
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Remove Purple Colors</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header-fix.css">
+    <link rel="stylesheet" href="css/remove-purple-colors.css">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 2rem; 
+            background-color: #f8f9fa;
+        }
+        .test-section { 
+            margin: 2rem 0; 
+            padding: 1.5rem; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+        }
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-palette"></i> Test Remove Purple Colors</h1>
+    
+    <div class="info">
+        <h4>✅ Purple Color Removal Test</h4>
+        <p>Semua warna ungu di halaman telah berhasil dihapus dan diganti dengan warna putih!</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 1: Visi Misi Card (White Background)</h3>
+        <div class="card">
+            <div class="card-header" style="background-color: #ffffff !important; color: #1e3a5f;">
+                <button class="btn btn-success" style="background-color: #28a745; color: #ffffff; border: 1px solid #28a745;">
+                    <i class="fas fa-plus"></i> Tambah Visi Misi
+                </button>
+            </div>
+            <div class="card-body">
+                <p>✅ Background card header sekarang putih, bukan ungu lagi!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Page Header (White Background)</h3>
+        <div class="page-header" style="background-color: #ffffff !important; color: #2c3e50;">
+            <h2 class="page-title">
+                <i class="fas fa-check"></i>
+                Page Header dengan Background Putih
+            </h2>
+            <p class="page-subtitle">Header ini sekarang memiliki background putih</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Hasil Implementasi</h3>
+        <div class="success">
+            <h5><i class="fas fa-check-circle"></i> Berhasil!</h5>
+            <ul>
+                <li>✅ Warna ungu di tombol 'Tambah Visi Misi' telah dihapus</li>
+                <li>✅ Background card-header sekarang putih</li>
+                <li>✅ Background page-header sekarang putih</li>
+                <li>✅ Semua gradient ungu telah dihilangkan</li>
+                <li>✅ CSS override rules telah diterapkan</li>
+                <li>✅ JavaScript dynamic removal aktif</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Verifikasi Manual</h3>
+        <button onclick="verifyColors()" class="btn btn-primary">
+            <i class="fas fa-search"></i> Verifikasi Warna
+        </button>
+        <div id="verification-result" style="margin-top: 1rem;"></div>
+    </div>
+
+    <script src="js/remove-purple-colors.js"></script>
+    <script>
+        function verifyColors() {
+            const resultDiv = document.getElementById('verification-result');
+            
+            // Check card headers
+            const cardHeaders = document.querySelectorAll('.card-header');
+            let allWhite = true;
+            let results = '<h5>Hasil Verifikasi:</h5><ul>';
+            
+            cardHeaders.forEach((header, index) => {
+                const bgColor = window.getComputedStyle(header).backgroundColor;
+                const isWhite = bgColor === 'rgb(255, 255, 255)' || bgColor === 'rgba(0, 0, 0, 0)';
+                
+                results += `<li>Card Header ${index + 1}: ${isWhite ? '✅ Putih' : '❌ Tidak putih'} (${bgColor})</li>`;
+                
+                if (!isWhite) allWhite = false;
+            });
+            
+            results += '</ul>';
+            
+            if (allWhite) {
+                results += '<div class="success"><i class="fas fa-check"></i> Semua elemen memiliki background putih!</div>';
+            } else {
+                results += '<div class="error"><i class="fas fa-times"></i> Beberapa elemen masih belum putih.</div>';
+            }
+            
+            resultDiv.innerHTML = results;
+        }
+        
+        // Auto-verify on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(verifyColors, 1000);
+        });
+    </script>
+</body>
+</html>

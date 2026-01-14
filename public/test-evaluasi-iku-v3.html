@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Evaluasi IKU V3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/evaluasi-iku-v3.css?v=3.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; padding: 1rem; }
+        .test-container { max-width: 1400px; margin: 0 auto; }
+        .test-header { background: #1e3a5f; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        .test-header h1 { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .test-header p { font-size: 0.875rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 Test Evaluasi IKU V3</h1>
+            <p>Testing: Cards, Charts, Period Filter, Year Dropdown, IKU Integration</p>
+        </div>
+        
+        <div id="evaluasi-iku" class="page-content active"></div>
+    </div>
+
+    <script>
+        // Mock data for testing
+        window.localStorage.setItem('token', 'test-token');
+        
+        // Mock fetch
+        const originalFetch = window.fetch;
+        window.fetch = async function(url, options) {
+            console.log('Mock fetch:', url);
+            
+            if (url.includes('/api/indikator-kinerja-utama')) {
+                return {
+                    ok: true,
+                    json: async () => [
+                        { id: '1', indikator: 'Tingkat Kepuasan Pasien', sasaran_strategi: { perspektif: 'Pelanggan', sasaran: 'Meningkatkan kepuasan pelanggan' }, satuan: '%', targetTahunIni: 85 },
+                        { id: '2', indikator: 'Bed Occupancy Rate (BOR)', sasaran_strategi: { perspektif: 'Proses Internal', sasaran: 'Optimalisasi kapasitas' }, satuan: '%', targetTahunIni: 75 },
+                        { id: '3', indikator: 'Average Length of Stay (ALOS)', sasaran_strategi: { perspektif: 'Proses Internal', sasaran: 'Efisiensi pelayanan' }, satuan: 'Hari', targetTahunIni: 4 },
+                        { id: '4', indikator: 'Rasio Pendapatan per Tempat Tidur', sasaran_strategi: { perspektif: 'Keuangan', sasaran: 'Meningkatkan pendapatan' }, satuan: 'Juta', targetTahunIni: 150 },
+                        { id: '5', indikator: 'Tingkat Kepatuhan SOP', sasaran_strategi: { perspektif: 'Pembelajaran', sasaran: 'Meningkatkan kepatuhan' }, satuan: '%', targetTahunIni: 95 }
+                    ]
+                };
+            }
+            
+            if (url.includes('/api/evaluasi-iku-bulanan/summary')) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        data: [
+                            { id: '1', indikator: 'Tingkat Kepuasan Pasien', sasaran_strategi: { perspektif: 'Pelanggan', sasaran: 'Meningkatkan kepuasan pelanggan' }, satuan: '%', targetTahunIni: 85, totalRealisasi: 82.5, persentaseCapaian: 97.1, status: 'Hampir Tercapai', jumlahBulanTerisi: 6, realisasiBulanan: { 1: { namaBulan: 'Januari', realisasi: 13.5 }, 2: { namaBulan: 'Februari', realisasi: 14 }, 3: { namaBulan: 'Maret', realisasi: 13.8 }, 4: { namaBulan: 'April', realisasi: 14.2 }, 5: { namaBulan: 'Mei', realisasi: 13.5 }, 6: { namaBulan: 'Juni', realisasi: 13.5 } } },
+                            { id: '2', indikator: 'Bed Occupancy Rate (BOR)', sasaran_strategi: { perspektif: 'Proses Internal', sasaran: 'Optimalisasi kapasitas' }, satuan: '%', targetTahunIni: 75, totalRealisasi: 68.3, persentaseCapaian: 91.1, status: 'Hampir Tercapai', jumlahBulanTerisi: 6, realisasiBulanan: {} },
+                            { id: '3', indikator: 'Average Length of Stay (ALOS)', sasaran_strategi: { perspektif: 'Proses Internal', sasaran: 'Efisiensi pelayanan' }, satuan: 'Hari', targetTahunIni: 4, totalRealisasi: 3.8, persentaseCapaian: 105, status: 'Tercapai', jumlahBulanTerisi: 12, realisasiBulanan: {} },
+                            { id: '4', indikator: 'Rasio Pendapatan per Tempat Tidur', sasaran_strategi: { perspektif: 'Keuangan', sasaran: 'Meningkatkan pendapatan' }, satuan: 'Juta', targetTahunIni: 150, totalRealisasi: 147, persentaseCapaian: 98, status: 'Hampir Tercapai', jumlahBulanTerisi: 6, realisasiBulanan: {} },
+                            { id: '5', indikator: 'Tingkat Kepatuhan SOP', sasaran_strategi: { perspektif: 'Pembelajaran', sasaran: 'Meningkatkan kepatuhan' }, satuan: '%', targetTahunIni: 95, totalRealisasi: 91.2, persentaseCapaian: 96, status: 'Hampir Tercapai', jumlahBulanTerisi: 3, realisasiBulanan: {} }
+                        ],
+                        summary: {
+                            totalIKU: 5,
+                            tercapai: 1,
+                            hampirTercapai: 4,
+                            dalamProses: 0,
+                            perluPerhatian: 0,
+                            belumAdaRealisasi: 0
+                        }
+                    })
+                };
+            }
+            
+            return originalFetch(url, options);
+        };
+    </script>
+    <script src="/js/evaluasi-iku-v3.js?v=3.0"></script>
+    <script>
+        // Initialize after DOM ready
+        document.addEventListener('DOMContentLoaded', function() {
+            EvaluasiIKUV3.init();
+        });
+    </script>
+</body>
+</html>

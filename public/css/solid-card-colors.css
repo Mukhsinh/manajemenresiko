@@ -1,0 +1,1398 @@
+/* ============================================
+   SOLID CARD COLORS - NO GRADIENTS, NO WHITE
+   Semua kartu menggunakan warna solid dengan kontras teks yang baik
+   Created: January 7, 2026
+   ============================================ */
+
+/* ============================================
+   CSS VARIABLES - SOLID COLORS PALETTE
+   ============================================ */
+:root {
+    /* Primary Solid Colors */
+    --card-blue: #1e40af;
+    --card-blue-light: #3b82f6;
+    --card-teal: #0d9488;
+    --card-green: #059669;
+    --card-emerald: #10b981;
+    --card-purple: #7c3aed;
+    --card-indigo: #4f46e5;
+    --card-pink: #db2777;
+    --card-rose: #e11d48;
+    --card-orange: #ea580c;
+    --card-amber: #d97706;
+    --card-cyan: #0891b2;
+    --card-sky: #0284c7;
+    --card-slate: #475569;
+    --card-gray: #6b7280;
+    
+    /* Light Solid Colors (for lighter cards) */
+    --card-light-blue: #dbeafe;
+    --card-light-teal: #ccfbf1;
+    --card-light-green: #d1fae5;
+    --card-light-purple: #ede9fe;
+    --card-light-pink: #fce7f3;
+    --card-light-orange: #ffedd5;
+    --card-light-amber: #fef3c7;
+    --card-light-cyan: #cffafe;
+    --card-light-slate: #f1f5f9;
+    
+    /* Text Colors for Contrast */
+    --text-on-dark: #ffffff;
+    --text-on-light: #1e293b;
+    --text-on-blue-light: #1e40af;
+    --text-on-teal-light: #0d9488;
+    --text-on-green-light: #059669;
+    --text-on-purple-light: #7c3aed;
+    --text-on-pink-light: #db2777;
+    --text-on-orange-light: #ea580c;
+    --text-on-amber-light: #92400e;
+    --text-on-cyan-light: #0891b2;
+    --text-on-slate-light: #334155;
+}
+
+/* ============================================
+   MAIN CARD STYLES - SOLID COLORS
+   ============================================ */
+
+/* Base Card - Light Blue Solid */
+.card {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+    border: 1px solid #93c5fd !important;
+}
+
+.card-header {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+    border-bottom: none !important;
+}
+
+.card-header .card-title,
+.card-header h3,
+.card-header h4,
+.card-header h5 {
+    color: var(--text-on-dark) !important;
+}
+
+.card-body {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+}
+
+.card-footer {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+    border-top: none !important;
+}
+
+/* ============================================
+   SECTION CARDS - TEAL SOLID
+   ============================================ */
+.section-card {
+    background: var(--card-light-teal) !important;
+    background-image: none !important;
+    color: var(--text-on-teal-light) !important;
+    border: 1px solid #5eead4 !important;
+}
+
+.section-header {
+    background: var(--card-teal) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.section-header h3,
+.section-header h4,
+.section-header h5 {
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   CHART CARDS - INDIGO SOLID
+   ============================================ */
+.chart-card {
+    background: var(--card-light-purple) !important;
+    background-image: none !important;
+    color: var(--text-on-purple-light) !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+.chart-title {
+    color: var(--text-on-purple-light) !important;
+    font-weight: 600 !important;
+}
+
+.chart-container {
+    background: var(--card-light-purple) !important;
+    background-image: none !important;
+    color: var(--text-on-purple-light) !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+/* ============================================
+   STAT CARDS - VARIOUS SOLID COLORS
+   NOTE: Dashboard stat cards are handled by dashboard-white-cards.css
+   These styles only apply to stat cards OUTSIDE the dashboard
+   ============================================ */
+.stat-card {
+    background-image: none !important;
+}
+
+/* Only apply colored backgrounds to stat cards NOT in dashboard-stats-grid */
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning):nth-child(1) {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning):nth-child(2) {
+    background: var(--card-teal) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning):nth-child(3) {
+    background: var(--card-purple) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning):nth-child(4) {
+    background: var(--card-orange) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning):nth-child(5) {
+    background: var(--card-green) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning):nth-child(6) {
+    background: var(--card-pink) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning) h3,
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning) h4,
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning) .stat-value,
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning) .stat-label,
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning) span,
+.stat-card:not(.stat-primary):not(.stat-danger):not(.stat-success):not(.stat-warning) p {
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   RISK APPETITE CARDS - GREEN SOLID
+   ============================================ */
+.risk-appetite-card {
+    background: var(--card-light-green) !important;
+    background-image: none !important;
+    color: var(--text-on-green-light) !important;
+    border-left: 4px solid var(--card-green) !important;
+}
+
+.risk-appetite-card h4 {
+    color: var(--card-green) !important;
+}
+
+.risk-appetite-card .risk-level {
+    color: var(--text-on-green-light) !important;
+}
+
+/* ============================================
+   KOP HEADER - BLUE SOLID (NO GRADIENT)
+   ============================================ */
+.kop-header {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.kop-header h2,
+.kop-header h3,
+.kop-header p,
+.kop-header span {
+    color: var(--text-on-dark) !important;
+}
+
+.kop-info h2,
+.kop-info p {
+    color: var(--text-on-dark) !important;
+}
+
+.kop-reporter h3,
+.kop-reporter p {
+    color: var(--text-on-dark) !important;
+}
+
+.kop-pill {
+    background: rgba(255, 255, 255, 0.2) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   PAGE HEADER - CYAN SOLID
+   ============================================ */
+.page-header {
+    background: var(--card-light-cyan) !important;
+    background-image: none !important;
+    color: var(--text-on-cyan-light) !important;
+    border-left: 4px solid var(--card-cyan) !important;
+}
+
+.page-title {
+    color: var(--text-on-cyan-light) !important;
+}
+
+.page-subtitle {
+    color: var(--text-on-cyan-light) !important;
+    opacity: 0.8;
+}
+
+.page-title-icon {
+    color: var(--card-cyan) !important;
+}
+
+/* ============================================
+   SETTINGS CARDS - SLATE SOLID
+   ============================================ */
+.settings-card {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.settings-card h3,
+.settings-card h4,
+.settings-card label {
+    color: var(--text-on-slate-light) !important;
+}
+
+/* ============================================
+   ORG CARDS - AMBER SOLID
+   ============================================ */
+.org-card {
+    background: var(--card-light-amber) !important;
+    background-image: none !important;
+    color: var(--text-on-amber-light) !important;
+    border: 1px solid #fcd34d !important;
+}
+
+.org-card-header {
+    color: var(--text-on-amber-light) !important;
+}
+
+.org-card h3,
+.org-card h4 {
+    color: var(--text-on-amber-light) !important;
+}
+
+/* ============================================
+   MODAL CONTENT - LIGHT BLUE SOLID
+   ============================================ */
+.modal-content {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+}
+
+.modal-header {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.modal-header .modal-title {
+    color: var(--text-on-dark) !important;
+}
+
+.modal-header .close,
+.modal-header .modal-close {
+    color: var(--text-on-dark) !important;
+}
+
+.modal-body {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+}
+
+.modal-body h6 {
+    color: var(--card-blue) !important;
+}
+
+.modal-body p,
+.modal-body li {
+    color: var(--text-on-blue-light) !important;
+}
+
+.modal-footer {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+}
+
+/* ============================================
+   ALERT CARDS - VARIOUS SOLID COLORS
+   ============================================ */
+.alert {
+    background-image: none !important;
+}
+
+.alert-info {
+    background: var(--card-light-cyan) !important;
+    color: var(--text-on-cyan-light) !important;
+    border: 1px solid #67e8f9 !important;
+}
+
+.alert-success {
+    background: var(--card-light-green) !important;
+    color: var(--text-on-green-light) !important;
+    border: 1px solid #6ee7b7 !important;
+}
+
+.alert-warning {
+    background: var(--card-light-amber) !important;
+    color: var(--text-on-amber-light) !important;
+    border: 1px solid #fcd34d !important;
+}
+
+.alert-danger {
+    background: var(--card-light-pink) !important;
+    color: var(--text-on-pink-light) !important;
+    border: 1px solid #f9a8d4 !important;
+}
+
+/* ============================================
+   NOTIFICATION PILLS - SOLID COLORS
+   ============================================ */
+.notification-pill {
+    background-image: none !important;
+}
+
+.notification-pill.alert {
+    background: var(--card-rose) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.notification-pill.info {
+    background: var(--card-sky) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   CHAT PANEL - SOLID COLORS
+   ============================================ */
+.chat-panel-header {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.chat-panel-header p,
+.chat-panel-header span {
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   AI MESSAGE CARDS - SOLID COLORS
+   ============================================ */
+.ai-message-content {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+}
+
+.ai-message-user .ai-message-content {
+    background: var(--card-blue-light) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.ai-message-user .ai-message-name,
+.ai-message-user .ai-message-time,
+.ai-message-user .ai-message-text {
+    color: var(--text-on-dark) !important;
+}
+
+.ai-message-assistant .ai-message-avatar {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.ai-message-user .ai-message-avatar {
+    background: var(--card-teal) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   QUOTE BOX - SOLID COLOR
+   ============================================ */
+.quote-box {
+    background: var(--card-indigo) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.quote-text,
+.portal-text {
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   LOGIN IMAGE CONTAINER - SOLID COLOR
+   ============================================ */
+.login-image-container {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+}
+
+.login-image-background {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+}
+
+/* ============================================
+   DATA TABLE HEADER - SOLID COLOR
+   ============================================ */
+.data-table thead,
+.table thead {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.data-table thead th,
+.table thead th {
+    color: var(--text-on-dark) !important;
+    background: var(--card-blue) !important;
+    background-image: none !important;
+}
+
+/* ============================================
+   MASTER ACTIONS BAR - SOLID COLOR
+   ============================================ */
+.master-actions-bar {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+    padding: 1rem !important;
+    border-radius: 8px !important;
+}
+
+/* ============================================
+   FORM CARDS - SOLID COLORS
+   ============================================ */
+.form-card,
+.form-container {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+}
+
+/* ============================================
+   DASHBOARD SPECIFIC CARDS
+   ============================================ */
+.dashboard-card,
+.summary-card,
+.info-card,
+.metric-card {
+    background-image: none !important;
+}
+
+.dashboard-card:nth-child(odd),
+.summary-card:nth-child(odd),
+.info-card:nth-child(odd),
+.metric-card:nth-child(odd) {
+    background: var(--card-light-blue) !important;
+    color: var(--text-on-blue-light) !important;
+    border: 1px solid #93c5fd !important;
+}
+
+.dashboard-card:nth-child(even),
+.summary-card:nth-child(even),
+.info-card:nth-child(even),
+.metric-card:nth-child(even) {
+    background: var(--card-light-teal) !important;
+    color: var(--text-on-teal-light) !important;
+    border: 1px solid #5eead4 !important;
+}
+
+/* ============================================
+   SWOT ANALYSIS CARDS - SOLID COLORS
+   ============================================ */
+.swot-card,
+.swot-section {
+    background-image: none !important;
+}
+
+.swot-strength,
+.strength-card {
+    background: var(--card-light-green) !important;
+    color: var(--text-on-green-light) !important;
+    border: 1px solid #6ee7b7 !important;
+}
+
+.swot-weakness,
+.weakness-card {
+    background: var(--card-light-pink) !important;
+    color: var(--text-on-pink-light) !important;
+    border: 1px solid #f9a8d4 !important;
+}
+
+.swot-opportunity,
+.opportunity-card {
+    background: var(--card-light-cyan) !important;
+    color: var(--text-on-cyan-light) !important;
+    border: 1px solid #67e8f9 !important;
+}
+
+.swot-threat,
+.threat-card {
+    background: var(--card-light-orange) !important;
+    color: var(--text-on-orange-light) !important;
+    border: 1px solid #fdba74 !important;
+}
+
+/* ============================================
+   RISK CARDS - SOLID COLORS
+   ============================================ */
+.risk-card,
+.risk-item {
+    background-image: none !important;
+}
+
+.risk-low {
+    background: var(--card-green) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.risk-medium {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.risk-high {
+    background: var(--card-orange) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.risk-extreme {
+    background: var(--card-rose) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   LOADING OVERLAY - SOLID COLOR
+   ============================================ */
+.loading-overlay {
+    background: rgba(30, 64, 175, 0.9) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   TOOLTIP & POPOVER - SOLID COLORS
+   ============================================ */
+.tooltip,
+.popover {
+    background: var(--card-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.tooltip-inner {
+    background: var(--card-slate) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   DROPDOWN MENU - SOLID COLOR
+   ============================================ */
+.dropdown-menu {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+}
+
+.dropdown-item {
+    color: var(--text-on-slate-light) !important;
+}
+
+.dropdown-item:hover {
+    background: var(--card-blue-light) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   TABS - SOLID COLORS
+   ============================================ */
+.nav-tabs .nav-link.active,
+.tab-btn.active,
+.settings-tab.active {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.nav-tabs .nav-link,
+.tab-btn,
+.settings-tab {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+}
+
+/* ============================================
+   PROGRESS BARS - SOLID COLORS
+   ============================================ */
+.progress {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+}
+
+.progress-bar {
+    background: var(--card-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-dark) !important;
+}
+
+.progress-fill {
+    background: var(--card-teal) !important;
+    background-image: none !important;
+}
+
+/* ============================================
+   BADGES - SOLID COLORS WITH CONTRAST
+   ============================================ */
+.badge-status {
+    background-image: none !important;
+}
+
+.badge-aman {
+    background: var(--card-green) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-hati-hati {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-kritis {
+    background: var(--card-rose) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-normal {
+    background: var(--card-sky) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-success {
+    background: var(--card-green) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-warning {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-danger {
+    background: var(--card-rose) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-info {
+    background: var(--card-cyan) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-secondary {
+    background: var(--card-slate) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.badge-primary {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   CHIPS - SOLID COLORS
+   ============================================ */
+.chip {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+    border: 1px solid #93c5fd !important;
+}
+
+/* ============================================
+   ANALYSIS GRID CARDS - SOLID COLORS
+   ============================================ */
+.analysis-grid .card,
+.analysis-card {
+    background: var(--card-light-purple) !important;
+    background-image: none !important;
+    color: var(--text-on-purple-light) !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+/* ============================================
+   EMPTY STATE - SOLID COLOR
+   ============================================ */
+.empty-state,
+.no-data {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+}
+
+/* ============================================
+   SIDEBAR FOOTER - SOLID COLOR
+   ============================================ */
+.sidebar-footer {
+    background: rgba(0, 0, 0, 0.2) !important;
+    background-image: none !important;
+}
+
+/* ============================================
+   OVERRIDE ANY REMAINING GRADIENTS
+   ============================================ */
+*[style*="linear-gradient"],
+*[style*="radial-gradient"] {
+    background-image: none !important;
+}
+
+/* Force remove all gradients from backgrounds */
+.card,
+.card-header,
+.card-body,
+.card-footer,
+.section-card,
+.section-header,
+.chart-card,
+.stat-card,
+.modal-content,
+.modal-header,
+.modal-body,
+.modal-footer,
+.alert,
+.kop-header,
+.page-header,
+.notification-pill,
+.chat-panel-header,
+.quote-box,
+.login-image-container,
+.login-image-background,
+.data-table thead,
+.table thead,
+.dropdown-menu,
+.tooltip,
+.popover,
+.progress,
+.progress-bar,
+.badge,
+.chip,
+.empty-state,
+.loading-overlay {
+    background-image: none !important;
+}
+
+/* ============================================
+   PRINT STYLES - MAINTAIN SOLID COLORS
+   ============================================ */
+@media print {
+    .card,
+    .card-header,
+    .section-card,
+    .chart-card,
+    .stat-card,
+    .page-header {
+        background-image: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+
+/* ============================================
+   ADDITIONAL CARD STYLES FOR ALL PAGES
+   ============================================ */
+
+/* ============================================
+   RENCANA STRATEGIS PAGE CARDS
+   ============================================ */
+#rencana-strategis .card,
+.rencana-strategis-card {
+    background: var(--card-light-cyan) !important;
+    background-image: none !important;
+    color: var(--text-on-cyan-light) !important;
+    border: 1px solid #67e8f9 !important;
+}
+
+#rencana-strategis .card-header,
+.rencana-strategis-card .card-header {
+    background: var(--card-cyan) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   VISI MISI PAGE CARDS
+   ============================================ */
+#visi-misi .card,
+.visi-misi-card {
+    background: var(--card-light-purple) !important;
+    background-image: none !important;
+    color: var(--text-on-purple-light) !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+#visi-misi .card-header,
+.visi-misi-card .card-header {
+    background: var(--card-purple) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   SASARAN STRATEGI PAGE CARDS
+   ============================================ */
+#sasaran-strategi .card,
+.sasaran-strategi-card {
+    background: var(--card-light-teal) !important;
+    background-image: none !important;
+    color: var(--text-on-teal-light) !important;
+    border: 1px solid #5eead4 !important;
+}
+
+#sasaran-strategi .card-header,
+.sasaran-strategi-card .card-header {
+    background: var(--card-teal) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   INDIKATOR KINERJA UTAMA PAGE CARDS
+   ============================================ */
+#indikator-kinerja-utama .card,
+.iku-card {
+    background: var(--card-light-green) !important;
+    background-image: none !important;
+    color: var(--text-on-green-light) !important;
+    border: 1px solid #6ee7b7 !important;
+}
+
+#indikator-kinerja-utama .card-header,
+.iku-card .card-header {
+    background: var(--card-green) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   ANALISIS SWOT PAGE CARDS
+   ============================================ */
+#analisis-swot .card,
+.analisis-swot-card {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+    border: 1px solid #93c5fd !important;
+}
+
+#analisis-swot .card-header,
+.analisis-swot-card .card-header {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   MATRIKS TOWS PAGE CARDS
+   ============================================ */
+#matriks-tows .card,
+.matriks-tows-card {
+    background: var(--card-light-amber) !important;
+    background-image: none !important;
+    color: var(--text-on-amber-light) !important;
+    border: 1px solid #fcd34d !important;
+}
+
+#matriks-tows .card-header,
+.matriks-tows-card .card-header {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   DIAGRAM KARTESIUS PAGE CARDS
+   ============================================ */
+#diagram-kartesius .card,
+.diagram-kartesius-card {
+    background: var(--card-light-purple) !important;
+    background-image: none !important;
+    color: var(--text-on-purple-light) !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+#diagram-kartesius .card-header,
+.diagram-kartesius-card .card-header {
+    background: var(--card-indigo) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   STRATEGIC MAP PAGE CARDS
+   ============================================ */
+#strategic-map .card,
+.strategic-map-card {
+    background: var(--card-light-cyan) !important;
+    background-image: none !important;
+    color: var(--text-on-cyan-light) !important;
+    border: 1px solid #67e8f9 !important;
+}
+
+#strategic-map .card-header,
+.strategic-map-card .card-header {
+    background: var(--card-sky) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   RISK INPUT PAGE CARDS
+   ============================================ */
+#risk-input .card,
+.risk-input-card {
+    background: var(--card-light-orange) !important;
+    background-image: none !important;
+    color: var(--text-on-orange-light) !important;
+    border: 1px solid #fdba74 !important;
+}
+
+#risk-input .card-header,
+.risk-input-card .card-header {
+    background: var(--card-orange) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   RISK PROFILE PAGE CARDS
+   ============================================ */
+#risk-profile .card,
+.risk-profile-card {
+    background: var(--card-light-pink) !important;
+    background-image: none !important;
+    color: var(--text-on-pink-light) !important;
+    border: 1px solid #f9a8d4 !important;
+}
+
+#risk-profile .card-header,
+.risk-profile-card .card-header {
+    background: var(--card-pink) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   RESIDUAL RISK PAGE CARDS
+   ============================================ */
+#residual-risk .card,
+.residual-risk-card {
+    background: var(--card-light-amber) !important;
+    background-image: none !important;
+    color: var(--text-on-amber-light) !important;
+    border: 1px solid #fcd34d !important;
+}
+
+#residual-risk .card-header,
+.residual-risk-card .card-header {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   RISK REGISTER PAGE CARDS
+   ============================================ */
+#risk-register .card,
+.risk-register-card {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+#risk-register .card-header,
+.risk-register-card .card-header {
+    background: var(--card-slate) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   KRI PAGE CARDS
+   ============================================ */
+#kri .card,
+.kri-card {
+    background: var(--card-light-teal) !important;
+    background-image: none !important;
+    color: var(--text-on-teal-light) !important;
+    border: 1px solid #5eead4 !important;
+}
+
+#kri .card-header,
+.kri-card .card-header {
+    background: var(--card-teal) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   EWS PAGE CARDS
+   ============================================ */
+#ews .card,
+.ews-card {
+    background: var(--card-light-pink) !important;
+    background-image: none !important;
+    color: var(--text-on-pink-light) !important;
+    border: 1px solid #f9a8d4 !important;
+}
+
+#ews .card-header,
+.ews-card .card-header {
+    background: var(--card-rose) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   MONITORING EVALUASI PAGE CARDS
+   ============================================ */
+#monitoring-evaluasi .card,
+.monitoring-evaluasi-card {
+    background: var(--card-light-green) !important;
+    background-image: none !important;
+    color: var(--text-on-green-light) !important;
+    border: 1px solid #6ee7b7 !important;
+}
+
+#monitoring-evaluasi .card-header,
+.monitoring-evaluasi-card .card-header {
+    background: var(--card-emerald) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   PELUANG PAGE CARDS
+   ============================================ */
+#peluang .card,
+.peluang-card {
+    background: var(--card-light-cyan) !important;
+    background-image: none !important;
+    color: var(--text-on-cyan-light) !important;
+    border: 1px solid #67e8f9 !important;
+}
+
+#peluang .card-header,
+.peluang-card .card-header {
+    background: var(--card-cyan) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   LAPORAN PAGE CARDS
+   ============================================ */
+#laporan .card,
+.laporan-card {
+    background: var(--card-light-purple) !important;
+    background-image: none !important;
+    color: var(--text-on-purple-light) !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+#laporan .card-header,
+.laporan-card .card-header {
+    background: var(--card-purple) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   MASTER DATA PAGE CARDS
+   ============================================ */
+#master-data .card,
+.master-data-card {
+    background: var(--card-light-slate) !important;
+    background-image: none !important;
+    color: var(--text-on-slate-light) !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+#master-data .card-header,
+.master-data-card .card-header {
+    background: var(--card-slate) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   PENGATURAN PAGE CARDS
+   ============================================ */
+#pengaturan .card,
+.pengaturan-card {
+    background: var(--card-light-blue) !important;
+    background-image: none !important;
+    color: var(--text-on-blue-light) !important;
+    border: 1px solid #93c5fd !important;
+}
+
+#pengaturan .card-header,
+.pengaturan-card .card-header {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   DASHBOARD PAGE CARDS
+   ============================================ */
+#dashboard .card,
+.dashboard-card {
+    background: var(--card-light-teal) !important;
+    background-image: none !important;
+    color: var(--text-on-teal-light) !important;
+    border: 1px solid #5eead4 !important;
+}
+
+#dashboard .card-header,
+.dashboard-card .card-header {
+    background: var(--card-teal) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* Dashboard stat cards with different colors */
+#dashboard .stat-card:nth-child(1),
+.dashboard-stat-1 {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+#dashboard .stat-card:nth-child(2),
+.dashboard-stat-2 {
+    background: var(--card-teal) !important;
+    color: var(--text-on-dark) !important;
+}
+
+#dashboard .stat-card:nth-child(3),
+.dashboard-stat-3 {
+    background: var(--card-purple) !important;
+    color: var(--text-on-dark) !important;
+}
+
+#dashboard .stat-card:nth-child(4),
+.dashboard-stat-4 {
+    background: var(--card-orange) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   BUKU PEDOMAN PAGE CARDS
+   ============================================ */
+#buku-pedoman .card,
+.buku-pedoman-card {
+    background: var(--card-light-amber) !important;
+    background-image: none !important;
+    color: var(--text-on-amber-light) !important;
+    border: 1px solid #fcd34d !important;
+}
+
+#buku-pedoman .card-header,
+.buku-pedoman-card .card-header {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* ============================================
+   ENSURE ALL TEXT IN CARDS HAS PROPER CONTRAST
+   ============================================ */
+
+/* Dark background cards - white text */
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6,
+.card-header p,
+.card-header span,
+.card-header label,
+.card-header .card-title {
+    color: var(--text-on-dark) !important;
+}
+
+/* Light background cards - dark text */
+.card-body h1,
+.card-body h2,
+.card-body h3,
+.card-body h4,
+.card-body h5,
+.card-body h6,
+.card-body p,
+.card-body span,
+.card-body label,
+.card-body td,
+.card-body th {
+    color: inherit !important;
+}
+
+/* Ensure form labels are visible */
+.card-body .form-label,
+.card-body label {
+    color: var(--text-on-slate-light) !important;
+    font-weight: 600 !important;
+}
+
+/* Ensure input text is visible */
+.card-body input,
+.card-body select,
+.card-body textarea {
+    color: var(--text-on-slate-light) !important;
+    background: #ffffff !important;
+}
+
+/* ============================================
+   ICON COLORS IN CARDS
+   ============================================ */
+.card-header i,
+.card-header .fa,
+.card-header .fas,
+.card-header .far,
+.card-header .fab {
+    color: var(--text-on-dark) !important;
+}
+
+.card-body i,
+.card-body .fa,
+.card-body .fas,
+.card-body .far,
+.card-body .fab {
+    color: inherit !important;
+}
+
+/* ============================================
+   BUTTON COLORS IN CARDS
+   ============================================ */
+.card .btn-primary {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+    border: none !important;
+}
+
+.card .btn-success {
+    background: var(--card-green) !important;
+    color: var(--text-on-dark) !important;
+    border: none !important;
+}
+
+.card .btn-warning {
+    background: var(--card-amber) !important;
+    color: var(--text-on-dark) !important;
+    border: none !important;
+}
+
+.card .btn-danger {
+    background: var(--card-rose) !important;
+    color: var(--text-on-dark) !important;
+    border: none !important;
+}
+
+.card .btn-info {
+    background: var(--card-cyan) !important;
+    color: var(--text-on-dark) !important;
+    border: none !important;
+}
+
+.card .btn-secondary {
+    background: var(--card-slate) !important;
+    color: var(--text-on-dark) !important;
+    border: none !important;
+}
+
+/* ============================================
+   TABLE INSIDE CARDS
+   ============================================ */
+.card .table,
+.card .data-table {
+    background: transparent !important;
+}
+
+.card .table thead,
+.card .data-table thead {
+    background: var(--card-blue) !important;
+    color: var(--text-on-dark) !important;
+}
+
+.card .table thead th,
+.card .data-table thead th {
+    color: var(--text-on-dark) !important;
+    background: var(--card-blue) !important;
+}
+
+.card .table tbody tr:nth-child(odd),
+.card .data-table tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.5) !important;
+}
+
+.card .table tbody tr:nth-child(even),
+.card .data-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.card .table tbody td,
+.card .data-table tbody td {
+    color: var(--text-on-slate-light) !important;
+}
+
+/* ============================================
+   HOVER EFFECTS FOR CARDS
+   ============================================ */
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem !important;
+    }
+    
+    .card-header {
+        padding: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    .stat-card {
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-header {
+        padding: 0.75rem !important;
+    }
+    
+    .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    .stat-card {
+        padding: 0.75rem !important;
+    }
+}

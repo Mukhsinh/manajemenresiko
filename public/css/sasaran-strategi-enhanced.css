@@ -1,0 +1,569 @@
+/* ============================================
+   SASARAN STRATEGI ENHANCED STYLES
+   - Scrollable table (vertical & horizontal)
+   - Fixed badge overflow with dedicated column
+   - Bright solid colors for badges
+   - Working edit/delete buttons
+   ============================================ */
+
+/* Main Container */
+.sasaran-strategi-container,
+.ss-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+/* Card Body with Scroll */
+.sasaran-strategi-container .card-body,
+.ss-container .card-body {
+  padding: 1rem;
+  overflow: visible;
+}
+
+/* Table Container - Scrollable both directions */
+.sasaran-table-wrapper,
+.ss-table-wrapper {
+  width: 100%;
+  max-height: calc(100vh - 280px);
+  min-height: 400px;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  scroll-behavior: smooth;
+}
+
+/* Table Styles */
+.sasaran-table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.sasaran-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+}
+
+.sasaran-table thead th {
+  padding: 14px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  border: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sasaran-table tbody tr {
+  border-bottom: 1px solid #e8e8e8;
+  transition: background-color 0.2s ease;
+}
+
+.sasaran-table tbody tr:hover {
+  background-color: #f0f7ff;
+}
+
+.sasaran-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.sasaran-table tbody tr:nth-child(even):hover {
+  background-color: #f0f7ff;
+}
+
+.sasaran-table tbody td {
+  padding: 12px;
+  font-size: 13px;
+  color: #333;
+  vertical-align: middle;
+  border: none;
+}
+
+/* Column Widths */
+.col-rencana {
+  width: 180px;
+  min-width: 180px;
+}
+
+.col-sasaran {
+  width: 300px;
+  min-width: 250px;
+}
+
+.col-perspektif {
+  width: 180px;
+  min-width: 180px;
+  text-align: center;
+}
+
+.col-tows {
+  width: 280px;
+  min-width: 250px;
+}
+
+.col-aksi {
+  width: 120px;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Sasaran Text - Word wrap */
+.sasaran-text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  max-width: 100%;
+}
+
+/* ============================================
+   PERSPEKTIF BADGES - BRIGHT SOLID COLORS
+   ============================================ */
+
+.badge-perspektif {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 6px;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Learning & Growth - Bright Green */
+.badge-lg, .badge-learning-growth {
+  background-color: #10B981 !important;
+  color: #ffffff !important;
+}
+
+/* Eksternal Stakeholder - Bright Blue */
+.badge-es, .badge-eksternal-stakeholder {
+  background-color: #3B82F6 !important;
+  color: #ffffff !important;
+}
+
+/* Internal Business Process - Bright Purple */
+.badge-ibp, .badge-internal-business-process {
+  background-color: #8B5CF6 !important;
+  color: #ffffff !important;
+}
+
+/* Financial - Bright Orange */
+.badge-fin, .badge-financial {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+}
+
+/* Default Badge */
+.badge-default {
+  background-color: #6B7280 !important;
+  color: #ffffff !important;
+}
+
+/* ============================================
+   TOWS STRATEGY BADGES - BRIGHT COLORS
+   ============================================ */
+
+.badge-tows {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+/* SO - Bright Emerald */
+.badge-so {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+/* WO - Bright Cyan */
+.badge-wo {
+  background-color: #0891B2 !important;
+  color: #ffffff !important;
+}
+
+/* ST - Bright Amber */
+.badge-st {
+  background-color: #D97706 !important;
+  color: #ffffff !important;
+}
+
+/* WT - Bright Rose */
+.badge-wt {
+  background-color: #E11D48 !important;
+  color: #ffffff !important;
+}
+
+.tows-strategy-text {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ============================================
+   ACTION BUTTONS - FIXED STYLING
+   ============================================ */
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+/* Edit Button - Bright Yellow */
+.btn-edit-action {
+  background-color: #FBBF24 !important;
+  color: #1F2937 !important;
+}
+
+.btn-edit-action:hover {
+  background-color: #F59E0B !important;
+}
+
+/* Delete Button - Bright Red */
+.btn-delete-action {
+  background-color: #EF4444 !important;
+  color: #ffffff !important;
+}
+
+.btn-delete-action:hover {
+  background-color: #DC2626 !important;
+}
+
+/* ============================================
+   FILTER SECTION
+   ============================================ */
+
+.filter-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ============================================
+   HEADER ACTIONS
+   ============================================ */
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.header-actions .btn {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.header-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+
+.sasaran-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.sasaran-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.sasaran-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  border-radius: 12px 12px 0 0;
+}
+
+.sasaran-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sasaran-modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.sasaran-modal-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.sasaran-modal-body {
+  padding: 24px;
+}
+
+.sasaran-form-group {
+  margin-bottom: 20px;
+}
+
+.sasaran-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.sasaran-form-group input,
+.sasaran-form-group select,
+.sasaran-form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sasaran-form-group input:focus,
+.sasaran-form-group select:focus,
+.sasaran-form-group textarea:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sasaran-form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.sasaran-form-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.sasaran-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f9fafb;
+  border-radius: 0 0 12px 12px;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  background: #6b7280;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #4b5563;
+}
+
+.btn-save {
+  padding: 10px 20px;
+  background: #3B82F6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-save:hover {
+  background: #2563EB;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .sasaran-table-wrapper {
+    max-height: calc(100vh - 320px);
+  }
+  
+  .filter-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+.sasaran-table-wrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.sasaran-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 5px;
+}
+
+.sasaran-table-wrapper::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 5px;
+}
+
+.sasaran-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Corner piece */
+.sasaran-table-wrapper::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}

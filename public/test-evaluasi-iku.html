@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluasi IKU - Realisasi Bulanan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/evaluasi-iku.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 0;
+    }
+    .page-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 0.25rem 0;
+    }
+    .page-header p {
+      color: #6b7280;
+      margin: 0;
+      font-size: 0.875rem;
+    }
+    .text-right { text-align: right; }
+    .text-muted { color: #6b7280; }
+    
+    /* Loading indicator */
+    #loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Detail table */
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .detail-table th,
+    .detail-table td {
+      padding: 0.625rem 0.75rem;
+      border: 1px solid #e5e7eb;
+    }
+    .detail-table th {
+      background: #f9fafb;
+      font-weight: 600;
+      text-align: left;
+    }
+    .detail-table tr.has-data {
+      background: #f0fdf4;
+    }
+    .detail-table tfoot td {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+    
+    .detail-header {
+      margin-bottom: 1.5rem;
+    }
+    .detail-header h4 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 0.25rem 0;
+    }
+    .detail-info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .info-label {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    .info-value {
+      font-weight: 500;
+      color: #1f2937;
+    }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    .toast.info { background: #3b82f6; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-indicator">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="page-container" id="evaluasi-iku-page">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>📊 Evaluasi Indikator Kinerja Utama</h1>
+      <p>Input realisasi bulanan dan monitoring capaian IKU tahunan</p>
+    </div>
+
+    <!-- Progress Overview -->
+    <div id="progress-overview"></div>
+
+    <!-- Summary Cards -->
+    <div class="evaluasi-iku-summary" id="summary-cards">
+      <!-- Cards will be rendered here -->
+    </div>
+
+    <!-- Filter & Actions -->
+    <div class="evaluasi-filter-section">
+      <div class="filter-group">
+        <label for="filter-tahun">Tahun:</label>
+        <select id="filter-tahun">
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026" selected>2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+          <option value="2029">2029</option>
+          <option value="2030">2030</option>
+        </select>
+      </div>
+      
+      <div class="evaluasi-actions">
+        <button class="btn-action primary" id="btn-tambah-data">
+          <i data-lucide="plus"></i>
+          Tambah Data
+        </button>
+        <button class="btn-action success" id="btn-unduh-laporan">
+          <i data-lucide="download"></i>
+          Unduh Laporan
+        </button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="evaluasi-table-container">
+      <table class="evaluasi-table">
+        <thead>
+          <tr>
+            <th style="width: 50px">No</th>
+            <th>Indikator Kinerja Utama</th>
+            <th style="width: 100px">Perspektif</th>
+            <th style="width: 120px">Target</th>
+            <th style="width: 120px">Realisasi</th>
+            <th style="width: 180px">Progress</th>
+            <th style="width: 140px">Status</th>
+            <th style="width: 120px">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="evaluasi-table-body">
+          <!-- Data will be rendered here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="evaluasi-modal" id="modal-evaluasi">
+    <div class="evaluasi-modal-content">
+      <div class="evaluasi-modal-header">
+        <h3 id="modal-title">Tambah Realisasi IKU</h3>
+        <button class="evaluasi-modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-evaluasi-iku">
+        <div class="evaluasi-modal-body">
+          <div class="form-group">
+            <label for="select-iku">Indikator Kinerja Utama *</label>
+            <select id="select-iku" required>
+              <option value="">-- Pilih IKU --</option>
+            </select>
+          </div>
+          
+          <h4 style="margin: 1.5rem 0 0.5rem; font-size: 1rem; color: #374151;">
+            Input Realisasi Bulanan
+          </h4>
+          <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+            Masukkan nilai realisasi untuk setiap bulan. Total akan dihitung otomatis.
+          </p>
+          
+          <div id="monthly-inputs">
+            <!-- Monthly input fields will be rendered here -->
+          </div>
+        </div>
+        <div class="evaluasi-modal-footer">
+          <button type="button" class="btn-action secondary btn-cancel-modal">Batal</button>
+          <button type="submit" class="btn-action primary">
+            <i data-lucide="save"></i>
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="evaluasi-modal" id="modal-detail">
+    <div class="evaluasi-modal-content">
+      <div class="evaluasi-modal-header">
+        <h3>Detail Evaluasi IKU</h3>
+        <button class="evaluasi-modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="evaluasi-modal-body" id="detail-content">
+        <!-- Detail content will be rendered here -->
+      </div>
+      <div class="evaluasi-modal-footer">
+        <button type="button" class="btn-action secondary btn-cancel-modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toast notification function
+    window.showToast = function(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    };
+  </script>
+  <script src="/js/evaluasi-iku.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Set current year as default
+    const currentYear = new Date().getFullYear();
+    const yearSelect = document.getElementById('filter-tahun');
+    if (yearSelect) {
+      const option = yearSelect.querySelector(`option[value="${currentYear}"]`);
+      if (option) option.selected = true;
+    }
+  </script>
+</body>
+</html>

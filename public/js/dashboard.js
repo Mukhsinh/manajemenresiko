@@ -178,85 +178,85 @@ function renderDashboard(stats) {
     
     content.innerHTML = `
         <div class="dashboard-stats-grid">
-            <div class="stat-card stat-primary">
-                <div class="stat-icon">
-                    <i class="fas fa-shield-alt"></i>
+            <div class="stat-card stat-primary" style="background: #ffffff !important; background-color: #ffffff !important;">
+                <div class="stat-icon" style="background: #1976d2 !important;">
+                    <i class="fas fa-shield-alt" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">${safeStats.total_risks || 0}</h3>
-                    <p class="stat-label">Total Risiko</p>
-                    <small class="stat-description">Data risiko terdaftar</small>
+                    <h3 class="stat-number" style="color: #1565c0 !important;">${safeStats.total_risks || 0}</h3>
+                    <p class="stat-label" style="color: #1976d2 !important;">Total Risiko</p>
+                    <small class="stat-description" style="color: #64748b !important;">Data risiko terdaftar</small>
                 </div>
             </div>
-            <div class="stat-card stat-danger">
-                <div class="stat-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+            <div class="stat-card stat-danger" style="background: #ffffff !important; background-color: #ffffff !important;">
+                <div class="stat-icon" style="background: #d32f2f !important;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">${safeStats.loss_events || 0}</h3>
-                    <p class="stat-label">Loss Events</p>
-                    <small class="stat-description">Kejadian kerugian</small>
+                    <h3 class="stat-number" style="color: #c62828 !important;">${safeStats.loss_events || 0}</h3>
+                    <p class="stat-label" style="color: #d32f2f !important;">Loss Events</p>
+                    <small class="stat-description" style="color: #64748b !important;">Kejadian kerugian</small>
                 </div>
             </div>
-            <div class="stat-card stat-success">
-                <div class="stat-icon">
-                    <i class="fas fa-bullseye"></i>
+            <div class="stat-card stat-success" style="background: #ffffff !important; background-color: #ffffff !important;">
+                <div class="stat-icon" style="background: #388e3c !important;">
+                    <i class="fas fa-bullseye" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">${safeStats.counts?.visi_misi || safeStats.sample_data?.visi_misi?.length || 0}</h3>
-                    <p class="stat-label">Visi Misi</p>
-                    <small class="stat-description">Visi misi aktif</small>
+                    <h3 class="stat-number" style="color: #2e7d32 !important;">${safeStats.counts?.visi_misi || safeStats.sample_data?.visi_misi?.length || 0}</h3>
+                    <p class="stat-label" style="color: #388e3c !important;">Visi Misi</p>
+                    <small class="stat-description" style="color: #64748b !important;">Visi misi aktif</small>
                 </div>
             </div>
-            <div class="stat-card stat-warning">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
+            <div class="stat-card stat-warning" style="background: #ffffff !important; background-color: #ffffff !important;">
+                <div class="stat-icon" style="background: #7b1fa2 !important;">
+                    <i class="fas fa-chart-line" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">${safeStats.counts?.rencana_strategis || safeStats.sample_data?.rencana_strategis?.length || 0}</h3>
-                    <p class="stat-label">Rencana Strategis</p>
-                    <small class="stat-description">Rencana strategis</small>
+                    <h3 class="stat-number" style="color: #6a1b9a !important;">${safeStats.counts?.rencana_strategis || safeStats.sample_data?.rencana_strategis?.length || 0}</h3>
+                    <p class="stat-label" style="color: #7b1fa2 !important;">Rencana Strategis</p>
+                    <small class="stat-description" style="color: #64748b !important;">Rencana strategis</small>
                 </div>
             </div>
         </div>
         
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Ringkasan Risiko</h3>
-                <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">
+        <div class="card" style="background: #ffffff !important;">
+            <div class="card-header" style="background: #ffffff !important; border-bottom: 2px solid #dbeafe !important;">
+                <h3 class="card-title" style="color: #1e40af !important;">Ringkasan Risiko</h3>
+                <p style="margin: 0; color: #64748b; font-size: 0.875rem;">
                     Distribusi tingkat risiko dalam organisasi
                 </p>
             </div>
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <h4 class="chart-title">Inherent Risk</h4>
+            <div class="charts-grid" style="background: #f8fafc !important;">
+                <div class="chart-card" style="background: #ffffff !important;">
+                    <h4 class="chart-title" style="color: #1e293b !important;">Inherent Risk</h4>
                     <canvas id="inherent-risk-chart" width="300" height="300"></canvas>
                 </div>
-                <div class="chart-card">
-                    <h4 class="chart-title">Residual Risk</h4>
+                <div class="chart-card" style="background: #ffffff !important;">
+                    <h4 class="chart-title" style="color: #1e293b !important;">Residual Risk</h4>
                     <canvas id="residual-risk-chart" width="300" height="300"></canvas>
                 </div>
-                <div class="chart-card">
-                    <h4 class="chart-title">Key Risk Indicator</h4>
+                <div class="chart-card" style="background: #ffffff !important;">
+                    <h4 class="chart-title" style="color: #1e293b !important;">Key Risk Indicator</h4>
                     <canvas id="kri-chart" width="300" height="300"></canvas>
                 </div>
             </div>
         </div>
         
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Data Terbaru</h3>
+        <div class="card" style="background: #ffffff !important;">
+            <div class="card-header" style="background: #f8fafc !important; border-bottom: 2px solid #e2e8f0 !important;">
+                <h3 class="card-title" style="color: #1e293b !important;">Data Terbaru</h3>
                 <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">
                     Data terbaru dari database organisasi Anda
                 </p>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="background: #ffffff !important;">
                 <div class="row">
                     <div class="col-md-6">
                         <h5><i class="fas fa-bullseye"></i> Visi Misi Terbaru</h5>
                         ${safeStats.sample_data?.visi_misi?.length > 0 ? 
                             safeStats.sample_data.visi_misi.slice(0, 3).map(item => `
-                                <div class="data-item">
+                                <div class="data-item" style="background: #ffffff !important;">
                                     <strong>Tahun ${item.tahun || 'N/A'}</strong>
                                     <small>${item.visi?.substring(0, 120) || 'Tidak ada deskripsi'}${item.visi?.length > 120 ? '...' : ''}</small>
                                 </div>
@@ -271,7 +271,7 @@ function renderDashboard(stats) {
                         <h5><i class="fas fa-chart-line"></i> Rencana Strategis Terbaru</h5>
                         ${safeStats.sample_data?.rencana_strategis?.length > 0 ? 
                             safeStats.sample_data.rencana_strategis.slice(0, 3).map(item => `
-                                <div class="data-item" style="border-left-color: #28a745;">
+                                <div class="data-item" style="border-left-color: #28a745; background: #ffffff !important;">
                                     <strong>${item.nama_rencana || 'Rencana Strategis'}</strong>
                                     <small>${item.deskripsi?.substring(0, 120) || 'Tidak ada deskripsi'}${item.deskripsi?.length > 120 ? '...' : ''}</small>
                                 </div>

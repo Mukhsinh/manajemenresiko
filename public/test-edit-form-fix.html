@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Edit Form Fix v2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/edit-form-fix.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            background: #f5f7fa;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-card h2 {
+            margin-top: 0;
+            color: #1e40af;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .status-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .status-box.error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+        .log-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        .log-entry {
+            margin: 0.25rem 0;
+        }
+        .log-entry.success { color: #4ade80; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.info { color: #60a5fa; }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: calc(100vh - 2rem);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
+        .modal-title {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .modal-close:hover {
+            color: #1f2937;
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-tools"></i> Test Edit Form Fix v2.0</h1>
+        
+        <div class="test-card">
+            <h2><i class="fas fa-check-circle"></i> Test 1: Cancel Button Single Click</h2>
+            <p>Klik tombol di bawah untuk membuka modal, lalu klik "Batal" - seharusnya modal langsung tertutup dengan sekali klik.</p>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="openTestModal1()">
+                    <i class="fas fa-edit"></i> Buka Modal dengan Inline onclick
+                </button>
+                <button class="btn btn-success" onclick="openTestModal2()">
+                    <i class="fas fa-plus"></i> Buka Modal Standar
+                </button>
+            </div>
+            <div class="status-box" id="test1-status">
+                Status: Menunggu test...
+            </div>
+        </div>
+        
+        <div class="test-card">
+            <h2><i class="fas fa-expand-arrows-alt"></i> Test 2: Modal Overflow</h2>
+            <p>Modal dengan banyak konten seharusnya tidak overflow dari layar.</p>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="openLongModal()">
+                    <i class="fas fa-list"></i> Buka Modal Panjang
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-card">
+            <h2><i class="fas fa-keyboard"></i> Test 3: Keyboard Support</h2>
+            <p>Tekan ESC untuk menutup modal yang terbuka.</p>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="openTestModal1()">
+                    <i class="fas fa-keyboard"></i> Buka Modal (tekan ESC untuk tutup)
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-card">
+            <h2><i class="fas fa-mouse-pointer"></i> Test 4: Backdrop Click</h2>
+            <p>Klik area gelap di luar modal untuk menutup.</p>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="openTestModal1()">
+                    <i class="fas fa-window-maximize"></i> Buka Modal (klik backdrop untuk tutup)
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-card">
+            <h2><i class="fas fa-terminal"></i> Console Log</h2>
+            <div class="log-output" id="log-output">
+                <div class="log-entry info">[Test] Halaman test dimuat...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load the fix script -->
+    <script src="/js/edit-form-fix.js"></script>
+    
+    <script>
+        // Custom logger
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        // Test Modal 1 - with inline onclick (the problematic pattern)
+        function openTestModal1() {
+            log('Opening modal with inline onclick pattern...');
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Edit Form Test</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <form>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">Nama</label>
+                                <input type="text" class="form-control" placeholder="Masukkan nama">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Deskripsi</label>
+                                <textarea class="form-control" rows="3" placeholder="Masukkan deskripsi"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            log('Modal opened - try clicking "Batal" button', 'info');
+        }
+        
+        // Test Modal 2 - standard modal
+        function openTestModal2() {
+            log('Opening standard modal...');
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Tambah Data Baru</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Field 1</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Field 2</label>
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary">Tutup</button>
+                        <button type="button" class="btn btn-primary">Simpan</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            log('Standard modal opened', 'info');
+        }
+        
+        // Long modal for overflow test
+        function openLongModal() {
+            log('Opening long modal for overflow test...');
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            
+            let formFields = '';
+            for (let i = 1; i <= 15; i++) {
+                formFields += `
+                    <div class="form-group">
+                        <label class="form-label">Field ${i}</label>
+                        <input type="text" class="form-control" placeholder="Input ${i}">
+                    </div>
+                `;
+            }
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Form Panjang (15 Fields)</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <form>
+                        <div class="modal-body">
+                            ${formFields}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            log('Long modal opened - check if it scrolls properly', 'info');
+        }
+        
+        // Listen for modal close events
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.removedNodes.forEach((node) => {
+                    if (node.classList && node.classList.contains('modal')) {
+                        log('Modal closed successfully!', 'success');
+                        document.getElementById('test1-status').innerHTML = 
+                            '<i class="fas fa-check-circle" style="color: #10b981;"></i> Status: Modal berhasil ditutup dengan sekali klik!';
+                        document.getElementById('test1-status').classList.remove('error');
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.body, { childList: true });
+        
+        log('Test page ready. Edit form fix v2.0 loaded.', 'success');
+    </script>
+</body>
+</html>

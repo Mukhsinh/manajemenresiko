@@ -1,0 +1,216 @@
+/**
+ * Table Header Text Color Fix
+ * - Header data tabel: tulisan warna solid gelap
+ * - Judul tabel (baris paling atas): tulisan warna putih
+ */
+
+/* ============================================
+   JUDUL TABEL (BARIS PALING ATAS) - TULISAN PUTIH
+   ============================================ */
+
+/* Header tabel utama dengan background biru - tulisan putih */
+table thead tr:first-child th,
+table thead tr th,
+.table thead tr:first-child th,
+.table thead tr th,
+.table-responsive table thead th,
+.data-table thead th,
+.rencana-strategis-table thead th,
+.risk-table thead th,
+.swot-table thead th,
+thead th,
+th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+    text-shadow: none !important;
+    border-color: #2d4a6f !important;
+}
+
+/* Header dengan class khusus */
+.table-header th,
+.table-title th,
+th.table-header,
+th.header-cell,
+.header-row th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* DataTables header */
+.dataTables_wrapper .dataTable thead th,
+table.dataTable thead th,
+table.dataTable thead td {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   HEADER DATA TABEL - TULISAN SOLID GELAP
+   ============================================ */
+
+/* Sub-header atau header kolom data */
+table tbody tr.header-row td,
+table tbody tr.sub-header td,
+.table tbody tr.header-row td,
+.table tbody tr.sub-header td,
+.column-header,
+.data-header {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+/* Header dalam card atau section */
+.card-header h5,
+.card-header h6,
+.card-header .title,
+.section-header,
+.panel-header {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   TABEL RENCANA STRATEGIS KHUSUS
+   ============================================ */
+
+/* Header tabel rencana strategis */
+#rencana-strategis-table thead th,
+.rencana-strategis-container table thead th,
+[data-page="rencana-strategis"] table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+    font-weight: 600 !important;
+    border-color: #2d4a6f !important;
+}
+
+/* ============================================
+   TABEL RISK MANAGEMENT
+   ============================================ */
+
+/* Risk Register table header */
+.risk-register-table thead th,
+#risk-register-table thead th,
+.residual-risk-table thead th,
+#residual-risk-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* KRI table header */
+.kri-table thead th,
+#kri-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   TABEL SWOT & ANALISIS
+   ============================================ */
+
+/* SWOT table header */
+.swot-analysis-table thead th,
+#swot-table thead th,
+.analisis-swot-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* Matriks TOWS header */
+.tows-matrix thead th,
+#tows-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   TABEL MONITORING & EVALUASI
+   ============================================ */
+
+.monitoring-table thead th,
+#monitoring-table thead th,
+.evaluasi-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   TABEL MASTER DATA
+   ============================================ */
+
+.master-data-table thead th,
+#master-data-table thead th,
+.work-units-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   TABEL LAPORAN
+   ============================================ */
+
+.laporan-table thead th,
+#laporan-table thead th,
+.report-table thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   BOOTSTRAP TABLE OVERRIDE
+   ============================================ */
+
+.table-primary thead th,
+.table-dark thead th,
+.table-info thead th,
+.table-secondary thead th {
+    color: #ffffff !important;
+}
+
+.table-striped thead th,
+.table-bordered thead th,
+.table-hover thead th {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+/* ============================================
+   ICON DALAM HEADER - WARNA PUTIH
+   ============================================ */
+
+table thead th i,
+table thead th svg,
+table thead th .lucide,
+.table thead th i,
+.table thead th svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* ============================================
+   HOVER STATE UNTUK HEADER
+   ============================================ */
+
+table thead th:hover,
+.table thead th:hover {
+    background-color: #2d4a6f !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   SORTABLE HEADER
+   ============================================ */
+
+table thead th.sortable,
+table thead th[data-sort],
+.table thead th.sorting,
+.table thead th.sorting_asc,
+.table thead th.sorting_desc {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+
+table thead th.sorting_asc::after,
+table thead th.sorting_desc::after {
+    color: #ffffff !important;
+}

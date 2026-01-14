@@ -1,0 +1,85 @@
+/**
+ * Header Color Fix - Prevents Purple Gradient Issue
+ * This CSS file ensures headers remain white/gray and don't turn purple
+ */
+
+/* Override Bootstrap bg-primary to prevent purple gradient */
+.navbar.bg-primary {
+    background: #007bff !important;
+    background-image: none !important;
+    background-color: #007bff !important;
+}
+
+/* Ensure navbar brand and links stay white */
+.navbar.bg-primary .navbar-brand,
+.navbar.bg-primary .nav-link {
+    color: #ffffff !important;
+}
+
+.navbar.bg-primary .nav-link:hover,
+.navbar.bg-primary .nav-link:focus {
+    color: #e6f3ff !important;
+}
+
+/* Fix page headers to stay white/gray */
+.page-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #495057 !important;
+    border-left: 4px solid #8B0000 !important;
+}
+
+/* Prevent any purple gradients on headers */
+.page-header,
+.card-header,
+.section-header {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Specific fixes for menu pages that were turning purple */
+#sasaran-strategi .page-header,
+#strategic-map .page-header,
+#indikator-kinerja-utama .page-header,
+#peluang .page-header,
+#residual-risk .page-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #495057 !important;
+}
+
+/* Override any dynamic style changes */
+.page-header[style*="background"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Ensure consistent header styling across all pages */
+.container-fluid .page-header,
+.container .page-header {
+    background: #ffffff !important;
+    border-left: 4px solid #8B0000 !important;
+    color: #2c3e50 !important;
+}
+
+.page-title {
+    color: #2c3e50 !important;
+}
+
+.page-subtitle {
+    color: #6c757d !important;
+}
+
+/* Fix any Bootstrap overrides */
+.bg-primary {
+    background-color: #007bff !important;
+    background-image: none !important;
+}
+
+/* Prevent purple gradients in any context */
+*[style*="purple"],
+*[style*="#ffffff"],
+*[style*="#ffffff"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}

@@ -1,0 +1,187 @@
+/**
+ * Sidebar Dropdown Fix
+ * Memperbaiki masalah dropdown submenu di sidebar navigasi
+ * Created: 2026-01-10
+ * Updated: 2026-01-10 - Enhanced fix for visibility issues
+ */
+
+/* ============================================
+   CRITICAL: Sidebar Dropdown Submenu Fix
+   ============================================ */
+
+/* Ensure sidebar-section-label (dropdown toggle) is clickable */
+.sidebar-section-label,
+.sidebar-section-label.dropdown-toggle,
+button.sidebar-section-label {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    user-select: none !important;
+    position: relative !important;
+    z-index: 10 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure dropdown icon is visible and rotates properly */
+.sidebar-section-label .dropdown-icon,
+.sidebar-section-label i.fa-chevron-down,
+.sidebar-section-label i.fa-chevron-up {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: transform 0.3s ease !important;
+    pointer-events: none !important;
+}
+
+/* Rotate chevron when active */
+.sidebar-section-label.active .dropdown-icon,
+.sidebar-section-label.active i.fa-chevron-down {
+    transform: rotate(180deg) !important;
+}
+
+/* ============================================
+   Submenu Visibility Control - CRITICAL FIX
+   ============================================ */
+
+/* Default: Hidden submenu */
+.sidebar-submenu {
+    display: none !important;
+    flex-direction: column !important;
+    gap: 0.05rem !important;
+    padding-left: 1.5rem !important;
+    margin-top: 0.05rem !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Expanded: Visible submenu - HIGHEST PRIORITY */
+.sidebar-submenu.expanded {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-height: 2000px !important;
+    overflow: visible !important;
+    height: auto !important;
+    position: relative !important;
+    z-index: 100 !important;
+}
+
+/* Alternative selector for expanded state */
+.sidebar-section-label.active + .sidebar-submenu {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-height: 2000px !important;
+    overflow: visible !important;
+}
+
+/* ============================================
+   Submenu Items Styling
+   ============================================ */
+
+.sidebar-submenu .menu-item {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    background: #000000 !important;
+    margin-left: 0;
+    padding: 0.5rem 0.75rem;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.sidebar-submenu .menu-item:hover {
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: #ffffff !important;
+}
+
+.sidebar-submenu .menu-item.active {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    border-left: 3px solid #3b82f6 !important;
+}
+
+/* ============================================
+   Ensure sidebar section is properly structured
+   ============================================ */
+
+.sidebar-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.05rem;
+    margin-bottom: 0.25rem;
+    position: relative;
+}
+
+/* ============================================
+   Active state for dropdown toggle
+   ============================================ */
+
+.sidebar-section-label.active {
+    background: rgba(0, 0, 0, 0.3) !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   Icon visibility in submenu items
+   ============================================ */
+
+.sidebar-submenu .menu-item i {
+    width: 20px !important;
+    min-width: 20px !important;
+    font-size: 0.9rem !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ============================================
+   Override any conflicting styles
+   ============================================ */
+
+/* Ensure submenu is not hidden by page-content styles */
+.sidebar .sidebar-submenu,
+.sidebar-menu .sidebar-submenu,
+.sidebar-section .sidebar-submenu {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+}
+
+.sidebar .sidebar-submenu.expanded,
+.sidebar-menu .sidebar-submenu.expanded,
+.sidebar-section .sidebar-submenu.expanded {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ============================================
+   Responsive adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+    .sidebar-submenu {
+        padding-left: 1rem !important;
+    }
+    
+    .sidebar-submenu .menu-item {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.85rem;
+    }
+}

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Sasaran Strategi Edit Fix v2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #007bff;
+    }
+
+    .test-info {
+      background: #e7f3ff;
+      border-left: 4px solid #007bff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .test-info h3 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+
+    .test-info ul {
+      margin-left: 20px;
+    }
+
+    .test-info li {
+      margin: 5px 0;
+      color: #555;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+      margin: 5px;
+    }
+
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    .btn-edit {
+      background: #ffc107;
+      color: #212529;
+    }
+
+    .btn-edit:hover {
+      background: #e0a800;
+    }
+
+    .btn-delete {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #c82333;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #dee2e6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-bug-slash"></i> Test Sasaran Strategi Edit Fix v2</h1>
+    
+    <div class="test-info">
+      <h3><i class="fas fa-info-circle"></i> Masalah yang Diperbaiki:</h3>
+      <ul>
+        <li><strong>Form edit tampil 2 kali:</strong> Sekarang ada mekanisme untuk mencegah modal dibuka lebih dari sekali</li>
+        <li><strong>Tombol batal tidak langsung hilang:</strong> Sekarang tombol X dan Batal akan langsung menutup modal dengan single click</li>
+      </ul>
+      <h3 style="margin-top: 15px;"><i class="fas fa-clipboard-check"></i> Cara Testing:</h3>
+      <ul>
+        <li>Klik tombol "Edit" pada salah satu data di tabel</li>
+        <li>Perhatikan apakah form hanya muncul 1 kali (tidak ada flicker/tampil 2 kali)</li>
+        <li>Klik tombol "X" atau "Batal" - form harus langsung hilang dengan 1 kali klik</li>
+        <li>Coba edit data lain untuk memastikan tidak ada masalah</li>
+      </ul>
+    </div>
+
+    <div id="sasaran-strategi-content">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Sasaran Strategi</h3>
+          <div>
+            <button class="btn btn-primary" onclick="SasaranStrategiModule.showModal()">
+              <i class="fas fa-plus"></i> Tambah Sasaran
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Rencana Strategis</th>
+                <th>Sasaran</th>
+                <th>Perspektif</th>
+                <th>TOWS Strategi</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="data-table">
+              <tr>
+                <td colspan="5" class="text-center">
+                  <i class="fas fa-spinner fa-spin"></i> Loading data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="status-message"></div>
+  </div>
+
+  <!-- Load dependencies -->
+  <script src="/js/config.js"></script>
+  <script src="/js/services/apiService.js"></script>
+  <script src="/js/services/authService.js"></script>
+  
+  <!-- Load Sasaran Strategi module -->
+  <script src="/js/sasaran-strategi.js"></script>
+  
+  <!-- Load the fix AFTER the main module -->
+  <script src="/js/sasaran-strategi-edit-fix-v2.js"></script>
+
+  <script>
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('Initializing test page...');
+      
+      try {
+        // Check if module is loaded
+        if (!window.SasaranStrategiModule) {
+          throw new Error('SasaranStrategiModule not loaded');
+        }
+
+        // Show status
+        showStatus('Loading data...', 'info');
+
+        // Load data
+        await SasaranStrategiModule.load();
+        
+        showStatus('Data loaded successfully! Ready for testing.', 'success');
+        console.log('Test page ready');
+      } catch (error) {
+        console.error('Initialization error:', error);
+        showStatus('Error: ' + error.message, 'error');
+        
+        // Show sample data for testing
+        showSampleData();
+      }
+    });
+
+    function showStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status-message');
+      statusDiv.className = `status ${type}`;
+      statusDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+    }
+
+    function showSampleData() {
+      const tbody = document.getElementById('data-table');
+      tbody.innerHTML = `
+        <tr>
+          <td>Sistem Manajemen Pengetahuan dan Knowledge Sharing</td>
+          <td>Terwujudnya pengembangan sistem keamanan informasi untuk melindungi data sensitif</td>
+          <td><span class="badge" style="background: #17a2b8; color: white;">IBP</span></td>
+          <td>
+            <span class="badge" style="background: #28a745; color: white;">ST</span><br>
+            <small>Memanfaatkan sistem keamanan informasi yang kuat untuk melin...</small>
+          </td>
+          <td>
+            <button class="btn btn-edit btn-sm" onclick="testEdit('test-id-1')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-delete btn-sm">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td>Sistem Manajemen Pengetahuan dan Knowledge Sharing</td>
+          <td>Meningkatkan kolaborasi antar departemen melalui platform digital</td>
+          <td><span class="badge" style="background: #ffc107; color: #212529;">LG</span></td>
+          <td>
+            <span class="badge" style="background: #17a2b8; color: white;">WO</span><br>
+            <small>Mengembangkan platform kolaborasi untuk meningkatkan...</small>
+          </td>
+          <td>
+            <button class="btn btn-edit btn-sm" onclick="testEdit('test-id-2')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-delete btn-sm">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function testEdit(id) {
+      console.log('Test edit called for ID:', id);
+      if (window.SasaranStrategiModule && window.SasaranStrategiModule.edit) {
+        SasaranStrategiModule.edit(id);
+      } else {
+        alert('Module not loaded. This is a test button.');
+      }
+    }
+  </script>
+</body>
+</html>

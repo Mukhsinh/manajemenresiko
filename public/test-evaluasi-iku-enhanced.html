@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Evaluasi IKU Enhanced</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/evaluasi-iku-enhanced.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f4f6; min-height: 100vh; }
+    .page-header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 1rem 1.5rem; }
+    .page-header h1 { font-size: 1.25rem; font-weight: 600; }
+    .page-header p { font-size: 0.8rem; opacity: 0.9; margin-top: 0.25rem; }
+    .main-content { padding: 1rem; max-width: 1400px; margin: 0 auto; }
+    
+    /* Info Cards */
+    .info-section { background: white; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .info-section h3 { font-size: 0.9rem; color: #1e3a5f; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; }
+    .info-card { background: #f9fafb; border-radius: 8px; padding: 0.75rem; text-align: center; border-left: 3px solid; }
+    .info-card.blue { border-color: #3b82f6; }
+    .info-card.green { border-color: #10b981; }
+    .info-card.yellow { border-color: #f59e0b; }
+    .info-card.red { border-color: #ef4444; }
+    .info-card .value { font-size: 1.5rem; font-weight: 700; color: #1f2937; }
+    .info-card .label { font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
+    
+    /* Sample Data Section */
+    .sample-section { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+    .sample-section h4 { font-size: 0.85rem; color: #92400e; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .sample-list { font-size: 0.8rem; color: #78350f; }
+    .sample-list li { margin-bottom: 0.35rem; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Evaluasi IKU</h1>
+    <p>Input Realisasi Bulanan dan Monitoring Capaian Tahunan</p>
+  </div>
+  
+  <div class="main-content">
+    <!-- Summary Cards -->
+    <div class="info-section">
+      <h3><i class="fas fa-chart-pie"></i> Ringkasan Capaian IKU 2024</h3>
+      <div class="info-grid">
+        <div class="info-card blue">
+          <div class="value">5</div>
+          <div class="label">Total IKU</div>
+        </div>
+        <div class="info-card green">
+          <div class="value">1</div>
+          <div class="label">Tercapai</div>
+        </div>
+        <div class="info-card yellow">
+          <div class="value">3</div>
+          <div class="label">Hampir Tercapai</div>
+        </div>
+        <div class="info-card red">
+          <div class="value">1</div>
+          <div class="label">Perlu Perhatian</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sample Data Info -->
+    <div class="sample-section">
+      <h4><i class="fas fa-lightbulb"></i> Contoh Data Isian Evaluasi IKU</h4>
+      <ul class="sample-list">
+        <li><strong>Tingkat Kepuasan Pasien:</strong> Target 85%, Realisasi 82.5% (Hampir Tercapai)</li>
+        <li><strong>Bed Occupancy Rate (BOR):</strong> Target 75%, Realisasi 68.3% (Hampir Tercapai)</li>
+        <li><strong>Average Length of Stay (ALOS):</strong> Target 4 Hari, Realisasi 3.8 Hari (Tercapai)</li>
+        <li><strong>Rasio Pendapatan per TT:</strong> Target 150 Juta, Realisasi 142 Juta (Hampir Tercapai)</li>
+        <li><strong>Tingkat Kepatuhan SOP:</strong> Target 95%, Realisasi 91.2% (Hampir Tercapai)</li>
+      </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="evaluasi-iku-content"></div>
+  </div>
+  
+  <script src="/js/evaluasi-iku-enhanced.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the enhanced module
+      if (window.EvaluasiIKUEnhanced) {
+        EvaluasiIKUEnhanced.init();
+      }
+    });
+  </script>
+</body>
+</html>

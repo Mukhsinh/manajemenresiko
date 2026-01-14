@@ -1,0 +1,211 @@
+/**
+ * RENCANA STRATEGIS UNIFIED CSS v6.0
+ * Single source of truth for RS page styling
+ * 
+ * CRITICAL: This CSS ensures:
+ * 1. ALWAYS show: Cards + Table + Form
+ * 2. NEVER show: Selection List
+ * 3. Clean, modern appearance
+ * 
+ * Updated: 2026-01-10
+ */
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+#rencana-strategis {
+    background-color: #f8f9fa !important;
+    min-height: 100vh;
+}
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#rencana-strategis-content {
+    background-color: #f8f9fa !important;
+    min-height: 400px;
+}
+
+/* ============================================
+   CRITICAL: HIDE SELECTION LIST COMPLETELY
+   ============================================ */
+
+/* Hide ALL selection list patterns */
+.rencana-strategis-selection,
+.rs-selection-wrapper,
+.rs-selection-list,
+.rencana-strategis-selection-list,
+#rs-selection-container,
+#selection-section,
+[data-rs-selection-list],
+.list-group-item[onclick*="viewRencanaDetail"],
+.card-header:has(h5:contains("Pilih Rencana Strategis")),
+#rencana-strategis-content > div:not(.rencana-strategis-wrapper):not(.text-center):not(.alert):not(.spinner-border) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ============================================
+   WRAPPER - ALWAYS VISIBLE
+   ============================================ */
+
+.rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+    background-color: #f8f9fa !important;
+    padding: 1rem !important;
+}
+
+/* ============================================
+   STAT CARDS
+   ============================================ */
+
+.rencana-strategis-wrapper .card {
+    background-color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+}
+
+/* ============================================
+   TABLE
+   ============================================ */
+
+.rencana-strategis-wrapper .table {
+    background-color: #ffffff !important;
+    margin-bottom: 0 !important;
+}
+
+.rencana-strategis-wrapper .table thead {
+    background: #f8f9fa !important;
+}
+
+.rencana-strategis-wrapper .table th {
+    border: none !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem !important;
+}
+
+.rencana-strategis-wrapper .table td {
+    padding: 0.75rem 1rem !important;
+    vertical-align: middle !important;
+    border-color: #f1f3f4 !important;
+}
+
+.rencana-strategis-wrapper .table tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* ============================================
+   FORM
+   ============================================ */
+
+.rencana-strategis-wrapper .form-control,
+.rencana-strategis-wrapper .form-select {
+    border-radius: 8px !important;
+    border: 1px solid #dee2e6 !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.rencana-strategis-wrapper .form-control:focus,
+.rencana-strategis-wrapper .form-select:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.rencana-strategis-wrapper .btn {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.rencana-strategis-wrapper .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+}
+
+.rencana-strategis-wrapper .btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%) !important;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.rencana-strategis-wrapper .badge {
+    font-weight: 500 !important;
+    padding: 0.35rem 0.65rem !important;
+    border-radius: 6px !important;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+#rencana-strategis-content .spinner-border {
+    width: 2rem !important;
+    height: 2rem !important;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK TO OTHER PAGES
+   ============================================ */
+
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"] {
+    display: none !important;
+}
+
+#rencana-strategis:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -99999px !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .rencana-strategis-wrapper {
+        padding: 0.5rem !important;
+    }
+    
+    .rencana-strategis-wrapper .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    .rencana-strategis-wrapper .table th,
+    .rencana-strategis-wrapper .table td {
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
+    }
+}

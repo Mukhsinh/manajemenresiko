@@ -270,7 +270,7 @@ const RiskProfileModule = (() => {
 
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+        <div style="background: #ffffff; padding: 1.5rem; border-radius: 8px; color: white;">
           <div style="font-size: 2rem; font-weight: bold;">${stats.total}</div>
           <div style="font-size: 0.875rem; opacity: 0.9;">Total Risiko</div>
         </div>

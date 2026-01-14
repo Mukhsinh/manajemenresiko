@@ -106,9 +106,8 @@ function renderVisiMisi(data) {
     
     content.innerHTML = `
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Visi dan Misi Organisasi</h3>
-                <button class="btn btn-primary" id="btn-tambah-visi-misi">
+            <div class="card-header" style="background-color: #ffffff !important; color: #1e3a5f;">
+                <button class="btn btn-success" id="btn-tambah-visi-misi" style="background-color: #28a745; color: #ffffff; border: 1px solid #28a745;">
                     <i class="fas fa-plus"></i> Tambah Visi Misi
                 </button>
             </div>
@@ -120,7 +119,7 @@ function renderVisiMisi(data) {
                             <th style="width: 30%;">Visi</th>
                             <th style="width: 40%;">Misi</th>
                             <th style="width: 100px;">Status</th>
-                            <th style="width: 150px;">Aksi</th>
+                            <th style="width: 100px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="visi-misi-tbody">
@@ -132,11 +131,11 @@ function renderVisiMisi(data) {
                                 <td>${formatMisi(item.misi)}</td>
                                 <td><span class="badge-status badge-${item.status === 'Aktif' ? 'aman' : 'secondary'}">${item.status}</span></td>
                                 <td>
-                                    <button class="btn btn-edit btn-sm" data-action="edit" data-id="${item.id}">
-                                        <i class="fas fa-edit"></i> Edit
+                                    <button class="btn btn-edit btn-sm" data-action="edit" data-id="${item.id}" title="Edit" style="padding: 0.4rem 0.6rem;">
+                                        <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-delete btn-sm" data-action="delete" data-id="${item.id}">
-                                        <i class="fas fa-trash"></i> Hapus
+                                    <button class="btn btn-delete btn-sm" data-action="delete" data-id="${item.id}" title="Hapus" style="padding: 0.4rem 0.6rem;">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>

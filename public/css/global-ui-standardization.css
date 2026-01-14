@@ -1,0 +1,675 @@
+/**
+ * Global UI Standardization CSS
+ * Standarisasi tampilan untuk seluruh halaman aplikasi
+ * - Icon edit dan hapus
+ * - Tombol-tombol di atas kolom
+ * - Header tabel (background biru navy, tulisan & icon PUTIH)
+ * - Kop header halaman
+ * 
+ * PRIORITY: Loaded last to override all other styles
+ */
+
+/* ============================================
+   1. ICON EDIT - BIRU MUDA
+   ============================================ */
+
+body .btn-edit,
+body .btn-action-edit,
+body .edit-btn,
+body td .btn-primary:not(.btn-tambah):not(.btn-add):not(.btn-save):not(.btn-submit),
+body td .btn-info,
+body .actions .btn-primary,
+body .aksi .btn-primary,
+body .action-buttons .btn-primary,
+body td .btn-icon.btn-edit,
+body td button.btn-edit,
+body .btn-action.btn-edit,
+body .ss-btn-edit,
+body .action-btn-edit,
+body .btn-edit-action {
+    background-color: #E3F2FD !important;
+    border: 1px solid #2196F3 !important;
+    color: #1976D2 !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    background-image: none !important;
+}
+
+body .btn-edit:hover,
+body .btn-action-edit:hover,
+body .edit-btn:hover,
+body td .btn-primary:not(.btn-tambah):not(.btn-add):not(.btn-save):not(.btn-submit):hover,
+body td .btn-info:hover,
+body .actions .btn-primary:hover,
+body .aksi .btn-primary:hover,
+body .action-buttons .btn-primary:hover,
+body td .btn-icon.btn-edit:hover,
+body td button.btn-edit:hover,
+body .btn-action.btn-edit:hover,
+body .ss-btn-edit:hover,
+body .action-btn-edit:hover,
+body .btn-edit-action:hover {
+    background-color: #BBDEFB !important;
+    border-color: #1976D2 !important;
+    color: #0D47A1 !important;
+}
+
+body .btn-edit i,
+body .btn-edit svg,
+body td .btn-primary i,
+body td .btn-primary svg,
+body td .btn-info i,
+body td .btn-info svg,
+body .ss-btn-edit i,
+body .ss-btn-edit svg,
+body .action-btn-edit i,
+body .action-btn-edit svg {
+    color: #1976D2 !important;
+}
+
+/* ============================================
+   2. ICON HAPUS - MERAH MUDA
+   ============================================ */
+
+body .btn-delete,
+body .btn-hapus,
+body .btn-action-delete,
+body .delete-btn,
+body .hapus-btn,
+body td .btn-danger,
+body .actions .btn-danger,
+body .aksi .btn-danger,
+body .action-buttons .btn-danger,
+body td .btn-icon.btn-delete,
+body td button.btn-delete,
+body .btn-action.btn-delete,
+body .ss-btn-delete,
+body .action-btn-delete,
+body .btn-delete-action {
+    background-color: #FFEBEE !important;
+    border: 1px solid #F44336 !important;
+    color: #D32F2F !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    background-image: none !important;
+}
+
+body .btn-delete:hover,
+body .btn-hapus:hover,
+body .btn-action-delete:hover,
+body .delete-btn:hover,
+body .hapus-btn:hover,
+body td .btn-danger:hover,
+body .actions .btn-danger:hover,
+body .aksi .btn-danger:hover,
+body .action-buttons .btn-danger:hover,
+body td .btn-icon.btn-delete:hover,
+body td button.btn-delete:hover,
+body .btn-action.btn-delete:hover,
+body .ss-btn-delete:hover,
+body .action-btn-delete:hover,
+body .btn-delete-action:hover {
+    background-color: #FFCDD2 !important;
+    border-color: #D32F2F !important;
+    color: #B71C1C !important;
+}
+
+body .btn-delete i,
+body .btn-delete svg,
+body .btn-hapus i,
+body .btn-hapus svg,
+body td .btn-danger i,
+body td .btn-danger svg,
+body .ss-btn-delete i,
+body .ss-btn-delete svg,
+body .action-btn-delete i,
+body .action-btn-delete svg {
+    color: #D32F2F !important;
+}
+
+/* ============================================
+   3. TOMBOL TOOLBAR - BIRU NAVY
+   ============================================ */
+
+body .btn-toolbar .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus),
+body .card-header .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus):not(.btn-close),
+body .card-tools .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus),
+body .page-actions .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus),
+body .btn-unduh-template,
+body .btn-import-data,
+body .btn-tambah,
+body .btn-add,
+body .btn-unduh-laporan,
+body .btn-download,
+body .btn-export,
+body .btn-template {
+    background-color: #1a237e !important;
+    border: 1px solid #1a237e !important;
+    color: #ffffff !important;
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    background-image: none !important;
+}
+
+body .btn-toolbar .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus):hover,
+body .card-header .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus):not(.btn-close):hover,
+body .card-tools .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus):hover,
+body .page-actions .btn:not(.btn-edit):not(.btn-delete):not(.btn-hapus):hover,
+body .btn-unduh-template:hover,
+body .btn-import-data:hover,
+body .btn-tambah:hover,
+body .btn-add:hover,
+body .btn-unduh-laporan:hover,
+body .btn-download:hover,
+body .btn-export:hover,
+body .btn-template:hover {
+    background-color: #0d1757 !important;
+    border-color: #0d1757 !important;
+    color: #ffffff !important;
+}
+
+body .btn-toolbar .btn i,
+body .btn-toolbar .btn svg,
+body .card-header .btn:not(.btn-edit):not(.btn-delete) i,
+body .card-header .btn:not(.btn-edit):not(.btn-delete) svg,
+body .btn-tambah i,
+body .btn-tambah svg,
+body .btn-add i,
+body .btn-add svg,
+body .btn-download i,
+body .btn-download svg,
+body .btn-export i,
+body .btn-export svg {
+    color: #ffffff !important;
+}
+
+
+/* ============================================
+   4. HEADER TABEL - BIRU NAVY + TULISAN/ICON PUTIH
+   ============================================ */
+
+/* Background header tabel */
+body table thead,
+body table thead tr,
+body .table thead,
+body .table thead tr,
+body .table-responsive table thead,
+body .table-responsive table thead tr,
+#app-screen table thead,
+#app-screen table thead tr,
+.main-content table thead,
+.main-content table thead tr {
+    background-color: #1a237e !important;
+    background-image: none !important;
+}
+
+/* Cell header tabel */
+body table thead th,
+body table thead td,
+body .table thead th,
+body .table thead td,
+body .table-responsive table thead th,
+body .table-responsive table thead td,
+#app-screen table thead th,
+#app-screen table thead td,
+.main-content table thead th,
+.main-content table thead td {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-color: #283593 !important;
+    padding: 12px 15px !important;
+    background-image: none !important;
+}
+
+/* SEMUA TULISAN DI HEADER TABEL - PUTIH */
+body table thead th *,
+body table thead td *,
+body .table thead th *,
+body .table thead td *,
+body .table-responsive table thead th *,
+body .table-responsive table thead td *,
+#app-screen table thead th *,
+#app-screen table thead td *,
+.main-content table thead th *,
+.main-content table thead td * {
+    color: #ffffff !important;
+}
+
+/* ICON FONT AWESOME DI HEADER TABEL - PUTIH */
+body table thead th i,
+body table thead th .fa,
+body table thead th .fas,
+body table thead th .far,
+body table thead th .fab,
+body table thead th [class*="fa-"],
+body .table thead th i,
+body .table thead th .fa,
+body .table thead th .fas,
+body .table thead th .far,
+body .table thead th .fab,
+body .table thead th [class*="fa-"],
+#app-screen table thead th i,
+#app-screen table thead th .fa,
+#app-screen table thead th .fas,
+.main-content table thead th i,
+.main-content table thead th .fa,
+.main-content table thead th .fas {
+    color: #ffffff !important;
+}
+
+/* SVG/LUCIDE ICONS DI HEADER TABEL - PUTIH */
+body table thead th svg,
+body .table thead th svg,
+#app-screen table thead th svg,
+.main-content table thead th svg,
+body table thead th [data-lucide],
+body .table thead th [data-lucide] {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+    fill: none !important;
+}
+
+/* DataTables header */
+body .dataTables_wrapper table thead th,
+body .dataTables_wrapper table thead td,
+body table.dataTable thead th,
+body table.dataTable thead td {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-color: #283593 !important;
+    background-image: none !important;
+}
+
+/* DataTables header - semua elemen putih */
+body .dataTables_wrapper table thead th *,
+body .dataTables_wrapper table thead td *,
+body table.dataTable thead th *,
+body table.dataTable thead td * {
+    color: #ffffff !important;
+}
+
+/* Sorting icons di DataTables - putih */
+body table.dataTable thead .sorting:before,
+body table.dataTable thead .sorting:after,
+body table.dataTable thead .sorting_asc:before,
+body table.dataTable thead .sorting_asc:after,
+body table.dataTable thead .sorting_desc:before,
+body table.dataTable thead .sorting_desc:after {
+    color: #ffffff !important;
+    opacity: 0.8 !important;
+}
+
+/* Link di header tabel - putih */
+body table thead th a,
+body .table thead th a {
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+body table thead th a:hover,
+body .table thead th a:hover {
+    color: #e3f2fd !important;
+}
+
+/* Span dan text di header tabel - putih */
+body table thead th span,
+body table thead th label,
+body table thead th p,
+body .table thead th span,
+body .table thead th label,
+body .table thead th p {
+    color: #ffffff !important;
+}
+
+
+/* ============================================
+   5. KOP HEADER HALAMAN - TULISAN PUTIH
+   ============================================ */
+
+body .page-header,
+body .content-header,
+body .section-header,
+body .card-header.bg-primary,
+body .card-header.bg-dark,
+body .card-header.bg-info,
+body .header-section,
+body .page-title-box,
+body .page-heading {
+    color: #ffffff !important;
+}
+
+body .page-header *,
+body .content-header *,
+body .section-header *,
+body .card-header.bg-primary *,
+body .card-header.bg-dark *,
+body .card-header.bg-info * {
+    color: #ffffff !important;
+}
+
+/* Card dengan header biru */
+body .card > .card-header {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #283593 !important;
+}
+
+body .card > .card-header *:not(.btn-edit):not(.btn-delete):not(.btn-edit *):not(.btn-delete *) {
+    color: #ffffff !important;
+}
+
+/* ============================================
+   6. TOMBOL MODAL
+   ============================================ */
+
+/* Tombol Cancel/Batal di modal */
+body .modal-footer .btn-secondary,
+body .modal-footer .btn-cancel,
+body .modal-footer [data-dismiss="modal"],
+body .modal-footer [data-bs-dismiss="modal"] {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #ffffff !important;
+}
+
+/* Tombol Submit/Simpan di modal */
+body .modal-footer .btn-primary,
+body .modal-footer .btn-success,
+body .modal-footer .btn-save,
+body .modal-footer .btn-submit {
+    background-color: #1a237e !important;
+    border-color: #1a237e !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   7. VIEW BUTTON - HIJAU
+   ============================================ */
+
+body .btn-view,
+body .action-btn-view,
+body td .btn-view {
+    background-color: #E8F5E9 !important;
+    border: 1px solid #4CAF50 !important;
+    color: #2E7D32 !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+}
+
+body .btn-view:hover,
+body .action-btn-view:hover,
+body td .btn-view:hover {
+    background-color: #C8E6C9 !important;
+    border-color: #388E3C !important;
+    color: #1B5E20 !important;
+}
+
+body .btn-view i,
+body .btn-view svg {
+    color: #2E7D32 !important;
+}
+
+/* ============================================
+   8. RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    body .btn-toolbar .btn,
+    body .card-header .btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    body td .btn-edit,
+    body td .btn-delete,
+    body td .btn-primary,
+    body td .btn-danger {
+        padding: 4px 8px !important;
+    }
+}
+
+
+/* ============================================
+   4. HEADER TABEL - BIRU NAVY + TULISAN/ICON PUTIH
+   ============================================ */
+
+/* Background header tabel */
+body table thead,
+body table thead tr,
+body .table thead,
+body .table thead tr,
+body .table-responsive table thead,
+body .table-responsive table thead tr,
+#app-screen table thead,
+#app-screen table thead tr,
+.main-content table thead,
+.main-content table thead tr {
+    background-color: #1a237e !important;
+    background-image: none !important;
+}
+
+/* Cell header tabel */
+body table thead th,
+body table thead td,
+body .table thead th,
+body .table thead td,
+body .table-responsive table thead th,
+body .table-responsive table thead td,
+#app-screen table thead th,
+#app-screen table thead td,
+.main-content table thead th,
+.main-content table thead td {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-color: #283593 !important;
+    padding: 12px 15px !important;
+    background-image: none !important;
+}
+
+/* SEMUA TULISAN DI HEADER TABEL - PUTIH */
+body table thead th,
+body table thead th *,
+body table thead td,
+body table thead td *,
+body .table thead th,
+body .table thead th *,
+body .table thead td,
+body .table thead td *,
+#app-screen table thead th,
+#app-screen table thead th *,
+#app-screen table thead td,
+#app-screen table thead td *,
+.main-content table thead th,
+.main-content table thead th *,
+.main-content table thead td,
+.main-content table thead td * {
+    color: #ffffff !important;
+}
+
+/* ICON FONT AWESOME DI HEADER TABEL - PUTIH */
+body table thead th i,
+body table thead th .fa,
+body table thead th .fas,
+body table thead th .far,
+body table thead th .fab,
+body table thead th [class*="fa-"],
+body .table thead th i,
+body .table thead th .fa,
+body .table thead th .fas,
+body .table thead th .far,
+body .table thead th .fab,
+body .table thead th [class*="fa-"],
+#app-screen table thead th i,
+#app-screen table thead th .fa,
+#app-screen table thead th .fas,
+.main-content table thead th i,
+.main-content table thead th .fa,
+.main-content table thead th .fas {
+    color: #ffffff !important;
+}
+
+/* SVG/LUCIDE ICONS DI HEADER TABEL - PUTIH */
+body table thead th svg,
+body .table thead th svg,
+#app-screen table thead th svg,
+.main-content table thead th svg,
+body table thead th [data-lucide],
+body .table thead th [data-lucide] {
+    stroke: #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* DataTables header */
+body .dataTables_wrapper table thead th,
+body .dataTables_wrapper table thead td,
+body table.dataTable thead th,
+body table.dataTable thead td {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-color: #283593 !important;
+    background-image: none !important;
+}
+
+body .dataTables_wrapper table thead th *,
+body .dataTables_wrapper table thead td *,
+body table.dataTable thead th *,
+body table.dataTable thead td * {
+    color: #ffffff !important;
+}
+
+/* Sorting icons di DataTables - putih */
+body table.dataTable thead .sorting:before,
+body table.dataTable thead .sorting:after,
+body table.dataTable thead .sorting_asc:before,
+body table.dataTable thead .sorting_asc:after,
+body table.dataTable thead .sorting_desc:before,
+body table.dataTable thead .sorting_desc:after {
+    color: #ffffff !important;
+    opacity: 0.8 !important;
+}
+
+/* Link di header tabel - putih */
+body table thead th a,
+body .table thead th a {
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+body table thead th a:hover,
+body .table thead th a:hover {
+    color: #e3f2fd !important;
+}
+
+/* ============================================
+   5. KOP HEADER HALAMAN - TULISAN PUTIH
+   ============================================ */
+
+body .page-header,
+body .content-header,
+body .section-header,
+body .card-header.bg-primary,
+body .card-header.bg-dark,
+body .card-header.bg-info,
+body .header-section,
+body .page-title-box,
+body .page-heading {
+    color: #ffffff !important;
+}
+
+body .page-header *,
+body .content-header *,
+body .section-header *,
+body .card-header.bg-primary *,
+body .card-header.bg-dark *,
+body .card-header.bg-info * {
+    color: #ffffff !important;
+}
+
+/* Card header */
+body .card > .card-header {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #283593 !important;
+}
+
+body .card > .card-header *:not(.btn-edit):not(.btn-delete):not(.btn-hapus):not(.btn-edit *):not(.btn-delete *):not(.btn-hapus *) {
+    color: #ffffff !important;
+}
+
+/* ============================================
+   6. TOMBOL MODAL
+   ============================================ */
+
+body .modal-footer .btn-secondary,
+body .modal-footer .btn-cancel,
+body .modal-footer [data-dismiss="modal"],
+body .modal-footer [data-bs-dismiss="modal"] {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #ffffff !important;
+}
+
+body .modal-footer .btn-primary,
+body .modal-footer .btn-success,
+body .modal-footer .btn-save,
+body .modal-footer .btn-submit {
+    background-color: #1a237e !important;
+    border-color: #1a237e !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   7. VIEW BUTTON - HIJAU
+   ============================================ */
+
+body .btn-view,
+body .action-btn-view,
+body td .btn-view {
+    background-color: #E8F5E9 !important;
+    border: 1px solid #4CAF50 !important;
+    color: #2E7D32 !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+}
+
+body .btn-view:hover,
+body .action-btn-view:hover,
+body td .btn-view:hover {
+    background-color: #C8E6C9 !important;
+    border-color: #388E3C !important;
+    color: #1B5E20 !important;
+}
+
+body .btn-view i,
+body .btn-view svg {
+    color: #2E7D32 !important;
+}
+
+/* ============================================
+   8. RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    body .btn-toolbar .btn,
+    body .card-header .btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    body td .btn-edit,
+    body td .btn-delete,
+    body td .btn-primary,
+    body td .btn-danger {
+        padding: 4px 8px !important;
+    }
+}

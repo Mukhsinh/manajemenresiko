@@ -51,13 +51,16 @@ class SPARouter {
             referrer: document.referrer
         });
         
-        // CRITICAL: For page refreshes, preserve the current route
+        // CRITICAL: For page refreshes or direct access, preserve the current route
         if (isPageRefresh || isDirectAccess) {
             console.log('🔄 Page refresh/direct access detected, preserving route:', currentPath);
             
             // Store the current path to prevent redirect to dashboard
             sessionStorage.setItem('preserveRoute', currentPath);
             sessionStorage.setItem('preserveRouteTimestamp', Date.now().toString());
+            
+            // Set a flag to prevent automatic redirects
+            sessionStorage.setItem('preventAutoRedirect', 'true');
         }
         
         // Handle authentication state on page load
@@ -74,22 +77,35 @@ class SPARouter {
     handleAuthenticationOnPageLoad(currentPath) {
         console.log('🔐 Checking authentication state on page load for path:', currentPath);
         
+        // Check if we should prevent auto redirect
+        const preventAutoRedirect = sessionStorage.getItem('preventAutoRedirect');
+        if (preventAutoRedirect === 'true') {
+            console.log('🔄 Auto redirect prevented, preserving current route:', currentPath);
+            // Clear the flag after a short delay
+            setTimeout(() => {
+                sessionStorage.removeItem('preventAutoRedirect');
+            }, 2000);
+            return true;
+        }
+        
         // Check if we should preserve the route (from refresh)
         const preserveRoute = sessionStorage.getItem('preserveRoute');
         const preserveTimestamp = sessionStorage.getItem('preserveRouteTimestamp');
         const now = Date.now();
         
-        // Only preserve route if it's recent (within 5 seconds) and matches current path
+        // Only preserve route if it's recent (within 10 seconds) and matches current path
         const shouldPreserveRoute = preserveRoute && 
                                    preserveTimestamp && 
-                                   (now - parseInt(preserveTimestamp)) < 5000 &&
+                                   (now - parseInt(preserveTimestamp)) < 10000 &&
                                    preserveRoute === currentPath;
         
         if (shouldPreserveRoute) {
             console.log('🔄 Preserving route from refresh:', currentPath);
-            // Clear the preservation flags
-            sessionStorage.removeItem('preserveRoute');
-            sessionStorage.removeItem('preserveRouteTimestamp');
+            // Clear the preservation flags after a delay
+            setTimeout(() => {
+                sessionStorage.removeItem('preserveRoute');
+                sessionStorage.removeItem('preserveRouteTimestamp');
+            }, 1000);
             
             // Skip authentication redirect for preserved routes
             // The authentication will be checked later in the flow
@@ -130,6 +146,15 @@ class SPARouter {
      */
     navigate(path, replace = false) {
         console.log(`🧭 Navigating to: ${path} (replace: ${replace})`);
+        
+        // CRITICAL: Check if rencana-strategis is locked
+        const isLocked = sessionStorage.getItem('lockRencanaStrategis') === 'true';
+        const currentPath = window.location.pathname;
+        
+        if (isLocked && currentPath === '/rencana-strategis' && path !== '/rencana-strategis') {
+            console.log('🔒 Rencana Strategis is locked, preventing navigation away');
+            return;
+        }
         
         try {
             // Normalize path
@@ -392,6 +417,42 @@ class SPARouter {
         console.log(`🔄 Ensuring page ${pageName} is fully loaded...`);
         
         try {
+            // SPECIAL HANDLING FOR LOGIN PAGE
+            if (pageName === 'login') {
+                console.log('🔐 Handling login page specially...');
+                
+                // Hide app screen, show login screen
+                const loginScreen = document.getElementById('login-screen');
+                const appScreen = document.getElementById('app-screen');
+                
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.classList.add('active');
+                    console.log('✅ Login screen is now visible');
+                }
+                
+                if (appScreen) {
+                    appScreen.style.display = 'none';
+                    appScreen.classList.remove('active');
+                }
+                
+                return; // Exit early for login page
+            }
+            
+            // For other pages, hide login screen and show app screen
+            const loginScreen = document.getElementById('login-screen');
+            const appScreen = document.getElementById('app-screen');
+            
+            if (loginScreen) {
+                loginScreen.style.display = 'none';
+                loginScreen.classList.remove('active');
+            }
+            
+            if (appScreen) {
+                appScreen.style.display = 'block';
+                appScreen.classList.add('active');
+            }
+            
             // Hide all pages first
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');

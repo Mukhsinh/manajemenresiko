@@ -1,0 +1,338 @@
+/**
+ * Modal Enhanced Styles
+ * Ensures consistent modal behavior and prevents double-click issues
+ */
+
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    /* Ensure clicks are registered */
+    pointer-events: auto;
+}
+
+.modal.active {
+    display: flex;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* ============================================
+   MODAL CONTENT
+   ============================================ */
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 600px;
+    width: 90%;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Prevent clicks from closing modal */
+    pointer-events: auto;
+}
+
+/* Larger modals */
+.modal-content.modal-lg {
+    max-width: 800px;
+}
+
+.modal-content.modal-xl {
+    max-width: 1200px;
+}
+
+/* ============================================
+   MODAL HEADER
+   ============================================ */
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    background: #f8fafc;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* ============================================
+   MODAL CLOSE BUTTON
+   ============================================ */
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    /* Ensure button is clickable */
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background-color: #f1f5f9;
+    color: #1e293b;
+}
+
+.modal-close:active {
+    transform: scale(0.95);
+}
+
+/* Remove any conflicting onclick attributes */
+.modal-close[onclick] {
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   MODAL BODY
+   ============================================ */
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.5rem;
+    max-height: calc(100vh - 200px);
+}
+
+/* Custom scrollbar for modal body */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ============================================
+   MODAL FOOTER
+   ============================================ */
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   MODAL BUTTONS
+   ============================================ */
+
+/* Cancel/Batal Button */
+.modal-footer .btn-secondary,
+.modal-footer button[type="button"] {
+    /* Ensure button is clickable */
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    position: relative;
+    z-index: 10;
+}
+
+/* Remove conflicting onclick */
+.modal-footer button[onclick*="closest"][onclick*="modal"][onclick*="remove"] {
+    pointer-events: auto !important;
+}
+
+/* Primary/Submit Button */
+.modal-footer .btn-primary,
+.modal-footer button[type="submit"] {
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   FORM INSIDE MODAL
+   ============================================ */
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.modal-content form > .form-group,
+.modal-content form > div:not(.modal-footer) {
+    flex-shrink: 0;
+}
+
+/* ============================================
+   MODAL ANIMATIONS
+   ============================================ */
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal {
+    animation: modalFadeIn 0.2s ease;
+}
+
+.modal-content {
+    animation: modalSlideIn 0.2s ease;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: calc(100vh - 1rem);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+    
+    .modal-title {
+        font-size: 1.125rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus styles for keyboard navigation */
+.modal-close:focus,
+.modal-footer button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .modal,
+    .modal-content,
+    .modal-close {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.modal-content.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.modal-content.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* ============================================
+   PREVENT DOUBLE-CLICK ISSUES
+   ============================================ */
+
+/* Ensure all interactive elements in modal are clickable */
+.modal button,
+.modal input,
+.modal select,
+.modal textarea,
+.modal a {
+    pointer-events: auto !important;
+}
+
+/* Prevent text selection during rapid clicks */
+.modal-close,
+.modal-footer button {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Disable pointer events during close animation */
+.modal[style*="opacity: 0"] {
+    pointer-events: none !important;
+}
+
+.modal[style*="opacity: 0"] * {
+    pointer-events: none !important;
+}

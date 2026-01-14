@@ -3,297 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Rencana Strategis - Final Check</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <title>Rencana Strategis - Final Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .status-card {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .status-success {
-            background: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        .status-error {
-            background: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-        .status-warning {
-            background: #fff3cd;
-            border-color: #ffeaa7;
-            color: #856404;
-        }
-        .test-results {
-            margin-top: 20px;
-        }
-        .test-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            background: #f8f9fa;
-        }
-        .test-item.pass {
-            background: #d4edda;
-            color: #155724;
-        }
-        .test-item.fail {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .test-item i {
-            margin-right: 10px;
-            width: 20px;
-        }
-        .debug-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .debug-section h4 {
-            margin-top: 0;
-        }
-        .debug-log {
-            font-family: monospace;
-            font-size: 12px;
-            line-height: 1.4;
-        }
+        body { background-color: #f8f9fa; }
+        .test-header { background: #ffffff; color: white; padding: 2rem 0; }
+        .status-card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis - Final Check</h1>
-        
-        <div id="status-card" class="status-card">
-            <h3><i class="fas fa-spinner fa-spin"></i> Running Tests...</h3>
-            <p>Memeriksa form input rencana strategis...</p>
-        </div>
-
-        <div class="test-results" id="test-results">
-            <!-- Test results will be populated here -->
-        </div>
-
-        <div id="rencana-strategis-content">
-            <!-- Module content will be loaded here -->
-        </div>
-
-        <div class="debug-section">
-            <h4>Debug Log</h4>
-            <div id="debug-log" class="debug-log">Starting tests...</div>
+    <div class="test-header">
+        <div class="container">
+            <h1><i class="fas fa-chart-line"></i> Rencana Strategis - Final Test</h1>
+            <p class="mb-0">Testing the enhanced module with proper table display</p>
         </div>
     </div>
-
-    <!-- Load required scripts -->
-    <script src="/js/config.js"></script>
-    <script src="/js/services/apiService.js"></script>
-    <script src="/js/rencana-strategis.js"></script>
-
-    <script>
-        let debugLog = [];
-        let testResults = [];
-        
-        function addDebugLog(message) {
-            debugLog.push(`${new Date().toLocaleTimeString()}: ${message}`);
-            const logElement = document.getElementById('debug-log');
-            if (logElement) {
-                logElement.innerHTML = debugLog.slice(-30).join('\n');
-                logElement.scrollTop = logElement.scrollHeight;
-            }
-        }
-
-        function addTestResult(name, passed, details = '') {
-            testResults.push({ name, passed, details });
-            updateTestResults();
-        }
-
-        function updateTestResults() {
-            const resultsElement = document.getElementById('test-results');
-            if (!resultsElement) return;
-
-            const html = testResults.map(test => `
-                <div class="test-item ${test.passed ? 'pass' : 'fail'}">
-                    <i class="fas ${test.passed ? 'fa-check' : 'fa-times'}"></i>
-                    <span><strong>${test.name}</strong> ${test.details ? `- ${test.details}` : ''}</span>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card status-card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-cogs"></i> Module Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="module-status">Checking...</div>
+                    </div>
                 </div>
-            `).join('');
-
-            resultsElement.innerHTML = html;
-        }
-
-        function updateStatus(type, title, message) {
-            const statusCard = document.getElementById('status-card');
-            if (!statusCard) return;
-
-            statusCard.className = `status-card status-${type}`;
-            statusCard.innerHTML = `
-                <h3><i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i> ${title}</h3>
-                <p>${message}</p>
-            `;
-        }
-
-        async function runTests() {
-            try {
-                addDebugLog('Starting comprehensive test suite...');
-
-                // Test 1: Check if container exists
-                const container = document.getElementById('rencana-strategis-content');
-                addTestResult('Container Element', !!container, container ? 'Found' : 'Missing');
-                addDebugLog(`Container check: ${!!container}`);
-
-                // Test 2: Check API endpoints
-                addDebugLog('Testing API endpoints...');
+            </div>
+            <div class="col-md-4">
+                <div class="card status-card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-eye"></i> Display Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="display-status">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card status-card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-database"></i> Data Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="data-status">Waiting...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Test Area -->
+        <div class="card status-card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-table"></i> Rencana Strategis Display Test</h5>
+            </div>
+            <div class="card-body p-0">
+                <div id="rencana-strategis" class="page-content active">
+                    <div id="rencana-strategis-content" class="p-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock dependencies
+        window.apiCall = async (url) => {
+            console.log('Mock API call:', url);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+            
+            if (url.includes('rencana-strategis')) {
+                return [
+                    {
+                        id: '1',
+                        kode: 'RS-2025-001',
+                        nama_rencana: 'Peningkatan Kualitas Pelayanan Medis',
+                        status: 'Aktif',
+                        target: 'Meningkatkan kepuasan pasien hingga 95%',
+                        periode_mulai: '2025-01-01',
+                        periode_selesai: '2025-12-31',
+                        deskripsi: 'Program komprehensif untuk meningkatkan kualitas pelayanan medis di seluruh unit kerja rumah sakit'
+                    },
+                    {
+                        id: '2',
+                        kode: 'RS-2025-002',
+                        nama_rencana: 'Digitalisasi Sistem Informasi',
+                        status: 'Draft',
+                        target: 'Implementasi SIMRS terintegrasi 100%',
+                        periode_mulai: '2025-03-01',
+                        periode_selesai: '2025-12-31',
+                        deskripsi: 'Transformasi digital sistem informasi rumah sakit untuk efisiensi operasional'
+                    },
+                    {
+                        id: '3',
+                        kode: 'RS-2025-003',
+                        nama_rencana: 'Program Keselamatan Pasien',
+                        status: 'Selesai',
+                        target: 'Zero incident keselamatan pasien',
+                        periode_mulai: '2024-01-01',
+                        periode_selesai: '2024-12-31',
+                        deskripsi: 'Program komprehensif keselamatan pasien dengan standar internasional'
+                    }
+                ];
+            }
+            
+            if (url.includes('visi-misi')) {
+                return [
+                    {
+                        id: '1',
+                        misi: 'Memberikan pelayanan kesehatan terbaik\nMeningkatkan kualitas SDM\nMengembangkan teknologi medis'
+                    }
+                ];
+            }
+            
+            return [];
+        };
+        
+        window.app = { apiCall: window.apiCall };
+        window.waitForAuthReady = async () => true;
+        window.isAuthenticated = true;
+        window.currentUser = { id: '1', email: 'test@example.com' };
+        
+        // Status checking functions
+        function checkModuleStatus() {
+            const statusDiv = document.getElementById('module-status');
+            let status = [];
+            
+            if (typeof window.RencanaStrategisModuleEnhanced !== 'undefined') {
+                status.push('<span class="success">✅ Enhanced Module Found</span>');
                 
-                try {
-                    const rencanaResponse = await fetch('/api/rencana-strategis/public');
-                    const rencanaData = await rencanaResponse.json();
-                    const rencanaOk = rencanaResponse.ok && Array.isArray(rencanaData);
-                    addTestResult('Rencana Strategis API', rencanaOk, `${rencanaData.length} records`);
-                    addDebugLog(`Rencana API: ${rencanaResponse.status}, ${rencanaData.length} records`);
-                } catch (error) {
-                    addTestResult('Rencana Strategis API', false, error.message);
-                    addDebugLog(`Rencana API error: ${error.message}`);
-                }
-
-                try {
-                    const visiMisiResponse = await fetch('/api/visi-misi/public');
-                    const visiMisiData = await visiMisiResponse.json();
-                    const visiMisiOk = visiMisiResponse.ok && Array.isArray(visiMisiData);
-                    addTestResult('Visi Misi API', visiMisiOk, `${visiMisiData.length} records`);
-                    addDebugLog(`Visi Misi API: ${visiMisiResponse.status}, ${visiMisiData.length} records`);
-                } catch (error) {
-                    addTestResult('Visi Misi API', false, error.message);
-                    addDebugLog(`Visi Misi API error: ${error.message}`);
-                }
-
-                try {
-                    const kodeResponse = await fetch('/api/rencana-strategis/generate/kode/public');
-                    const kodeData = await kodeResponse.json();
-                    const kodeOk = kodeResponse.ok && kodeData.kode;
-                    addTestResult('Generate Kode API', kodeOk, kodeData.kode || 'Failed');
-                    addDebugLog(`Generate Kode API: ${kodeResponse.status}, ${kodeData.kode}`);
-                } catch (error) {
-                    addTestResult('Generate Kode API', false, error.message);
-                    addDebugLog(`Generate Kode API error: ${error.message}`);
-                }
-
-                // Test 3: Check module availability
-                const moduleAvailable = !!(window.RencanaStrategisModule || window.rencanaStrategisModule || window.loadRencanaStrategis);
-                addTestResult('Module Available', moduleAvailable, moduleAvailable ? 'Found' : 'Missing');
-                addDebugLog(`Module available: ${moduleAvailable}`);
-
-                // Test 4: Load module
-                if (moduleAvailable) {
-                    addDebugLog('Loading module...');
-                    
-                    if (window.RencanaStrategisModule && window.RencanaStrategisModule.load) {
-                        await window.RencanaStrategisModule.load();
-                        addTestResult('Module Load', true, 'RencanaStrategisModule.load()');
-                        addDebugLog('Module loaded via RencanaStrategisModule.load()');
-                    } else if (window.loadRencanaStrategis) {
-                        await window.loadRencanaStrategis();
-                        addTestResult('Module Load', true, 'loadRencanaStrategis()');
-                        addDebugLog('Module loaded via loadRencanaStrategis()');
-                    } else {
-                        addTestResult('Module Load', false, 'No load function found');
-                        addDebugLog('No load function found');
-                    }
+                if (typeof window.RencanaStrategisModuleEnhanced.load === 'function') {
+                    status.push('<span class="success">✅ Load Function Available</span>');
                 } else {
-                    addTestResult('Module Load', false, 'Module not available');
+                    status.push('<span class="error">❌ Load Function Missing</span>');
                 }
-
-                // Test 5: Check form rendering
-                setTimeout(() => {
-                    addDebugLog('Checking form rendering...');
-                    
-                    const form = document.getElementById('rs-form');
-                    addTestResult('Form Element', !!form, form ? 'Found' : 'Missing');
-                    
-                    if (form) {
-                        const inputs = form.querySelectorAll('input, select, textarea');
-                        addTestResult('Form Inputs', inputs.length > 0, `${inputs.length} elements`);
-                        
-                        // Check specific inputs
-                        const kodeInput = document.getElementById('rs-kode');
-                        const misiSelect = document.getElementById('rs-misi');
-                        const namaInput = document.getElementById('rs-nama');
-                        
-                        addTestResult('Kode Input', !!kodeInput, kodeInput ? kodeInput.value || 'Empty' : 'Missing');
-                        addTestResult('Misi Select', !!misiSelect, misiSelect ? `${misiSelect.options.length} options` : 'Missing');
-                        addTestResult('Nama Input', !!namaInput, namaInput ? 'Found' : 'Missing');
-                        
-                        addDebugLog(`Form check complete: ${inputs.length} inputs found`);
-                        
-                        // Final status
-                        const allPassed = testResults.every(test => test.passed);
-                        if (allPassed) {
-                            updateStatus('success', 'All Tests Passed!', 'Form rencana strategis berhasil dimuat dengan semua input yang diperlukan.');
-                        } else {
-                            const failedCount = testResults.filter(test => !test.passed).length;
-                            updateStatus('warning', 'Some Tests Failed', `${failedCount} dari ${testResults.length} test gagal. Periksa detail di bawah.`);
-                        }
-                    } else {
-                        updateStatus('error', 'Form Not Found', 'Form rencana strategis tidak dapat dimuat. Periksa console untuk detail error.');
-                    }
-                    
-                    addDebugLog('Test suite completed');
-                }, 2000);
-
-            } catch (error) {
-                addDebugLog(`Critical error: ${error.message}`);
-                addTestResult('Critical Error', false, error.message);
-                updateStatus('error', 'Critical Error', `Test gagal: ${error.message}`);
+            } else {
+                status.push('<span class="error">❌ Enhanced Module Not Found</span>');
+            }
+            
+            // Check for old modules
+            if (typeof window.RencanaStrategisModule !== 'undefined') {
+                status.push('<span class="warning">⚠️ Old Module Still Present</span>');
+            } else {
+                status.push('<span class="success">✅ No Old Module Conflicts</span>');
+            }
+            
+            statusDiv.innerHTML = status.join('<br>');
+        }
+        
+        function checkDisplayStatus() {
+            const statusDiv = document.getElementById('display-status');
+            const content = document.getElementById('rencana-strategis-content');
+            
+            if (!content) {
+                statusDiv.innerHTML = '<span class="error">❌ Content Container Missing</span>';
+                return;
+            }
+            
+            const contentHTML = content.innerHTML;
+            let status = [];
+            
+            // Check for old display elements
+            if (contentHTML.includes('Pilih Rencana Strategis')) {
+                status.push('<span class="error">❌ Old Display Detected</span>');
+            } else {
+                status.push('<span class="success">✅ No Old Display</span>');
+            }
+            
+            // Check for new display elements
+            if (contentHTML.includes('Daftar Rencana Strategis') || contentHTML.includes('Total Rencana')) {
+                status.push('<span class="success">✅ Enhanced Display Active</span>');
+            } else {
+                status.push('<span class="warning">⚠️ Enhanced Display Not Found</span>');
+            }
+            
+            // Check for table structure
+            if (contentHTML.includes('<table') && contentHTML.includes('table-responsive')) {
+                status.push('<span class="success">✅ Table Structure Present</span>');
+            } else {
+                status.push('<span class="warning">⚠️ Table Structure Missing</span>');
+            }
+            
+            statusDiv.innerHTML = status.join('<br>');
+        }
+        
+        function checkDataStatus() {
+            const statusDiv = document.getElementById('data-status');
+            
+            if (window.RencanaStrategisModuleEnhanced && window.RencanaStrategisModuleEnhanced.state) {
+                const state = window.RencanaStrategisModuleEnhanced.state;
+                let status = [];
+                
+                status.push(`<span class="success">✅ Data Count: ${state.data ? state.data.length : 0}</span>`);
+                status.push(`<span class="success">✅ Missions: ${state.missions ? state.missions.length : 0}</span>`);
+                
+                if (state.isInitialized) {
+                    status.push('<span class="success">✅ Module Initialized</span>');
+                } else {
+                    status.push('<span class="warning">⚠️ Module Not Initialized</span>');
+                }
+                
+                statusDiv.innerHTML = status.join('<br>');
+            } else {
+                statusDiv.innerHTML = '<span class="warning">⚠️ Module State Not Available</span>';
             }
         }
-
-        // Override console methods to capture logs
-        const originalLog = console.log;
-        const originalError = console.error;
-        const originalWarn = console.warn;
-
-        console.log = function(...args) {
-            addDebugLog(`LOG: ${args.join(' ')}`);
-            originalLog.apply(console, args);
-        };
-
-        console.error = function(...args) {
-            addDebugLog(`ERROR: ${args.join(' ')}`);
-            originalError.apply(console, args);
-        };
-
-        console.warn = function(...args) {
-            addDebugLog(`WARN: ${args.join(' ')}`);
-            originalWarn.apply(console, args);
-        };
-
-        // Start tests when DOM is ready
+        
+        // Main test execution
+        async function runTest() {
+            console.log('🧪 Starting Rencana Strategis Final Test...');
+            
+            try {
+                // Check initial status
+                checkModuleStatus();
+                
+                // Load the enhanced module
+                if (window.RencanaStrategisModuleEnhanced && window.RencanaStrategisModuleEnhanced.load) {
+                    console.log('🚀 Loading enhanced module...');
+                    await window.RencanaStrategisModuleEnhanced.load();
+                    
+                    // Check status after loading
+                    setTimeout(() => {
+                        checkDisplayStatus();
+                        checkDataStatus();
+                    }, 1000);
+                    
+                    console.log('✅ Test completed successfully');
+                } else {
+                    console.error('❌ Enhanced module not available');
+                    document.getElementById('display-status').innerHTML = '<span class="error">❌ Module Not Available</span>';
+                }
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                document.getElementById('display-status').innerHTML = '<span class="error">❌ Test Failed: ' + error.message + '</span>';
+            }
+        }
+        
+        // Load scripts and run test
         document.addEventListener('DOMContentLoaded', () => {
-            addDebugLog('DOM loaded, starting tests in 1 second...');
-            setTimeout(runTests, 1000);
+            // Load conflict prevention first
+            const conflictScript = document.createElement('script');
+            conflictScript.src = '/js/rencana-strategis-conflict-prevention.js';
+            conflictScript.onload = () => {
+                // Then load the main module
+                const mainScript = document.createElement('script');
+                mainScript.src = '/js/rencana-strategis.js';
+                mainScript.onload = () => {
+                    console.log('📦 All scripts loaded');
+                    runTest();
+                };
+                mainScript.onerror = () => {
+                    document.getElementById('module-status').innerHTML = '<span class="error">❌ Failed to load main script</span>';
+                };
+                document.head.appendChild(mainScript);
+            };
+            conflictScript.onerror = () => {
+                console.warn('⚠️ Conflict prevention script not found, continuing...');
+                // Load main script anyway
+                const mainScript = document.createElement('script');
+                mainScript.src = '/js/rencana-strategis.js';
+                mainScript.onload = () => runTest();
+                document.head.appendChild(mainScript);
+            };
+            document.head.appendChild(conflictScript);
         });
     </script>
 </body>

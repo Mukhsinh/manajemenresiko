@@ -1,0 +1,417 @@
+/* ============================================
+   RESIDUAL RISK MATRIX - GRADIENT BACKGROUND
+   Warna gradasi sesuai tingkat risiko
+   Hijau (rendah) → Kuning → Orange → Merah (sangat tinggi)
+   ============================================ */
+
+/* Risk Matrix Container with Gradient Background */
+.risk-matrix-container {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border: 1px solid #E5E7EB;
+    position: relative;
+    overflow: hidden;
+}
+
+.risk-matrix-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10B981 0%, #F59E0B 33%, #F97316 66%, #EF4444 100%);
+}
+
+.risk-matrix-container h4 {
+    color: #1F2937;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.risk-matrix-container h4 i,
+.risk-matrix-container h4 svg {
+    color: #3B82F6;
+    width: 24px;
+    height: 24px;
+}
+
+/* ============================================
+   CHART CANVAS - GRADIENT ZONES
+   ============================================ */
+
+#residual-risk-matrix {
+    max-height: 420px !important;
+    border-radius: 8px;
+}
+
+/* ============================================
+   ENHANCED LEGEND - MODERN ICONS
+   ============================================ */
+
+.risk-matrix-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    padding: 0.5rem 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.legend-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Modern Legend Symbols */
+.legend-symbol {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+/* Inherent Risk - Cyan Diamond */
+.legend-symbol.inherent-icon {
+    background: linear-gradient(135deg, #00E5FF 0%, #00B8D4 100%);
+    border: 2px solid #006064;
+    border-radius: 4px;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 6px rgba(0, 229, 255, 0.4);
+}
+
+/* Residual Risk - Gold Star */
+.legend-symbol.residual-icon {
+    color: #FFD700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    font-size: 22px;
+}
+
+.legend-symbol.residual-icon::before {
+    content: '★';
+}
+
+/* Risk Appetite - White Triangle */
+.legend-symbol.appetite-icon {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 18px solid #FFFFFF;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    position: relative;
+}
+
+.legend-symbol.appetite-icon::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: -8px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 14px solid #374151;
+}
+
+/* ============================================
+   REVIEW STATUS BADGES - ENHANCED
+   ============================================ */
+
+/* Base Review Badge */
+.badge-review-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 100px;
+    transition: all 0.3s ease;
+}
+
+/* REVIEWED - Safe (> 1 bulan dari deadline) - Hijau Cerah Solid */
+.badge-review-safe {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+    color: #FFFFFF !important;
+    border: 2px solid #047857 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.badge-review-safe::before {
+    content: '✓';
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* REVIEWED - Warning (< 1 bulan dari deadline) - Merah Solid Berkedip */
+@keyframes urgent-blink {
+    0%, 100% {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(239, 68, 68, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+        box-shadow: 0 0 25px rgba(220, 38, 38, 0.9), 0 0 40px rgba(239, 68, 68, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes icon-pulse {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.6; 
+        transform: scale(1.2);
+    }
+}
+
+.badge-review-urgent {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+    color: #FFFFFF !important;
+    border: 3px solid #991B1B !important;
+    animation: urgent-blink 0.8s ease-in-out infinite;
+    font-weight: 800 !important;
+}
+
+.badge-review-urgent::before {
+    content: '⚠';
+    font-size: 14px;
+    animation: icon-pulse 0.5s ease-in-out infinite;
+}
+
+/* REVIEWED - Critical (< 7 hari atau overdue) - Merah Gelap Berkedip Cepat */
+@keyframes critical-blink {
+    0%, 100% {
+        background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+        box-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 40px rgba(153, 27, 27, 0.5);
+        transform: scale(1);
+    }
+    25% {
+        background: linear-gradient(135deg, #B91C1C 0%, #7F1D1D 100%);
+        box-shadow: 0 0 30px rgba(185, 28, 28, 1), 0 0 50px rgba(220, 38, 38, 0.7);
+        transform: scale(1.08);
+    }
+    50% {
+        background: linear-gradient(135deg, #991B1B 0%, #450A0A 100%);
+        box-shadow: 0 0 35px rgba(153, 27, 27, 1), 0 0 60px rgba(185, 28, 28, 0.8);
+        transform: scale(1.1);
+    }
+    75% {
+        background: linear-gradient(135deg, #B91C1C 0%, #7F1D1D 100%);
+        box-shadow: 0 0 30px rgba(185, 28, 28, 1), 0 0 50px rgba(220, 38, 38, 0.7);
+        transform: scale(1.08);
+    }
+}
+
+.badge-review-critical {
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%) !important;
+    color: #FFFFFF !important;
+    border: 3px solid #450A0A !important;
+    animation: critical-blink 0.5s ease-in-out infinite;
+    font-weight: 900 !important;
+}
+
+.badge-review-critical::before {
+    content: '🚨';
+    font-size: 14px;
+    animation: icon-pulse 0.3s ease-in-out infinite;
+}
+
+/* ============================================
+   RISK ZONE GRADIENT COLORS
+   ============================================ */
+
+/* Zone color definitions for chart background */
+:root {
+    /* Low Risk - Bright Green */
+    --risk-low-start: rgba(16, 185, 129, 0.7);
+    --risk-low-end: rgba(5, 150, 105, 0.5);
+    --risk-low-border: #047857;
+    
+    /* Medium Risk - Bright Yellow/Amber */
+    --risk-medium-start: rgba(245, 158, 11, 0.7);
+    --risk-medium-end: rgba(217, 119, 6, 0.5);
+    --risk-medium-border: #B45309;
+    
+    /* High Risk - Bright Orange */
+    --risk-high-start: rgba(249, 115, 22, 0.75);
+    --risk-high-end: rgba(234, 88, 12, 0.55);
+    --risk-high-border: #C2410C;
+    
+    /* Extreme Risk - Bright Red */
+    --risk-extreme-start: rgba(239, 68, 68, 0.8);
+    --risk-extreme-end: rgba(220, 38, 38, 0.6);
+    --risk-extreme-border: #991B1B;
+}
+
+/* ============================================
+   CHART POINT ICONS - MODERN STYLE
+   ============================================ */
+
+/* Custom point styles for Chart.js */
+.chart-point-inherent {
+    background: linear-gradient(135deg, #00E5FF 0%, #00B8D4 100%);
+    border: 3px solid #006064;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 229, 255, 0.5);
+}
+
+.chart-point-residual {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+    border: 3px solid #FF6F00;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+.chart-point-appetite {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F3F4F6 100%);
+    border: 3px solid #374151;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   STATISTICS CARDS - GRADIENT STYLE
+   ============================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    padding: 1.75rem;
+    border-radius: 16px;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+/* Total Residual Risk - Blue Gradient */
+.stat-card.stat-total {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%) !important;
+}
+
+/* Avg Inherent - Pink/Red Gradient */
+.stat-card.stat-inherent {
+    background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%) !important;
+}
+
+/* Avg Residual - Cyan Gradient */
+.stat-card.stat-residual {
+    background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%) !important;
+}
+
+/* Risk Reduction - Green Gradient */
+.stat-card.stat-reduction {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .risk-matrix-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .legend-item {
+        width: 100%;
+        max-width: 200px;
+        justify-content: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .risk-matrix-container {
+        padding: 1rem;
+    }
+    
+    #residual-risk-matrix {
+        max-height: 300px !important;
+    }
+}

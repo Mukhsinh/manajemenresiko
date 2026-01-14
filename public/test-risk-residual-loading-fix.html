@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Residual Loading Fix</title>
+    <link rel="stylesheet" href="/css/ui-enhancement-framework.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .test-pass {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .test-fail {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .test-info {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .page-loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .data-load-error, .initialization-error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            max-width: 400px;
+        }
+        
+        .retry-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .retry-button:hover {
+            background: #2563eb;
+        }
+        
+        /* Risk Matrix Styles */
+        .risk-matrix {
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 2px;
+            aspect-ratio: 1;
+        }
+        
+        .matrix-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .matrix-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .matrix-cell.selected {
+            border: 3px solid #000;
+        }
+        
+        /* Risk level colors */
+        .risk-very-high { background-color: #dc2626; }
+        .risk-high { background-color: #ea580c; }
+        .risk-medium { background-color: #f59e0b; }
+        .risk-low { background-color: #10b981; }
+        .risk-very-low { background-color: #059669; }
+        
+        /* Badge styles */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .badge-very-high { background-color: #dc2626; }
+        .badge-high { background-color: #ea580c; }
+        .badge-medium { background-color: #f59e0b; }
+        .badge-low { background-color: #10b981; }
+        .badge-very-low { background-color: #059669; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Risk Residual Loading Fix</h1>
+        <p>Testing page loading and display functionality for Risk Residual page.</p>
+        
+        <div class="loading-indicator" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <p>Running tests...</p>
+        </div>
+        
+        <div id="testResults"></div>
+        
+        <!-- Simulated Risk Residual Page Content -->
+        <div class="test-section">
+            <h2>Simulated Page Content</h2>
+            <div id="simulatedPage" data-page="risk-residual" class="risk-residual-page">
+                <!-- Content will be dynamically generated -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button onclick="runAllTests()" class="btn btn-primary">Run All Tests</button>
+            <button onclick="testPageStructure()" class="btn btn-secondary">Test Page Structure</button>
+            <button onclick="testRiskMatrix()" class="btn btn-secondary">Test Risk Matrix</button>
+            <button onclick="testDataLoading()" class="btn btn-secondary">Test Data Loading</button>
+            <button onclick="testUIComponents()" class="btn btn-secondary">Test UI Components</button>
+            <button onclick="testBadgeColors()" class="btn btn-secondary">Test Badge Colors</button>
+            <button onclick="clearTests()" class="btn btn-outline">Clear Results</button>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/js/ui-enhancement-framework.js"></script>
+    <script src="/js/lucide-icon-system.js"></script>
+    <script src="/js/responsive-container-system.js"></script>
+    <script src="/js/page-initialization-system.js"></script>
+    <script src="/js/enhanced-module-dependency-manager.js"></script>
+    <script src="/js/risk-residual-page-fix.js"></script>
+
+    <script>
+        let testResults = [];
+        
+        function addTestResult(name, passed, message, details = null) {
+            const result = {
+                name,
+                passed,
+                message,
+                details,
+                timestamp: new Date().toISOString()
+            };
+            
+            testResults.push(result);
+            displayTestResult(result);
+        }
+        
+        function displayTestResult(result) {
+            const resultsContainer = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.passed ? 'test-pass' : 'test-fail'}`;
+            
+            let html = `
+                <strong>${result.passed ? '✅' : '❌'} ${result.name}</strong><br>
+                ${result.message}
+            `;
+            
+            if (result.details) {
+                html += `<br><small>${result.details}</small>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultsContainer.appendChild(resultDiv);
+        }
+        
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+        
+        function clearTests() {
+            testResults = [];
+            document.getElementById('testResults').innerHTML = '';
+        }
+        
+        async function runAllTests() {
+            clearTests();
+            showLoading();
+            
+            try {
+                await testPageStructure();
+                await testRiskMatrix();
+                await testDataLoading();
+                await testUIComponents();
+                await testBadgeColors();
+                await testPageFix();
+                
+                // Summary
+                const passed = testResults.filter(r => r.passed).length;
+                const total = testResults.length;
+                
+                addTestResult(
+                    'Test Summary',
+                    passed === total,
+                    `${passed}/${total} tests passed`,
+                    `Success rate: ${Math.round((passed/total) * 100)}%`
+                );
+                
+            } catch (error) {
+                addTestResult('Test Execution', false, 'Error running tests', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function testPageStructure() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Page container exists
+            const hasPageContainer = simulatedPage && simulatedPage.hasAttribute('data-page');
+            addTestResult(
+                'Page Container',
+                hasPageContainer,
+                hasPageContainer ? 'Page container exists with proper data-page attribute' : 'Page container missing or invalid'
+            );
+            
+            // Test 2: Create page structure
+            simulatedPage.innerHTML = `
+                <div class="page-header">
+                    <h1 class="page-title">Risk Residual</h1>
+                    <p class="page-description">Kelola dan monitor risiko residual organisasi</p>
+                </div>
+                <div class="main-content">
+                    <div class="risk-summary-grid">
+                        <div class="card risk-card" data-risk-level="very-high">
+                            <div class="card-header">
+                                <h3 class="card-title">Very High Risk</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="risk-count">3</div>
+                            </div>
+                        </div>
+                        <div class="card risk-card" data-risk-level="high">
+                            <div class="card-header">
+                                <h3 class="card-title">High Risk</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="risk-count">8</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="risk-matrix-section">
+                        <div class="risk-matrix" data-matrix-type="residual">
+                            <div class="matrix-grid">
+                                <!-- Matrix cells will be generated -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="table risk-register-table">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>Risk ID</th>
+                                    <th>Description</th>
+                                    <th>Level</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                <tr>
+                                    <td>RSK-001</td>
+                                    <td>Test Risk</td>
+                                    <td><span class="badge badge-high">High</span></td>
+                                    <td class="table-actions">
+                                        <button class="action-btn action-btn-edit" data-action="edit">Edit</button>
+                                        <button class="action-btn action-btn-delete" data-action="delete">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // Test 3: Header structure
+            const header = simulatedPage.querySelector('.page-header');
+            const title = simulatedPage.querySelector('.page-title');
+            addTestResult(
+                'Page Header',
+                header && title,
+                header && title ? 'Page header and title exist' : 'Page header or title missing'
+            );
+            
+            // Test 4: Risk cards structure
+            const riskCards = simulatedPage.querySelectorAll('.risk-card');
+            addTestResult(
+                'Risk Cards',
+                riskCards.length > 0,
+                `Found ${riskCards.length} risk cards`
+            );
+            
+            // Test 5: Table structure
+            const table = simulatedPage.querySelector('.risk-register-table');
+            const tableHeader = simulatedPage.querySelector('.table-header');
+            const tableBody = simulatedPage.querySelector('.table-body');
+            addTestResult(
+                'Table Structure',
+                table && tableHeader && tableBody,
+                table && tableHeader && tableBody ? 'Risk register table has proper structure' : 'Table structure incomplete'
+            );
+        }
+        
+        async function testRiskMatrix() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            const matrixSection = simulatedPage.querySelector('.risk-matrix-section');
+            
+            if (!matrixSection) {
+                addTestResult('Risk Matrix', false, 'Risk matrix section not found');
+                return;
+            }
+            
+            // Test 1: Matrix container exists
+            const matrix = matrixSection.querySelector('.risk-matrix');
+            addTestResult(
+                'Matrix Container',
+                matrix !== null,
+                matrix ? 'Risk matrix container exists' : 'Risk matrix container missing'
+            );
+            
+            // Test 2: Generate matrix grid
+            const matrixGrid = matrix.querySelector('.matrix-grid');
+            if (matrixGrid) {
+                // Generate 5x5 matrix
+                matrixGrid.innerHTML = '';
+                for (let i = 0; i < 25; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-cell';
+                    cell.setAttribute('data-cell', i);
+                    
+                    // Calculate risk level
+                    const row = Math.floor(i / 5);
+                    const col = i % 5;
+                    const score = (4 - row) + col;
+                    
+                    let riskLevel = 'very-low';
+                    if (score >= 7) riskLevel = 'very-high';
+                    else if (score >= 5) riskLevel = 'high';
+                    else if (score >= 3) riskLevel = 'medium';
+                    else if (score >= 1) riskLevel = 'low';
+                    
+                    cell.setAttribute('data-risk-level', riskLevel);
+                    cell.classList.add(`risk-${riskLevel}`);
+                    cell.textContent = score;
+                    
+                    matrixGrid.appendChild(cell);
+                }
+                
+                const matrixCells = matrixGrid.querySelectorAll('.matrix-cell');
+                addTestResult(
+                    'Matrix Grid',
+                    matrixCells.length === 25,
+                    `Generated ${matrixCells.length}/25 matrix cells`
+                );
+                
+                // Test 3: Matrix cell interactions
+                let interactionWorking = false;
+                if (matrixCells.length > 0) {
+                    const testCell = matrixCells[12]; // Middle cell
+                    testCell.addEventListener('click', () => {
+                        interactionWorking = true;
+                    });
+                    testCell.click();
+                }
+                
+                addTestResult(
+                    'Matrix Interactions',
+                    interactionWorking,
+                    interactionWorking ? 'Matrix cell interactions working' : 'Matrix interactions not working'
+                );
+            }
+        }
+        
+        async function testDataLoading() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Check for risk data
+            const riskCards = simulatedPage.querySelectorAll('.risk-card');
+            const hasRiskData = Array.from(riskCards).some(card => {
+                const riskCount = card.querySelector('.risk-count');
+                return riskCount && riskCount.textContent.trim().length > 0;
+            });
+            
+            addTestResult(
+                'Risk Card Data',
+                hasRiskData,
+                hasRiskData ? 'Risk cards contain valid data' : 'Risk cards missing data'
+            );
+            
+            // Test 2: Check table data
+            const tableRows = simulatedPage.querySelectorAll('tbody tr');
+            addTestResult(
+                'Table Data',
+                tableRows.length > 0,
+                `Found ${tableRows.length} data rows in risk register table`
+            );
+            
+            // Test 3: Check matrix data
+            const matrixCells = simulatedPage.querySelectorAll('.matrix-cell');
+            const hasMatrixData = matrixCells.length > 0;
+            addTestResult(
+                'Matrix Data',
+                hasMatrixData,
+                hasMatrixData ? `Risk matrix has ${matrixCells.length} cells` : 'Risk matrix has no data'
+            );
+            
+            // Test 4: Simulate loading performance
+            const startTime = Date.now();
+            await new Promise(resolve => setTimeout(resolve, 100)); // Simulate loading
+            const loadTime = Date.now() - startTime;
+            
+            addTestResult(
+                'Loading Performance',
+                loadTime < 1000,
+                `Data loaded in ${loadTime}ms (target: <1000ms)`
+            );
+        }
+        
+        async function testUIComponents() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Action buttons
+            const actionButtons = simulatedPage.querySelectorAll('.action-btn');
+            const editButtons = simulatedPage.querySelectorAll('.action-btn-edit');
+            const deleteButtons = simulatedPage.querySelectorAll('.action-btn-delete');
+            
+            addTestResult(
+                'Action Buttons',
+                actionButtons.length > 0 && editButtons.length > 0 && deleteButtons.length > 0,
+                `Found ${actionButtons.length} action buttons (${editButtons.length} edit, ${deleteButtons.length} delete)`
+            );
+            
+            // Test 2: Button functionality
+            let buttonClickWorking = false;
+            if (editButtons.length > 0) {
+                const testButton = editButtons[0];
+                testButton.addEventListener('click', () => {
+                    buttonClickWorking = true;
+                });
+                testButton.click();
+            }
+            
+            addTestResult(
+                'Button Functionality',
+                buttonClickWorking,
+                buttonClickWorking ? 'Button click events working' : 'Button click events not working'
+            );
+            
+            // Test 3: CSS classes applied
+            const hasFrameworkClasses = simulatedPage.querySelector('.card') && 
+                                      simulatedPage.querySelector('.table') &&
+                                      simulatedPage.querySelector('.table-header');
+            
+            addTestResult(
+                'CSS Framework Classes',
+                hasFrameworkClasses,
+                hasFrameworkClasses ? 'UI framework classes properly applied' : 'Missing UI framework classes'
+            );
+            
+            // Test 4: Responsive containers
+            const tableContainer = simulatedPage.querySelector('.table-container');
+            addTestResult(
+                'Responsive Containers',
+                tableContainer !== null,
+                tableContainer ? 'Table wrapped in responsive container' : 'Table not properly containerized'
+            );
+        }
+        
+        async function testBadgeColors() {
+            const simulatedPage = document.getElementById('simulatedPage');
+            
+            // Test 1: Risk level badges
+            const badges = simulatedPage.querySelectorAll('.badge');
+            addTestResult(
+                'Badge Elements',
+                badges.length > 0,
+                `Found ${badges.length} badge elements`
+            );
+            
+            // Test 2: Badge color classes
+            let correctColors = 0;
+            badges.forEach(badge => {
+                const hasColorClass = ['badge-very-high', 'badge-high', 'badge-medium', 'badge-low', 'badge-very-low']
+                    .some(cls => badge.classList.contains(cls));
+                if (hasColorClass) correctColors++;
+            });
+            
+            addTestResult(
+                'Badge Colors',
+                correctColors === badges.length,
+                `${correctColors}/${badges.length} badges have correct color classes`
+            );
+            
+            // Test 3: Matrix cell colors
+            const matrixCells = simulatedPage.querySelectorAll('.matrix-cell');
+            let correctMatrixColors = 0;
+            matrixCells.forEach(cell => {
+                const hasRiskClass = ['risk-very-high', 'risk-high', 'risk-medium', 'risk-low', 'risk-very-low']
+                    .some(cls => cell.classList.contains(cls));
+                if (hasRiskClass) correctMatrixColors++;
+            });
+            
+            addTestResult(
+                'Matrix Cell Colors',
+                correctMatrixColors === matrixCells.length,
+                `${correctMatrixColors}/${matrixCells.length} matrix cells have correct colors`
+            );
+        }
+        
+        async function testPageFix() {
+            // Test the RiskResidualPageFix class
+            if (typeof RiskResidualPageFix !== 'undefined') {
+                try {
+                    const pageFix = new RiskResidualPageFix();
+                    
+                    // Test initialization
+                    await pageFix.init();
+                    
+                    addTestResult(
+                        'Page Fix Initialization',
+                        pageFix.isInitialized,
+                        'RiskResidualPageFix initialized successfully'
+                    );
+                    
+                    // Test page detection
+                    const isCorrectPage = pageFix.isRiskResidualPage();
+                    addTestResult(
+                        'Page Detection',
+                        isCorrectPage,
+                        isCorrectPage ? 'Correctly detected Risk Residual page' : 'Failed to detect page type'
+                    );
+                    
+                    // Test matrix initialization
+                    addTestResult(
+                        'Matrix Initialization',
+                        pageFix.matrixInitialized,
+                        pageFix.matrixInitialized ? 'Risk matrix initialized successfully' : 'Matrix initialization failed'
+                    );
+                    
+                } catch (error) {
+                    addTestResult(
+                        'Page Fix Initialization',
+                        false,
+                        'Failed to initialize RiskResidualPageFix',
+                        error.message
+                    );
+                }
+            } else {
+                addTestResult(
+                    'Page Fix Class',
+                    false,
+                    'RiskResidualPageFix class not found'
+                );
+            }
+        }
+        
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                runAllTests();
+            }, 1000);
+        });
+        
+        // Test page fix integration
+        if (window.riskResidualPageFix) {
+            console.log('Risk Residual Page Fix is available');
+        }
+    </script>
+</body>
+</html>

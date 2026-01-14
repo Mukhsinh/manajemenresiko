@@ -34,6 +34,20 @@ const routes = {
         icon: 'fa-chart-line',
         module: 'analisis-bsc'
     },
+    '/renstra': { 
+        handler: 'renstra', 
+        auth: true, 
+        title: 'Renstra - PINTAR MR',
+        icon: 'fa-clipboard-list',
+        module: 'analisis-bsc'
+    },
+    '/renstra': { 
+        handler: 'renstra', 
+        auth: true, 
+        title: 'Renstra - PINTAR MR',
+        icon: 'fa-chart-line',
+        module: 'analisis-bsc'
+    },
     '/analisis-swot': { 
         handler: 'analisis-swot', 
         auth: true, 
@@ -74,6 +88,13 @@ const routes = {
         auth: true, 
         title: 'Indikator Kinerja Utama - PINTAR MR',
         icon: 'fa-tachometer-alt',
+        module: 'analisis-bsc'
+    },
+    '/evaluasi-iku': { 
+        handler: 'evaluasi-iku', 
+        auth: true, 
+        title: 'Evaluasi IKU - PINTAR MR',
+        icon: 'fa-chart-line',
         module: 'analisis-bsc'
     },
     
@@ -206,6 +227,8 @@ const legacyPageMapping = {
     'dashboard': '/dashboard',
     'visi-misi': '/visi-misi',
     'rencana-strategis': '/rencana-strategis',
+    'renstra': '/renstra',
+    'renstra': '/renstra',
     'inventarisasi-swot': '/analisis-swot', // Note: inventarisasi-swot maps to analisis-swot
     'analisis-swot': '/analisis-swot',
     'diagram-kartesius': '/diagram-kartesius',
@@ -213,6 +236,7 @@ const legacyPageMapping = {
     'sasaran-strategi': '/sasaran-strategi',
     'strategic-map': '/strategic-map',
     'indikator-kinerja-utama': '/indikator-kinerja-utama',
+    'evaluasi-iku': '/evaluasi-iku',
     'risk-input': '/manajemen-risiko/input-data',
     'monitoring-evaluasi': '/manajemen-risiko/monitoring-evaluasi',
     'peluang': '/manajemen-risiko/peluang',

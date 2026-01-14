@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RS Isolation - Complete</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .test-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .test-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .test-status {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .status-pass {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-fail {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-info {
+            color: #4fc3f7;
+        }
+        
+        .log-success {
+            color: #66bb6a;
+        }
+        
+        .log-error {
+            color: #ef5350;
+        }
+        
+        .log-warning {
+            color: #ffa726;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .summary-card h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+        
+        .summary-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .summary-card.pass h3 {
+            color: #28a745;
+        }
+        
+        .summary-card.fail h3 {
+            color: #dc3545;
+        }
+        
+        .summary-card.total h3 {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Test Isolasi Konten Rencana Strategis</h1>
+            <p>Verifikasi bahwa konten RS hanya muncul di halaman /rencana-strategis</p>
+        </div>
+        
+        <div class="content">
+            <div class="controls">
+                <button class="btn" onclick="runAllTests()">🚀 Jalankan Semua Test</button>
+                <button class="btn btn-secondary" onclick="clearResults()">🗑️ Bersihkan Hasil</button>
+            </div>
+            
+            <div class="test-section">
+                <h2>📋 Test Halaman Non-RS (Tidak Boleh Ada Konten RS)</h2>
+                <div id="non-rs-tests"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>✅ Test Halaman RS (Harus Ada Konten RS)</h2>
+                <div id="rs-test"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>🛡️ Test Proteksi Fungsi</h2>
+                <div id="protection-tests"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>📊 Ringkasan</h2>
+                <div class="summary" id="summary">
+                    <div class="summary-card total">
+                        <h3 id="total-tests">0</h3>
+                        <p>Total Test</p>
+                    </div>
+                    <div class="summary-card pass">
+                        <h3 id="passed-tests">0</h3>
+                        <p>Berhasil</p>
+                    </div>
+                    <div class="summary-card fail">
+                        <h3 id="failed-tests">0</h3>
+                        <p>Gagal</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="log-container" id="log-container">
+                <div class="log-entry log-info">📝 Log akan muncul di sini...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const nonRSPages = [
+            'dashboard',
+            'risk-profile',
+            'risk-register',
+            'risk-input',
+            'residual-risk',
+            'kri',
+            'analisis-swot',
+            'visi-misi',
+            'master-data'
+        ];
+        
+        const testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+        }
+        
+        function createTestItem(name, status = 'pending') {
+            const item = document.createElement('div');
+            item.className = 'test-item';
+            item.innerHTML = `
+                <span class="test-name">${name}</span>
+                <span class="test-status status-${status}">${
+                    status === 'pending' ? '⏳ Menunggu' :
+                    status === 'pass' ? '✅ Berhasil' :
+                    '❌ Gagal'
+                }</span>
+            `;
+            return item;
+        }
+        
+        function checkRSContent() {
+            const checks = {
+                hasRSWrapper: !!document.querySelector('.rencana-strategis-wrapper'),
+                hasRSContent: !!document.querySelector('#rencana-strategis-content'),
+                hasRSTable: !!document.querySelector('table[data-source="rencana-strategis"]'),
+                hasRSCard: !!document.querySelector('.card[data-module="rencana-strategis"]'),
+                hasRSModule: !!window.RencanaStrategisModule,
+                activePageId: document.querySelector('.page-content.active')?.id || 'unknown'
+            };
+            
+            checks.hasAnyRSContent = checks.hasRSWrapper || 
+                                    checks.hasRSContent || 
+                                    checks.hasRSTable || 
+                                    checks.hasRSCard;
+            
+            return checks;
+        }
+        
+        async function testPage(pageName, shouldHaveRS = false) {
+            log(`Testing page: ${pageName}`, 'info');
+            
+            // Navigate to page
+            if (window.navigateToPage) {
+                window.navigateToPage(pageName);
+            } else {
+                window.location.hash = `#${pageName}`;
+            }
+            
+            // Wait for page to load
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Check for RS content
+            const checks = checkRSContent();
+            
+            const testPassed = shouldHaveRS ? checks.hasAnyRSContent : !checks.hasAnyRSContent;
+            
+            testResults.total++;
+            if (testPassed) {
+                testResults.passed++;
+                log(`✅ ${pageName}: PASS (RS content ${shouldHaveRS ? 'found' : 'not found'} as expected)`, 'success');
+            } else {
+                testResults.failed++;
+                log(`❌ ${pageName}: FAIL (Expected RS=${shouldHaveRS}, Found=${checks.hasAnyRSContent})`, 'error');
+            }
+            
+            return {
+                pageName,
+                shouldHaveRS,
+                checks,
+                testPassed
+            };
+        }
+        
+        async function testProtection() {
+            log('Testing protection functions...', 'info');
+            
+            const results = {
+                moduleProtected: false,
+                loadBlocked: false,
+                selectionBlocked: false
+            };
+            
+            // Navigate to non-RS page
+            if (window.navigateToPage) {
+                window.navigateToPage('dashboard');
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test if RencanaStrategisModule.load is protected
+            if (window.RencanaStrategisModule && window.RencanaStrategisModule.load) {
+                try {
+                    const beforeContent = checkRSContent();
+                    await window.RencanaStrategisModule.load();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const afterContent = checkRSContent();
+                    
+                    results.moduleProtected = !afterContent.hasAnyRSContent;
+                    
+                    testResults.total++;
+                    if (results.moduleProtected) {
+                        testResults.passed++;
+                        log('✅ RencanaStrategisModule.load() is protected', 'success');
+                    } else {
+                        testResults.failed++;
+                        log('❌ RencanaStrategisModule.load() is NOT protected', 'error');
+                    }
+                } catch (e) {
+                    results.moduleProtected = true;
+                    testResults.total++;
+                    testResults.passed++;
+                    log('✅ RencanaStrategisModule.load() threw error (protected)', 'success');
+                }
+            }
+            
+            // Test if loadRencanaStrategis is protected
+            if (window.loadRencanaStrategis) {
+                try {
+                    await window.loadRencanaStrategis();
+                    const checks = checkRSContent();
+                    results.loadBlocked = !checks.hasAnyRSContent;
+                    
+                    testResults.total++;
+                    if (results.loadBlocked) {
+                        testResults.passed++;
+                        log('✅ loadRencanaStrategis() is blocked', 'success');
+                    } else {
+                        testResults.failed++;
+                        log('❌ loadRencanaStrategis() is NOT blocked', 'error');
+                    }
+                } catch (e) {
+                    results.loadBlocked = true;
+                    testResults.total++;
+                    testResults.passed++;
+                    log('✅ loadRencanaStrategis() threw error (blocked)', 'success');
+                }
+            }
+            
+            // Test if selection functions are blocked
+            if (window.loadRencanaStrategisSelection) {
+                try {
+                    await window.loadRencanaStrategisSelection();
+                    results.selectionBlocked = true;
+                    testResults.total++;
+                    testResults.passed++;
+                    log('✅ Selection functions are blocked', 'success');
+                } catch (e) {
+                    results.selectionBlocked = false;
+                    testResults.total++;
+                    testResults.failed++;
+                    log('❌ Selection functions threw error', 'error');
+                }
+            }
+            
+            return results;
+        }
+        
+        async function runAllTests() {
+            log('🚀 Starting all tests...', 'info');
+            log('═'.repeat(50), 'info');
+            
+            // Reset results
+            testResults.total = 0;
+            testResults.passed = 0;
+            testResults.failed = 0;
+            
+            // Clear previous results
+            document.getElementById('non-rs-tests').innerHTML = '';
+            document.getElementById('rs-test').innerHTML = '';
+            document.getElementById('protection-tests').innerHTML = '';
+            
+            // Test non-RS pages
+            for (const pageName of nonRSPages) {
+                const testItem = createTestItem(pageName, 'pending');
+                document.getElementById('non-rs-tests').appendChild(testItem);
+                
+                const result = await testPage(pageName, false);
+                
+                testItem.querySelector('.test-status').className = 
+                    `test-status status-${result.testPassed ? 'pass' : 'fail'}`;
+                testItem.querySelector('.test-status').textContent = 
+                    result.testPassed ? '✅ Berhasil' : '❌ Gagal';
+                
+                updateSummary();
+            }
+            
+            // Test RS page
+            const rsTestItem = createTestItem('rencana-strategis', 'pending');
+            document.getElementById('rs-test').appendChild(rsTestItem);
+            
+            const rsResult = await testPage('rencana-strategis', true);
+            
+            rsTestItem.querySelector('.test-status').className = 
+                `test-status status-${rsResult.testPassed ? 'pass' : 'fail'}`;
+            rsTestItem.querySelector('.test-status').textContent = 
+                rsResult.testPassed ? '✅ Berhasil' : '❌ Gagal';
+            
+            updateSummary();
+            
+            // Test protection
+            const protectionItems = [
+                'Module Load Protection',
+                'Global Function Protection',
+                'Selection List Block'
+            ];
+            
+            protectionItems.forEach(name => {
+                const item = createTestItem(name, 'pending');
+                document.getElementById('protection-tests').appendChild(item);
+            });
+            
+            const protectionResult = await testProtection();
+            
+            // Update protection test items
+            const protectionTestItems = document.querySelectorAll('#protection-tests .test-item');
+            protectionTestItems[0].querySelector('.test-status').className = 
+                `test-status status-${protectionResult.moduleProtected ? 'pass' : 'fail'}`;
+            protectionTestItems[0].querySelector('.test-status').textContent = 
+                protectionResult.moduleProtected ? '✅ Berhasil' : '❌ Gagal';
+            
+            protectionTestItems[1].querySelector('.test-status').className = 
+                `test-status status-${protectionResult.loadBlocked ? 'pass' : 'fail'}`;
+            protectionTestItems[1].querySelector('.test-status').textContent = 
+                protectionResult.loadBlocked ? '✅ Berhasil' : '❌ Gagal';
+            
+            protectionTestItems[2].querySelector('.test-status').className = 
+                `test-status status-${protectionResult.selectionBlocked ? 'pass' : 'fail'}`;
+            protectionTestItems[2].querySelector('.test-status').textContent = 
+                protectionResult.selectionBlocked ? '✅ Berhasil' : '❌ Gagal';
+            
+            updateSummary();
+            
+            // Final summary
+            log('═'.repeat(50), 'info');
+            log(`📊 Test Summary:`, 'info');
+            log(`   Total: ${testResults.total}`, 'info');
+            log(`   Passed: ${testResults.passed}`, 'success');
+            log(`   Failed: ${testResults.failed}`, testResults.failed > 0 ? 'error' : 'success');
+            
+            if (testResults.failed === 0) {
+                log('🎉 ALL TESTS PASSED!', 'success');
+            } else {
+                log('⚠️ SOME TESTS FAILED', 'warning');
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('log-container').innerHTML = 
+                '<div class="log-entry log-info">📝 Log akan muncul di sini...</div>';
+            document.getElementById('non-rs-tests').innerHTML = '';
+            document.getElementById('rs-test').innerHTML = '';
+            document.getElementById('protection-tests').innerHTML = '';
+            testResults.total = 0;
+            testResults.passed = 0;
+            testResults.failed = 0;
+            updateSummary();
+            log('🗑️ Results cleared', 'info');
+        }
+        
+        // Initialize
+        log('✅ Test page loaded and ready', 'success');
+        log('Click "Jalankan Semua Test" to start testing', 'info');
+    </script>
+</body>
+</html>

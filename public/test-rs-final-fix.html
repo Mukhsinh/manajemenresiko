@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RS Final Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/rencana-strategis.css">
+    <link rel="stylesheet" href="/css/rencana-strategis-final-fix.css">
+    <style>
+        body { padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        .test-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4"><i class="fas fa-vial me-2"></i>Test RS Final Fix</h1>
+        
+        <div class="test-section">
+            <h4>Test Results</h4>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h4>Simulated Pages</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Dashboard Page</h5>
+                    <div class="page-content" id="dashboard" style="border: 1px solid #ddd; padding: 10px; min-height: 100px;">
+                        <p>Dashboard content here</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Rencana Strategis Page</h5>
+                    <div class="page-content active" id="rencana-strategis" style="border: 1px solid #ddd; padding: 10px; min-height: 100px;">
+                        <div id="rencana-strategis-content">
+                            <p>RS content will load here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h4>Actions</h4>
+            <button class="btn btn-primary me-2" onclick="runAllTests()">
+                <i class="fas fa-play me-1"></i>Run All Tests
+            </button>
+            <button class="btn btn-success me-2" onclick="testRSLoad()">
+                <i class="fas fa-rocket me-1"></i>Test RS Load
+            </button>
+            <button class="btn btn-warning me-2" onclick="testCleanup()">
+                <i class="fas fa-broom me-1"></i>Test Cleanup
+            </button>
+            <button class="btn btn-info" onclick="testPointerEvents()">
+                <i class="fas fa-mouse-pointer me-1"></i>Test Pointer Events
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/rencana-strategis-safe-loader.js"></script>
+    <script src="/js/rencana-strategis-optimized-v2.js"></script>
+    <script src="/js/rencana-strategis-final-fix.js"></script>
+    
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function addResult(name, passed, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+            div.innerHTML = `<strong>${passed ? '✅' : '❌'} ${name}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        function addInfo(message) {
+            const div = document.createElement('div');
+            div.className = 'test-result test-info';
+            div.innerHTML = `<i class="fas fa-info-circle me-1"></i>${message}`;
+            results.appendChild(div);
+        }
+        
+        function runAllTests() {
+            results.innerHTML = '';
+            addInfo('Running all tests...');
+            
+            // Test 1: Check if fix scripts loaded
+            const fixLoaded = typeof window.RSFinalFix !== 'undefined';
+            addResult('Fix Script Loaded', fixLoaded, fixLoaded ? 'RSFinalFix is available' : 'RSFinalFix not found');
+            
+            // Test 2: Check if safe loader loaded
+            const safeLoaderLoaded = typeof window.safeLoadRencanaStrategis === 'function';
+            addResult('Safe Loader Loaded', safeLoaderLoaded, safeLoaderLoaded ? 'safeLoadRencanaStrategis is available' : 'safeLoadRencanaStrategis not found');
+            
+            // Test 3: Check if RS module loaded
+            const moduleLoaded = typeof window.RencanaStrategisModule !== 'undefined';
+            addResult('RS Module Loaded', moduleLoaded, moduleLoaded ? 'RencanaStrategisModule is available' : 'RencanaStrategisModule not found');
+            
+            // Test 4: Check pointer events on page content
+            const pageContent = document.querySelector('.page-content');
+            const pointerEvents = window.getComputedStyle(pageContent).pointerEvents;
+            const pointerOk = pointerEvents !== 'none';
+            addResult('Pointer Events', pointerOk, `pointer-events: ${pointerEvents}`);
+            
+            // Test 5: Check RS container exists
+            const rsContainer = document.getElementById('rencana-strategis-content');
+            addResult('RS Container Exists', !!rsContainer, rsContainer ? 'Container found' : 'Container not found');
+            
+            // Test 6: Check no blocking overlays
+            const blockingElements = document.querySelectorAll('[style*="pointer-events: none"]');
+            const noBlocking = blockingElements.length === 0;
+            addResult('No Blocking Elements', noBlocking, `Found ${blockingElements.length} elements with pointer-events: none`);
+            
+            addInfo('Tests completed!');
+        }
+        
+        async function testRSLoad() {
+            results.innerHTML = '';
+            addInfo('Testing RS Load...');
+            
+            try {
+                if (window.safeLoadRencanaStrategis) {
+                    await window.safeLoadRencanaStrategis();
+                    addResult('RS Load', true, 'Loaded successfully');
+                } else if (window.RencanaStrategisModule?.load) {
+                    await window.RencanaStrategisModule.load();
+                    addResult('RS Load', true, 'Loaded via module');
+                } else {
+                    addResult('RS Load', false, 'No loader available');
+                }
+            } catch (error) {
+                addResult('RS Load', false, error.message);
+            }
+        }
+        
+        function testCleanup() {
+            results.innerHTML = '';
+            addInfo('Testing Cleanup...');
+            
+            // Add fake RS content to dashboard
+            const dashboard = document.getElementById('dashboard');
+            const fakeWrapper = document.createElement('div');
+            fakeWrapper.className = 'rencana-strategis-wrapper';
+            fakeWrapper.innerHTML = '<p>Fake RS content</p>';
+            dashboard.appendChild(fakeWrapper);
+            
+            addInfo('Added fake RS wrapper to dashboard');
+            
+            // Run cleanup
+            if (window.RSFinalFix?.cleanupRSFromOtherPages) {
+                window.RSFinalFix.cleanupRSFromOtherPages();
+            } else if (window.cleanupRSFromOtherPages) {
+                window.cleanupRSFromOtherPages();
+            }
+            
+            // Check if cleaned
+            const remaining = dashboard.querySelector('.rencana-strategis-wrapper');
+            addResult('Cleanup', !remaining, remaining ? 'Wrapper still exists' : 'Wrapper removed successfully');
+        }
+        
+        function testPointerEvents() {
+            results.innerHTML = '';
+            addInfo('Testing Pointer Events...');
+            
+            if (window.RSFinalFix?.fixPointerEventsBlocking) {
+                window.RSFinalFix.fixPointerEventsBlocking();
+                addResult('Fix Applied', true, 'fixPointerEventsBlocking executed');
+            } else {
+                addResult('Fix Applied', false, 'fixPointerEventsBlocking not available');
+            }
+            
+            // Check all page contents
+            document.querySelectorAll('.page-content').forEach(page => {
+                const pe = window.getComputedStyle(page).pointerEvents;
+                addResult(`Page ${page.id}`, pe !== 'none', `pointer-events: ${pe}`);
+            });
+        }
+        
+        // Run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

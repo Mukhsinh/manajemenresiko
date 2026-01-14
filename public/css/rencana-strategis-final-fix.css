@@ -1,0 +1,204 @@
+/**
+ * RENCANA STRATEGIS FINAL FIX CSS v1.0
+ * 
+ * Solusi untuk:
+ * 1. Pointer-events blocking
+ * 2. Z-index issues
+ * 3. Overlay blocking
+ * 4. Page freeze
+ * 
+ * Created: 2026-01-10
+ */
+
+/* ============================================
+   CRITICAL: Ensure Pages are Clickable
+   ============================================ */
+
+.page-content {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.page-content.active {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  /* Override any transition that might cause delay */
+  transition: none !important;
+}
+
+/* Ensure non-active pages are properly hidden but don't block */
+.page-content:not(.active) {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.main-content {
+  pointer-events: auto !important;
+  overflow: auto !important;
+}
+
+/* ============================================
+   CRITICAL: RS Page Specific
+   ============================================ */
+
+#rencana-strategis {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#rencana-strategis.active {
+  display: block !important;
+}
+
+#rencana-strategis-content {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  min-height: 400px !important;
+}
+
+
+/* ============================================
+   CRITICAL: Prevent RS Content Leak
+   ============================================ */
+
+/* Hide RS wrapper on non-RS pages */
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper {
+  display: none !important;
+}
+
+/* Hide RS content on non-RS pages */
+.page-content:not(#rencana-strategis) #rencana-strategis-content {
+  display: none !important;
+}
+
+/* ============================================
+   CRITICAL: Remove Blocking Overlays
+   ============================================ */
+
+/* Ensure no invisible overlays block clicks */
+body::before,
+body::after,
+html::before,
+html::after {
+  pointer-events: none !important;
+}
+
+/* Remove any full-screen blocking elements */
+.blocking-overlay,
+.page-blocker,
+.click-blocker {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ============================================
+   CRITICAL: Z-Index Hierarchy
+   ============================================ */
+
+.sidebar {
+  z-index: 1000 !important;
+}
+
+.top-header {
+  z-index: 999 !important;
+}
+
+.main-content {
+  z-index: 1 !important;
+}
+
+.modal {
+  z-index: 1050 !important;
+}
+
+.modal-backdrop {
+  z-index: 1040 !important;
+}
+
+#rs-toast-container {
+  z-index: 9999 !important;
+}
+
+/* ============================================
+   CRITICAL: Ensure Body/HTML are Scrollable
+   ============================================ */
+
+html,
+body {
+  overflow: auto !important;
+  pointer-events: auto !important;
+  height: auto !important;
+  min-height: 100% !important;
+}
+
+/* ============================================
+   RS Wrapper Styles (Only on RS Page)
+   ============================================ */
+
+#rencana-strategis .rencana-strategis-wrapper {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  padding: 1rem !important;
+}
+
+/* ============================================
+   Table Styles
+   ============================================ */
+
+#rencana-strategis .table {
+  pointer-events: auto !important;
+}
+
+#rencana-strategis .table tbody tr {
+  pointer-events: auto !important;
+  cursor: default !important;
+}
+
+#rencana-strategis .table tbody tr:hover {
+  background-color: #f8f9fa !important;
+}
+
+#rencana-strategis .btn {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* ============================================
+   Form Styles
+   ============================================ */
+
+#rencana-strategis .form-control,
+#rencana-strategis .form-select,
+#rencana-strategis input,
+#rencana-strategis textarea,
+#rencana-strategis select {
+  pointer-events: auto !important;
+}
+
+/* ============================================
+   Loading State (Only show when actually loading)
+   ============================================ */
+
+#rencana-strategis .spinner-border {
+  pointer-events: none !important;
+}
+
+/* ============================================
+   Animation Fixes
+   ============================================ */
+
+#rencana-strategis,
+#rencana-strategis-content,
+.rencana-strategis-wrapper {
+  transition: none !important;
+  animation: none !important;
+}

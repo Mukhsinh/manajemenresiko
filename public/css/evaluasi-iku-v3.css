@@ -1,0 +1,908 @@
+/* Evaluasi IKU V3 - Complete Enhancement */
+/* Features: Cards, Charts, Period Filter, Year Dropdown, IKU Dropdown */
+
+/* ============================================
+   1. PAGE HEADER & LAYOUT
+   ============================================ */
+.evaluasi-iku-page-header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+.evaluasi-iku-page-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.evaluasi-iku-page-header p {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* ============================================
+   2. SUMMARY CARDS - Statistics
+   ============================================ */
+.evaluasi-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .evaluasi-summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .evaluasi-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.evaluasi-summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+  border-left: 4px solid transparent;
+}
+
+.evaluasi-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.evaluasi-summary-card .card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.evaluasi-summary-card .card-content {
+  flex: 1;
+}
+
+.evaluasi-summary-card .card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.evaluasi-summary-card .card-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  margin-top: 0.125rem;
+}
+
+/* Card Colors */
+.evaluasi-summary-card.total {
+  border-left-color: #3b82f6;
+}
+.evaluasi-summary-card.total .card-icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.evaluasi-summary-card.total .card-value {
+  color: #2563eb;
+}
+
+.evaluasi-summary-card.tercapai {
+  border-left-color: #22c55e;
+}
+.evaluasi-summary-card.tercapai .card-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.evaluasi-summary-card.tercapai .card-value {
+  color: #16a34a;
+}
+
+.evaluasi-summary-card.hampir {
+  border-left-color: #f97316;
+}
+.evaluasi-summary-card.hampir .card-icon {
+  background: #ffedd5;
+  color: #ea580c;
+}
+.evaluasi-summary-card.hampir .card-value {
+  color: #ea580c;
+}
+
+.evaluasi-summary-card.proses {
+  border-left-color: #eab308;
+}
+.evaluasi-summary-card.proses .card-icon {
+  background: #fef3c7;
+  color: #ca8a04;
+}
+.evaluasi-summary-card.proses .card-value {
+  color: #ca8a04;
+}
+
+.evaluasi-summary-card.perhatian {
+  border-left-color: #ef4444;
+}
+.evaluasi-summary-card.perhatian .card-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.evaluasi-summary-card.perhatian .card-value {
+  color: #dc2626;
+}
+
+.evaluasi-summary-card.belum {
+  border-left-color: #9ca3af;
+}
+.evaluasi-summary-card.belum .card-icon {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.evaluasi-summary-card.belum .card-value {
+  color: #6b7280;
+}
+
+/* ============================================
+   3. CHARTS SECTION
+   ============================================ */
+.evaluasi-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 992px) {
+  .evaluasi-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.evaluasi-chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.evaluasi-chart-card .chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.evaluasi-chart-card .chart-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.evaluasi-chart-card .chart-title i {
+  color: #3b82f6;
+}
+
+.evaluasi-chart-card .chart-container {
+  position: relative;
+  height: 280px;
+}
+
+/* ============================================
+   4. FILTER SECTION - Enhanced
+   ============================================ */
+.evaluasi-filter-bar {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.evaluasi-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.evaluasi-filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.evaluasi-filter-group select {
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  background: white url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") right 0.5rem center/14px no-repeat;
+  cursor: pointer;
+  min-width: 130px;
+  height: 38px;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.2s;
+}
+
+.evaluasi-filter-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.evaluasi-filter-group select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Period filter hint */
+.filter-hint {
+  font-size: 0.65rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.filter-hint.warning {
+  color: #f59e0b;
+}
+
+/* Filter Actions */
+.evaluasi-filter-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   5. TABLE SECTION - Enhanced
+   ============================================ */
+.evaluasi-table-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.evaluasi-table-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.evaluasi-table-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.evaluasi-table-header h3 i {
+  color: #3b82f6;
+}
+
+.evaluasi-table-scroll {
+  max-height: 500px;
+  overflow: auto;
+}
+
+/* Scrollbar */
+.evaluasi-table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.evaluasi-table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.evaluasi-table-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.evaluasi-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Table */
+.evaluasi-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+.evaluasi-data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.evaluasi-data-table thead th {
+  background: #1e3a5f;
+  color: white;
+  padding: 0.875rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.evaluasi-data-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.15s;
+}
+
+.evaluasi-data-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.evaluasi-data-table tbody td {
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: #374151;
+  vertical-align: middle;
+}
+
+/* Cell Types */
+.cell-indikator {
+  max-width: 250px;
+}
+
+.cell-indikator .indikator-name {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.125rem;
+}
+
+.cell-indikator .sasaran-name {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.cell-number {
+  text-align: right;
+  font-family: 'SF Mono', 'Monaco', monospace;
+}
+
+/* Progress Bar - Solid Colors */
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.green { background: #22c55e !important; }
+.progress-fill.orange { background: #f97316 !important; }
+.progress-fill.red { background: #ef4444 !important; }
+.progress-fill.gray { background: #9ca3af !important; }
+
+.progress-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 45px;
+  text-align: right;
+}
+
+/* Status Badge */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-pill.tercapai { background: #dcfce7; color: #166534; }
+.status-pill.hampir { background: #ffedd5; color: #c2410c; }
+.status-pill.proses { background: #fef3c7; color: #b45309; }
+.status-pill.perhatian { background: #fee2e2; color: #b91c1c; }
+.status-pill.belum { background: #f3f4f6; color: #6b7280; }
+
+/* Action Buttons */
+.action-btns {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 0.8rem;
+}
+
+.action-btn.edit { background: #dbeafe; color: #2563eb; }
+.action-btn.edit:hover { background: #2563eb; color: white; }
+
+.action-btn.view { background: #dcfce7; color: #16a34a; }
+.action-btn.view:hover { background: #16a34a; color: white; }
+
+.action-btn.delete { background: #fee2e2; color: #dc2626; }
+.action-btn.delete:hover { background: #dc2626; color: white; }
+
+/* ============================================
+   6. MODAL - Enhanced Form
+   ============================================ */
+.evaluasi-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  padding: 1rem;
+}
+
+.evaluasi-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.evaluasi-modal-box {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: translateY(20px) scale(0.95);
+  transition: transform 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.evaluasi-modal-overlay.show .evaluasi-modal-box {
+  transform: translateY(0) scale(1);
+}
+
+.evaluasi-modal-top {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.evaluasi-modal-top h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.modal-close-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.evaluasi-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.evaluasi-modal-bottom {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: #f8fafc;
+}
+
+/* Form Elements */
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-section-title i {
+  color: #3b82f6;
+}
+
+.form-field {
+  margin-bottom: 1rem;
+}
+
+.form-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-field label .req {
+  color: #ef4444;
+}
+
+.form-field select,
+.form-field input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  background: white;
+}
+
+.form-field select:focus,
+.form-field input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-field select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.form-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .form-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* IKU Info Card */
+.iku-info-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #93c5fd;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+}
+
+.iku-info-card .iku-title {
+  font-weight: 600;
+  color: #1e40af;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.iku-info-card .iku-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #3b82f6;
+}
+
+.iku-info-card .iku-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Monthly Input Grid */
+.monthly-input-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.625rem;
+}
+
+@media (max-width: 768px) {
+  .monthly-input-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .monthly-input-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.month-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.625rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.month-box:hover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.month-box.filled {
+  background: #ecfdf5;
+  border-color: #22c55e;
+}
+
+.month-box .month-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.month-box input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.month-box input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* Total Display */
+.total-display {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.total-display .total-label {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-bottom: 0.25rem;
+}
+
+.total-display .total-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* ============================================
+   7. BUTTONS
+   ============================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-success:hover {
+  background: #16a34a;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* ============================================
+   8. EMPTY STATE
+   ============================================ */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  opacity: 0.4;
+  margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+  font-size: 1rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+/* ============================================
+   9. LOADING STATE
+   ============================================ */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   10. NOTIFICATION
+   ============================================ */
+.evaluasi-notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 2000;
+  transform: translateX(120%);
+  transition: transform 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.evaluasi-notification.show {
+  transform: translateX(0);
+}
+
+.evaluasi-notification.success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.evaluasi-notification.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.evaluasi-notification.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}

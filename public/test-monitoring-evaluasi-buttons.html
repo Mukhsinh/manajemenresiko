@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Monitoring Evaluasi Buttons</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .btn-test {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn-primary { background: #3B82F6; color: white; }
+        .btn-danger { background: #EF4444; color: white; }
+        .btn-success { background: #10B981; color: white; }
+        
+        /* Simulated table buttons */
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+        }
+        .btn-edit { background: #3B82F6; color: white; }
+        .btn-delete { background: #EF4444; color: white; }
+        
+        #log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #2c3e50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-clipboard-check"></i> Test Monitoring Evaluasi Buttons</h1>
+    
+    <div class="card test-section">
+        <h2>1. Module Availability Test</h2>
+        <button class="btn-test btn-primary" onclick="testModuleAvailability()">
+            <i class="fas fa-check"></i> Test Module
+        </button>
+        <div id="module-result"></div>
+    </div>
+    
+    <div class="card test-section">
+        <h2>2. Button Click Test</h2>
+        <p>Click the buttons below to test if they trigger the correct functions:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kode Risiko</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>test-id-001</td>
+                    <td>RSK-001</td>
+                    <td>Stabil</td>
+                    <td>
+                        <button class="action-btn btn-edit btn-monitoring-edit" data-id="test-id-001" onclick="MonitoringEvaluasi.edit('test-id-001')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-delete btn-monitoring-delete" data-id="test-id-001" onclick="MonitoringEvaluasi.confirmDelete('test-id-001')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>test-id-002</td>
+                    <td>RSK-002</td>
+                    <td>Meningkat</td>
+                    <td>
+                        <button class="action-btn btn-edit btn-monitoring-edit" data-id="test-id-002" onclick="MonitoringEvaluasi.edit('test-id-002')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-delete btn-monitoring-delete" data-id="test-id-002" onclick="MonitoringEvaluasi.confirmDelete('test-id-002')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card test-section">
+        <h2>3. Console Log</h2>
+        <button class="btn-test btn-success" onclick="clearLog()">
+            <i class="fas fa-eraser"></i> Clear Log
+        </button>
+        <div id="log"></div>
+    </div>
+    
+    <!-- Load monitoring-evaluasi.js -->
+    <script>
+        // Mock apiCall function
+        window.apiCall = async function(url, options = {}) {
+            console.log('API Call:', url, options);
+            logMessage(`API Call: ${url} ${JSON.stringify(options)}`);
+            
+            // Return mock data
+            if (url.includes('/api/monitoring-evaluasi/')) {
+                const id = url.split('/').pop();
+                return {
+                    id: id,
+                    risk_input_id: 'risk-001',
+                    tanggal_monitoring: '2025-01-11',
+                    status_risiko: 'Stabil',
+                    nilai_risiko: 12,
+                    progress_mitigasi: 75,
+                    evaluasi: 'Test evaluasi',
+                    risk_inputs: {
+                        kode_risiko: 'RSK-001',
+                        sasaran: 'Test sasaran'
+                    }
+                };
+            }
+            
+            if (url === '/api/risks') {
+                return [
+                    { id: 'risk-001', kode_risiko: 'RSK-001', sasaran: 'Sasaran 1' },
+                    { id: 'risk-002', kode_risiko: 'RSK-002', sasaran: 'Sasaran 2' }
+                ];
+            }
+            
+            return [];
+        };
+        
+        function logMessage(msg) {
+            const log = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            log.textContent += `[${time}] ${msg}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+        
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logMessage(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
+        };
+        
+        // Override alert to show in log
+        const originalAlert = window.alert;
+        window.alert = function(msg) {
+            logMessage(`ALERT: ${msg}`);
+            originalAlert(msg);
+        };
+        
+        // Override confirm to auto-confirm for testing
+        const originalConfirm = window.confirm;
+        window.confirm = function(msg) {
+            logMessage(`CONFIRM: ${msg}`);
+            return true; // Auto-confirm for testing
+        };
+    </script>
+    
+    <script src="/js/monitoring-evaluasi.js"></script>
+    
+    <script>
+        function testModuleAvailability() {
+            const resultDiv = document.getElementById('module-result');
+            let html = '';
+            
+            // Test window.MonitoringEvaluasi
+            if (window.MonitoringEvaluasi) {
+                html += '<div class="test-result success">✅ window.MonitoringEvaluasi is available</div>';
+                
+                // Test methods
+                const methods = ['load', 'edit', 'confirmDelete', 'delete', 'showModal', 'save'];
+                methods.forEach(method => {
+                    if (typeof window.MonitoringEvaluasi[method] === 'function') {
+                        html += `<div class="test-result success">✅ MonitoringEvaluasi.${method}() exists</div>`;
+                    } else {
+                        html += `<div class="test-result error">❌ MonitoringEvaluasi.${method}() NOT FOUND</div>`;
+                    }
+                });
+            } else {
+                html += '<div class="test-result error">❌ window.MonitoringEvaluasi is NOT available</div>';
+            }
+            
+            // Test window.monitoringEvaluasiModule
+            if (window.monitoringEvaluasiModule) {
+                html += '<div class="test-result success">✅ window.monitoringEvaluasiModule is available</div>';
+            } else {
+                html += '<div class="test-result error">❌ window.monitoringEvaluasiModule is NOT available</div>';
+            }
+            
+            resultDiv.innerHTML = html;
+            logMessage('Module availability test completed');
+        }
+        
+        // Auto-run test on load
+        window.addEventListener('load', function() {
+            logMessage('Page loaded, testing module availability...');
+            setTimeout(testModuleAvailability, 500);
+        });
+    </script>
+</body>
+</html>

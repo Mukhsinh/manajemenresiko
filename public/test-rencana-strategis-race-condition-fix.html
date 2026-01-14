@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis - Race Condition Fix</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .page-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        .page-header {
+            background-color: #ffffff;
+            color: #2c3e50;
+            border-left: 4px solid #8B0000;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.25rem;
+        }
+        
+        .table thead {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        
+        .badge-success { background-color: #28a745; }
+        .badge-warning { background-color: #ffc107; color: #212529; }
+        .badge-secondary { background-color: #6c757d; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        
+        .loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Status Indicator -->
+    <div class="status-indicator" id="status-indicator">
+        <i class="fas fa-spinner fa-spin"></i> Initializing...
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div class="loading-indicator" id="loading-indicator">
+        <i class="fas fa-spinner fa-spin me-2"></i>
+        Loading...
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                Test Rencana Strategis - Race Condition Fix
+            </a>
+            <div class="navbar-nav ms-auto">
+                <button class="btn btn-outline-light btn-sm" onclick="testRaceCondition()">
+                    <i class="fas fa-bug"></i> Test Race Condition
+                </button>
+                <button class="btn btn-outline-light btn-sm ms-2" onclick="resetSystem()">
+                    <i class="fas fa-undo"></i> Reset System
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container-fluid mt-3">
+        <!-- Debug Panel -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5><i class="fas fa-bug me-2"></i>Debug Panel</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>System Status:</strong>
+                        <div id="system-status">Initializing...</div>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Loaded Modules:</strong>
+                        <div id="loaded-modules">None</div>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Race Conditions:</strong>
+                        <div id="race-conditions">0</div>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>UI Fix Loops:</strong>
+                        <div id="ui-fix-loops">0</div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-info btn-sm" onclick="showSystemInfo()">
+                        <i class="fas fa-info"></i> System Info
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="clearConsole()">
+                        <i class="fas fa-eraser"></i> Clear Console
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rencana Strategis Page -->
+        <div id="rencana-strategis" class="page-content active">
+            <div id="rencana-strategis-content">
+                <!-- Content will be loaded here -->
+                <div class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Loading Rencana Strategis...</h5>
+                    <p class="text-muted">Please wait while the module initializes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Mock API -->
+    <script>
+        // Mock API for testing
+        window.apiCall = async function(endpoint, options = {}) {
+            console.log(`API Call: ${endpoint}`, options);
+            
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 100));
+            
+            if (endpoint.includes('/api/rencana-strategis')) {
+                if (endpoint.includes('/generate/kode')) {
+                    return { kode: `RS-2025-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}` };
+                }
+                
+                return [
+                    {
+                        id: '1',
+                        kode: 'RS-2025-001',
+                        nama_rencana: 'Peningkatan Kualitas Pelayanan',
+                        deskripsi: 'Meningkatkan kualitas pelayanan kepada masyarakat',
+                        periode_mulai: '2025-01-01',
+                        periode_selesai: '2025-12-31',
+                        target: 'Mencapai tingkat kepuasan 90%',
+                        indikator_kinerja: 'Indeks Kepuasan Masyarakat',
+                        status: 'Aktif'
+                    },
+                    {
+                        id: '2',
+                        kode: 'RS-2025-002',
+                        nama_rencana: 'Digitalisasi Layanan Publik',
+                        deskripsi: 'Mengimplementasikan sistem digital untuk layanan publik',
+                        periode_mulai: '2025-02-01',
+                        periode_selesai: '2025-11-30',
+                        target: 'Semua layanan tersedia online',
+                        indikator_kinerja: 'Persentase layanan digital',
+                        status: 'Draft'
+                    }
+                ];
+            }
+            
+            if (endpoint.includes('/api/visi-misi')) {
+                return [
+                    {
+                        id: '1',
+                        visi: 'Menjadi organisasi terdepan dalam pelayanan publik',
+                        misi: '1. Memberikan pelayanan terbaik\n2. Meningkatkan transparansi\n3. Mengembangkan SDM'
+                    }
+                ];
+            }
+            
+            return [];
+        };
+        
+        // Mock auth
+        window.waitForAuthReady = async function(timeout = 5000) {
+            console.log('Mock auth ready');
+            return Promise.resolve();
+        };
+    </script>
+    
+    <!-- Load Fixed System -->
+    <script src="/js/page-initialization-system-fixed.js"></script>
+    <script src="/js/rencana-strategis-fixed.js"></script>
+    
+    <!-- Test Script -->
+    <script>
+        let raceConditionCount = 0;
+        let uiFixLoopCount = 0;
+        let systemStartTime = Date.now();
+        
+        // Monitor system status
+        function updateSystemStatus() {
+            const statusEl = document.getElementById('system-status');
+            const modulesEl = document.getElementById('loaded-modules');
+            const raceEl = document.getElementById('race-conditions');
+            const loopsEl = document.getElementById('ui-fix-loops');
+            const indicatorEl = document.getElementById('status-indicator');
+            
+            if (window.PageInitializationSystem) {
+                const status = window.PageInitializationSystem.getStatus();
+                statusEl.innerHTML = `<span class="text-success">✅ Initialized</span>`;
+                modulesEl.innerHTML = status.loadedModules.join(', ') || 'None';
+                indicatorEl.innerHTML = '<i class="fas fa-check"></i> System Ready';
+                indicatorEl.className = 'status-indicator bg-success';
+            } else {
+                statusEl.innerHTML = `<span class="text-warning">⚠️ Initializing...</span>`;
+                indicatorEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing...';
+                indicatorEl.className = 'status-indicator bg-warning';
+            }
+            
+            raceEl.innerHTML = raceConditionCount;
+            loopsEl.innerHTML = uiFixLoopCount;
+        }
+        
+        // Monitor console for race conditions and loops
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            const message = args.join(' ');
+            
+            if (message.includes('all ui fixed applied') || message.includes('UI fixes applied')) {
+                uiFixLoopCount++;
+            }
+            
+            if (message.includes('already loading') || message.includes('already initialized')) {
+                raceConditionCount++;
+            }
+            
+            originalConsoleLog.apply(console, args);
+        };
+        
+        // Test functions
+        function testRaceCondition() {
+            console.log('🧪 Testing race condition...');
+            
+            // Try to load the module multiple times simultaneously
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    if (window.RencanaStrategisModuleFixed) {
+                        window.RencanaStrategisModuleFixed.load();
+                    }
+                }, i * 10);
+            }
+        }
+        
+        function resetSystem() {
+            console.log('🔄 Resetting system...');
+            
+            // Reset counters
+            raceConditionCount = 0;
+            uiFixLoopCount = 0;
+            
+            // Reset flags
+            window.rencanaStrategisLoaded = false;
+            window.uiFixSystemInitialized = false;
+            
+            // Cleanup and reinitialize
+            if (window.PageInitializationSystem) {
+                window.PageInitializationSystem.cleanup();
+                setTimeout(() => {
+                    window.PageInitializationSystem.initialize();
+                }, 100);
+            }
+        }
+        
+        function showSystemInfo() {
+            const info = {
+                pageInitSystem: window.PageInitializationSystem ? window.PageInitializationSystem.getStatus() : 'Not loaded',
+                rencanaModule: window.RencanaStrategisModuleFixed ? 'Loaded' : 'Not loaded',
+                raceConditions: raceConditionCount,
+                uiFixLoops: uiFixLoopCount,
+                uptime: `${Math.round((Date.now() - systemStartTime) / 1000)}s`
+            };
+            
+            console.log('📊 System Information:', info);
+            alert('System information logged to console');
+        }
+        
+        function clearConsole() {
+            console.clear();
+            console.log('🧹 Console cleared');
+        }
+        
+        // Initialize monitoring
+        setInterval(updateSystemStatus, 1000);
+        
+        // Wait for system to be ready
+        window.addEventListener('pageInitSystemReady', (event) => {
+            console.log('✅ Page initialization system ready:', event.detail);
+            
+            // Load Rencana Strategis module
+            setTimeout(() => {
+                if (window.RencanaStrategisModuleFixed) {
+                    window.RencanaStrategisModuleFixed.load();
+                }
+            }, 500);
+        });
+        
+        console.log('🚀 Test page loaded - monitoring race conditions and UI loops');
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+/* Strategic Map Enhanced Styles */
+
+/* Scrollable table container */
+.strategic-map-table-container {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.strategic-map-table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.strategic-map-table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.strategic-map-table-container::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.strategic-map-table-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.strategic-map-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.strategic-map-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1e40af;
+}
+
+.strategic-map-table thead th {
+  background: #1e40af;
+  color: white;
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-bottom: 2px solid #1e3a8a;
+}
+
+.strategic-map-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.15s ease;
+}
+
+.strategic-map-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.strategic-map-table tbody td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+/* Solid bright badge colors for perspektif */
+.badge-perspektif {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.badge-eksternal-stakeholder {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.badge-internal-business-process {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.badge-learning-growth {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+.badge-financial {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.badge-default {
+  background-color: #6b7280 !important;
+  color: #ffffff !important;
+}
+
+/* Action buttons */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0 3px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.btn-action-edit {
+  background-color: #0ea5e9;
+  color: white;
+}
+
+.btn-action-edit:hover {
+  background-color: #0284c7;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+}
+
+.btn-action-delete {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-action-delete:hover {
+  background-color: #dc2626;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Modal styles */
+.sm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.sm-modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.sm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sm-modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.sm-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
+  padding: 0;
+  line-height: 1;
+}
+
+.sm-modal-close:hover {
+  color: #1e293b;
+}
+
+.sm-form-group {
+  margin-bottom: 16px;
+}
+
+.sm-form-label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+}
+
+.sm-form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.sm-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sm-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sm-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.sm-btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sm-btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.sm-btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.sm-btn-primary:hover {
+  background: #2563eb;
+}

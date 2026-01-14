@@ -1,0 +1,665 @@
+/**
+ * RENCANA STRATEGIS FAST MODULE v1.1-PROTECTED
+ * Optimized for fast loading without freeze
+ * Created: 2026-01-10
+ * Updated: 2026-01-10 - Added content protection
+ * 
+ * FEATURES:
+ * - Fast initial render with skeleton loading
+ * - No aggressive MutationObserver (prevents freeze)
+ * - Limited content protection (prevents overwrite)
+ * - Clean page isolation
+ * 
+ * CRITICAL: This module renders cards + form + table
+ * NEVER renders selection list
+ */
+
+(function() {
+    'use strict';
+    
+    const MODULE_VERSION = '1.1-PROTECTED';
+    
+    // Prevent multiple initializations
+    if (window.RencanaStrategisFastLoaded) {
+        console.log('⚠️ RencanaStrategisFast already loaded');
+        return;
+    }
+    window.RencanaStrategisFastLoaded = true;
+    
+    // State
+    const state = {
+        data: [],
+        missions: [],
+        currentId: null,
+        isLoading: false,
+        isInitialized: false,
+        formValues: {
+            kode: '',
+            visi_misi_id: '',
+            nama_rencana: '',
+            deskripsi: '',
+            periode_mulai: '',
+            periode_selesai: '',
+            target: '',
+            status: 'Draft'
+        }
+    };
+    
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    
+    const getEl = (id) => document.getElementById(id);
+    
+    const api = async (endpoint, options = {}) => {
+        // Try multiple API call methods
+        if (window.apiCall) return window.apiCall(endpoint, options);
+        if (window.app?.apiCall) return window.app.apiCall(endpoint, options);
+        
+        // Fallback to fetch
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...options.headers
+        };
+        
+        const config = { ...options, headers };
+        if (options.body && typeof options.body === 'object') {
+            config.body = JSON.stringify(options.body);
+        }
+        
+        const response = await fetch(endpoint, config);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    };
+    
+    const truncate = (text, max) => {
+        if (!text) return '';
+        return text.length > max ? text.substring(0, max) + '...' : text;
+    };
+    
+    const formatDate = (date) => {
+        if (!date) return '-';
+        return new Date(date).toLocaleDateString('id-ID', { 
+            day: '2-digit', month: 'short', year: 'numeric' 
+        });
+    };
+    
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    
+    function renderSkeleton() {
+        return `
+            <div class="rencana-strategis-wrapper p-3">
+                <!-- Skeleton Cards -->
+                <div class="row g-3 mb-4">
+                    ${[1,2,3,4].map(() => `
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="placeholder-glow">
+                                        <span class="placeholder col-6 bg-secondary"></span>
+                                        <span class="placeholder col-8 bg-secondary mt-2"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Skeleton Table -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <div class="placeholder-glow">
+                            <span class="placeholder col-4 bg-secondary"></span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="placeholder-glow">
+                            ${[1,2,3].map(() => `
+                                <div class="d-flex gap-3 mb-3">
+                                    <span class="placeholder col-2 bg-secondary"></span>
+                                    <span class="placeholder col-4 bg-secondary"></span>
+                                    <span class="placeholder col-2 bg-secondary"></span>
+                                    <span class="placeholder col-2 bg-secondary"></span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderStatCards() {
+        const aktif = state.data.filter(i => i.status === 'Aktif').length;
+        const draft = state.data.filter(i => i.status === 'Draft').length;
+        const selesai = state.data.filter(i => i.status === 'Selesai').length;
+        const total = state.data.length;
+        
+        const cards = [
+            { label: 'Rencana Aktif', value: aktif, icon: 'check-circle', color: '#28a745', gradient: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' },
+            { label: 'Draft', value: draft, icon: 'edit', color: '#ffc107', gradient: 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)' },
+            { label: 'Selesai', value: selesai, icon: 'flag-checkered', color: '#007bff', gradient: 'linear-gradient(135deg, #007bff 0%, #6f42c1 100%)' },
+            { label: 'Total Rencana', value: total, icon: 'list-alt', color: '#6c757d', gradient: 'linear-gradient(135deg, #6c757d 0%, #495057 100%)' }
+        ];
+        
+        return `
+            <div class="row g-3 mb-4">
+                ${cards.map(card => `
+                    <div class="col-xl-3 col-md-6 col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
+                            <div class="card-body p-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center" 
+                                         style="width: 80px; height: 100px; background: ${card.gradient};">
+                                        <i class="fas fa-${card.icon} fa-2x text-white"></i>
+                                    </div>
+                                    <div class="flex-grow-1 p-3">
+                                        <h3 class="fw-bold mb-0" style="color: ${card.color};">${card.value}</h3>
+                                        <p class="text-muted mb-0 small">${card.label}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    function renderForm() {
+        const f = state.formValues;
+        const isEdit = !!state.currentId;
+        
+        const missionOptions = state.missions.map(m => {
+            if (!m.misi) return '';
+            return m.misi.split('\n').filter(x => x.trim()).map((misi, idx) => {
+                const clean = misi.replace(/^\d+\.\s*/, '').trim();
+                const value = `${m.id}|${idx}|${encodeURIComponent(clean)}`;
+                return `<option value="${value}">${truncate(clean, 80)}</option>`;
+            }).join('');
+        }).join('');
+        
+        return `
+            <div class="card mb-4 shadow-sm border-0" id="rs-form-section">
+                <div class="card-header text-white d-flex justify-content-between align-items-center" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0">
+                        <i class="fas fa-${isEdit ? 'edit' : 'plus-circle'} me-2"></i>
+                        ${isEdit ? 'Edit Rencana Strategis' : 'Form Input Rencana Strategis'}
+                    </h5>
+                    <button type="button" class="btn btn-light btn-sm" id="rs-toggle-form">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                </div>
+                <div class="card-body" id="rs-form-body">
+                    <form id="rs-form">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-barcode me-1 text-primary"></i> Kode
+                                </label>
+                                <input type="text" class="form-control bg-light" id="rs-kode" 
+                                       value="${f.kode || ''}" readonly placeholder="Auto-generate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-flag me-1 text-warning"></i> Status
+                                </label>
+                                <select class="form-select" id="rs-status">
+                                    <option value="Draft" ${f.status === 'Draft' ? 'selected' : ''}>📝 Draft</option>
+                                    <option value="Aktif" ${f.status === 'Aktif' ? 'selected' : ''}>✅ Aktif</option>
+                                    <option value="Selesai" ${f.status === 'Selesai' ? 'selected' : ''}>🏁 Selesai</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-bullseye me-1 text-success"></i> Misi Terkait
+                                </label>
+                                <select class="form-select" id="rs-misi">
+                                    <option value="">-- Pilih Misi --</option>
+                                    ${missionOptions}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-file-alt me-1 text-info"></i> Nama Rencana Strategis 
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="rs-nama" 
+                                       value="${f.nama_rencana || ''}" placeholder="Masukkan nama rencana strategis..." required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-1 text-primary"></i> Periode Mulai
+                                </label>
+                                <input type="date" class="form-control" id="rs-mulai" value="${f.periode_mulai || ''}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-check me-1 text-success"></i> Periode Selesai
+                                </label>
+                                <input type="date" class="form-control" id="rs-selesai" value="${f.periode_selesai || ''}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-align-left me-1 text-secondary"></i> Deskripsi
+                                </label>
+                                <textarea class="form-control" id="rs-deskripsi" rows="3" 
+                                          placeholder="Masukkan deskripsi...">${f.deskripsi || ''}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-crosshairs me-1 text-danger"></i> Target
+                                </label>
+                                <textarea class="form-control" id="rs-target" rows="2" 
+                                          placeholder="Masukkan target...">${f.target || ''}</textarea>
+                            </div>
+                            <div class="col-12 pt-3 border-top">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>${isEdit ? 'Update' : 'Simpan'}
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="rs-reset-btn">
+                                        <i class="fas fa-undo me-2"></i>Reset
+                                    </button>
+                                    ${isEdit ? `
+                                        <button type="button" class="btn btn-outline-danger" id="rs-cancel-edit">
+                                            <i class="fas fa-times me-2"></i>Batal
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderTable() {
+        const rows = state.data.length === 0 ? `
+            <tr>
+                <td colspan="6" class="text-center py-5">
+                    <div class="py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Belum Ada Data</h5>
+                        <p class="text-muted mb-3">Silakan isi form di atas untuk menambahkan data</p>
+                    </div>
+                </td>
+            </tr>
+        ` : state.data.map((item, idx) => {
+            const statusBadge = {
+                'Aktif': '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Aktif</span>',
+                'Draft': '<span class="badge bg-warning text-dark"><i class="fas fa-edit me-1"></i>Draft</span>',
+                'Selesai': '<span class="badge bg-secondary"><i class="fas fa-flag-checkered me-1"></i>Selesai</span>'
+            }[item.status] || '<span class="badge bg-light text-dark">-</span>';
+            
+            return `
+                <tr style="${idx % 2 ? 'background-color: #fafbfc;' : ''}">
+                    <td><span class="badge bg-light text-dark border">${item.kode || '-'}</span></td>
+                    <td>
+                        <div class="fw-semibold">${item.nama_rencana || '-'}</div>
+                        ${item.deskripsi ? `<small class="text-muted">${truncate(item.deskripsi, 80)}</small>` : ''}
+                    </td>
+                    <td><small class="text-muted">${truncate(item.target || '-', 50)}</small></td>
+                    <td><small class="text-muted"><i class="fas fa-calendar-alt me-1"></i>${formatDate(item.periode_mulai)} - ${formatDate(item.periode_selesai)}</small></td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info border-0" onclick="RencanaStrategisFast.edit('${item.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger border-0" onclick="RencanaStrategisFast.delete('${item.id}')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        return `
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 flex-wrap gap-2">
+                    <div>
+                        <h5 class="mb-0"><i class="fas fa-table text-primary me-2"></i>Daftar Rencana Strategis</h5>
+                        <small class="text-muted">Total: ${state.data.length} data</small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" id="rs-refresh-btn">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                        <button class="btn btn-outline-success" id="rs-export-btn">
+                            <i class="fas fa-file-excel me-1"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                <tr>
+                                    <th class="border-0 py-3" style="width: 120px;">Kode</th>
+                                    <th class="border-0 py-3">Nama Rencana</th>
+                                    <th class="border-0 py-3" style="width: 150px;">Target</th>
+                                    <th class="border-0 py-3" style="width: 180px;">Periode</th>
+                                    <th class="border-0 py-3" style="width: 100px;">Status</th>
+                                    <th class="border-0 py-3 text-center" style="width: 100px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function render() {
+        const container = getEl('rencana-strategis-content');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="rencana-strategis-wrapper p-3">
+                ${renderStatCards()}
+                ${renderForm()}
+                ${renderTable()}
+            </div>
+        `;
+        
+        bindEvents();
+    }
+    
+    // ============================================
+    // EVENT HANDLERS
+    // ============================================
+    
+    function bindEvents() {
+        const form = getEl('rs-form');
+        if (form) form.addEventListener('submit', handleSubmit);
+        
+        const toggleBtn = getEl('rs-toggle-form');
+        if (toggleBtn) toggleBtn.addEventListener('click', toggleForm);
+        
+        const resetBtn = getEl('rs-reset-btn');
+        if (resetBtn) resetBtn.addEventListener('click', resetForm);
+        
+        const cancelBtn = getEl('rs-cancel-edit');
+        if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+        
+        const refreshBtn = getEl('rs-refresh-btn');
+        if (refreshBtn) refreshBtn.addEventListener('click', refresh);
+    }
+    
+    function toggleForm() {
+        const body = getEl('rs-form-body');
+        const btn = getEl('rs-toggle-form');
+        if (body && btn) {
+            body.classList.toggle('d-none');
+            btn.innerHTML = body.classList.contains('d-none') 
+                ? '<i class="fas fa-chevron-down"></i>' 
+                : '<i class="fas fa-chevron-up"></i>';
+        }
+    }
+    
+    async function handleSubmit(e) {
+        e.preventDefault();
+        
+        const formData = {
+            kode: getEl('rs-kode')?.value || '',
+            visi_misi_id: getEl('rs-misi')?.value?.split('|')[0] || '',
+            nama_rencana: getEl('rs-nama')?.value || '',
+            deskripsi: getEl('rs-deskripsi')?.value || '',
+            periode_mulai: getEl('rs-mulai')?.value || '',
+            periode_selesai: getEl('rs-selesai')?.value || '',
+            target: getEl('rs-target')?.value || '',
+            status: getEl('rs-status')?.value || 'Draft'
+        };
+        
+        if (!formData.nama_rencana.trim()) {
+            alert('Nama rencana wajib diisi!');
+            return;
+        }
+        
+        try {
+            if (state.currentId) {
+                await api(`/api/rencana-strategis/${state.currentId}`, { method: 'PUT', body: formData });
+                alert('Data berhasil diupdate!');
+            } else {
+                await api('/api/rencana-strategis', { method: 'POST', body: formData });
+                alert('Data berhasil disimpan!');
+            }
+            
+            state.currentId = null;
+            await refresh();
+        } catch (error) {
+            console.error('Error saving:', error);
+            alert('Gagal menyimpan: ' + error.message);
+        }
+    }
+    
+    function resetForm() {
+        state.formValues = {
+            kode: '',
+            visi_misi_id: '',
+            nama_rencana: '',
+            deskripsi: '',
+            periode_mulai: '',
+            periode_selesai: '',
+            target: '',
+            status: 'Draft'
+        };
+        state.currentId = null;
+        generateKode().then(render);
+    }
+    
+    function cancelEdit() {
+        resetForm();
+    }
+    
+    // ============================================
+    // DATA FUNCTIONS
+    // ============================================
+    
+    async function fetchData() {
+        try {
+            const [rencanaRes, visiRes] = await Promise.allSettled([
+                api('/api/rencana-strategis').catch(() => api('/api/rencana-strategis/public').catch(() => [])),
+                api('/api/visi-misi').catch(() => api('/api/visi-misi/public').catch(() => []))
+            ]);
+            
+            state.data = rencanaRes.status === 'fulfilled' 
+                ? (Array.isArray(rencanaRes.value) ? rencanaRes.value : rencanaRes.value?.data || [])
+                : [];
+            
+            state.missions = visiRes.status === 'fulfilled'
+                ? (Array.isArray(visiRes.value) ? visiRes.value : visiRes.value?.data || [])
+                : [];
+                
+            console.log(`📊 Data loaded: ${state.data.length} rencana, ${state.missions.length} misi`);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            state.data = [];
+            state.missions = [];
+        }
+    }
+    
+    async function generateKode() {
+        try {
+            const response = await api('/api/rencana-strategis/generate/kode/public');
+            state.formValues.kode = response.kode || response;
+        } catch (error) {
+            const year = new Date().getFullYear();
+            const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+            state.formValues.kode = `RS-${year}-${random}`;
+        }
+    }
+    
+    async function refresh() {
+        console.log('🔄 Refreshing data...');
+        await fetchData();
+        await generateKode();
+        render();
+    }
+    
+    // ============================================
+    // PUBLIC API
+    // ============================================
+    
+    async function edit(id) {
+        const record = state.data.find(i => i.id === id);
+        if (!record) return;
+        
+        state.currentId = id;
+        state.formValues = { ...record };
+        render();
+        
+        // Scroll to form
+        setTimeout(() => {
+            const formSection = getEl('rs-form-section');
+            if (formSection) formSection.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    }
+    
+    async function deleteRecord(id) {
+        if (!confirm('Yakin ingin menghapus data ini?')) return;
+        
+        try {
+            await api(`/api/rencana-strategis/${id}`, { method: 'DELETE' });
+            alert('Data berhasil dihapus!');
+            await refresh();
+        } catch (error) {
+            console.error('Error deleting:', error);
+            alert('Gagal menghapus: ' + error.message);
+        }
+    }
+    
+    async function load() {
+        console.log(`🚀 Loading RencanaStrategisFast v${MODULE_VERSION}...`);
+        
+        if (state.isLoading) {
+            console.log('⚠️ Already loading, skipping...');
+            return;
+        }
+        
+        state.isLoading = true;
+        
+        const container = getEl('rencana-strategis-content');
+        if (!container) {
+            console.error('❌ Container not found!');
+            state.isLoading = false;
+            return;
+        }
+        
+        // Show skeleton immediately
+        container.innerHTML = renderSkeleton();
+        
+        try {
+            await fetchData();
+            await generateKode();
+            render();
+            
+            // CRITICAL: Mark container as properly rendered
+            container.setAttribute('data-rs-rendered', 'true');
+            container.setAttribute('data-rs-version', MODULE_VERSION);
+            
+            // CRITICAL: Protect the rendered content from being overwritten
+            protectRenderedContent(container);
+            
+            state.isInitialized = true;
+            console.log(`✅ RencanaStrategisFast v${MODULE_VERSION} loaded`);
+        } catch (error) {
+            console.error('❌ Error loading:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Gagal memuat data: ${error.message}
+                    <button class="btn btn-sm btn-outline-danger ms-3" onclick="RencanaStrategisFast.load()">
+                        <i class="fas fa-redo me-1"></i>Coba Lagi
+                    </button>
+                </div>
+            `;
+        } finally {
+            state.isLoading = false;
+        }
+    }
+    
+    /**
+     * CRITICAL: Protect rendered content from being overwritten
+     * Uses a limited MutationObserver to detect and fix unwanted changes
+     */
+    function protectRenderedContent(container) {
+        if (!container) return;
+        
+        let protectionCount = 0;
+        const MAX_PROTECTIONS = 5;
+        
+        const observer = new MutationObserver((mutations) => {
+            // Check if content was replaced with selection list
+            const html = container.innerHTML;
+            const hasWrapper = html.includes('rencana-strategis-wrapper');
+            const hasTable = container.querySelector('table') !== null;
+            const hasSelectionList = html.includes('Pilih Rencana Strategis') && !hasTable;
+            
+            // If correct content is still there, do nothing
+            if (hasWrapper && (hasTable || html.includes('rs-form'))) {
+                return;
+            }
+            
+            // If selection list appeared, fix it
+            if (hasSelectionList || (!hasWrapper && html.trim() !== '')) {
+                protectionCount++;
+                
+                if (protectionCount > MAX_PROTECTIONS) {
+                    console.warn('⚠️ Max protection attempts reached, stopping observer');
+                    observer.disconnect();
+                    return;
+                }
+                
+                console.warn('⚠️ Content was overwritten! Restoring...');
+                render();
+            }
+        });
+        
+        observer.observe(container, {
+            childList: true,
+            subtree: false
+        });
+        
+        // Auto-disconnect after 10 seconds
+        setTimeout(() => {
+            observer.disconnect();
+            console.log('✅ Content protection observer disconnected');
+        }, 10000);
+    }
+    
+    function cleanup() {
+        console.log('🧹 Cleaning up RencanaStrategisFast...');
+        state.isInitialized = false;
+        state.isLoading = false;
+        state.currentId = null;
+    }
+    
+    // ============================================
+    // EXPORT
+    // ============================================
+    
+    window.RencanaStrategisFast = {
+        load,
+        refresh,
+        edit,
+        delete: deleteRecord,
+        cleanup,
+        version: MODULE_VERSION
+    };
+    
+    // Also expose as RencanaStrategisModule for compatibility
+    window.RencanaStrategisModule = window.RencanaStrategisFast;
+    
+    console.log(`✅ RencanaStrategisFast v${MODULE_VERSION} registered`);
+    
+})();

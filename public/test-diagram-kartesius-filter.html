@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Diagram Kartesius Filter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { margin-bottom: 20px; color: #333; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .card-title { font-size: 1.25rem; font-weight: 600; }
+    .filter-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-weight: 600; margin-bottom: 5px; font-size: 0.875rem; }
+    .form-control { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.875rem; }
+    .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-secondary { background: #6b7280; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn:hover { opacity: 0.9; }
+    .log { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
+    .log .success { color: #4ade80; }
+    .log .error { color: #f87171; }
+    .log .info { color: #60a5fa; }
+    .log .warn { color: #fbbf24; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f8f9fa; font-weight: 600; }
+    .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+    .badge-klinis { background: #dbeafe; color: #1e40af; }
+    .badge-non-klinis { background: #fef3c7; color: #92400e; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-chart-scatter"></i> Test Diagram Kartesius Filter</h1>
+    
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Filter Test</h3>
+        <div>
+          <button class="btn btn-success" onclick="runAllTests()">
+            <i class="fas fa-play"></i> Run All Tests
+          </button>
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <div class="form-group">
+          <label>Jenis</label>
+          <select class="form-control" id="test-jenis">
+            <option value="">Semua Jenis</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select class="form-control" id="test-kategori">
+            <option value="">Semua Kategori</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tahun</label>
+          <select class="form-control" id="test-tahun">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <button class="btn btn-primary" onclick="testFilter()">
+          <i class="fas fa-filter"></i> Test Filter
+        </button>
+        <button class="btn btn-secondary" onclick="resetFilter()">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+      
+      <div id="results"></div>
+    </div>
+    
+    <div class="card">
+      <h3 class="card-title">Console Log</h3>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    const log = (msg, type = '') => {
+      const logEl = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      logEl.innerHTML += `<span class="${type}">[${time}] ${msg}</span>\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    };
+
+    // Helper to capitalize words
+    function capitalizeWords(str) {
+      if (!str) return str;
+      return str.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+    }
+
+    async function apiCall(endpoint) {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const res = await fetch(endpoint, { headers });
+        return await res.json();
+      } catch (err) {
+        log(`Error: ${err.message}`, 'error');
+        return null;
+      }
+    }
+
+    async function loadWorkUnits() {
+      log('Loading work units...', 'info');
+      const data = await apiCall('/api/master-data/work-units');
+      
+      if (!data || !Array.isArray(data)) {
+        log('Failed to load work units', 'error');
+        return;
+      }
+      
+      // Get unique jenis and kategori
+      const jenisSet = new Set();
+      const kategoriSet = new Set();
+      
+      data.forEach(u => {
+        if (u.jenis) jenisSet.add(capitalizeWords(u.jenis));
+        if (u.kategori) kategoriSet.add(capitalizeWords(u.kategori));
+      });
+      
+      const jenisOptions = [...jenisSet].sort();
+      const kategoriOptions = [...kategoriSet].sort();
+      
+      log(`Found ${jenisOptions.length} jenis: ${jenisOptions.join(', ')}`, 'success');
+      log(`Found ${kategoriOptions.length} kategori: ${kategoriOptions.join(', ')}`, 'success');
+      
+      // Populate dropdowns
+      const jenisSelect = document.getElementById('test-jenis');
+      const kategoriSelect = document.getElementById('test-kategori');
+      
+      jenisOptions.forEach(j => {
+        jenisSelect.innerHTML += `<option value="${j}">${j}</option>`;
+      });
+      
+      kategoriOptions.forEach(k => {
+        kategoriSelect.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+    }
+
+    async function testFilter() {
+      const jenis = document.getElementById('test-jenis').value;
+      const kategori = document.getElementById('test-kategori').value;
+      const tahun = document.getElementById('test-tahun').value;
+      
+      log(`Testing filter: jenis="${jenis}", kategori="${kategori}", tahun="${tahun}"`, 'info');
+      
+      const params = new URLSearchParams();
+      if (jenis) params.append('jenis', jenis);
+      if (kategori) params.append('kategori', kategori);
+      if (tahun) params.append('tahun', tahun);
+      
+      const endpoint = '/api/diagram-kartesius?' + params.toString();
+      log(`Calling: ${endpoint}`, 'info');
+      
+      const data = await apiCall(endpoint);
+      
+      if (!data) {
+        log('No response from API', 'error');
+        return;
+      }
+      
+      if (data.error) {
+        log(`API Error: ${data.error}`, 'error');
+        return;
+      }
+      
+      log(`Received ${data.length} results`, 'success');
+      
+      // Display results
+      displayResults(data, { jenis, kategori, tahun });
+    }
+
+    function displayResults(data, filters) {
+      const resultsEl = document.getElementById('results');
+      
+      if (!data || data.length === 0) {
+        resultsEl.innerHTML = '<p>Tidak ada data ditemukan dengan filter ini.</p>';
+        return;
+      }
+      
+      let html = `<p><strong>Hasil: ${data.length} data</strong></p>`;
+      html += `<table>
+        <thead>
+          <tr>
+            <th>Tahun</th>
+            <th>Kode</th>
+            <th>Unit Kerja</th>
+            <th>Jenis</th>
+            <th>Kategori</th>
+            <th>Kuadran</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      
+      data.forEach(item => {
+        const unit = item.master_work_units;
+        const kategoriClass = (unit?.kategori || '').toLowerCase().includes('klinis') ? 'badge-klinis' : 'badge-non-klinis';
+        
+        html += `<tr>
+          <td>${item.tahun}</td>
+          <td><strong>${unit?.code || '-'}</strong></td>
+          <td>${unit?.name || item.unit_kerja_name || '-'}</td>
+          <td>${capitalizeWords(unit?.jenis) || '-'}</td>
+          <td><span class="badge ${kategoriClass}">${capitalizeWords(unit?.kategori) || '-'}</span></td>
+          <td>Kuadran ${item.kuadran}</td>
+        </tr>`;
+      });
+      
+      html += '</tbody></table>';
+      resultsEl.innerHTML = html;
+    }
+
+    function resetFilter() {
+      document.getElementById('test-jenis').value = '';
+      document.getElementById('test-kategori').value = '';
+      document.getElementById('test-tahun').value = '2026';
+      document.getElementById('results').innerHTML = '';
+      log('Filters reset', 'info');
+    }
+
+    async function runAllTests() {
+      log('='.repeat(50), 'info');
+      log('Running all filter tests...', 'info');
+      log('='.repeat(50), 'info');
+      
+      const tests = [
+        { name: 'All data (2026)', params: { tahun: '2026' } },
+        { name: 'Filter kategori=Klinis', params: { tahun: '2026', kategori: 'Klinis' } },
+        { name: 'Filter kategori=klinis (lowercase)', params: { tahun: '2026', kategori: 'klinis' } },
+        { name: 'Filter kategori=Non Klinis', params: { tahun: '2026', kategori: 'Non Klinis' } },
+        { name: 'Filter jenis=Rawat Jalan', params: { tahun: '2026', jenis: 'Rawat Jalan' } },
+        { name: 'Filter jenis=rawat jalan (lowercase)', params: { tahun: '2026', jenis: 'rawat jalan' } },
+        { name: 'Combined: Klinis + Rawat Jalan', params: { tahun: '2026', kategori: 'Klinis', jenis: 'Rawat Jalan' } },
+        { name: 'Filter tahun=2025', params: { tahun: '2025' } },
+      ];
+      
+      for (const test of tests) {
+        const params = new URLSearchParams(test.params);
+        const data = await apiCall('/api/diagram-kartesius?' + params.toString());
+        const count = Array.isArray(data) ? data.length : 0;
+        log(`${test.name}: ${count} results`, count > 0 ? 'success' : 'warn');
+      }
+      
+      log('='.repeat(50), 'info');
+      log('All tests completed!', 'success');
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      log('Page loaded, initializing...', 'info');
+      loadWorkUnits();
+    });
+  </script>
+</body>
+</html>

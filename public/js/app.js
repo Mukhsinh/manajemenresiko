@@ -131,22 +131,40 @@ async function checkAuth() {
             const currentPath = window.location.pathname;
             const preserveRoute = sessionStorage.getItem('preserveRoute');
             const preserveTimestamp = sessionStorage.getItem('preserveRouteTimestamp');
+            const preventAutoRedirect = sessionStorage.getItem('preventAutoRedirect');
             const now = Date.now();
             
-            // Check if we should preserve the route (from refresh)
-            const shouldPreserveRoute = preserveRoute && 
-                                       preserveTimestamp && 
-                                       (now - parseInt(preserveTimestamp)) < 10000 && // 10 second window
-                                       preserveRoute === currentPath;
+            // CRITICAL: Check if we should preserve the route (from refresh)
+            // Extended list of pages that should be preserved on refresh
+            const preservablePages = [
+                '/evaluasi-iku', '/indikator-kinerja-utama', '/strategic-map',
+                '/sasaran-strategi', '/analisis-swot', '/diagram-kartesius',
+                '/matriks-tows', '/rencana-strategis', '/visi-misi',
+                '/risk-input', '/risk-profile', '/risk-register', '/residual-risk',
+                '/monitoring-evaluasi', '/peluang', '/kri', '/ews',
+                '/laporan', '/buku-pedoman', '/master-data', '/pengaturan'
+            ];
             
-            if (shouldPreserveRoute) {
+            const isPreservablePage = preservablePages.some(p => currentPath.startsWith(p));
+            
+            // Check if we should preserve the route
+            const shouldPreserveRoute = (preserveRoute && 
+                                       preserveTimestamp && 
+                                       (now - parseInt(preserveTimestamp)) < 10000 && 
+                                       preserveRoute === currentPath) ||
+                                       preventAutoRedirect === 'true' ||
+                                       isPreservablePage;
+            
+            if (shouldPreserveRoute && currentPath !== '/' && currentPath !== '/login') {
                 console.log('🔄 Preserving route from refresh during auth:', currentPath);
                 // Clear the preservation flags
                 sessionStorage.removeItem('preserveRoute');
                 sessionStorage.removeItem('preserveRouteTimestamp');
+                sessionStorage.removeItem('preventAutoRedirect');
                 
                 // Navigate to the preserved route
                 const pageName = currentPath.replace(/^\//, '') || 'dashboard';
+                console.log('🧭 Navigating to preserved page:', pageName);
                 navigateToPage(pageName);
             } else if (currentPath === '/' || currentPath === '/login' || currentPath.includes('/auth/login')) {
                 // Only redirect to dashboard for root, login, or auth paths
@@ -160,7 +178,7 @@ async function checkAuth() {
             
             // Load user data in background (non-blocking)
             loadUserData().catch(err => console.warn('User data error:', err));
-            loadKopHeader().catch(err => console.warn('Kop header error:', err));
+            loadKopHeaderSafe();
             
         } else {
             console.log('❌ No active session');
@@ -565,21 +583,24 @@ function setupEventListeners() {
     const registerForm = document.getElementById('register-form');
     
     if (loginForm) {
-        // Remove existing listener if any (prevent duplicates)
-        const newLoginForm = loginForm.cloneNode(true);
-        loginForm.parentNode.replaceChild(newLoginForm, loginForm);
-        
-        // Re-get the form after clone
-        const freshLoginForm = document.getElementById('login-form');
-        freshLoginForm.addEventListener('submit', handleLogin);
-        console.log('✅ Login form handler attached');
+        // Check if handler already attached
+        if (!loginForm.hasAttribute('data-handler-attached')) {
+            loginForm.addEventListener('submit', handleLogin);
+            loginForm.setAttribute('data-handler-attached', 'true');
+            console.log('✅ Login form handler attached');
+        } else {
+            console.log('ℹ️ Login form handler already attached');
+        }
     } else {
         console.warn('⚠️ Login form not found!');
     }
     
     if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-        console.log('✅ Register form handler attached');
+        if (!registerForm.hasAttribute('data-handler-attached')) {
+            registerForm.addEventListener('submit', handleRegister);
+            registerForm.setAttribute('data-handler-attached', 'true');
+            console.log('✅ Register form handler attached');
+        }
     }
     
     // Password toggle functionality
@@ -811,7 +832,7 @@ function setupEventListeners() {
                 console.log('User signed in via auth state change:', currentUser.email);
                 showApp();
                 loadUserData().catch(err => console.error('Error loading user data:', err));
-                loadKopHeader().catch(err => console.error('Error loading kop header:', err));
+                loadKopHeaderSafe();
             }
         } else if (event === 'SIGNED_OUT') {
             console.log('User signed out via auth state change');
@@ -1133,7 +1154,7 @@ async function handleLogin(e) {
         
         // Step 5: Load user data in background (non-blocking)
         loadUserData().catch(err => console.warn('User data load error:', err));
-        loadKopHeader().catch(err => console.warn('Kop header load error:', err));
+        loadKopHeaderSafe();
         
         console.log('✅ Login flow completed - App re-initialized');
         
@@ -1311,59 +1332,41 @@ function navigateToPage(pageName) {
     console.log('Current user:', window.currentUser);
     console.log('Router available:', !!window.appRouter);
     
-    // If router is available, use it for navigation
-    if (window.appRouter && window.getUrlForPage) {
-        const url = getUrlForPage(pageName);
-        
-        if (url && url !== '/404') {
-            console.log(`🧭 Using router navigation: ${pageName} -> ${url}`);
-            window.appRouter.navigate(url);
-            
-            // CRITICAL: Ensure page content is loaded after router navigation
-            // Wait for router to complete navigation, then load page data
-            setTimeout(() => {
-                try {
-                    // Show the page content
-                    const selectedPage = document.getElementById(pageName);
-                    if (selectedPage && !selectedPage.classList.contains('active')) {
-                        console.log(`🔄 Ensuring page ${pageName} is visible after router navigation`);
-                        
-                        // Hide all pages first
-                        document.querySelectorAll('.page-content').forEach(page => {
-                            page.classList.remove('active');
-                        });
-                        
-                        // Show selected page
-                        selectedPage.classList.add('active');
-                        
-                        // Call ensurePageLoaded for consistency
-                        if (window.appRouter && typeof window.appRouter.ensurePageLoaded === 'function') {
-                            window.appRouter.ensurePageLoaded(pageName);
-                        }
-                    }
-                    
-                    // Load page data
-                    loadPageData(pageName);
-                    
-                    // Update page title
-                    updatePageTitle(pageName);
-                    
-                    console.log(`✅ Page ${pageName} fully loaded after router navigation`);
-                } catch (error) {
-                    console.error(`❌ Error ensuring page visibility for ${pageName}:`, error);
-                }
-            }, 50); // Small delay to ensure router has updated history
-            
-            return;
+    // SPECIAL HANDLING FOR LOGIN PAGE
+    if (pageName === 'login') {
+        console.log('🔐 Navigating to login page - calling showLogin()');
+        showLogin();
+        // Update URL
+        if (window.history && window.history.pushState) {
+            window.history.pushState({ page: 'login' }, 'Login', '/login');
         }
+        return;
     }
     
+    // Handle URL mapping for residual risk
+    let actualPageName = pageName;
+    let urlPath = pageName;
+    
+    if (pageName === 'risk-residual' || pageName === 'residual-risk') {
+        actualPageName = 'residual-risk'; // Use the actual page ID in HTML
+        urlPath = 'risk-residual'; // Use the preferred URL path
+    }
+    
+    // CRITICAL FIX: Disable router navigation for now to prevent redirect loops
+    // The router is causing the page to redirect back to dashboard after showing
+    // We'll use direct navigation to ensure pages stay visible
+    console.log(`🔄 Using direct navigation for: ${actualPageName} (router disabled to prevent redirects)`);
+    
+    // Store the current page in session to prevent router from overriding
+    sessionStorage.setItem('currentPage', actualPageName);
+    sessionStorage.setItem('navigationTimestamp', Date.now().toString());
+    
     // Fallback to original navigation logic
-    console.log(`🔄 Using fallback navigation for: ${pageName}`);
+    console.log(`🔄 Using direct navigation for: ${actualPageName}`);
     
     try {
         // Check role-based access for pengaturan page
-        if (pageName === 'pengaturan') {
+        if (actualPageName === 'pengaturan') {
             const user = window.currentUser || currentUser;
             if (!user) {
                 alert('Anda harus login terlebih dahulu');
@@ -1375,8 +1378,15 @@ function navigateToPage(pageName) {
             
             if (!isSuperAdmin) {
                 alert('Hanya superadmin yang dapat mengakses halaman Pengaturan');
-                pageName = 'dashboard'; // Redirect to dashboard instead
+                actualPageName = 'dashboard'; // Redirect to dashboard instead
+                urlPath = 'dashboard';
             }
+        }
+        
+        // CRITICAL: Prevent router from interfering with navigation
+        // Temporarily disable router navigation events
+        if (window.appRouter && typeof window.appRouter.pauseNavigation === 'function') {
+            window.appRouter.pauseNavigation();
         }
         
         // Hide all pages
@@ -1385,39 +1395,72 @@ function navigateToPage(pageName) {
         });
 
         // Show selected page (CRITICAL - must succeed)
-        const selectedPage = document.getElementById(pageName);
+        const selectedPage = document.getElementById(actualPageName);
         if (selectedPage) {
             selectedPage.classList.add('active');
-            console.log(`✅ Page ${pageName} is now active`);
+            console.log(`✅ Page ${actualPageName} is now active`);
             
             // Verify it's actually active
             if (!selectedPage.classList.contains('active')) {
-                console.warn(`⚠️ Page ${pageName} not active, forcing...`);
+                console.warn(`⚠️ Page ${actualPageName} not active, forcing...`);
                 selectedPage.classList.add('active');
             }
             
             // Force reflow to ensure styles are applied
             selectedPage.offsetHeight;
             
+            // CRITICAL: Mark page as stable to prevent router interference
+            selectedPage.setAttribute('data-navigation-stable', 'true');
+            selectedPage.setAttribute('data-navigation-timestamp', Date.now().toString());
+            
+            // SPECIAL HANDLING FOR RENCANA STRATEGIS - Prevent any redirects
+            if (actualPageName === 'rencana-strategis') {
+                console.log('🔒 LOCKING Rencana Strategis page - preventing redirects');
+                
+                // Set multiple flags to prevent redirects
+                sessionStorage.setItem('lockRencanaStrategis', 'true');
+                sessionStorage.setItem('preventAutoRedirect', 'true');
+                sessionStorage.setItem('preserveRoute', '/rencana-strategis');
+                sessionStorage.setItem('preserveRouteTimestamp', Date.now().toString());
+                
+                // Force page to stay visible with inline styles
+                selectedPage.style.display = 'block';
+                selectedPage.style.visibility = 'visible';
+                selectedPage.style.opacity = '1';
+                selectedPage.style.position = 'relative';
+                selectedPage.style.zIndex = '1';
+                
+                // Clear lock after 5 seconds (page should be stable by then)
+                setTimeout(() => {
+                    sessionStorage.removeItem('lockRencanaStrategis');
+                    console.log('🔓 Rencana Strategis lock released');
+                }, 5000);
+            }
+            
         } else {
-            console.error(`❌ Page element not found: ${pageName}`);
+            console.error(`❌ Page element not found: ${actualPageName}`);
             // Fallback: try to show dashboard
-            if (pageName !== 'dashboard') {
+            if (actualPageName !== 'dashboard') {
                 console.log('🔄 Falling back to dashboard...');
                 const dashboardPage = document.getElementById('dashboard');
                 if (dashboardPage) {
                     dashboardPage.classList.add('active');
-                    pageName = 'dashboard';
+                    actualPageName = 'dashboard';
+                    urlPath = 'dashboard';
                 }
             }
         }
 
-        // Update menu items
+        // Update menu items - use original pageName for menu matching
         document.querySelectorAll('.menu-item').forEach(item => {
             item.classList.remove('active');
-            if (item.dataset.page === pageName) {
+            const itemPage = item.dataset.page;
+            // Handle both residual-risk and risk-residual menu items
+            if (itemPage === pageName || 
+                (pageName === 'risk-residual' && itemPage === 'residual-risk') ||
+                (pageName === 'residual-risk' && itemPage === 'residual-risk')) {
                 item.classList.add('active');
-                console.log(`✅ Menu item for ${pageName} is now active`);
+                console.log(`✅ Menu item for ${itemPage} is now active`);
             }
         });
         
@@ -1458,21 +1501,38 @@ function navigateToPage(pageName) {
         }
 
         // Update page title
-        updatePageTitle(pageName);
+        updatePageTitle(actualPageName);
 
         // Load page-specific data (non-critical - page should be visible even if this fails)
-        console.log(`📄 About to call loadPageData for: ${pageName}`);
+        console.log(`📄 About to call loadPageData for: ${actualPageName}`);
         try {
-            loadPageData(pageName);
+            loadPageData(actualPageName);
         } catch (loadError) {
-            console.error(`⚠️ Error loading page data for ${pageName} (non-critical):`, loadError);
+            console.error(`⚠️ Error loading page data for ${actualPageName} (non-critical):`, loadError);
             // Page is already visible, so continue
         }
-        console.log(`✅ === NAVIGATE TO PAGE COMPLETE: ${pageName} ===`);
+        
+        // CRITICAL: Re-enable router navigation after a delay to prevent interference
+        setTimeout(() => {
+            if (window.appRouter && typeof window.appRouter.resumeNavigation === 'function') {
+                window.appRouter.resumeNavigation();
+            }
+            
+            // Update URL without triggering navigation
+            if (window.history && window.history.replaceState) {
+                const newUrl = `/${urlPath}`;
+                if (window.location.pathname !== newUrl) {
+                    window.history.replaceState({ page: actualPageName }, '', newUrl);
+                    console.log(`🔗 URL updated to: ${newUrl}`);
+                }
+            }
+        }, 1000); // 1 second delay to ensure page is stable
+        
+        console.log(`✅ === NAVIGATE TO PAGE COMPLETE: ${actualPageName} ===`);
     } catch (error) {
-        console.error(`❌ Error in navigateToPage for ${pageName}:`, error);
+        console.error(`❌ Error in navigateToPage for ${actualPageName}:`, error);
         // Even if there's an error, try to show the page
-        const fallbackPage = document.getElementById(pageName) || document.getElementById('dashboard');
+        const fallbackPage = document.getElementById(actualPageName) || document.getElementById('dashboard');
         if (fallbackPage) {
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');
@@ -1499,6 +1559,7 @@ function updatePageTitle(pageName) {
         'sasaran-strategi': { title: 'Sasaran Strategi', icon: 'fa-bullseye' },
         'strategic-map': { title: 'Strategic Map', icon: 'fa-project-diagram' },
         'indikator-kinerja-utama': { title: 'Indikator Kinerja Utama', icon: 'fa-tachometer-alt' },
+        'evaluasi-iku': { title: 'Evaluasi IKU', icon: 'fa-chart-line' },
         'risk-input': { title: 'Input Data Risiko', icon: 'fa-pen-to-square' },
         'risk-profile': { title: 'Risk Profile', icon: 'fa-chart-bar' },
         'residual-risk': { title: 'Residual Risk', icon: 'fa-chart-pie' },
@@ -1592,19 +1653,58 @@ function loadPageData(pageName) {
             window.visiMisiModule?.loadVisiMisi?.();
             break;
         case 'rencana-strategis':
-            if (window.loadRencanaStrategis) {
-                window.loadRencanaStrategis();
-            } else if (window.RencanaStrategisModule?.load) {
-                window.RencanaStrategisModule.load();
-            } else if (window.rencanaStrategisModule?.load) {
-                window.rencanaStrategisModule.load();
+            // Use v7.1 module - single source of truth
+            console.log('🚀 Loading Rencana Strategis Module v7.1');
+            
+            // DON'T reset initialization flags - let the module handle it
+            // This prevents race conditions and allows proper re-initialization
+            
+            // Try to load the module - check multiple aliases
+            const loadRSModule = () => {
+                if (window.RencanaStrategisModule?.load) {
+                    console.log('✅ Using RencanaStrategisModule');
+                    window.RencanaStrategisModule.load();
+                    return true;
+                } else if (window.RencanaStrategisUnified?.load) {
+                    console.log('✅ Using RencanaStrategisUnified');
+                    window.RencanaStrategisUnified.load();
+                    return true;
+                } else if (window.RSCore?.load) {
+                    console.log('✅ Using RSCore');
+                    window.RSCore.load();
+                    return true;
+                }
+                return false;
+            };
+            
+            if (!loadRSModule()) {
+                console.warn('⚠️ RS module not ready, waiting...');
+                // Wait for module to load with retry
+                let retryCount = 0;
+                const maxRetries = 10;
+                const retryInterval = setInterval(() => {
+                    retryCount++;
+                    if (loadRSModule()) {
+                        clearInterval(retryInterval);
+                    } else if (retryCount >= maxRetries) {
+                        clearInterval(retryInterval);
+                        console.error('❌ RS module failed to load after retries');
+                    }
+                }, 200);
+            }
+            break;
+        case 'renstra':
+            // Clean implementation - no race conditions
+            if (window.RenstraModule?.load) {
+                console.log('🚀 Loading Renstra Module (clean implementation)');
+                window.RenstraModule.load();
             }
             break;
         case 'inventarisasi-swot':
             window.inventarisasiSwotModule?.load?.();
             break;
         case 'analisis-swot':
-            window.analisisSwotModule?.load?.();
+            window.AnalisisSwotModule?.load?.();
             break;
         case 'diagram-kartesius':
             window.diagramKartesiusModule?.load?.();
@@ -1620,6 +1720,14 @@ function loadPageData(pageName) {
             break;
         case 'indikator-kinerja-utama':
             window.indikatorKinerjaUtamaModule?.load?.();
+            break;
+        case 'evaluasi-iku':
+            // Use enhanced module first, fallback to original
+            if (window.EvaluasiIKUEnhanced) {
+                window.EvaluasiIKUEnhanced.init();
+            } else if (window.EvaluasiIKUModule) {
+                window.EvaluasiIKUModule.init();
+            }
             break;
         case 'monitoring-evaluasi':
             window.monitoringEvaluasiModule?.load?.();
@@ -1637,7 +1745,12 @@ function loadPageData(pageName) {
             window.ewsModule?.load?.();
             break;
         case 'laporan':
-            window.laporanModule?.load?.();
+            if (window.LaporanModule?.load) {
+                window.LaporanModule.load();
+            } else {
+                console.warn('LaporanModule not found, retrying...');
+                setTimeout(() => window.LaporanModule?.load?.(), 500);
+            }
             break;
         case 'buku-pedoman':
             if (window.bukuPedomanManager?.renderHandbook) {
@@ -1656,10 +1769,56 @@ function loadPageData(pageName) {
             window.RiskProfileModule?.load?.();
             break;
         case 'residual-risk':
-            window.ResidualRiskModule?.load?.();
+        case 'risk-residual':
+            // Handle both URL patterns for residual risk with robust retry
+            const loadResidualRiskModule = (retryCount = 0) => {
+                if (window.ResidualRiskModule?.load) {
+                    console.log('🚀 Loading Residual Risk Module');
+                    window.ResidualRiskModule.load();
+                } else if (retryCount < 10) {
+                    console.log(`⏳ Waiting for ResidualRiskModule... (attempt ${retryCount + 1}/10)`);
+                    setTimeout(() => loadResidualRiskModule(retryCount + 1), 300);
+                } else {
+                    console.error('❌ ResidualRiskModule not found after 10 attempts');
+                    // Show error message in the content area
+                    const contentArea = document.getElementById('residual-risk-content');
+                    if (contentArea) {
+                        contentArea.innerHTML = `
+                            <div class="card">
+                                <div class="card-body" style="text-align: center; padding: 40px;">
+                                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f39c12; margin-bottom: 20px;"></i>
+                                    <h4>Module Loading Error</h4>
+                                    <p>Residual Risk module gagal dimuat. Silakan refresh halaman.</p>
+                                    <button onclick="location.reload()" class="btn btn-primary">
+                                        <i class="fas fa-sync"></i> Refresh Halaman
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            };
+            loadResidualRiskModule();
+            
+            // Ensure page stays visible
+            setTimeout(() => {
+                const residualPage = document.getElementById('residual-risk');
+                if (residualPage && !residualPage.classList.contains('active')) {
+                    console.log('🔧 FIXING: Residual Risk page not active, forcing visibility');
+                    document.querySelectorAll('.page-content').forEach(page => {
+                        page.classList.remove('active');
+                    });
+                    residualPage.classList.add('active');
+                }
+            }, 100);
             break;
         case 'risk-register':
-            window.loadRiskRegister?.();
+            // Use enhanced risk register module
+            if (window.initRiskRegister) {
+                window.initRiskRegister();
+            } else if (window.loadRiskRegister) {
+                window.loadRiskRegister();
+            }
             break;
         case 'risk-appetite':
         case 'risk-register-graph':
@@ -1700,7 +1859,12 @@ async function loadTabData(tabName) {
             await loadResidualRisk();
             break;
         case 'risk-register':
-            await loadRiskRegister();
+            // Use enhanced risk register module
+            if (window.initRiskRegister) {
+                await window.initRiskRegister();
+            } else if (window.loadRiskRegister) {
+                await loadRiskRegister();
+            }
             break;
         case 'risk-appetite':
             await loadRiskAppetite();
@@ -1716,11 +1880,20 @@ async function loadTabData(tabName) {
 
 async function loadKopHeader(force = false) {
     try {
+        // Check if user is authenticated first
+        if (!window.isAuthenticated || !window.currentSession) {
+            console.log('⚠️ [KOP] User not authenticated, skipping kop header load');
+            return;
+        }
+        
         if (!force && kopSettingsCache) {
             renderKopHeader(kopSettingsCache);
             return;
         }
+        
+        console.log('📡 [KOP] Loading kop header settings...');
         const settings = await apiCall('/api/pengaturan');
+        
         kopSettingsCache = settings.reduce((acc, item) => {
             const key = (item.kunci_pengaturan || '').trim();
             const value = item.nilai_pengaturan || '';
@@ -1729,9 +1902,13 @@ async function loadKopHeader(force = false) {
             acc[key.toLowerCase()] = value;
             return acc;
         }, {});
+        
         renderKopHeader(kopSettingsCache);
+        console.log('✅ [KOP] Kop header loaded successfully');
+        
     } catch (error) {
-        console.error('Kop header error:', error);
+        console.error('❌ [KOP] Kop header error:', error);
+        // Don't throw error, just log it to prevent blocking other functionality
     }
 }
 
@@ -1812,4 +1989,22 @@ window.app = {
 
 // Make apiCall available globally
 window.apiCall = apiCall;
+
+// Safe kop header loading - only load after authentication
+async function loadKopHeaderSafe() {
+    try {
+        // Wait for authentication to be ready
+        const authReady = await waitForAuthReady(3000);
+        if (!authReady) {
+            console.log('⚠️ [KOP] Auth not ready, skipping kop header');
+            return;
+        }
+        
+        await loadKopHeader(true);
+    } catch (error) {
+        console.warn('⚠️ [KOP] Safe kop header loading failed:', error.message);
+    }
+}
+
+window.loadKopHeaderSafe = loadKopHeaderSafe;
 

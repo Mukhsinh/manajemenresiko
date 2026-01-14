@@ -1,0 +1,152 @@
+/**
+ * RS DISPLAY ENFORCER CSS v2.0
+ * 
+ * CRITICAL: Menyembunyikan tampilan "Pilih Rencana Strategis" secara agresif
+ * dan memastikan hanya tampilan yang benar (Cards + Table + Form) yang muncul
+ * 
+ * FIXES v2.0:
+ * - Remove purple background rgb(248, 240, 250)
+ * - More aggressive hiding of selection list
+ * - Force correct background color
+ * 
+ * Created: 2026-01-11 v2.0
+ */
+
+/* ============================================
+   FORCE CORRECT BACKGROUND - NO PURPLE!
+   ============================================ */
+
+#rencana-strategis,
+#rencana-strategis.active,
+#rencana-strategis-content,
+#rencana-strategis .page-content,
+#rencana-strategis-content > * {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+}
+
+/* Override any inline purple background */
+#rencana-strategis[style*="248"],
+#rencana-strategis-content[style*="248"],
+#rencana-strategis [style*="248"],
+#rencana-strategis-content [style*="248"] {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+}
+
+/* ============================================
+   ENSURE CORRECT DISPLAY IS VISIBLE
+   ============================================ */
+
+#rencana-strategis-content .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 100 !important;
+    background-color: #f8f9fa !important;
+}
+
+#rencana-strategis-content > .text-center {
+    display: block !important;
+    visibility: visible !important;
+}
+
+#rencana-strategis-content > .alert {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* ============================================
+   HIDE SELECTION LIST - ULTRA AGGRESSIVE
+   ============================================ */
+
+/* Hide any direct child that is NOT the wrapper, loading, or alert */
+#rencana-strategis-content > div:not(.rencana-strategis-wrapper):not(.text-center):not(.alert):not([class*="spinner"]) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -99999 !important;
+}
+
+/* But show the wrapper's children */
+#rencana-strategis-content .rencana-strategis-wrapper > * {
+    display: revert !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+}
+
+/* Hide list-group that is NOT inside wrapper */
+#rencana-strategis-content > .list-group,
+#rencana-strategis-content > div > .list-group:not(.rencana-strategis-wrapper .list-group) {
+    display: none !important;
+}
+
+/* ============================================
+   PAGE VISIBILITY CONTROL
+   ============================================ */
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#rencana-strategis:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -99999 !important;
+}
+
+#rencana-strategis:not(.active) * {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK TO OTHER PAGES
+   ============================================ */
+
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) [data-module*="RencanaStrategis"],
+.page-content:not(#rencana-strategis) [data-rs-module] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   CARD STYLING FOR RS PAGE
+   ============================================ */
+
+#rencana-strategis-content .rencana-strategis-wrapper .card {
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper .card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+#rencana-strategis-content .rencana-strategis-wrapper table {
+    background-color: #ffffff !important;
+}

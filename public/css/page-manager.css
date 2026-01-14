@@ -1,0 +1,241 @@
+/**
+ * PAGE MANAGER CSS v1.0
+ * 
+ * Unified page visibility and z-index management
+ * Replaces multiple conflicting isolation CSS files
+ * 
+ * Created: 2026-01-10
+ * 
+ * Z-INDEX HIERARCHY:
+ * - Modals: 1050
+ * - Modal Backdrop: 1040
+ * - Dropdowns: 1030
+ * - Fixed Header: 1020
+ * - Sidebar: 1010
+ * - Active Page: 1
+ * - Inactive Pages: -1 (hidden)
+ */
+
+/* ============================================
+   BASE PAGE CONTENT RULES
+   ============================================ */
+
+/* All page content containers */
+.page-content {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: #f8f9fa;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Active page - fully visible and interactive */
+.page-content.active {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  position: relative;
+  left: auto;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+/* Ensure content containers are properly sized */
+.page-content.active > .container-fluid,
+.page-content.active > .container {
+  min-height: calc(100vh - 70px);
+  padding: 1.5rem;
+}
+
+/* ============================================
+   Z-INDEX HIERARCHY
+   ============================================ */
+
+/* Fixed elements */
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.sidebar {
+  position: fixed;
+  z-index: 1010;
+}
+
+/* Dropdown menus */
+.dropdown-menu,
+.sidebar-submenu.expanded {
+  z-index: 1030;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  z-index: 1040;
+}
+
+/* Modals */
+.modal {
+  z-index: 1050;
+}
+
+/* ============================================
+   INTERACTIVE ELEMENTS
+   ============================================ */
+
+/* Ensure all interactive elements are clickable */
+.page-content.active button,
+.page-content.active a,
+.page-content.active input,
+.page-content.active select,
+.page-content.active textarea,
+.page-content.active [role="button"],
+.page-content.active [onclick] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Disabled elements */
+.page-content.active button:disabled,
+.page-content.active input:disabled,
+.page-content.active select:disabled,
+.page-content.active textarea:disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+/* Loading indicator should not block interaction */
+.page-content.active .loading-indicator,
+.page-content.active .spinner-border {
+  pointer-events: none;
+}
+
+/* Loading overlay - only blocks its container */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ============================================
+   SPECIFIC PAGE CONTAINERS
+   ============================================ */
+
+/* Rencana Strategis */
+#rencana-strategis.active #rencana-strategis-content {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  min-height: 400px;
+}
+
+#rencana-strategis.active .rencana-strategis-wrapper {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Dashboard */
+#dashboard.active #dashboard-content {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Analisis SWOT */
+#analisis-swot.active #analisis-swot-content {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK
+   ============================================ */
+
+/* Hide inactive page content completely */
+.page-content:not(.active) * {
+  pointer-events: none;
+}
+
+/* But don't affect elements outside page-content */
+.sidebar *,
+.top-header *,
+.modal *,
+.dropdown-menu * {
+  pointer-events: auto;
+}
+
+/* ============================================
+   SCROLLING
+   ============================================ */
+
+/* Main content area scrolling */
+.main-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+/* Page content scrolling */
+.page-content.active {
+  overflow-y: visible;
+  overflow-x: hidden;
+}
+
+/* Table responsive scrolling */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .page-content.active > .container-fluid,
+  .page-content.active > .container {
+    padding: 1rem;
+  }
+  
+  .sidebar {
+    z-index: 1025; /* Above header on mobile when open */
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .page-content:not(.active) {
+    display: none !important;
+  }
+  
+  .sidebar,
+  .top-header {
+    display: none !important;
+  }
+  
+  .page-content.active {
+    position: static;
+    width: 100%;
+  }
+}

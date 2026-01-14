@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test IKU - Kolom Baru</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; padding: 20px; }
+    .container { max-width: 100%; margin: 0 auto; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .card-body { padding: 1.5rem; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-info { background: #06b6d4; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-light { background: #f3f4f6; color: #374151; }
+    .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; }
+    .form-control-sm { padding: 4px 8px; font-size: 0.8rem; }
+    .form-group { margin-bottom: 0.5rem; }
+    .form-label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 0.85rem; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 8px; border: 1px solid #dee2e6; }
+    .table-striped tbody tr:nth-child(odd) { background: #f8fafc; }
+    .text-center { text-align: center; }
+    .text-muted { color: #6b7280; }
+    .info-box { background: #e0f2fe; border: 1px solid #0ea5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="info-box">
+      <h4 style="margin: 0 0 0.5rem 0;"><i class="fas fa-info-circle"></i> Test Halaman IKU dengan Kolom Baru</h4>
+      <p style="margin: 0; font-size: 0.9rem;">
+        Halaman ini menampilkan tabel IKU dengan kolom baru sesuai template Excel:
+        <strong>Formulasi Perhitungan, Satuan, Target 2025-2030, Definisi Operasional, Sumber Data</strong>.
+        Kolom Progress sudah disembunyikan.
+      </p>
+    </div>
+    <div id="indikator-kinerja-utama-content">
+      <div class="text-center" style="padding: 2rem;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p>Memuat data...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script>
+    // Simple API call function
+    window.apiCall = async (url, options = {}) => {
+      const config = { headers: { 'Content-Type': 'application/json' } };
+      if (options.body) config.body = JSON.stringify(options.body);
+      if (options.method) config.method = options.method;
+      const response = await fetch(url, config);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    };
+  </script>
+  <script src="/js/indikator-kinerja-utama.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      IndikatorKinerjaUtamaModule.load();
+    });
+  </script>
+</body>
+</html>

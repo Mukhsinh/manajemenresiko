@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Residual Risk Badge & Matrix Enhancement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/css/residual-risk.css">
+    <link rel="stylesheet" href="/css/residual-risk-enhanced-badges.css">
+    <link rel="stylesheet" href="/css/residual-risk-matrix-enhanced.css">
+    <style>
+        body { padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1e3a5f; margin-bottom: 20px; }
+        .badge-demo { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .chart-container { height: 400px; position: relative; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="mb-4">🧪 Test Residual Risk Badge & Matrix Enhancement</h1>
+        
+        <!-- Badge Test Section -->
+        <div class="test-section">
+            <h2>1. Badge Warna Cerah & Solid</h2>
+            <p>Badge dengan warna cerah dan solid untuk risk level:</p>
+            
+            <div class="badge-demo">
+                <span class="badge-status badge-low-risk">LOW RISK</span>
+                <span class="badge-status badge-medium-risk">MEDIUM RISK</span>
+                <span class="badge-status badge-high-risk">HIGH RISK</span>
+                <span class="badge-status badge-extreme-high">EXTREME HIGH</span>
+                <span class="badge-status badge-secondary">UNKNOWN</span>
+            </div>
+            
+            <p>Badge untuk nilai risiko:</p>
+            <div class="badge-demo">
+                <span class="badge-status badge-low-risk">4</span>
+                <span class="badge-status badge-medium-risk">9</span>
+                <span class="badge-status badge-high-risk">16</span>
+                <span class="badge-status badge-extreme-high">25</span>
+            </div>
+        </div>
+        
+        <!-- Review Warning Badge Test -->
+        <div class="test-section">
+            <h2>2. Review Status Warning (Berkedip)</h2>
+            <p>Badge review status dengan warning berkedip jika mendekati deadline:</p>
+            
+            <div class="badge-demo">
+                <div>
+                    <p class="mb-1"><small>Normal (> 30 hari):</small></p>
+                    <span class="badge-status badge-reviewed">REVIEWED</span>
+                </div>
+                <div>
+                    <p class="mb-1"><small>Warning (< 30 hari):</small></p>
+                    <span class="badge-status badge-review-warning">WARNING</span>
+                </div>
+                <div>
+                    <p class="mb-1"><small>Near Deadline (< 14 hari):</small></p>
+                    <span class="badge-status badge-review-near-deadline">NEAR DEADLINE</span>
+                </div>
+                <div>
+                    <p class="mb-1"><small>Urgent (< 7 hari / Overdue):</small></p>
+                    <span class="badge-status badge-review-urgent">URGENT</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table Test -->
+        <div class="test-section">
+            <h2>3. Tabel dengan Badge</h2>
+            <table class="table residual-risk-table">
+                <thead>
+                    <tr>
+                        <th>Kode Risiko</th>
+                        <th>Unit Kerja</th>
+                        <th>Inherent</th>
+                        <th>Residual</th>
+                        <th>Reduction</th>
+                        <th>Level</th>
+                        <th>Review Status</th>
+                        <th>Next Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>RS-001</strong></td>
+                        <td>Komite Medik<br><small class="text-muted">administrasi - non klinis</small></td>
+                        <td><span class="badge-status badge-medium-risk">12</span></td>
+                        <td><span class="badge-status badge-low-risk">4</span></td>
+                        <td><strong style="color: #059669;">66.7%</strong></td>
+                        <td><span class="badge-status badge-low-risk">RENDAH</span></td>
+                        <td><span class="badge-status badge-reviewed">REVIEWED</span></td>
+                        <td>2026-03-15</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RT-001</strong></td>
+                        <td>Komite PMKP<br><small class="text-muted">administrasi - non klinis</small></td>
+                        <td><span class="badge-status badge-high-risk">20</span></td>
+                        <td><span class="badge-status badge-medium-risk">8</span></td>
+                        <td><strong style="color: #059669;">60.0%</strong></td>
+                        <td><span class="badge-status badge-low-risk">RENDAH</span></td>
+                        <td><span class="badge-status badge-review-warning">WARNING</span></td>
+                        <td>2026-02-01</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RK-002</strong></td>
+                        <td>Komite PPI<br><small class="text-muted">administrasi - non klinis</small></td>
+                        <td><span class="badge-status badge-high-risk">20</span></td>
+                        <td><span class="badge-status badge-medium-risk">8</span></td>
+                        <td><strong style="color: #059669;">60.0%</strong></td>
+                        <td><span class="badge-status badge-low-risk">RENDAH</span></td>
+                        <td><span class="badge-status badge-review-urgent">URGENT</span></td>
+                        <td>2026-01-15</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RK-001</strong></td>
+                        <td>Akreditasi<br><small class="text-muted">administrasi - non klinis</small></td>
+                        <td><span class="badge-status badge-medium-risk">12</span></td>
+                        <td><span class="badge-status badge-low-risk">2</span></td>
+                        <td><strong style="color: #059669;">83.3%</strong></td>
+                        <td><span class="badge-status badge-low-risk">RENDAH</span></td>
+                        <td><span class="badge-status badge-reviewed">REVIEWED</span></td>
+                        <td>2026-06-01</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Matrix Chart Test -->
+        <div class="test-section">
+            <h2>4. Residual Risk Matrix (Icon Lebih Kecil, Warna Cerah)</h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="risk-matrix-container">
+                        <h4>Residual Risk Matrix</h4>
+                        <div class="chart-container">
+                            <canvas id="test-matrix-chart"></canvas>
+                        </div>
+                        <div class="risk-matrix-legend">
+                            <div class="legend-item">
+                                <div class="legend-symbol circle"></div>
+                                <span>Inherent Risk Rating</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-symbol star"></div>
+                                <span>Residual Risk Rating (★)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-symbol triangle"></div>
+                                <span>Risk Appetite</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Keterangan Icon</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li><strong>Circle (Cyan):</strong> Inherent Risk - pointRadius: 7</li>
+                                <li><strong>Star (Gold):</strong> Residual Risk - pointRadius: 9</li>
+                                <li><strong>Triangle (White):</strong> Risk Appetite - pointRadius: 7</li>
+                            </ul>
+                            <p class="text-muted mt-3">Icon lebih kecil dari sebelumnya untuk tampilan yang lebih rapi.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="test-section">
+            <h2>5. Statistics Cards (Warna Cerah)</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Total Residual Risk</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">16.00</div>
+                    <div class="stat-label">Avg Inherent Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5.50</div>
+                    <div class="stat-label">Avg Residual Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">65.6%</div>
+                    <div class="stat-label">Risk Reduction</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/residual-risk-badge-warning.js"></script>
+    <script src="/js/residual-risk-matrix-fix.js"></script>
+    <script>
+        // Test Matrix Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('test-matrix-chart');
+            if (!ctx) return;
+            
+            // Sample data points
+            const inherentPoints = [
+                { x: 3, y: 4, riskId: 'RS-001', value: 12, level: 'MEDIUM' },
+                { x: 4, y: 5, riskId: 'RT-001', value: 20, level: 'HIGH' },
+                { x: 4, y: 5, riskId: 'RK-002', value: 20, level: 'HIGH' },
+                { x: 3, y: 4, riskId: 'RK-001', value: 12, level: 'MEDIUM' }
+            ];
+            
+            const residualPoints = [
+                { x: 2, y: 2, riskId: 'RS-001', value: 4, level: 'LOW' },
+                { x: 2, y: 4, riskId: 'RT-001', value: 8, level: 'MEDIUM' },
+                { x: 2, y: 4, riskId: 'RK-002', value: 8, level: 'MEDIUM' },
+                { x: 1, y: 2, riskId: 'RK-001', value: 2, level: 'LOW' }
+            ];
+            
+            const appetitePoints = [
+                { x: 1, y: 1, riskId: 'RS-001', value: 1, level: 'TARGET' },
+                { x: 1, y: 2, riskId: 'RT-001', value: 2, level: 'TARGET' },
+                { x: 1, y: 2, riskId: 'RK-002', value: 2, level: 'TARGET' },
+                { x: 1, y: 1, riskId: 'RK-001', value: 1, level: 'TARGET' }
+            ];
+            
+            // Use the fix module to create chart
+            if (window.ResidualRiskMatrixFix) {
+                const config = ResidualRiskMatrixFix.createChartConfig(inherentPoints, residualPoints, appetitePoints);
+                new Chart(ctx, config);
+            } else {
+                // Fallback chart creation
+                new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Inherent Risk Rating',
+                                data: inherentPoints,
+                                backgroundColor: '#00E5FF',
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 7,
+                                pointHoverRadius: 9,
+                                pointStyle: 'circle'
+                            },
+                            {
+                                label: 'Residual Risk Rating (★)',
+                                data: residualPoints,
+                                backgroundColor: '#FFD700',
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 9,
+                                pointHoverRadius: 11,
+                                pointStyle: 'star'
+                            },
+                            {
+                                label: 'Risk Appetite',
+                                data: appetitePoints,
+                                backgroundColor: '#FFFFFF',
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 7,
+                                pointHoverRadius: 9,
+                                pointStyle: 'triangle'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { min: 0.5, max: 5.5, ticks: { stepSize: 1 }, title: { display: true, text: 'Dampak' } },
+                            y: { min: 0.5, max: 5.5, ticks: { stepSize: 1 }, title: { display: true, text: 'Probabilitas' } }
+                        },
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    },
+                    plugins: [{
+                        id: 'riskMatrixBackground',
+                        beforeDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            const chartArea = chart.chartArea;
+                            if (!chartArea) return;
+                            
+                            ctx.save();
+                            
+                            // Draw colored zones
+                            const zones = [
+                                { xMin: 0.5, xMax: 1.5, yMin: 0.5, yMax: 5.5, color: 'rgba(16, 185, 129, 0.65)' },
+                                { xMin: 1.5, xMax: 2.5, yMin: 0.5, yMax: 2.5, color: 'rgba(16, 185, 129, 0.65)' },
+                                { xMin: 1.5, xMax: 2.5, yMin: 2.5, yMax: 3.5, color: 'rgba(245, 158, 11, 0.65)' },
+                                { xMin: 2.5, xMax: 3.5, yMin: 0.5, yMax: 2.5, color: 'rgba(245, 158, 11, 0.65)' },
+                                { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.6)' },
+                                { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(239, 68, 68, 0.6)' },
+                                { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(239, 68, 68, 0.6)' },
+                                { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(153, 27, 27, 0.7)' },
+                                { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(153, 27, 27, 0.7)' }
+                            ];
+                            
+                            zones.forEach(zone => {
+                                const xStart = chart.scales.x.getPixelForValue(zone.xMin);
+                                const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
+                                const yStart = chart.scales.y.getPixelForValue(zone.yMax);
+                                const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
+                                
+                                ctx.fillStyle = zone.color;
+                                ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                            });
+                            
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+        });
+    </script>
+</body>
+</html>

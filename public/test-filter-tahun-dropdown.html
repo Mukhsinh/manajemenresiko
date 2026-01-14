@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Filter Tahun Dropdown</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { padding: 20px; font-family: Arial, sans-serif; }
+    .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+    .test-section h3 { margin-top: 0; color: #333; }
+    .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #d1ecf1; color: #0c5460; }
+    .filter-demo { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+    .filter-demo .form-group { min-width: 200px; }
+    .filter-demo label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .filter-demo select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .result-box { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 15px; }
+    pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>🧪 Test Filter Tahun Dropdown</h1>
+  <p>Halaman ini untuk memverifikasi bahwa filter tahun menggunakan dropdown dan berfungsi dengan baik.</p>
+
+  <!-- Test 1: Diagram Kartesius -->
+  <div class="test-section">
+    <h3>1. Diagram Kartesius - Filter Tahun</h3>
+    <div id="diagram-kartesius-status" class="status info">Menguji...</div>
+    <div class="filter-demo">
+      <div class="form-group">
+        <label>Tahun (Dropdown)</label>
+        <select id="test-diagram-tahun" onchange="testDiagramFilter()">
+          <!-- Will be populated by JavaScript -->
+        </select>
+      </div>
+    </div>
+    <div class="result-box">
+      <strong>Hasil:</strong>
+      <pre id="diagram-result">Menunggu test...</pre>
+    </div>
+  </div>
+
+  <!-- Test 2: Matriks TOWS -->
+  <div class="test-section">
+    <h3>2. Matriks TOWS - Filter Tahun</h3>
+    <div id="matriks-tows-status" class="status info">Menguji...</div>
+    <div class="filter-demo">
+      <div class="form-group">
+        <label>Tahun (Dropdown)</label>
+        <select id="test-tows-tahun" onchange="testTowsFilter()">
+          <!-- Will be populated by JavaScript -->
+        </select>
+      </div>
+    </div>
+    <div class="result-box">
+      <strong>Hasil:</strong>
+      <pre id="tows-result">Menunggu test...</pre>
+    </div>
+  </div>
+
+  <!-- Test 3: Indikator Kinerja Utama -->
+  <div class="test-section">
+    <h3>3. Indikator Kinerja Utama - Filter Tahun</h3>
+    <div id="iku-status" class="status info">Menguji...</div>
+    <div class="filter-demo">
+      <div class="form-group">
+        <label>Tahun (Dropdown)</label>
+        <select id="test-iku-tahun" onchange="testIkuFilter()">
+          <!-- Will be populated by JavaScript -->
+        </select>
+      </div>
+    </div>
+    <div class="result-box">
+      <strong>Hasil:</strong>
+      <pre id="iku-result">Menunggu test...</pre>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="test-section">
+    <h3>📊 Ringkasan Test</h3>
+    <div id="summary-status" class="status info">Menjalankan test...</div>
+    <div id="summary-details"></div>
+  </div>
+
+  <script>
+    // Generate year options (same as in the modules)
+    function generateYearOptions(selectedYear) {
+      const currentYear = new Date().getFullYear();
+      const startYear = currentYear - 5;
+      const endYear = currentYear + 5;
+      let options = '';
+      const selectedYearInt = parseInt(selectedYear) || currentYear;
+      
+      for (let year = endYear; year >= startYear; year--) {
+        const selected = year === selectedYearInt ? 'selected' : '';
+        options += `<option value="${year}" ${selected}>${year}</option>`;
+      }
+      return options;
+    }
+
+    // Initialize dropdowns
+    const currentYear = new Date().getFullYear();
+    document.getElementById('test-diagram-tahun').innerHTML = generateYearOptions(currentYear);
+    document.getElementById('test-tows-tahun').innerHTML = generateYearOptions(currentYear);
+    document.getElementById('test-iku-tahun').innerHTML = generateYearOptions(currentYear);
+
+    // Test results
+    const testResults = {
+      diagramKartesius: { dropdown: false, filter: false },
+      matriksTows: { dropdown: false, filter: false },
+      indikatorKinerja: { dropdown: false, filter: false }
+    };
+
+    // Test Diagram Kartesius filter
+    async function testDiagramFilter() {
+      const tahun = document.getElementById('test-diagram-tahun').value;
+      const resultEl = document.getElementById('diagram-result');
+      const statusEl = document.getElementById('diagram-kartesius-status');
+      
+      try {
+        resultEl.textContent = `Testing filter tahun: ${tahun}...`;
+        
+        // Check if dropdown is working
+        testResults.diagramKartesius.dropdown = true;
+        
+        // Test API call
+        const response = await fetch(`/api/diagram-kartesius?tahun=${tahun}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          testResults.diagramKartesius.filter = true;
+          resultEl.textContent = JSON.stringify({
+            success: true,
+            tahun: tahun,
+            dataCount: data.length,
+            message: 'Filter tahun berfungsi dengan baik'
+          }, null, 2);
+          statusEl.className = 'status success';
+          statusEl.textContent = '✅ Dropdown dan filter berfungsi dengan baik';
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        resultEl.textContent = JSON.stringify({
+          success: false,
+          error: error.message,
+          note: 'Pastikan sudah login untuk mengakses API'
+        }, null, 2);
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ Error: ' + error.message;
+      }
+      
+      updateSummary();
+    }
+
+    // Test Matriks TOWS filter
+    async function testTowsFilter() {
+      const tahun = document.getElementById('test-tows-tahun').value;
+      const resultEl = document.getElementById('tows-result');
+      const statusEl = document.getElementById('matriks-tows-status');
+      
+      try {
+        resultEl.textContent = `Testing filter tahun: ${tahun}...`;
+        
+        // Check if dropdown is working
+        testResults.matriksTows.dropdown = true;
+        
+        // Test API call
+        const response = await fetch(`/api/matriks-tows?tahun=${tahun}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          testResults.matriksTows.filter = true;
+          resultEl.textContent = JSON.stringify({
+            success: true,
+            tahun: tahun,
+            dataCount: data.length,
+            message: 'Filter tahun berfungsi dengan baik'
+          }, null, 2);
+          statusEl.className = 'status success';
+          statusEl.textContent = '✅ Dropdown dan filter berfungsi dengan baik';
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        resultEl.textContent = JSON.stringify({
+          success: false,
+          error: error.message,
+          note: 'Pastikan sudah login untuk mengakses API'
+        }, null, 2);
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ Error: ' + error.message;
+      }
+      
+      updateSummary();
+    }
+
+    // Test Indikator Kinerja Utama filter
+    async function testIkuFilter() {
+      const tahun = document.getElementById('test-iku-tahun').value;
+      const resultEl = document.getElementById('iku-result');
+      const statusEl = document.getElementById('iku-status');
+      
+      try {
+        resultEl.textContent = `Testing filter tahun: ${tahun}...`;
+        
+        // Check if dropdown is working
+        testResults.indikatorKinerja.dropdown = true;
+        
+        // Test API call (using public endpoint for testing)
+        const response = await fetch(`/api/indikator-kinerja-utama/public?tahun=${tahun}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          testResults.indikatorKinerja.filter = true;
+          resultEl.textContent = JSON.stringify({
+            success: true,
+            tahun: tahun,
+            dataCount: data.length,
+            message: 'Filter tahun berfungsi dengan baik'
+          }, null, 2);
+          statusEl.className = 'status success';
+          statusEl.textContent = '✅ Dropdown dan filter berfungsi dengan baik';
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        resultEl.textContent = JSON.stringify({
+          success: false,
+          error: error.message,
+          note: 'Pastikan sudah login untuk mengakses API'
+        }, null, 2);
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ Error: ' + error.message;
+      }
+      
+      updateSummary();
+    }
+
+    // Update summary
+    function updateSummary() {
+      const summaryEl = document.getElementById('summary-status');
+      const detailsEl = document.getElementById('summary-details');
+      
+      const allDropdownsWork = testResults.diagramKartesius.dropdown && 
+                               testResults.matriksTows.dropdown && 
+                               testResults.indikatorKinerja.dropdown;
+      
+      const allFiltersWork = testResults.diagramKartesius.filter && 
+                             testResults.matriksTows.filter && 
+                             testResults.indikatorKinerja.filter;
+      
+      let html = '<ul>';
+      html += `<li>Diagram Kartesius: Dropdown ${testResults.diagramKartesius.dropdown ? '✅' : '❌'}, Filter ${testResults.diagramKartesius.filter ? '✅' : '❌'}</li>`;
+      html += `<li>Matriks TOWS: Dropdown ${testResults.matriksTows.dropdown ? '✅' : '❌'}, Filter ${testResults.matriksTows.filter ? '✅' : '❌'}</li>`;
+      html += `<li>Indikator Kinerja Utama: Dropdown ${testResults.indikatorKinerja.dropdown ? '✅' : '❌'}, Filter ${testResults.indikatorKinerja.filter ? '✅' : '❌'}</li>`;
+      html += '</ul>';
+      
+      detailsEl.innerHTML = html;
+      
+      if (allDropdownsWork && allFiltersWork) {
+        summaryEl.className = 'status success';
+        summaryEl.textContent = '✅ Semua filter tahun menggunakan dropdown dan berfungsi dengan baik!';
+      } else if (allDropdownsWork) {
+        summaryEl.className = 'status info';
+        summaryEl.textContent = '⚠️ Dropdown berfungsi, tapi beberapa filter API perlu diverifikasi (mungkin perlu login)';
+      } else {
+        summaryEl.className = 'status error';
+        summaryEl.textContent = '❌ Ada masalah dengan beberapa komponen';
+      }
+    }
+
+    // Run initial tests
+    window.onload = function() {
+      // Test dropdowns are populated
+      const diagramDropdown = document.getElementById('test-diagram-tahun');
+      const towsDropdown = document.getElementById('test-tows-tahun');
+      const ikuDropdown = document.getElementById('test-iku-tahun');
+      
+      if (diagramDropdown.options.length > 0) {
+        testResults.diagramKartesius.dropdown = true;
+        document.getElementById('diagram-kartesius-status').textContent = '✅ Dropdown tahun tersedia';
+        document.getElementById('diagram-kartesius-status').className = 'status success';
+      }
+      
+      if (towsDropdown.options.length > 0) {
+        testResults.matriksTows.dropdown = true;
+        document.getElementById('matriks-tows-status').textContent = '✅ Dropdown tahun tersedia';
+        document.getElementById('matriks-tows-status').className = 'status success';
+      }
+      
+      if (ikuDropdown.options.length > 0) {
+        testResults.indikatorKinerja.dropdown = true;
+        document.getElementById('iku-status').textContent = '✅ Dropdown tahun tersedia';
+        document.getElementById('iku-status').className = 'status success';
+      }
+      
+      updateSummary();
+      
+      // Auto-test filters
+      setTimeout(() => {
+        testDiagramFilter();
+        testTowsFilter();
+        testIkuFilter();
+      }, 500);
+    };
+  </script>
+</body>
+</html>

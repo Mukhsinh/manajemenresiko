@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sidebar Dropdown</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style-new.css">
+    <link rel="stylesheet" href="/css/sidebar-dropdown-fix.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .test-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .test-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            min-height: 100vh;
+            padding: 1rem 0;
+        }
+        .test-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .test-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        .test-info h2 {
+            margin-top: 0;
+            color: #1e3a8a;
+        }
+        .test-info ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .test-info li {
+            margin-bottom: 0.5rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        #test-results {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-result-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-result-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- Test Sidebar -->
+        <div class="test-sidebar">
+            <nav class="sidebar-menu">
+                <div class="sidebar-section">
+                    <a href="#" class="menu-item menu-item-top active" data-page="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="sidebar-section">
+                    <button class="sidebar-section-label dropdown-toggle" data-section="analisis-bsc">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Analisis BSC</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="sidebar-submenu" data-submenu="analisis-bsc">
+                        <a href="#" class="menu-item" data-page="visi-misi">
+                            <i class="fas fa-bullseye"></i>
+                            <span>Visi dan Misi</span>
+                        </a>
+                        <a href="#" class="menu-item" data-page="rencana-strategis">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Rencana Strategis</span>
+                        </a>
+                        <a href="#" class="menu-item" data-page="analisis-swot">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Analisis SWOT</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <button class="sidebar-section-label dropdown-toggle" data-section="identifikasi-risiko">
+                        <i class="fas fa-search"></i>
+                        <span>Identifikasi Risiko</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="sidebar-submenu" data-submenu="identifikasi-risiko">
+                        <a href="#" class="menu-item" data-page="risk-input">
+                            <i class="fas fa-pen-to-square"></i>
+                            <span>Input Data Risiko</span>
+                        </a>
+                        <a href="#" class="menu-item" data-page="monitoring-evaluasi">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Monitoring & Evaluasi</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <button class="sidebar-section-label dropdown-toggle" data-section="analisis-risiko">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analisis Risiko</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="sidebar-submenu" data-submenu="analisis-risiko">
+                        <a href="#" class="menu-item" data-page="risk-profile">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Risk Profile</span>
+                        </a>
+                        <a href="#" class="menu-item" data-page="residual-risk">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Residual Risk</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Test Content -->
+        <div class="test-content">
+            <div class="test-info">
+                <h2>🧪 Test Sidebar Dropdown</h2>
+                <p>Halaman ini untuk menguji fungsi dropdown submenu di sidebar navigasi.</p>
+                <ul>
+                    <li>Klik tombol "Analisis BSC" untuk membuka/menutup submenu</li>
+                    <li>Klik tombol "Identifikasi Risiko" untuk membuka/menutup submenu</li>
+                    <li>Klik tombol "Analisis Risiko" untuk membuka/menutup submenu</li>
+                    <li>Submenu yang terbuka harus menampilkan item-item di bawahnya</li>
+                    <li>Icon chevron harus berputar saat submenu dibuka/ditutup</li>
+                </ul>
+            </div>
+
+            <div id="test-results">
+                <h3>📊 Test Results</h3>
+                <div id="results-container">
+                    <p>Klik tombol di bawah untuk menjalankan test...</p>
+                </div>
+                <button onclick="runTests()" style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    🚀 Run Tests
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/sidebar-dropdown-fix.js"></script>
+    <script>
+        function runTests() {
+            const results = [];
+            
+            // Test 1: Check if dropdown toggles exist
+            const toggles = document.querySelectorAll('.dropdown-toggle[data-section]');
+            results.push({
+                name: 'Dropdown toggles exist',
+                passed: toggles.length > 0,
+                message: `Found ${toggles.length} dropdown toggles`
+            });
+            
+            // Test 2: Check if submenus exist
+            const submenus = document.querySelectorAll('.sidebar-submenu[data-submenu]');
+            results.push({
+                name: 'Submenus exist',
+                passed: submenus.length > 0,
+                message: `Found ${submenus.length} submenus`
+            });
+            
+            // Test 3: Check if submenus are initially hidden
+            let allHidden = true;
+            submenus.forEach(submenu => {
+                const style = window.getComputedStyle(submenu);
+                if (style.display !== 'none' && !submenu.classList.contains('expanded')) {
+                    allHidden = false;
+                }
+            });
+            results.push({
+                name: 'Submenus initially hidden',
+                passed: allHidden,
+                message: allHidden ? 'All submenus are hidden' : 'Some submenus are visible'
+            });
+            
+            // Test 4: Click first toggle and check if submenu opens
+            const firstToggle = toggles[0];
+            const firstSection = firstToggle.dataset.section;
+            const firstSubmenu = document.querySelector(`.sidebar-submenu[data-submenu="${firstSection}"]`);
+            
+            firstToggle.click();
+            
+            setTimeout(() => {
+                const isExpanded = firstSubmenu.classList.contains('expanded');
+                const style = window.getComputedStyle(firstSubmenu);
+                const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+                
+                results.push({
+                    name: 'Submenu opens on click',
+                    passed: isExpanded && isVisible,
+                    message: isExpanded && isVisible ? 'Submenu opened successfully' : 'Submenu did not open'
+                });
+                
+                // Test 5: Check if chevron rotated
+                const chevron = firstToggle.querySelector('.dropdown-icon');
+                const hasUpClass = chevron && chevron.classList.contains('fa-chevron-up');
+                results.push({
+                    name: 'Chevron icon rotates',
+                    passed: hasUpClass,
+                    message: hasUpClass ? 'Chevron rotated to up' : 'Chevron did not rotate'
+                });
+                
+                // Test 6: Click again to close
+                firstToggle.click();
+                
+                setTimeout(() => {
+                    const isClosed = !firstSubmenu.classList.contains('expanded');
+                    results.push({
+                        name: 'Submenu closes on second click',
+                        passed: isClosed,
+                        message: isClosed ? 'Submenu closed successfully' : 'Submenu did not close'
+                    });
+                    
+                    // Display results
+                    displayResults(results);
+                }, 100);
+            }, 100);
+        }
+        
+        function displayResults(results) {
+            const container = document.getElementById('results-container');
+            let html = '';
+            
+            results.forEach(result => {
+                html += `
+                    <div class="test-result-item">
+                        <span>${result.name}</span>
+                        <span class="status-badge ${result.passed ? 'status-success' : 'status-error'}">
+                            ${result.passed ? '✅ PASS' : '❌ FAIL'} - ${result.message}
+                        </span>
+                    </div>
+                `;
+            });
+            
+            const passedCount = results.filter(r => r.passed).length;
+            const totalCount = results.length;
+            
+            html = `
+                <div style="margin-bottom: 1rem; padding: 1rem; background: ${passedCount === totalCount ? '#dcfce7' : '#fef3c7'}; border-radius: 8px;">
+                    <strong>Summary:</strong> ${passedCount}/${totalCount} tests passed
+                </div>
+            ` + html;
+            
+            container.innerHTML = html;
+        }
+        
+        // Log when page loads
+        console.log('🧪 Test page loaded');
+        console.log('📋 Dropdown toggles:', document.querySelectorAll('.dropdown-toggle[data-section]').length);
+        console.log('📋 Submenus:', document.querySelectorAll('.sidebar-submenu[data-submenu]').length);
+    </script>
+</body>
+</html>

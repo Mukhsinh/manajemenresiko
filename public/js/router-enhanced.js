@@ -439,6 +439,42 @@ class EnhancedSPARouter {
         console.log(`🔄 Ensuring page ${pageName} is fully loaded...`);
         
         try {
+            // SPECIAL HANDLING FOR LOGIN PAGE
+            if (pageName === 'login') {
+                console.log('🔐 Handling login page specially...');
+                
+                // Hide app screen, show login screen
+                const loginScreen = document.getElementById('login-screen');
+                const appScreen = document.getElementById('app-screen');
+                
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.classList.add('active');
+                    console.log('✅ Login screen is now visible');
+                }
+                
+                if (appScreen) {
+                    appScreen.style.display = 'none';
+                    appScreen.classList.remove('active');
+                }
+                
+                return; // Exit early for login page
+            }
+            
+            // For other pages, hide login screen and show app screen
+            const loginScreen = document.getElementById('login-screen');
+            const appScreen = document.getElementById('app-screen');
+            
+            if (loginScreen) {
+                loginScreen.style.display = 'none';
+                loginScreen.classList.remove('active');
+            }
+            
+            if (appScreen) {
+                appScreen.style.display = 'block';
+                appScreen.classList.add('active');
+            }
+            
             // Hide all pages first
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');

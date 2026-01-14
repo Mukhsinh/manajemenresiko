@@ -1,0 +1,167 @@
+/**
+ * RENCANA STRATEGIS FREEZE FIX
+ * 
+ * Fixes:
+ * 1. Prevents background global scripts from interfering
+ * 2. Stops event propagation that causes freeze
+ * 3. Ensures proper page isolation
+ * 
+ * Updated: 2026-01-10
+ */
+
+(function() {
+  'use strict';
+  
+  console.log('🔧 Rencana Strategis Freeze Fix loaded');
+  
+  // CRITICAL: Prevent global event listeners from blocking the page
+  const originalAddEventListener = EventTarget.prototype.addEventListener;
+  const rencanaStrategisEventListeners = new WeakMap();
+  
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    // Only apply fix on rencana-strategis page
+    if (window.location.pathname !== '/rencana-strategis' && 
+        window.location.hash !== '#rencana-strategis') {
+      return originalAddEventListener.call(this, type, listener, options);
+    }
+    
+    // Track event listeners for this page
+    if (!rencanaStrategisEventListeners.has(this)) {
+      rencanaStrategisEventListeners.set(this, []);
+    }
+    
+    const listeners = rencanaStrategisEventListeners.get(this);
+    listeners.push({ type, listener, options });
+    
+    // Wrap listener to prevent freeze
+    const wrappedListener = function(event) {
+      try {
+        // Prevent infinite loops
+        if (event.isTrusted === false && event.detail && event.detail._rsProcessed) {
+          console.warn('⚠️ Preventing recursive event:', type);
+          return;
+        }
+        
+        // Mark event as processed
+        if (event.detail) {
+          event.detail._rsProcessed = true;
+        }
+        
+        return listener.call(this, event);
+      } catch (error) {
+        console.error('Event listener error:', error);
+        // Don't let errors freeze the page
+        return;
+      }
+    };
+    
+    return originalAddEventListener.call(this, type, wrappedListener, options);
+  };
+  
+  // CRITICAL: Stop MutationObserver from causing freeze
+  const originalObserve = MutationObserver.prototype.observe;
+  MutationObserver.prototype.observe = function(target, options) {
+    // Only apply fix on rencana-strategis page
+    if (window.location.pathname !== '/rencana-strategis' && 
+        window.location.hash !== '#rencana-strategis') {
+      return originalObserve.call(this, target, options);
+    }
+    
+    console.log('🔍 MutationObserver registered (with freeze protection)');
+    
+    // Limit observation scope to prevent freeze
+    const safeOptions = {
+      ...options,
+      // Disable subtree observation if it's too aggressive
+      subtree: false,
+      // Limit what we observe
+      childList: options.childList !== false,
+      attributes: false,
+      characterData: false
+    };
+    
+    return originalObserve.call(this, target, safeOptions);
+  };
+  
+  // CRITICAL: Prevent background scripts from running
+  window.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname !== '/rencana-strategis' && 
+        window.location.hash !== '#rencana-strategis') {
+      return;
+    }
+    
+    console.log('🛡️ Rencana Strategis page protection active');
+    
+    // Block global scripts that might interfere
+    const blockList = [
+      'loadRencanaStrategisSelection',
+      'renderRencanaStrategisList',
+      'showRencanaStrategisBackground'
+    ];
+    
+    blockList.forEach(funcName => {
+      if (window[funcName]) {
+        const original = window[funcName];
+        window[funcName] = function() {
+          console.warn(`⛔ Blocked global function: ${funcName}`);
+          return Promise.resolve();
+        };
+      }
+    });
+    
+    // Ensure only rencana-strategis content is visible
+    setTimeout(() => {
+      const rsPage = document.getElementById('rencana-strategis');
+      if (rsPage) {
+        // Hide all other pages
+        document.querySelectorAll('.page-content').forEach(page => {
+          if (page.id !== 'rencana-strategis') {
+            page.style.display = 'none';
+            page.style.visibility = 'hidden';
+            page.style.opacity = '0';
+            page.style.pointerEvents = 'none';
+          }
+        });
+        
+        // Ensure rencana-strategis is visible
+        rsPage.style.display = 'block';
+        rsPage.style.visibility = 'visible';
+        rsPage.style.opacity = '1';
+        rsPage.style.pointerEvents = 'auto';
+        rsPage.style.zIndex = '1000';
+        
+        console.log('✅ Page isolation enforced');
+      }
+    }, 100);
+  });
+  
+  // CRITICAL: Cleanup on page unload
+  window.addEventListener('beforeunload', function() {
+    if (window.location.pathname === '/rencana-strategis' || 
+        window.location.hash === '#rencana-strategis') {
+      // Clear all tracked event listeners
+      rencanaStrategisEventListeners.clear();
+      console.log('🧹 Cleaned up event listeners');
+    }
+  });
+  
+  // CRITICAL: Prevent click events from freezing
+  document.addEventListener('click', function(e) {
+    if (window.location.pathname !== '/rencana-strategis' && 
+        window.location.hash !== '#rencana-strategis') {
+      return;
+    }
+    
+    // Check if click is on interactive element
+    const target = e.target;
+    const isInteractive = target.matches('button, a, input, select, textarea, [onclick], [role="button"]') ||
+                          target.closest('button, a, input, select, textarea, [onclick], [role="button"]');
+    
+    if (isInteractive) {
+      // Allow the click but prevent propagation to global handlers
+      e.stopPropagation();
+    }
+  }, true); // Use capture phase
+  
+  console.log('✅ Rencana Strategis Freeze Fix initialized');
+})();

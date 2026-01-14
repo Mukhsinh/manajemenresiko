@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis v7.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/rencana-strategis-v7.css?v=7.0">
+    <style>
+        body { background: #f8f9fa; }
+        .test-info { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .test-pass { color: #28a745; }
+        .test-fail { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="test-info">
+            <h2><i class="fas fa-vial me-2"></i>Test Rencana Strategis v7.0</h2>
+            <p class="text-muted">Halaman ini menguji module Rencana Strategis v7.0-CLEAN</p>
+            <hr>
+            <div id="test-results"></div>
+        </div>
+        
+        <!-- Simulated RS Page Container -->
+        <div id="rencana-strategis" class="page-content active" style="background: #f8f9fa;">
+            <div class="page-header p-3">
+                <h1><i class="fas fa-chart-line me-2"></i>Rencana Strategis</h1>
+            </div>
+            <div id="rencana-strategis-content" style="min-height: 400px;"></div>
+        </div>
+    </div>
+    
+    <!-- Load disable script first -->
+    <script src="/js/disable-old-rs-scripts.js?v=7.0"></script>
+    
+    <!-- Load v7 module -->
+    <script src="/js/rencana-strategis-clean-v7.js?v=7.0"></script>
+    
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function addResult(name, passed, message) {
+            const icon = passed ? '✅' : '❌';
+            const cls = passed ? 'test-pass' : 'test-fail';
+            results.innerHTML += `<p class="${cls}">${icon} <strong>${name}:</strong> ${message}</p>`;
+        }
+        
+        async function runTests() {
+            results.innerHTML = '<p><i class="fas fa-spinner fa-spin me-2"></i>Running tests...</p>';
+            
+            // Wait for module to load
+            await new Promise(r => setTimeout(r, 2000));
+            
+            results.innerHTML = '';
+            
+            // Test 1: Module loaded
+            const moduleLoaded = !!window.RencanaStrategisModule;
+            addResult('Module Loaded', moduleLoaded, moduleLoaded ? 'RencanaStrategisModule tersedia' : 'Module tidak ditemukan');
+            
+            // Test 2: Version check
+            const version = window.RencanaStrategisModule?.version;
+            const versionCorrect = version === '7.0-CLEAN';
+            addResult('Version Check', versionCorrect, `Version: ${version || 'N/A'}`);
+            
+            // Test 3: Container exists
+            const container = document.getElementById('rencana-strategis-content');
+            addResult('Container Exists', !!container, container ? 'Container ditemukan' : 'Container tidak ada');
+            
+            // Test 4: Correct display (has wrapper)
+            const hasWrapper = container?.querySelector('.rs-v7-wrapper');
+            addResult('Wrapper Rendered', !!hasWrapper, hasWrapper ? 'rs-v7-wrapper ditemukan' : 'Wrapper tidak ada');
+            
+            // Test 5: Has table
+            const hasTable = container?.querySelector('table.table');
+            addResult('Table Rendered', !!hasTable, hasTable ? 'Table ditemukan' : 'Table tidak ada');
+            
+            // Test 6: Has form
+            const hasForm = container?.querySelector('form#rs-form');
+            addResult('Form Rendered', !!hasForm, hasForm ? 'Form ditemukan' : 'Form tidak ada');
+            
+            // Test 7: Has stat cards
+            const hasCards = container?.querySelectorAll('.card').length >= 4;
+            addResult('Stat Cards Rendered', hasCards, hasCards ? '4+ cards ditemukan' : 'Cards kurang dari 4');
+            
+            // Test 8: No selection list
+            const hasSelectionList = container?.innerHTML.includes('Pilih Rencana Strategis') && !hasTable;
+            addResult('No Selection List', !hasSelectionList, hasSelectionList ? 'Selection list masih ada!' : 'Tidak ada selection list');
+            
+            // Test 9: Correct background
+            const bgColor = window.getComputedStyle(container).backgroundColor;
+            const correctBg = bgColor.includes('248') || bgColor.includes('249') || bgColor.includes('250');
+            addResult('Background Color', correctBg, `Background: ${bgColor}`);
+            
+            // Test 10: Old modules disabled
+            const oldDisabled = window._rsUnifiedLoaded === true;
+            addResult('Old Modules Disabled', oldDisabled, oldDisabled ? 'Flag _rsUnifiedLoaded = true' : 'Old modules mungkin masih aktif');
+            
+            // Summary
+            const allPassed = moduleLoaded && versionCorrect && hasWrapper && hasTable && hasForm && hasCards && !hasSelectionList;
+            results.innerHTML += `<hr><h4 class="${allPassed ? 'test-pass' : 'test-fail'}">${allPassed ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}</h4>`;
+        }
+        
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>

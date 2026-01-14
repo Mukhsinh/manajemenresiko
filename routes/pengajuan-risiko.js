@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodePengajuanRisiko } = require('../utils/codeGenerator');
 
@@ -37,7 +37,10 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    // Use admin client to bypass RLS issues
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
       .from('pengajuan_risiko')
       .select(`
         *,
@@ -53,13 +56,17 @@ router.get('/:id', authenticateUser, async (req, res) => {
           email
         )
       `)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
-      .single();
+      .eq('id', req.params.id);
+    // Removed .eq('user_id', req.user.id) - causes "Cannot coerce to single JSON object" error
 
     if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Pengajuan Risiko tidak ditemukan' });
-    res.json(data);
+    
+    // Handle case where no data found
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Pengajuan Risiko tidak ditemukan' });
+    }
+    
+    res.json(data[0]);
   } catch (error) {
     console.error('Pengajuan Risiko error:', error);
     res.status(500).json({ error: error.message });

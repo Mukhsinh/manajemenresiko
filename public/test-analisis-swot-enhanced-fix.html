@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Analisis SWOT Enhanced Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/analisis-swot-enhanced-fix.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f1f5f9;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .badge-demo {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .result-box.success {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+        .result-box.error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="mb-4">🧪 Test Analisis SWOT Enhanced Fix</h1>
+        
+        <!-- Test 1: Badge Colors -->
+        <div class="test-section">
+            <div class="test-title">1. Badge Kategori - Warna Cerah dan Solid</div>
+            <div class="badge-demo">
+                <span class="badge-kategori badge-strength">STRENGTH</span>
+                <span class="badge-kategori badge-weakness">WEAKNESS</span>
+                <span class="badge-kategori badge-opportunity">OPPORTUNITY</span>
+                <span class="badge-kategori badge-threat">THREAT</span>
+            </div>
+            <div class="result-box" id="badgeResult">
+                <strong>Status:</strong> Checking badge colors...
+            </div>
+        </div>
+        
+        <!-- Test 2: Table Scroll -->
+        <div class="test-section">
+            <div class="test-title">2. Table Scroll - Vertikal dan Horizontal</div>
+            <div class="swot-table-container">
+                <div class="table-container" style="max-height: 300px;">
+                    <table class="table table-striped swot-table" id="testTable">
+                        <thead>
+                            <tr>
+                                <th class="unit-kerja-column">Unit Kerja</th>
+                                <th class="kategori-column">Kategori</th>
+                                <th class="rencana-strategis-column">Rencana Strategis</th>
+                                <th class="objek-analisis-column">Objek Analisis</th>
+                                <th class="bobot-column">Bobot</th>
+                                <th class="rank-column">Rank</th>
+                                <th class="score-column">Score</th>
+                                <th class="tahun-column">Tahun</th>
+                                <th class="aksi-column">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testTableBody">
+                            <!-- Data will be populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="result-box" id="scrollResult">
+                <strong>Status:</strong> Checking table scroll...
+            </div>
+        </div>
+        
+        <!-- Test 3: Edit & Delete Buttons -->
+        <div class="test-section">
+            <div class="test-title">3. Tombol Edit dan Hapus</div>
+            <div class="d-flex gap-3 mb-3">
+                <button type="button" class="btn-icon btn-edit" id="testEditBtn" data-id="test-1">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn-icon btn-delete" id="testDeleteBtn" data-id="test-1">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="result-box" id="buttonResult">
+                <strong>Status:</strong> Click buttons to test...
+            </div>
+        </div>
+        
+        <!-- Test 4: Modal -->
+        <div class="test-section">
+            <div class="test-title">4. Modal Edit Form</div>
+            <button class="btn btn-primary" onclick="showTestModal()">
+                <i class="fas fa-edit"></i> Open Edit Modal
+            </button>
+            <div class="result-box" id="modalResult">
+                <strong>Status:</strong> Click button to test modal...
+            </div>
+        </div>
+        
+        <!-- Summary -->
+        <div class="test-section">
+            <div class="test-title">📊 Test Summary</div>
+            <div id="testSummary" class="result-box">
+                Running tests...
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Test data
+        const testData = [
+            { id: '1', unit: 'Unit A', kategori: 'Strength', rs: 'RS-001', objek: 'Kekuatan internal organisasi', bobot: 25, rank: 4, score: 100, tahun: 2025 },
+            { id: '2', unit: 'Unit B', kategori: 'Weakness', rs: 'RS-002', objek: 'Kelemahan yang perlu diperbaiki', bobot: 20, rank: 3, score: 60, tahun: 2025 },
+            { id: '3', unit: 'Unit C', kategori: 'Opportunity', rs: 'RS-003', objek: 'Peluang pasar yang bisa dimanfaatkan', bobot: 30, rank: 5, score: 150, tahun: 2025 },
+            { id: '4', unit: 'Unit D', kategori: 'Threat', rs: 'RS-004', objek: 'Ancaman dari kompetitor', bobot: 15, rank: 2, score: 30, tahun: 2025 },
+            { id: '5', unit: 'Unit E', kategori: 'Strength', rs: 'RS-005', objek: 'SDM yang berkualitas', bobot: 10, rank: 4, score: 40, tahun: 2025 },
+            { id: '6', unit: 'Unit F', kategori: 'Weakness', rs: 'RS-006', objek: 'Infrastruktur yang kurang memadai', bobot: 18, rank: 3, score: 54, tahun: 2025 },
+            { id: '7', unit: 'Unit G', kategori: 'Opportunity', rs: 'RS-007', objek: 'Teknologi baru yang bisa diadopsi', bobot: 22, rank: 4, score: 88, tahun: 2025 },
+            { id: '8', unit: 'Unit H', kategori: 'Threat', rs: 'RS-008', objek: 'Regulasi yang berubah', bobot: 12, rank: 2, score: 24, tahun: 2025 },
+        ];
+        
+        let testResults = {
+            badge: false,
+            scroll: false,
+            editButton: false,
+            deleteButton: false,
+            modal: false
+        };
+        
+        // Populate test table
+        function populateTable() {
+            const tbody = document.getElementById('testTableBody');
+            tbody.innerHTML = testData.map(item => `
+                <tr data-id="${item.id}">
+                    <td class="unit-kerja-column">${item.unit}</td>
+                    <td class="kategori-column">
+                        <span class="badge-kategori badge-${item.kategori.toLowerCase()}">${item.kategori}</span>
+                    </td>
+                    <td class="rencana-strategis-column">
+                        <div style="font-weight: 600;">${item.rs}</div>
+                        <div style="font-size: 0.85em; color: #6c757d;">Rencana Strategis</div>
+                    </td>
+                    <td class="objek-analisis-column">${item.objek}</td>
+                    <td class="bobot-column">${item.bobot}</td>
+                    <td class="rank-column">${item.rank}</td>
+                    <td class="score-column">${item.score}</td>
+                    <td class="tahun-column">${item.tahun}</td>
+                    <td class="aksi-column">
+                        <button type="button" class="btn-icon btn-edit" data-id="${item.id}" onclick="handleEdit('${item.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn-icon btn-delete" data-id="${item.id}" onclick="handleDelete('${item.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Test badge colors
+        function testBadgeColors() {
+            const badges = document.querySelectorAll('.badge-demo .badge-kategori');
+            let allValid = true;
+            
+            badges.forEach(badge => {
+                const style = window.getComputedStyle(badge);
+                const bgColor = style.backgroundColor;
+                const color = style.color;
+                
+                // Check if background is not transparent and text is white
+                if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
+                    allValid = false;
+                }
+            });
+            
+            const resultBox = document.getElementById('badgeResult');
+            if (allValid) {
+                resultBox.className = 'result-box success';
+                resultBox.innerHTML = '<strong>✅ PASS:</strong> Badge colors are solid and bright!';
+                testResults.badge = true;
+            } else {
+                resultBox.className = 'result-box error';
+                resultBox.innerHTML = '<strong>❌ FAIL:</strong> Badge colors are not properly applied.';
+            }
+        }
+        
+        // Test table scroll
+        function testTableScroll() {
+            const container = document.querySelector('.table-container');
+            const resultBox = document.getElementById('scrollResult');
+            
+            if (container) {
+                const style = window.getComputedStyle(container);
+                const overflowY = style.overflowY;
+                const maxHeight = style.maxHeight;
+                
+                if (overflowY === 'auto' || overflowY === 'scroll') {
+                    resultBox.className = 'result-box success';
+                    resultBox.innerHTML = `<strong>✅ PASS:</strong> Table scroll is enabled! (overflow-y: ${overflowY}, max-height: ${maxHeight})`;
+                    testResults.scroll = true;
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultBox.innerHTML = `<strong>❌ FAIL:</strong> Table scroll not properly configured. (overflow-y: ${overflowY})`;
+                }
+            }
+        }
+        
+        // Handle edit button
+        function handleEdit(id) {
+            const resultBox = document.getElementById('buttonResult');
+            resultBox.className = 'result-box success';
+            resultBox.innerHTML = `<strong>✅ Edit Button Works!</strong> Clicked for ID: ${id}`;
+            testResults.editButton = true;
+            updateSummary();
+        }
+        
+        // Handle delete button
+        function handleDelete(id) {
+            const resultBox = document.getElementById('buttonResult');
+            resultBox.className = 'result-box success';
+            resultBox.innerHTML = `<strong>✅ Delete Button Works!</strong> Clicked for ID: ${id}`;
+            testResults.deleteButton = true;
+            updateSummary();
+        }
+        
+        // Show test modal
+        function showTestModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'testModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Edit Data SWOT</h3>
+                        <button class="modal-close" onclick="closeTestModal()">&times;</button>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="mb-3">
+                            <label class="form-label">Kategori</label>
+                            <select class="form-control">
+                                <option value="Strength">Strength</option>
+                                <option value="Weakness">Weakness</option>
+                                <option value="Opportunity">Opportunity</option>
+                                <option value="Threat">Threat</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Objek Analisis</label>
+                            <textarea class="form-control" rows="3">Test objek analisis</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeTestModal()">Batal</button>
+                        <button class="btn btn-primary" onclick="saveTestModal()">
+                            <i class="fas fa-save"></i> Simpan
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            const resultBox = document.getElementById('modalResult');
+            resultBox.className = 'result-box success';
+            resultBox.innerHTML = '<strong>✅ Modal Opened!</strong> Modal is working correctly.';
+            testResults.modal = true;
+            updateSummary();
+        }
+        
+        function closeTestModal() {
+            const modal = document.getElementById('testModal');
+            if (modal) modal.remove();
+        }
+        
+        function saveTestModal() {
+            alert('Data saved successfully!');
+            closeTestModal();
+        }
+        
+        // Update summary
+        function updateSummary() {
+            const summary = document.getElementById('testSummary');
+            const passed = Object.values(testResults).filter(v => v).length;
+            const total = Object.keys(testResults).length;
+            
+            let html = `<strong>Results: ${passed}/${total} tests passed</strong><br><br>`;
+            html += `<ul style="margin: 0; padding-left: 20px;">`;
+            html += `<li>Badge Colors: ${testResults.badge ? '✅ PASS' : '⏳ Pending'}</li>`;
+            html += `<li>Table Scroll: ${testResults.scroll ? '✅ PASS' : '⏳ Pending'}</li>`;
+            html += `<li>Edit Button: ${testResults.editButton ? '✅ PASS' : '⏳ Click to test'}</li>`;
+            html += `<li>Delete Button: ${testResults.deleteButton ? '✅ PASS' : '⏳ Click to test'}</li>`;
+            html += `<li>Modal: ${testResults.modal ? '✅ PASS' : '⏳ Click to test'}</li>`;
+            html += `</ul>`;
+            
+            summary.className = passed === total ? 'result-box success' : 'result-box';
+            summary.innerHTML = html;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            populateTable();
+            
+            // Run automatic tests
+            setTimeout(() => {
+                testBadgeColors();
+                testTableScroll();
+                updateSummary();
+            }, 500);
+            
+            // Setup standalone button tests
+            document.getElementById('testEditBtn').addEventListener('click', function() {
+                handleEdit(this.getAttribute('data-id'));
+            });
+            
+            document.getElementById('testDeleteBtn').addEventListener('click', function() {
+                handleDelete(this.getAttribute('data-id'));
+            });
+        });
+    </script>
+</body>
+</html>

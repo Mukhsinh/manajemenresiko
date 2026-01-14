@@ -1,0 +1,322 @@
+/**
+ * PAGE ISOLATION FIX v1.0
+ * Comprehensive fix for page visibility, z-index, and interaction issues
+ * Replaces all conflicting isolation CSS files
+ * Created: 2026-01-10
+ * 
+ * CRITICAL RULES:
+ * 1. Only ONE page should be visible at a time
+ * 2. All interactive elements must be clickable
+ * 3. No content should leak between pages
+ * 4. Z-index hierarchy must be consistent
+ */
+
+/* ============================================
+   RESET: Remove conflicting styles
+   ============================================ */
+
+/* Reset any problematic pointer-events */
+body,
+.main-content,
+.content-area,
+.page-content,
+.page-content * {
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   BASE PAGE CONTENT RULES
+   ============================================ */
+
+/* All page content containers - HIDDEN by default */
+.page-content {
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    left: -99999px;
+    top: 0;
+    width: 100%;
+    min-height: 100%;
+    background-color: #f8f9fa;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Active page - VISIBLE and INTERACTIVE */
+.page-content.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Ensure active page content is fully interactive */
+.page-content.active *,
+.page-content.active button,
+.page-content.active a,
+.page-content.active input,
+.page-content.active select,
+.page-content.active textarea,
+.page-content.active [role="button"],
+.page-content.active [onclick],
+.page-content.active .btn,
+.page-content.active .form-control,
+.page-content.active .form-select {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+/* Disabled elements should not be clickable */
+.page-content.active button:disabled,
+.page-content.active input:disabled,
+.page-content.active select:disabled,
+.page-content.active textarea:disabled,
+.page-content.active .btn:disabled {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
+
+/* ============================================
+   Z-INDEX HIERARCHY (Consistent)
+   ============================================ */
+
+/* Base layer */
+.main-content {
+    position: relative;
+    z-index: 1;
+}
+
+.content-area {
+    position: relative;
+    z-index: 1;
+}
+
+/* Active page */
+.page-content.active {
+    z-index: 1;
+}
+
+/* Sidebar */
+.sidebar {
+    z-index: 1010;
+}
+
+/* Header */
+.top-header {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+/* Dropdowns */
+.dropdown-menu,
+.sidebar-submenu.expanded {
+    z-index: 1030;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+/* Modals */
+.modal {
+    z-index: 1050;
+}
+
+/* ============================================
+   RENCANA STRATEGIS PAGE SPECIFIC
+   ============================================ */
+
+/* RS page container */
+#rencana-strategis {
+    contain: layout style;
+    isolation: isolate;
+}
+
+/* RS page when active */
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    left: auto !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* RS content container */
+#rencana-strategis.active #rencana-strategis-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 400px !important;
+    pointer-events: auto !important;
+}
+
+/* RS wrapper */
+#rencana-strategis.active .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   PREVENT RS CONTENT LEAK TO OTHER PAGES
+   ============================================ */
+
+/* Hide RS elements on non-RS pages */
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) #rs-selection-container,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Hide orphaned RS elements */
+body > .rencana-strategis-wrapper,
+body > .rencana-strategis-container,
+body > .rs-selection-wrapper,
+.main-content > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper),
+.content-area > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper) {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   OTHER PAGES - Ensure proper visibility
+   ============================================ */
+
+/* Dashboard */
+#dashboard.active #dashboard-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Analisis SWOT */
+#analisis-swot.active #analisis-swot-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Risk Profile */
+#risk-profile.active #risk-profile-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Residual Risk */
+#residual-risk.active #residual-risk-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+/* Loading overlay should not block entire page */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Spinner should not block interaction */
+.spinner-border,
+.loading-spinner {
+    pointer-events: none;
+}
+
+/* ============================================
+   SCROLLING
+   ============================================ */
+
+/* Main content scrolling */
+.main-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+}
+
+/* Page content scrolling */
+.page-content.active {
+    overflow-y: visible;
+    overflow-x: hidden;
+}
+
+/* Table responsive scrolling */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .page-content.active > .container-fluid,
+    .page-content.active > .container {
+        padding: 1rem;
+    }
+    
+    .sidebar {
+        z-index: 1025;
+    }
+}
+
+/* ============================================
+   PRINT
+   ============================================ */
+
+@media print {
+    .page-content:not(.active) {
+        display: none !important;
+    }
+    
+    .sidebar,
+    .top-header {
+        display: none !important;
+    }
+    
+    .page-content.active {
+        position: static;
+        width: 100%;
+    }
+}

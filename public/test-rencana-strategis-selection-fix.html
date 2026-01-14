@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis Selection View Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .test-header {
+            background: #ffffff;
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+        .status-info { background-color: #d1ecf1; color: #0c5460; }
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .comparison-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .comparison-card.wrong {
+            border-left: 5px solid #dc3545;
+        }
+        .comparison-card.correct {
+            border-left: 5px solid #28a745;
+        }
+        .demo-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
+        #rencana-strategis-content {
+            min-height: 400px;
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+        .loading-spinner i {
+            font-size: 2rem;
+            color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- Header -->
+        <div class="test-header">
+            <h1><i class="fas fa-chart-line"></i> Test Rencana Strategis Selection View Fix</h1>
+            <p class="mb-0">Memverifikasi bahwa halaman menampilkan selection view (gambar 2) bukan table view (gambar 1)</p>
+        </div>
+
+        <!-- Status -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3><i class="fas fa-info-circle"></i> Status Perbaikan</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Masalah Sebelumnya:</h5>
+                        <ul>
+                            <li><span class="status-badge status-warning">❌ Menampilkan table view secara default</span></li>
+                            <li><span class="status-badge status-warning">❌ Tidak ada pilihan selection view</span></li>
+                            <li><span class="status-badge status-warning">❌ User langsung melihat tabel data</span></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Setelah Perbaikan:</h5>
+                        <ul>
+                            <li><span class="status-badge status-success">✅ Menampilkan selection view secara default</span></li>
+                            <li><span class="status-badge status-success">✅ Ada tombol "Kelola Data" untuk table view</span></li>
+                            <li><span class="status-badge status-success">✅ User melihat daftar pilihan terlebih dahulu</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison -->
+        <div class="comparison-section">
+            <div class="comparison-card wrong">
+                <h4><i class="fas fa-times-circle text-danger"></i> Sebelum (Salah)</h4>
+                <p><strong>Gambar 1 - Table View:</strong></p>
+                <ul>
+                    <li>Langsung menampilkan tabel data</li>
+                    <li>Tombol "Tambah Baru", "Template", "Import", "Export"</li>
+                    <li>Kolom: Kode, Nama Rencana, Target, Periode, Status, Aksi</li>
+                    <li>User tidak punya pilihan untuk melihat overview</li>
+                </ul>
+                <div class="alert alert-danger">
+                    <strong>Masalah:</strong> User langsung dibawa ke halaman manajemen data tanpa overview
+                </div>
+            </div>
+
+            <div class="comparison-card correct">
+                <h4><i class="fas fa-check-circle text-success"></i> Sesudah (Benar)</h4>
+                <p><strong>Gambar 2 - Selection View:</strong></p>
+                <ul>
+                    <li>Menampilkan daftar pilihan rencana strategis</li>
+                    <li>Setiap item menampilkan kode, nama, deskripsi, periode</li>
+                    <li>Tombol "Kelola Data" untuk akses table view</li>
+                    <li>Statistik di sidebar (Total, Aktif)</li>
+                </ul>
+                <div class="alert alert-success">
+                    <strong>Solusi:</strong> User melihat overview dulu, baru bisa masuk ke manajemen data
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo -->
+        <div class="demo-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3><i class="fas fa-play-circle"></i> Demo Perbaikan</h3>
+                <div>
+                    <button class="btn btn-primary" onclick="loadRencanaStrategis()">
+                        <i class="fas fa-refresh"></i> Load Module
+                    </button>
+                    <button class="btn btn-secondary" onclick="showCurrentView()">
+                        <i class="fas fa-eye"></i> Check Current View
+                    </button>
+                </div>
+            </div>
+            
+            <div id="rencana-strategis-content">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p class="mt-2">Klik "Load Module" untuk memuat Rencana Strategis...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Details -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-code"></i> Detail Implementasi</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Perubahan Kode:</h5>
+                        <ul>
+                            <li><code>render()</code> - Menampilkan selection-section secara default</li>
+                            <li><code>renderSelectionList()</code> - Fungsi baru untuk list view</li>
+                            <li><code>showSelectionView()</code> - Navigasi ke selection view</li>
+                            <li><code>showTableView()</code> - Navigasi ke table view</li>
+                            <li>Event handlers untuk tombol baru</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>User Flow Baru:</h5>
+                        <ol>
+                            <li>User klik "Rencana Strategis" → Selection View</li>
+                            <li>User klik "Kelola Data" → Table View</li>
+                            <li>User klik "Kembali" → Selection View</li>
+                            <li>User klik item di list → Detail/Edit</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Mock API and Auth -->
+    <script>
+        // Mock authentication
+        window.isAuthenticated = true;
+        window.currentUser = { id: 1, email: 'test@example.com' };
+        window.currentSession = { access_token: 'mock-token' };
+        
+        // Mock API call function
+        window.apiCall = async function(endpoint, options = {}) {
+            console.log('🔗 API Call:', endpoint, options);
+            
+            if (endpoint === '/api/rencana-strategis/public' || endpoint === '/api/rencana-strategis') {
+                // Mock data
+                return [
+                    {
+                        id: '1',
+                        kode: 'RS-2025-001',
+                        nama_rencana: 'Sistem Management Pengetahuan dan Knowledge Sharing',
+                        deskripsi: 'Mengembangkan sistem manajemen pengetahuan untuk meningkatkan knowledge sharing',
+                        periode_mulai: '2025-01-01',
+                        periode_selesai: '2025-12-31',
+                        target: 'Membangun knowledge management system dengan 90% partisipasi staf dalam knowledge sharing',
+                        status: 'Aktif'
+                    },
+                    {
+                        id: '2',
+                        kode: 'RS-2025-002',
+                        nama_rencana: 'Pengembangan Pusat Pendidikan dan Pelatihan Terpadu',
+                        deskripsi: 'Membangun pusat pendidikan dan pelatihan yang terintegrasi',
+                        periode_mulai: '2025-02-01',
+                        periode_selesai: '2025-11-30',
+                        target: 'Meningkatkan kapasitas SDM melalui pelatihan terpadu',
+                        status: 'Draft'
+                    },
+                    {
+                        id: '3',
+                        kode: 'RS-2025-003',
+                        nama_rencana: 'Program Inovasi Layanan Berkelanjutan',
+                        deskripsi: 'Mengembangkan program inovasi untuk meningkatkan kualitas layanan',
+                        periode_mulai: '2025-03-01',
+                        periode_selesai: '2025-12-31',
+                        target: 'Implementasi 5 inovasi layanan baru per tahun',
+                        status: 'Aktif'
+                    }
+                ];
+            }
+            
+            if (endpoint === '/api/visi-misi/public' || endpoint === '/api/visi-misi') {
+                return [
+                    {
+                        id: '1',
+                        visi: 'Menjadi organisasi terdepan dalam pelayanan publik',
+                        misi: '1. Memberikan pelayanan prima\n2. Meningkatkan kualitas SDM\n3. Mengembangkan inovasi berkelanjutan'
+                    }
+                ];
+            }
+            
+            return [];
+        };
+        
+        // Mock auth ready function
+        window.waitForAuthReady = async function(timeout = 5000) {
+            return Promise.resolve(true);
+        };
+    </script>
+    
+    <!-- Load Rencana Strategis Module -->
+    <script src="/js/rencana-strategis.js"></script>
+    
+    <script>
+        function showCurrentView() {
+            const selectionSection = document.getElementById('selection-section');
+            const tableSection = document.getElementById('table-section');
+            const formSection = document.getElementById('form-section');
+            
+            let currentView = 'None';
+            if (selectionSection && selectionSection.style.display !== 'none') {
+                currentView = 'Selection View ✅';
+            } else if (tableSection && tableSection.style.display !== 'none') {
+                currentView = 'Table View ⚠️';
+            } else if (formSection && formSection.style.display !== 'none') {
+                currentView = 'Form View';
+            }
+            
+            alert(`Current View: ${currentView}\n\n` +
+                  `Expected: Selection View ✅\n` +
+                  `This should show the list of rencana strategis (like image 2) not the table (like image 1)`);
+        }
+        
+        // Auto-load after page ready
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                console.log('🚀 Auto-loading Rencana Strategis module...');
+                if (window.loadRencanaStrategis) {
+                    window.loadRencanaStrategis();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

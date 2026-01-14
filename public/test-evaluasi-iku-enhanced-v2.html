@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Evaluasi IKU Enhanced V2</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Base Styles -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/evaluasi-iku.css">
+  <link rel="stylesheet" href="/css/evaluasi-iku-enhanced-v2.css">
+  
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 1rem;
+    }
+    
+    .page-header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+    
+    .page-header h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.5rem;
+    }
+    
+    .page-header p {
+      margin: 0;
+      opacity: 0.8;
+      font-size: 0.875rem;
+    }
+    
+    .test-info {
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .test-info h3 {
+      margin: 0 0 0.5rem;
+      color: #1e40af;
+    }
+    
+    .test-info ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    
+    .test-info li {
+      margin-bottom: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Evaluasi IKU</h1>
+    <p>Input Realisasi Bulanan dan Monitoring Capaian Tahunan</p>
+  </div>
+  
+  <div class="test-info">
+    <h3><i class="fas fa-check-circle"></i> Fitur yang Diperbaiki:</h3>
+    <ul>
+      <li><strong>Filter Periode:</strong> Bulanan, Triwulan, Semester, Tahunan (sebelum filter tahun)</li>
+      <li><strong>Form Input:</strong> Dropdown pilihan tahun terintegrasi</li>
+      <li><strong>IKU Dropdown:</strong> Terintegrasi dengan data tabel</li>
+      <li><strong>Tabel Scrollable:</strong> Bisa scroll horizontal dan vertikal</li>
+      <li><strong>Progress Bar:</strong> Warna solid (hijau, oranye, merah) tanpa gradasi</li>
+    </ul>
+  </div>
+  
+  <div id="evaluasi-iku-page" class="evaluasi-iku-page">
+    <!-- Summary Cards -->
+    <div id="evaluasi-summary-cards" class="evaluasi-iku-summary"></div>
+    
+    <!-- Filter Section with Period Filter -->
+    <div class="evaluasi-filter-section">
+      <!-- Period filter will be injected here by JS -->
+      
+      <div class="filter-group">
+        <label for="filter-tahun">Tahun:</label>
+        <select id="filter-tahun">
+          <option value="2024">2024</option>
+          <option value="2025" selected>2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
+      
+      <div class="evaluasi-actions">
+        <button class="btn-action primary" id="btn-tambah-data">
+          <i class="fas fa-plus"></i> Tambah
+        </button>
+        <button class="btn-action success" id="btn-unduh-laporan">
+          <i class="fas fa-download"></i> Unduh Laporan
+        </button>
+      </div>
+    </div>
+    
+    <!-- Table Container - Scrollable -->
+    <div class="evaluasi-table-container" id="evaluasi-table-container">
+      <!-- Table will be rendered here -->
+    </div>
+  </div>
+  
+  <!-- Loading Indicator -->
+  <div id="loading-indicator" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.8);z-index:999;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#3b82f6"></i>
+      <p style="margin-top:0.5rem;color:#64748b">Memuat data...</p>
+    </div>
+  </div>
+  
+  <!-- Scripts -->
+  <script src="/js/evaluasi-iku-enhanced-v2.js"></script>
+  
+  <script>
+    // Demo data for testing without API
+    const demoData = [
+      {
+        id: '1',
+        indikator: 'Tingkat Kepuasan Pasien',
+        satuan: '%',
+        pic: 'Dr. Ahmad',
+        sasaran_strategi: { sasaran: 'Sasaran Pelanggan', perspektif: 'Pelanggan' },
+        targetTahunIni: 85,
+        totalRealisasi: 82.5,
+        persentaseCapaian: 97.1,
+        status: 'Hampir Tercapai',
+        jumlahBulanTerisi: 6,
+        realisasiBulanan: {
+          1: { bulan: 1, namaBulan: 'Januari', realisasi: 13.5, keterangan: null },
+          2: { bulan: 2, namaBulan: 'Februari', realisasi: 14.0, keterangan: null },
+          3: { bulan: 3, namaBulan: 'Maret', realisasi: 13.8, keterangan: null },
+          4: { bulan: 4, namaBulan: 'April', realisasi: 14.2, keterangan: null },
+          5: { bulan: 5, namaBulan: 'Mei', realisasi: 13.5, keterangan: null },
+          6: { bulan: 6, namaBulan: 'Juni', realisasi: 13.5, keterangan: null },
+          7: { bulan: 7, namaBulan: 'Juli', realisasi: null, keterangan: null },
+          8: { bulan: 8, namaBulan: 'Agustus', realisasi: null, keterangan: null },
+          9: { bulan: 9, namaBulan: 'September', realisasi: null, keterangan: null },
+          10: { bulan: 10, namaBulan: 'Oktober', realisasi: null, keterangan: null },
+          11: { bulan: 11, namaBulan: 'November', realisasi: null, keterangan: null },
+          12: { bulan: 12, namaBulan: 'Desember', realisasi: null, keterangan: null }
+        }
+      },
+      {
+        id: '2',
+        indikator: 'Bed Occupancy Rate (BOR)',
+        satuan: '%',
+        pic: 'Dr. Budi',
+        sasaran_strategi: { sasaran: 'Sasaran Proses Internal', perspektif: 'Proses Internal' },
+        targetTahunIni: 75,
+        totalRealisasi: 60.3,
+        persentaseCapaian: 80.4,
+        status: 'Hampir Tercapai',
+        jumlahBulanTerisi: 4,
+        realisasiBulanan: {}
+      },
+      {
+        id: '3',
+        indikator: 'Average Length of Stay (ALOS)',
+        satuan: 'Hari',
+        pic: 'Dr. Citra',
+        sasaran_strategi: { sasaran: 'Sasaran Proses Internal', perspektif: 'Proses Internal' },
+        targetTahunIni: 4,
+        totalRealisasi: 3.8,
+        persentaseCapaian: 95.0,
+        status: 'Hampir Tercapai',
+        jumlahBulanTerisi: 12,
+        realisasiBulanan: {}
+      },
+      {
+        id: '4',
+        indikator: 'Rasio Pendapatan per Tempat Tidur',
+        satuan: 'Juta',
+        pic: 'Dr. Dewi',
+        sasaran_strategi: { sasaran: 'Sasaran Keuangan', perspektif: 'Keuangan' },
+        targetTahunIni: 150,
+        totalRealisasi: 147,
+        persentaseCapaian: 98.0,
+        status: 'Hampir Tercapai',
+        jumlahBulanTerisi: 6,
+        realisasiBulanan: {}
+      },
+      {
+        id: '5',
+        indikator: 'Tingkat Kepatuhan SOP',
+        satuan: '%',
+        pic: 'Dr. Eko',
+        sasaran_strategi: { sasaran: 'Sasaran Pembelajaran', perspektif: 'Pembelajaran' },
+        targetTahunIni: 95,
+        totalRealisasi: 91.2,
+        persentaseCapaian: 96.0,
+        status: 'Hampir Tercapai',
+        jumlahBulanTerisi: 3,
+        realisasiBulanan: {}
+      },
+      {
+        id: '6',
+        indikator: 'Indeks Kepuasan Karyawan',
+        satuan: '%',
+        pic: 'Dr. Fani',
+        sasaran_strategi: { sasaran: 'Sasaran Pembelajaran', perspektif: 'Pembelajaran' },
+        targetTahunIni: 80,
+        totalRealisasi: 45,
+        persentaseCapaian: 56.25,
+        status: 'Dalam Proses',
+        jumlahBulanTerisi: 2,
+        realisasiBulanan: {}
+      },
+      {
+        id: '7',
+        indikator: 'Tingkat Kecelakaan Kerja',
+        satuan: 'Kasus',
+        pic: 'Dr. Gani',
+        sasaran_strategi: { sasaran: 'Sasaran Proses Internal', perspektif: 'Proses Internal' },
+        targetTahunIni: 0,
+        totalRealisasi: 2,
+        persentaseCapaian: 0,
+        status: 'Perlu Perhatian',
+        jumlahBulanTerisi: 1,
+        realisasiBulanan: {}
+      },
+      {
+        id: '8',
+        indikator: 'Waktu Tunggu Rawat Jalan',
+        satuan: 'Menit',
+        pic: 'Dr. Hani',
+        sasaran_strategi: { sasaran: 'Sasaran Pelanggan', perspektif: 'Pelanggan' },
+        targetTahunIni: 30,
+        totalRealisasi: 0,
+        persentaseCapaian: 0,
+        status: 'Belum Ada Realisasi',
+        jumlahBulanTerisi: 0,
+        realisasiBulanan: {}
+      }
+    ];
+
+    // Override fetch for demo
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+      if (url.includes('/api/evaluasi-iku-bulanan/summary')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            summary: {
+              totalIKU: 8,
+              tercapai: 1,
+              hampirTercapai: 4,
+              dalamProses: 1,
+              perluPerhatian: 1,
+              belumAdaRealisasi: 1,
+              rataRataCapaian: 74.68
+            },
+            data: demoData,
+            tahun: 2025
+          })
+        });
+      }
+      if (url.includes('/api/indikator-kinerja-utama')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(demoData)
+        });
+      }
+      return originalFetch.apply(this, arguments);
+    };
+  </script>
+</body>
+</html>

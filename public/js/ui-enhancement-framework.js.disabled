@@ -1,0 +1,586 @@
+/**
+ * UI Enhancement Framework
+ * Main orchestrator for all UI improvements
+ */
+
+class UIEnhancementFramework {
+  constructor() {
+    this.initialized = false;
+    this.modules = new Map();
+    this.config = {
+      enableLogging: true,
+      enablePerformanceMonitoring: true,
+      enableAccessibility: true,
+      enableResponsiveDesign: true
+    };
+    
+    this.performanceMetrics = {
+      initStartTime: performance.now(),
+      moduleLoadTimes: new Map(),
+      totalInitTime: 0
+    };
+    
+    console.log('UIEnhancementFramework constructor called');
+  }
+
+  /**
+   * Initialize the UI Enhancement Framework
+   */
+  async init() {
+    if (this.initialized) {
+      console.log('UIEnhancementFramework already initialized');
+      return;
+    }
+
+    console.log('Initializing UIEnhancementFramework...');
+    
+    try {
+      // Initialize core systems
+      await this.initializeCoreModules();
+      
+      // Apply UI enhancements
+      await this.applyUIEnhancements();
+      
+      // Setup event listeners
+      this.setupEventListeners();
+      
+      // Initialize performance monitoring
+      this.initializePerformanceMonitoring();
+      
+      // Mark as initialized
+      this.initialized = true;
+      this.performanceMetrics.totalInitTime = performance.now() - this.performanceMetrics.initStartTime;
+      
+      console.log(`UIEnhancementFramework initialized successfully in ${this.performanceMetrics.totalInitTime.toFixed(2)}ms`);
+      
+      // Dispatch initialization complete event
+      window.dispatchEvent(new CustomEvent('uiFrameworkReady', {
+        detail: { framework: this, metrics: this.performanceMetrics }
+      }));
+      
+    } catch (error) {
+      console.error('Failed to initialize UIEnhancementFramework:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Initialize core modules
+   */
+  async initializeCoreModules() {
+    const moduleStartTime = performance.now();
+    
+    // Initialize Icon System
+    if (window.IconSystem) {
+      console.log('Initializing Icon System...');
+      window.IconSystem.initializeAll();
+      this.modules.set('iconSystem', window.IconSystem);
+    }
+    
+    // Initialize Module Loader
+    if (window.ModuleLoader) {
+      console.log('Initializing Module Loader...');
+      await window.ModuleLoader.initialize();
+      this.modules.set('moduleLoader', window.ModuleLoader);
+    }
+    
+    // Initialize Responsive Container System
+    if (window.ResponsiveContainerSystem) {
+      console.log('Initializing Responsive Container System...');
+      // Already initialized in constructor, just register
+      this.modules.set('responsiveContainerSystem', window.ResponsiveContainerSystem);
+    }
+    
+    const moduleEndTime = performance.now();
+    this.performanceMetrics.moduleLoadTimes.set('coreModules', moduleEndTime - moduleStartTime);
+    
+    console.log(`Core modules initialized in ${(moduleEndTime - moduleStartTime).toFixed(2)}ms`);
+  }
+
+  /**
+   * Apply UI enhancements
+   */
+  async applyUIEnhancements() {
+    const enhancementStartTime = performance.now();
+    
+    // Apply CSS framework classes
+    this.applyCSSFramework();
+    
+    // Standardize buttons
+    this.standardizeButtons();
+    
+    // Enhance cards
+    this.enhanceCards();
+    
+    // Standardize tables
+    this.standardizeTables();
+    
+    // Apply responsive design
+    this.applyResponsiveDesign();
+    
+    // Enhance forms
+    this.enhanceForms();
+    
+    // Apply accessibility improvements
+    this.applyAccessibilityImprovements();
+    
+    const enhancementEndTime = performance.now();
+    this.performanceMetrics.moduleLoadTimes.set('uiEnhancements', enhancementEndTime - enhancementStartTime);
+    
+    console.log(`UI enhancements applied in ${(enhancementEndTime - enhancementStartTime).toFixed(2)}ms`);
+  }
+
+  /**
+   * Apply CSS framework classes
+   */
+  applyCSSFramework() {
+    // Ensure body has proper classes
+    document.body.classList.add('ui-enhanced');
+    
+    // Add container classes to main content areas
+    const mainContent = document.querySelector('main, .main-content, .content');
+    if (mainContent && !mainContent.classList.contains('container')) {
+      mainContent.classList.add('container-fluid');
+    }
+    
+    // Apply grid system where needed
+    const gridContainers = document.querySelectorAll('.row, .grid-container');
+    gridContainers.forEach(container => {
+      if (!container.classList.contains('grid')) {
+        container.classList.add('grid');
+      }
+    });
+  }
+
+  /**
+   * Standardize action buttons
+   */
+  standardizeButtons() {
+    // Find and standardize edit buttons
+    const editButtons = document.querySelectorAll(
+      'button[onclick*="edit"], .btn-edit, [data-action="edit"], ' +
+      'button:contains("Edit"), button:contains("Ubah")'
+    );
+    
+    editButtons.forEach(button => {
+      this.standardizeButton(button, 'edit');
+    });
+    
+    // Find and standardize delete buttons
+    const deleteButtons = document.querySelectorAll(
+      'button[onclick*="delete"], .btn-delete, [data-action="delete"], ' +
+      'button:contains("Delete"), button:contains("Hapus")'
+    );
+    
+    deleteButtons.forEach(button => {
+      this.standardizeButton(button, 'delete');
+    });
+    
+    // Find and standardize add buttons
+    const addButtons = document.querySelectorAll(
+      '.btn-add, [data-action="add"], button:contains("Add"), ' +
+      'button:contains("Tambah"), .btn-primary'
+    );
+    
+    addButtons.forEach(button => {
+      if (this.isAddButton(button)) {
+        this.standardizeButton(button, 'add');
+      }
+    });
+  }
+
+  /**
+   * Check if button is an add button
+   */
+  isAddButton(button) {
+    const text = button.textContent.toLowerCase();
+    return text.includes('add') || text.includes('tambah') || 
+           text.includes('create') || text.includes('buat') ||
+           button.classList.contains('btn-add');
+  }
+
+  /**
+   * Standardize individual button
+   */
+  standardizeButton(button, type) {
+    // Remove existing classes and add standard ones
+    button.classList.remove('btn-primary', 'btn-secondary', 'btn-success', 'btn-danger', 'btn-warning', 'btn-info');
+    
+    // Add appropriate action button class
+    switch (type) {
+      case 'edit':
+        button.classList.add('action-btn', 'action-btn-edit');
+        break;
+      case 'delete':
+        button.classList.add('action-btn', 'action-btn-delete');
+        break;
+      case 'add':
+        button.classList.add('action-btn', 'action-btn-success');
+        break;
+    }
+    
+    // Replace text with icon if IconSystem is available
+    if (window.IconSystem) {
+      window.IconSystem.replaceButtonTextWithIcon(button, type);
+    }
+    
+    // Add tooltip if not present
+    if (!button.title && button.textContent.trim()) {
+      button.title = button.textContent.trim();
+    }
+  }
+
+  /**
+   * Enhance card components
+   */
+  enhanceCards() {
+    const cards = document.querySelectorAll('.card, .panel, .widget');
+    
+    cards.forEach(card => {
+      // Ensure card has proper classes
+      if (!card.classList.contains('card')) {
+        card.classList.add('card');
+      }
+      
+      // Add icons to card headers if IconSystem is available
+      if (window.IconSystem) {
+        window.IconSystem.initializeCardIcons();
+      }
+      
+      // Ensure proper structure
+      this.ensureCardStructure(card);
+    });
+  }
+
+  /**
+   * Ensure proper card structure
+   */
+  ensureCardStructure(card) {
+    // Find or create card header
+    let cardHeader = card.querySelector('.card-header');
+    const cardTitle = card.querySelector('h1, h2, h3, h4, h5, h6, .card-title');
+    
+    if (cardTitle && !cardHeader) {
+      cardHeader = document.createElement('div');
+      cardHeader.className = 'card-header';
+      
+      // Move title to header
+      cardTitle.classList.add('card-title');
+      cardHeader.appendChild(cardTitle);
+      
+      // Insert header at the beginning of card
+      card.insertBefore(cardHeader, card.firstChild);
+    }
+    
+    // Find or create card body
+    let cardBody = card.querySelector('.card-body');
+    if (!cardBody) {
+      cardBody = document.createElement('div');
+      cardBody.className = 'card-body';
+      
+      // Move content to body (except header)
+      const children = Array.from(card.children);
+      children.forEach(child => {
+        if (!child.classList.contains('card-header')) {
+          cardBody.appendChild(child);
+        }
+      });
+      
+      card.appendChild(cardBody);
+    }
+  }
+
+  /**
+   * Standardize table headers
+   */
+  standardizeTables() {
+    const tables = document.querySelectorAll('table');
+    
+    tables.forEach(table => {
+      // Add table classes
+      table.classList.add('table');
+      
+      // Standardize table header
+      const thead = table.querySelector('thead');
+      if (thead) {
+        thead.classList.add('table-header');
+        
+        // Apply blue header styling
+        const headerCells = thead.querySelectorAll('th');
+        headerCells.forEach(th => {
+          th.style.backgroundColor = 'var(--primary-blue)';
+          th.style.color = 'var(--text-white)';
+        });
+      }
+      
+      // Standardize table body
+      const tbody = table.querySelector('tbody');
+      if (tbody) {
+        tbody.classList.add('table-body');
+      }
+      
+      // Wrap table in container if not already wrapped
+      if (window.ResponsiveContainerSystem) {
+        window.ResponsiveContainerSystem.wrapTableInContainer(table);
+      }
+    });
+  }
+
+  /**
+   * Apply responsive design
+   */
+  applyResponsiveDesign() {
+    // Add responsive classes to images
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+      if (!img.style.maxWidth) {
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+      }
+    });
+    
+    // Add responsive classes to containers
+    const containers = document.querySelectorAll('.container, .container-fluid');
+    containers.forEach(container => {
+      container.classList.add('responsive-container');
+    });
+  }
+
+  /**
+   * Enhance forms
+   */
+  enhanceForms() {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+      // Add form classes
+      form.classList.add('enhanced-form');
+      
+      // Enhance form controls
+      const formControls = form.querySelectorAll('input, select, textarea');
+      formControls.forEach(control => {
+        control.classList.add('form-control');
+        
+        // Add focus handling
+        control.addEventListener('focus', (e) => {
+          e.target.classList.add('focus');
+        });
+        
+        control.addEventListener('blur', (e) => {
+          e.target.classList.remove('focus');
+        });
+      });
+      
+      // Enhance form groups
+      const formGroups = form.querySelectorAll('.form-group, .input-group');
+      formGroups.forEach(group => {
+        group.classList.add('enhanced-form-group');
+      });
+    });
+  }
+
+  /**
+   * Apply accessibility improvements
+   */
+  applyAccessibilityImprovements() {
+    // Add ARIA labels to buttons without text
+    const buttons = document.querySelectorAll('button:empty, button:not(:has(text))');
+    buttons.forEach(button => {
+      if (!button.getAttribute('aria-label') && button.title) {
+        button.setAttribute('aria-label', button.title);
+      }
+    });
+    
+    // Add focus indicators
+    const focusableElements = document.querySelectorAll(
+      'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'
+    );
+    
+    focusableElements.forEach(element => {
+      element.classList.add('focusable');
+    });
+    
+    // Add skip links if not present
+    this.addSkipLinks();
+  }
+
+  /**
+   * Add skip navigation links
+   */
+  addSkipLinks() {
+    if (document.querySelector('.skip-links')) return;
+    
+    const skipLinks = document.createElement('div');
+    skipLinks.className = 'skip-links';
+    skipLinks.innerHTML = `
+      <a href="#main-content" class="skip-link">Skip to main content</a>
+      <a href="#navigation" class="skip-link">Skip to navigation</a>
+    `;
+    
+    document.body.insertBefore(skipLinks, document.body.firstChild);
+  }
+
+  /**
+   * Setup event listeners
+   */
+  setupEventListeners() {
+    // Listen for dynamic content changes
+    document.addEventListener('DOMContentLoaded', () => {
+      this.handleDynamicContent();
+    });
+    
+    // Listen for hash changes (SPA navigation)
+    window.addEventListener('hashchange', () => {
+      setTimeout(() => {
+        this.handlePageChange();
+      }, 100);
+    });
+    
+    // Listen for popstate (browser navigation)
+    window.addEventListener('popstate', () => {
+      setTimeout(() => {
+        this.handlePageChange();
+      }, 100);
+    });
+    
+    // Listen for breakpoint changes
+    window.addEventListener('breakpointChange', (event) => {
+      this.handleBreakpointChange(event.detail.breakpoint);
+    });
+  }
+
+  /**
+   * Handle dynamic content changes
+   */
+  handleDynamicContent() {
+    // Re-apply enhancements to new content
+    this.standardizeButtons();
+    this.enhanceCards();
+    this.standardizeTables();
+    
+    // Re-initialize icons
+    if (window.IconSystem) {
+      window.IconSystem.initializeAll();
+    }
+  }
+
+  /**
+   * Handle page changes
+   */
+  handlePageChange() {
+    console.log('Page change detected, re-applying UI enhancements...');
+    
+    // Re-apply all enhancements
+    setTimeout(() => {
+      this.applyUIEnhancements();
+    }, 200);
+  }
+
+  /**
+   * Handle breakpoint changes
+   */
+  handleBreakpointChange(breakpoint) {
+    console.log(`Breakpoint changed to: ${breakpoint}`);
+    
+    // Update body class
+    document.body.className = document.body.className.replace(/breakpoint-\w+/g, '');
+    document.body.classList.add(`breakpoint-${breakpoint}`);
+    
+    // Trigger responsive adjustments
+    this.applyResponsiveDesign();
+  }
+
+  /**
+   * Initialize performance monitoring
+   */
+  initializePerformanceMonitoring() {
+    if (!this.config.enablePerformanceMonitoring) return;
+    
+    // Monitor page load performance
+    window.addEventListener('load', () => {
+      const loadTime = performance.now();
+      console.log(`Page loaded in ${loadTime.toFixed(2)}ms`);
+    });
+    
+    // Monitor UI interaction performance
+    this.monitorUIPerformance();
+  }
+
+  /**
+   * Monitor UI interaction performance
+   */
+  monitorUIPerformance() {
+    const buttons = document.querySelectorAll('button');
+    
+    buttons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        const startTime = performance.now();
+        
+        // Monitor response time
+        setTimeout(() => {
+          const responseTime = performance.now() - startTime;
+          if (responseTime > 200) {
+            console.warn(`Slow UI response detected: ${responseTime.toFixed(2)}ms`);
+          }
+        }, 0);
+      });
+    });
+  }
+
+  /**
+   * Get framework status
+   */
+  getStatus() {
+    return {
+      initialized: this.initialized,
+      modules: Array.from(this.modules.keys()),
+      performanceMetrics: this.performanceMetrics,
+      config: this.config
+    };
+  }
+
+  /**
+   * Update configuration
+   */
+  updateConfig(newConfig) {
+    this.config = { ...this.config, ...newConfig };
+    console.log('Configuration updated:', this.config);
+  }
+
+  /**
+   * Cleanup and destroy
+   */
+  destroy() {
+    // Cleanup modules
+    this.modules.forEach((module, name) => {
+      if (module && typeof module.cleanup === 'function') {
+        module.cleanup();
+      }
+    });
+    
+    // Clear modules
+    this.modules.clear();
+    
+    // Reset state
+    this.initialized = false;
+    
+    console.log('UIEnhancementFramework destroyed');
+  }
+}
+
+// Create global instance
+window.UIEnhancementFramework = new UIEnhancementFramework();
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.UIEnhancementFramework.init();
+  });
+} else {
+  window.UIEnhancementFramework.init();
+}
+
+// Export for module usage
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = UIEnhancementFramework;
+}

@@ -1,6 +1,7 @@
 /**
  * Navigation System - Enhanced Page Navigation with Risk Profile Support
  * Handles page switching, data loading, and URL routing
+ * Updated: 2026-01-10 - Added proper RS cleanup
  */
 
 // Global navigation state
@@ -11,12 +12,91 @@ window.navigationState = {
 };
 
 /**
+ * CRITICAL: Remove RS content from non-RS pages
+ * Enhanced cleanup to prevent RS content leak
+ */
+function cleanupRSSelectionList() {
+    const currentPath = window.location.pathname;
+    const currentPage = window.navigationState?.currentPage || '';
+    const currentHash = window.location.hash;
+    const isRSPage = currentPath === '/rencana-strategis' || 
+                     currentPath.includes('rencana-strategis') || 
+                     currentPage === 'rencana-strategis' ||
+                     currentHash === '#rencana-strategis';
+    
+    if (!isRSPage) {
+        console.log('🧹 Cleaning up RS content from non-RS page...');
+        
+        // Call RS module cleanup if available
+        if (window.cleanupRSModule) {
+            window.cleanupRSModule();
+        }
+        
+        // Remove RS wrapper elements from all non-RS pages
+        const otherPages = document.querySelectorAll('.page-content:not(#rencana-strategis)');
+        otherPages.forEach(page => {
+            const rsElements = page.querySelectorAll(
+                '.rencana-strategis-wrapper, ' +
+                '.rencana-strategis-container, ' +
+                '.rencana-strategis-selection, ' +
+                '.rs-selection-wrapper, ' +
+                '.rs-selection-list, ' +
+                '#rs-selection-container, ' +
+                '[data-module="RencanaStrategisModule"]'
+            );
+            
+            rsElements.forEach(el => {
+                console.log('🗑️ Removing RS element:', el.className || el.id);
+                el.remove();
+            });
+        });
+        
+        // Hide RS page element
+        const rsPage = document.getElementById('rencana-strategis');
+        if (rsPage) {
+            rsPage.classList.remove('active');
+            rsPage.style.display = 'none';
+            rsPage.style.visibility = 'hidden';
+            rsPage.style.opacity = '0';
+            rsPage.style.position = 'absolute';
+            rsPage.style.left = '-99999px';
+        }
+    }
+}
+
+/**
  * Navigate to a specific page
  * @param {string} pageName - The page to navigate to
  * @param {boolean} updateHistory - Whether to update browser history
  */
 async function navigateToPage(pageName, updateHistory = true) {
     console.log(`🧭 Navigating to page: ${pageName}`);
+    
+    // CRITICAL: Get previous page before navigation
+    const previousPage = window.navigationState?.currentPage || '';
+    
+    // CRITICAL: Cleanup RS module if leaving RS page
+    if (previousPage === 'rencana-strategis' && pageName !== 'rencana-strategis') {
+        console.log('🧹 Leaving RS page, cleaning up RS module...');
+        if (window.RencanaStrategisModule && typeof window.RencanaStrategisModule.cleanup === 'function') {
+            window.RencanaStrategisModule.cleanup();
+        }
+        // Also reset global flags
+        window.rencanaStrategisModuleLoaded = false;
+        window.rencanaStrategisLoadTime = 0;
+        window.RENCANA_STRATEGIS_VIEW_LOCKED = false;
+    }
+    
+    // Cleanup Renstra module if leaving renstra page
+    if (previousPage === 'renstra' && pageName !== 'renstra') {
+        console.log('🧹 Leaving Renstra page, cleaning up...');
+        if (window.RenstraModule && typeof window.RenstraModule.cleanup === 'function') {
+            window.RenstraModule.cleanup();
+        }
+    }
+    
+    // CRITICAL: Cleanup RS selection list before navigation
+    cleanupRSSelectionList();
     
     // Prevent concurrent navigation
     if (window.navigationState.isNavigating) {
@@ -81,6 +161,10 @@ async function navigateToPage(pageName, updateHistory = true) {
             // Load page data
             await loadPageData(pageName);
             
+            // CRITICAL: Cleanup RS selection list after navigation
+            setTimeout(cleanupRSSelectionList, 100);
+            setTimeout(cleanupRSSelectionList, 500);
+            
             console.log(`✅ Successfully navigated to: ${pageName}`);
         } else {
             console.error(`❌ Failed to navigate to: ${pageName}`);
@@ -98,42 +182,38 @@ async function navigateToPage(pageName, updateHistory = true) {
         }
     } finally {
         window.navigationState.isNavigating = false;
+        // Final cleanup
+        setTimeout(cleanupRSSelectionList, 200);
     }
 }
 
 /**
  * Hide all page content divs
+ * Enhanced to properly cleanup RS content
  */
 function hideAllPages() {
     console.log('🙈 Hiding all pages...');
     
-    // Hide all page-content divs
+    // Hide all page-content divs with proper cleanup
     document.querySelectorAll('.page-content').forEach(page => {
         page.classList.remove('active');
         page.style.display = 'none';
+        page.style.visibility = 'hidden';
+        page.style.opacity = '0';
+        page.style.position = 'absolute';
+        page.style.left = '-99999px';
+        page.style.top = '-99999px';
+        page.style.zIndex = '-1';
+        page.style.pointerEvents = 'none';
     });
     
-    // Also hide any legacy page divs
-    const legacyPages = [
-        'dashboard', 'visi-misi', 'rencana-strategis', 'analisis-swot', 
-        'diagram-kartesius', 'matriks-tows', 'sasaran-strategi', 
-        'strategic-map', 'indikator-kinerja-utama', 'risk-input', 
-        'monitoring-evaluasi', 'peluang', 'risk-profile', 'residual-risk', 
-        'kri', 'loss-event', 'ews', 'risk-register', 'laporan', 
-        'master-data', 'buku-pedoman', 'pengaturan'
-    ];
-    
-    legacyPages.forEach(pageId => {
-        const pageEl = document.getElementById(pageId);
-        if (pageEl) {
-            pageEl.classList.remove('active');
-            pageEl.style.display = 'none';
-        }
-    });
+    // Cleanup RS content from all pages
+    cleanupRSSelectionList();
 }
 
 /**
  * Show a specific page
+ * Enhanced with proper visibility and RS isolation
  * @param {string} pageName - The page to show
  * @returns {boolean} - Success status
  */
@@ -152,12 +232,32 @@ async function showPage(pageName) {
         }
         
         if (pageElement) {
-            // Show the page
+            // Show the page with proper styles
             pageElement.style.display = 'block';
+            pageElement.style.visibility = 'visible';
+            pageElement.style.opacity = '1';
+            pageElement.style.position = 'relative';
+            pageElement.style.left = 'auto';
+            pageElement.style.top = 'auto';
+            pageElement.style.zIndex = '1';
+            pageElement.style.pointerEvents = 'auto';
             pageElement.classList.add('active');
             
             // Force reflow to ensure styles are applied
             pageElement.offsetHeight;
+            
+            // If NOT RS page, cleanup any RS content that might have leaked
+            if (pageName !== 'rencana-strategis') {
+                const rsElements = pageElement.querySelectorAll(
+                    '.rencana-strategis-wrapper, ' +
+                    '.rencana-strategis-container, ' +
+                    '.rs-selection-wrapper'
+                );
+                rsElements.forEach(el => {
+                    console.log('🗑️ Removing leaked RS element from:', pageName);
+                    el.remove();
+                });
+            }
             
             console.log(`✅ Page element found and shown: ${pageName}`);
             return true;
@@ -281,6 +381,19 @@ async function loadPageData(pageName) {
                 }
                 break;
                 
+            case 'kri':
+                console.log('🎯 Loading KRI data...');
+                if (typeof loadKRI === 'function') {
+                    await loadKRI();
+                } else if (window.kriModule && typeof window.kriModule.load === 'function') {
+                    console.log('🎯 Using kriModule.load()...');
+                    await window.kriModule.load();
+                } else {
+                    console.warn('⚠️ KRI module not found, loading manually...');
+                    await loadKRIManually();
+                }
+                break;
+                
             case 'risk-register':
                 if (typeof loadRiskRegister === 'function') {
                     await loadRiskRegister();
@@ -306,12 +419,37 @@ async function loadPageData(pageName) {
                 break;
                 
             case 'rencana-strategis':
-                if (typeof loadRencanaStrategis === 'function') {
-                    await loadRencanaStrategis();
-                } else if (window.rencanaStrategisModule && typeof window.rencanaStrategisModule.load === 'function') {
-                    await window.rencanaStrategisModule.load();
-                }
-                break;
+                    console.log('📋 Loading Rencana Strategis (Clean Module)...');
+                    
+                    // Ensure proper page visibility IMMEDIATELY
+                    const rsPage = document.getElementById('rencana-strategis');
+                    const rsContent = document.getElementById('rencana-strategis-content');
+                    
+                    if (rsPage) {
+                        rsPage.classList.add('active');
+                        rsPage.style.display = 'block';
+                        rsPage.style.visibility = 'visible';
+                        rsPage.style.opacity = '1';
+                        rsPage.style.position = 'relative';
+                        rsPage.style.background = '#f8f9fa';
+                    }
+                    
+                    if (rsContent) {
+                        rsContent.style.display = 'block';
+                        rsContent.style.visibility = 'visible';
+                        rsContent.style.opacity = '1';
+                        rsContent.style.minHeight = '400px';
+                    }
+                    
+                    // Load the clean module
+                    if (window.RencanaStrategisClean && typeof window.RencanaStrategisClean.load === 'function') {
+                        await window.RencanaStrategisClean.load();
+                    } else if (window.RencanaStrategisModule && typeof window.RencanaStrategisModule.load === 'function') {
+                        await window.RencanaStrategisModule.load();
+                    }
+                    
+                    console.log('✅ Rencana Strategis loaded');
+                    break;
                 
             case 'master-data':
                 if (typeof loadMasterData === 'function') {
@@ -803,6 +941,169 @@ function updatePageTitle(pageName) {
 }
 
 /**
+ * Manual fallback for loading KRI data
+ */
+async function loadKRIManually() {
+    console.log('🔧 Loading KRI manually...');
+    
+    const container = document.getElementById('kri-content');
+    if (!container) {
+        console.error('❌ KRI content container not found');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Memuat data KRI...</p>
+            </div>
+        `;
+        
+        // Check if kriModule is available
+        if (window.kriModule && typeof window.kriModule.load === 'function') {
+            console.log('🎯 kriModule found, using it...');
+            await window.kriModule.load();
+            return;
+        }
+        
+        // Fallback: Try to load data directly
+        console.log('🔧 Using direct API fallback...');
+        
+        // Check authentication
+        if (!window.isAuthenticated && (!window.authService || !window.authService.isAuthenticated())) {
+            throw new Error('Anda harus login terlebih dahulu untuk mengakses halaman ini.');
+        }
+        
+        // Try to get data from simple endpoint
+        const response = await fetch('/api/kri/simple');
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Display basic data
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-gauge-high"></i> Key Risk Indicator</h3>
+                    <div class="text-muted">Data loaded via fallback method</div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Fallback Mode</h5>
+                        <p>Halaman ini dimuat menggunakan mode fallback. Beberapa fitur mungkin tidak tersedia.</p>
+                        <button class="btn btn-primary" onclick="window.location.reload()">
+                            <i class="fas fa-refresh"></i> Refresh Halaman
+                        </button>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h4>${Array.isArray(data) ? data.length : 0}</h4>
+                                    <p class="mb-0">Total KRI</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h4>${Array.isArray(data) ? data.filter(item => item.status_indikator === 'Aman').length : 0}</h4>
+                                    <p class="mb-0">Aman</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h4>${Array.isArray(data) ? data.filter(item => item.status_indikator === 'Hati-hati' || item.status_indikator === 'Peringatan').length : 0}</h4>
+                                    <p class="mb-0">Hati-hati</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h4>${Array.isArray(data) ? data.filter(item => item.status_indikator === 'Kritis').length : 0}</h4>
+                                    <p class="mb-0">Kritis</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Indikator</th>
+                                    <th>Kategori</th>
+                                    <th>Nilai Aktual</th>
+                                    <th>Status</th>
+                                    <th>Unit Kerja</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Array.isArray(data) ? data.map(item => `
+                                    <tr>
+                                        <td><strong>${item.kode || '-'}</strong></td>
+                                        <td>${item.nama_indikator || '-'}</td>
+                                        <td>${item.master_risk_categories?.name || '-'}</td>
+                                        <td><span class="badge bg-primary">${item.nilai_aktual || 0}</span></td>
+                                        <td><span class="badge ${getKRIStatusBadgeClass(item.status_indikator)}">${item.status_indikator || '-'}</span></td>
+                                        <td>${item.master_work_units?.name || '-'}</td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="6" class="text-center">Tidak ada data</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        console.log('✅ KRI loaded manually with fallback');
+        
+    } catch (error) {
+        console.error('❌ Error loading KRI manually:', error);
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <h4><i class="fas fa-exclamation-triangle"></i> Error Loading Data</h4>
+                <p>Gagal memuat data KRI: ${error.message}</p>
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="loadKRIManually()">
+                        <i class="fas fa-refresh"></i> Coba Lagi
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.reload()">
+                        <i class="fas fa-refresh"></i> Refresh Halaman
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Get KRI status badge class
+ * @param {string} status - KRI status
+ * @returns {string} - Badge class
+ */
+function getKRIStatusBadgeClass(status) {
+    const statusMap = {
+        'Aman': 'bg-success',
+        'Hati-hati': 'bg-warning',
+        'Peringatan': 'bg-warning',
+        'Kritis': 'bg-danger'
+    };
+    return statusMap[status] || 'bg-secondary';
+}
+
+/**
  * Manual fallback for loading residual risk data
  */
 async function loadResidualRiskManually() {
@@ -954,6 +1255,7 @@ async function loadResidualRiskManually() {
 window.navigateToPage = navigateToPage;
 window.loadPageData = loadPageData;
 window.loadRiskProfileManually = loadRiskProfileManually;
+window.loadKRIManually = loadKRIManually;
 window.loadResidualRiskManually = loadResidualRiskManually;
 window.downloadRiskProfileReport = downloadRiskProfileReport;
 window.updateActiveMenuItem = updateActiveMenuItem;

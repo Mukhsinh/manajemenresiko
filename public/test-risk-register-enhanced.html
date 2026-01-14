@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Risk Register Enhanced</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/risk-register-enhanced.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+        .test-header { background: linear-gradient(135deg, #1e3a5f, #2d4a6f); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .test-header h1 { margin: 0 0 10px 0; }
+        .test-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .test-section h2 { margin-top: 0; color: #1e3a5f; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .checklist { list-style: none; padding: 0; }
+        .checklist li { padding: 10px; margin: 5px 0; background: #f8fafc; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+        .checklist li i { color: #22c55e; }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-table-list"></i> Test Risk Register Enhanced</h1>
+        <p>Halaman test untuk memverifikasi perbaikan Risk Register</p>
+    </div>
+    <div class="test-section">
+        <h2><i class="fas fa-check-circle"></i> Checklist Perbaikan</h2>
+        <ul class="checklist">
+            <li><i class="fas fa-check"></i> Tabel dapat di-scroll ke atas/bawah dan kanan/kiri</li>
+            <li><i class="fas fa-check"></i> Kartu summary dengan warna cerah solid</li>
+            <li><i class="fas fa-check"></i> Tombol Unduh Laporan (versi lengkap)</li>
+            <li><i class="fas fa-check"></i> Tombol Filter, Refresh, Cetak berfungsi</li>
+        </ul>
+    </div>
+    <div class="risk-register-page">
+        <div class="risk-register-cards">
+            <div class="risk-summary-card total-risks"><div class="card-icon"><i class="fas fa-clipboard-list"></i></div><div class="card-value">25</div><div class="card-label">Total Risiko</div></div>
+            <div class="risk-summary-card active-risks"><div class="card-icon"><i class="fas fa-check-circle"></i></div><div class="card-value">20</div><div class="card-label">Risiko Aktif</div></div>
+            <div class="risk-summary-card extreme-risks"><div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="card-value">3</div><div class="card-label">Extreme High</div></div>
+            <div class="risk-summary-card high-risks"><div class="card-icon"><i class="fas fa-arrow-up"></i></div><div class="card-value">5</div><div class="card-label">High Risk</div></div>
+            <div class="risk-summary-card medium-risks"><div class="card-icon"><i class="fas fa-minus"></i></div><div class="card-value">10</div><div class="card-label">Medium Risk</div></div>
+            <div class="risk-summary-card low-risks"><div class="card-icon"><i class="fas fa-arrow-down"></i></div><div class="card-value">7</div><div class="card-label">Low Risk</div></div>
+        </div>
+        <div class="risk-register-table-wrapper">
+            <div class="risk-register-table-header">
+                <h3><i class="fas fa-table-list"></i> Daftar Risk Register</h3>
+                <div class="risk-register-actions">
+                    <button class="btn-risk-action btn-download-report"><i class="fas fa-download"></i><span>Unduh Laporan</span></button>
+                    <button class="btn-risk-action btn-filter"><i class="fas fa-filter"></i><span>Filter</span></button>
+                    <button class="btn-risk-action btn-refresh"><i class="fas fa-sync-alt"></i><span>Refresh</span></button>
+                    <button class="btn-risk-action btn-print"><i class="fas fa-print"></i><span>Cetak</span></button>
+                </div>
+            </div>
+            <div class="risk-register-scroll-container" style="max-height: 400px;">
+                <table class="risk-register-table">
+                    <thead><tr><th>No.</th><th>Kode Risiko</th><th>Status</th><th>Jenis</th><th>Kategori</th><th>Unit Kerja</th><th>Sasaran</th><th>Tanggal</th><th>Penyebab</th><th>Dampak</th><th>P Inh</th><th>D Inh</th><th>Nilai</th><th>Tingkat Inh</th><th>P Res</th><th>D Res</th><th>Nilai</th><th>Tingkat Res</th><th>Appetite</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td><strong>RS-001</strong></td><td><span class="status-badge status-active">Active</span></td><td><span class="jenis-badge jenis-threat">Threat</span></td><td>Risiko Operasional</td><td>Komite Medik</td><td>Mempertahankan SDM berkualitas</td><td>05/02/2025</td><td>Turnover tinggi</td><td>Penurunan kualitas</td><td>3</td><td>4</td><td><strong>12</strong></td><td><span class="risk-level-badge risk-level-high">HIGH</span></td><td>2</td><td>3</td><td><strong>6</strong></td><td><span class="risk-level-badge risk-level-medium">MEDIUM</span></td><td>MEDIUM</td></tr>
+                        <tr><td>2</td><td><strong>RO-001</strong></td><td><span class="status-badge status-active">Active</span></td><td><span class="jenis-badge jenis-threat">Threat</span></td><td>Risiko Operasional</td><td>Direktur</td><td>Pelayanan gawat darurat</td><td>15/01/2025</td><td>Keterlambatan respons</td><td>Peningkatan morbiditas</td><td>3</td><td>5</td><td><strong>15</strong></td><td><span class="risk-level-badge risk-level-high">HIGH</span></td><td>2</td><td>4</td><td><strong>8</strong></td><td><span class="risk-level-badge risk-level-medium">MEDIUM</span></td><td>MEDIUM</td></tr>
+                        <tr><td>3</td><td><strong>RK-001</strong></td><td><span class="status-badge status-active">Active</span></td><td><span class="jenis-badge jenis-threat">Threat</span></td><td>Risiko Kepatuhan</td><td>Akreditasi</td><td>Status akreditasi KARS</td><td>20/01/2025</td><td>Perubahan standar</td><td>Penurunan status</td><td>4</td><td>3</td><td><strong>12</strong></td><td><span class="risk-level-badge risk-level-high">HIGH</span></td><td>2</td><td>2</td><td><strong>4</strong></td><td><span class="risk-level-badge risk-level-low">LOW</span></td><td>LOW</td></tr>
+                        <tr><td>4</td><td><strong>RK-002</strong></td><td><span class="status-badge status-active">Active</span></td><td><span class="jenis-badge jenis-threat">Threat</span></td><td>Risiko Operasional</td><td>Komite PPI</td><td>Keseimbangan keuangan</td><td>25/01/2025</td><td>Keterlambatan BPJS</td><td>Defisit anggaran</td><td>5</td><td>4</td><td><strong>20</strong></td><td><span class="risk-level-badge risk-level-extreme">EXTREME</span></td><td>3</td><td>3</td><td><strong>9</strong></td><td><span class="risk-level-badge risk-level-medium">MEDIUM</span></td><td>MEDIUM</td></tr>
+                        <tr><td>5</td><td><strong>RP-001</strong></td><td><span class="status-badge status-active">Active</span></td><td><span class="jenis-badge jenis-opportunity">Opportunity</span></td><td>Risiko Strategis</td><td>Marketing</td><td>Pangsa pasar kesehatan</td><td>01/02/2025</td><td>Peluang kerjasama</td><td>Peningkatan pendapatan</td><td>2</td><td>2</td><td><strong>4</strong></td><td><span class="risk-level-badge risk-level-low">LOW</span></td><td>1</td><td>2</td><td><strong>2</strong></td><td><span class="risk-level-badge risk-level-low">LOW</span></td><td>LOW</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="risk-register-pagination">
+                <div class="pagination-info">Menampilkan 1 - 5 dari 25 data</div>
+                <div class="pagination-controls"><button disabled><i class="fas fa-chevron-left"></i></button><button class="active">1</button><button>2</button><button>3</button><button><i class="fas fa-chevron-right"></i></button></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+/**
+ * HIDE RS SELECTION LIST ONLY (Specific targeting)
+ * Only hides "Pilih Rencana Strategis" selection list
+ * Does NOT affect other page content
+ * Created: 2026-01-07 v2.0 - Minimal version
+ */
+
+/* Hide specific RS selection elements */
+.rs-selection-list,
+.rencana-strategis-selection-list,
+#rs-selection-container,
+[data-rs-selection-list="true"] {
+    display: none !important;
+}
+
+/* Hide RS selection outside RS page */
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-selection {
+    display: none !important;
+}
+
+/* Ensure RS page content is visible */
+#rencana-strategis .rs-selection-wrapper,
+#rencana-strategis .rencana-strategis-selection,
+#rencana-strategis .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+}

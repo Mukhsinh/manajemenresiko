@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rencana Strategis v7.1 Final</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/rencana-strategis-v7.css">
+    <style>
+        body { background: #f8f9fa; }
+        .test-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 350px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .test-panel-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+        }
+        .test-panel-body { padding: 15px; }
+        .test-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        .test-pending { background: #fff3cd; color: #856404; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Test Panel -->
+    <div class="test-panel">
+        <div class="test-panel-header">
+            <h5 class="mb-0"><i class="fas fa-vial me-2"></i>RS v7.1 Test Panel</h5>
+        </div>
+        <div class="test-panel-body">
+            <div id="test-results"></div>
+            <hr>
+            <button class="btn btn-primary btn-sm w-100 mb-2" onclick="runTests()">
+                <i class="fas fa-play me-1"></i>Run Tests
+            </button>
+            <button class="btn btn-outline-secondary btn-sm w-100" onclick="location.reload()">
+                <i class="fas fa-sync me-1"></i>Refresh Page
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div id="rencana-strategis" class="page-content active" style="background: #f8f9fa !important;">
+            <div class="page-header p-3">
+                <h1 class="page-title"><i class="fas fa-chart-line me-2"></i>Rencana Strategis</h1>
+                <p class="page-subtitle text-muted">Perencanaan Strategis Organisasi</p>
+            </div>
+            <div id="rencana-strategis-content" style="min-height: 400px;"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/config.js"></script>
+    
+    <script>
+        // Mock auth
+        window.waitForAuthReady = async () => true;
+        localStorage.setItem('token', 'test-token');
+        
+        // Test results
+        const tests = [];
+        
+        function addTest(name, passed, details = '') {
+            tests.push({ name, passed, details });
+            renderTests();
+        }
+        
+        function renderTests() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = tests.map(t => `
+                <div class="test-item ${t.passed ? 'test-pass' : 'test-fail'}">
+                    <i class="fas fa-${t.passed ? 'check' : 'times'} me-2"></i>
+                    <strong>${t.name}</strong>
+                    ${t.details ? `<br><small>${t.details}</small>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        async function runTests() {
+            tests.length = 0;
+            const container = document.getElementById('rencana-strategis-content');
+            
+            // Test 1: Module loaded
+            addTest('Module Loaded', 
+                !!window.RencanaStrategisModule,
+                window.RencanaStrategisModule ? `Version: ${window.RencanaStrategisModule.version}` : 'Module not found'
+            );
+            
+            // Test 2: Module aliases
+            addTest('Module Aliases', 
+                window.RencanaStrategisModule === window.RencanaStrategisUnified &&
+                window.RencanaStrategisModule === window.RSCore,
+                'RencanaStrategisModule = RencanaStrategisUnified = RSCore'
+            );
+            
+            // Test 3: Load function exists
+            addTest('Load Function', 
+                typeof window.RencanaStrategisModule?.load === 'function',
+                'load() function available'
+            );
+            
+            // Test 4: Call load and wait
+            if (window.RencanaStrategisModule?.load) {
+                await window.RencanaStrategisModule.load();
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            
+            // Test 5: Wrapper exists
+            const wrapper = container.querySelector('.rs-v7-wrapper');
+            addTest('Wrapper Rendered', 
+                !!wrapper,
+                wrapper ? 'rs-v7-wrapper found' : 'Wrapper not found'
+            );
+            
+            // Test 6: Stat cards exist
+            const cards = container.querySelectorAll('.card');
+            addTest('Stat Cards', 
+                cards.length >= 4,
+                `Found ${cards.length} cards`
+            );
+            
+            // Test 7: Form exists
+            const form = container.querySelector('#rs-form');
+            addTest('Form Exists', 
+                !!form,
+                form ? 'Form found' : 'Form not found'
+            );
+            
+            // Test 8: Table exists
+            const table = container.querySelector('table.table');
+            addTest('Table Exists', 
+                !!table,
+                table ? 'Table found' : 'Table not found'
+            );
+            
+            // Test 9: No selection list
+            const hasSelectionList = container.innerHTML.includes('Pilih Rencana Strategis') &&
+                                    !container.querySelector('table');
+            addTest('No Selection List', 
+                !hasSelectionList,
+                hasSelectionList ? 'WRONG: Selection list found!' : 'Correct: No selection list'
+            );
+            
+            // Test 10: Background color
+            const bgColor = window.getComputedStyle(container).backgroundColor;
+            addTest('Background Color', 
+                bgColor === 'rgb(248, 249, 250)' || bgColor === '#f8f9fa',
+                `Background: ${bgColor}`
+            );
+            
+            // Summary
+            const passed = tests.filter(t => t.passed).length;
+            const total = tests.length;
+            console.log(`\n✅ Tests: ${passed}/${total} passed`);
+        }
+        
+        // Auto-run tests after module loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+    
+    <!-- Load the RS module -->
+    <script src="/js/rencana-strategis-clean-v7.js?v=7.1"></script>
+</body>
+</html>

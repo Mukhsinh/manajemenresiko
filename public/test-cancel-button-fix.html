@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cancel Button Fix - Single Click</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fix-modal-buttons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+            background: #f3f4f6;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .test-header h1 {
+            margin: 0 0 0.5rem 0;
+            color: #1f2937;
+        }
+        
+        .test-header p {
+            margin: 0;
+            color: #6b7280;
+        }
+        
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-button {
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .test-button:active {
+            transform: translateY(0);
+        }
+        
+        .test-button i {
+            margin-right: 0.5rem;
+        }
+        
+        .status-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-box h3 {
+            margin: 0 0 0.5rem 0;
+            color: #1f2937;
+            font-size: 1rem;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .status-value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        .status-value.success {
+            color: #10b981;
+        }
+        
+        .status-value.error {
+            color: #ef4444;
+        }
+        
+        .log-container {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: #9ca3af;
+            margin-right: 0.5rem;
+        }
+        
+        .log-success {
+            color: #10b981;
+        }
+        
+        .log-error {
+            color: #ef4444;
+        }
+        
+        .log-info {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-vial"></i> Test Cancel Button Fix - Single Click</h1>
+            <p>Testing untuk memastikan tombol Batal, icon X, dan Simpan hanya perlu 1x klik</p>
+        </div>
+        
+        <div class="status-box">
+            <h3><i class="fas fa-info-circle"></i> Status Test</h3>
+            <div class="status-item">
+                <span class="status-label">Modal Dibuka:</span>
+                <span class="status-value" id="modal-opened">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Modal Ditutup:</span>
+                <span class="status-value success" id="modal-closed">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Klik Batal:</span>
+                <span class="status-value" id="cancel-clicks">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Klik Close (X):</span>
+                <span class="status-value" id="close-clicks">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Form Submit:</span>
+                <span class="status-value" id="form-submits">0</span>
+            </div>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="test-button" onclick="testSasaranStrategi()">
+                <i class="fas fa-bullseye"></i> Test Sasaran Strategi
+            </button>
+            <button class="test-button" onclick="testStrategicMap()">
+                <i class="fas fa-map"></i> Test Strategic Map
+            </button>
+            <button class="test-button" onclick="testIndikatorKinerja()">
+                <i class="fas fa-chart-line"></i> Test Indikator Kinerja
+            </button>
+            <button class="test-button" onclick="testRiskInput()">
+                <i class="fas fa-exclamation-triangle"></i> Test Risk Input
+            </button>
+            <button class="test-button" onclick="testMonitoringEvaluasi()">
+                <i class="fas fa-tasks"></i> Test Monitoring Evaluasi
+            </button>
+            <button class="test-button" onclick="testPeluang()">
+                <i class="fas fa-lightbulb"></i> Test Peluang
+            </button>
+        </div>
+        
+        <div class="status-box">
+            <h3><i class="fas fa-terminal"></i> Log Aktivitas</h3>
+            <div class="log-container" id="log-container">
+                <div class="log-entry">
+                    <span class="log-time">[00:00:00]</span>
+                    <span class="log-info">Sistem siap untuk testing...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #92400e;">
+                <i class="fas fa-clipboard-check"></i> Cara Testing:
+            </h4>
+            <ol style="margin: 0; padding-left: 1.5rem; color: #78350f;">
+                <li>Klik salah satu tombol test di atas untuk membuka modal</li>
+                <li>Coba klik tombol "Batal" - seharusnya modal langsung tertutup dengan 1x klik</li>
+                <li>Buka modal lagi, coba klik icon "X" - seharusnya modal langsung tertutup dengan 1x klik</li>
+                <li>Buka modal lagi, isi form dan klik "Simpan" - seharusnya modal langsung tertutup dengan 1x klik</li>
+                <li>Perhatikan counter dan log untuk memastikan tidak ada double-click</li>
+            </ol>
+        </div>
+    </div>
+    
+    <!-- Load fix script -->
+    <script src="/js/fix-cancel-button-single-click.js"></script>
+    
+    <script>
+        // Counter untuk tracking
+        let stats = {
+            modalOpened: 0,
+            modalClosed: 0,
+            cancelClicks: 0,
+            closeClicks: 0,
+            formSubmits: 0
+        };
+        
+        function updateStats() {
+            document.getElementById('modal-opened').textContent = stats.modalOpened;
+            document.getElementById('modal-closed').textContent = stats.modalClosed;
+            document.getElementById('cancel-clicks').textContent = stats.cancelClicks;
+            document.getElementById('close-clicks').textContent = stats.closeClicks;
+            document.getElementById('form-submits').textContent = stats.formSubmits;
+        }
+        
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const time = new Date().toLocaleTimeString('id-ID');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-${type}">${message}</span>
+            `;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function createModal(title, content) {
+            stats.modalOpened++;
+            updateStats();
+            addLog(`Modal "${title}" dibuka`, 'info');
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">${title}</h3>
+                        <button class="modal-close" onclick="handleCloseClick(this)">&times;</button>
+                    </div>
+                    <form onsubmit="handleFormSubmit(event, this)">
+                        <div class="modal-body">
+                            ${content}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="handleCancelClick(this)">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Simpan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Track modal close
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.removedNodes.forEach((node) => {
+                        if (node === modal) {
+                            stats.modalClosed++;
+                            updateStats();
+                            addLog(`Modal "${title}" ditutup`, 'success');
+                            observer.disconnect();
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, { childList: true });
+        }
+        
+        function handleCancelClick(button) {
+            stats.cancelClicks++;
+            updateStats();
+            addLog('Tombol Batal diklik', 'info');
+        }
+        
+        function handleCloseClick(button) {
+            stats.closeClicks++;
+            updateStats();
+            addLog('Icon Close (X) diklik', 'info');
+        }
+        
+        function handleFormSubmit(event, form) {
+            event.preventDefault();
+            stats.formSubmits++;
+            updateStats();
+            addLog('Form disubmit', 'success');
+            
+            // Simulasi save berhasil
+            setTimeout(() => {
+                const modal = form.closest('.modal');
+                if (modal) {
+                    modal.remove();
+                }
+            }, 100);
+        }
+        
+        function testSasaranStrategi() {
+            createModal('Tambah Sasaran Strategi', `
+                <div class="form-group">
+                    <label class="form-label">Rencana Strategis *</label>
+                    <select class="form-control" required>
+                        <option value="">Pilih Rencana Strategis</option>
+                        <option value="1">Rencana 2024-2025</option>
+                        <option value="2">Rencana 2025-2026</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Perspektif *</label>
+                    <select class="form-control" required>
+                        <option value="">Pilih Perspektif</option>
+                        <option value="ES">ES (Eksternal Stakeholder)</option>
+                        <option value="IBP">IBP (Internal Business Process)</option>
+                        <option value="LG">LG (Learning & Growth)</option>
+                        <option value="Fin">Fin (Financial)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sasaran *</label>
+                    <textarea class="form-control" required rows="4" placeholder="Masukkan sasaran strategi..."></textarea>
+                </div>
+            `);
+        }
+        
+        function testStrategicMap() {
+            createModal('Edit Posisi Strategic Map', `
+                <div class="form-group">
+                    <label class="form-label">Posisi X</label>
+                    <input type="number" class="form-control" value="10" step="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Posisi Y</label>
+                    <input type="number" class="form-control" value="20" step="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Warna</label>
+                    <input type="color" class="form-control" value="#3498db">
+                </div>
+            `);
+        }
+        
+        function testIndikatorKinerja() {
+            createModal('Tambah Indikator Kinerja Utama', `
+                <div class="form-group">
+                    <label class="form-label">Indikator *</label>
+                    <textarea class="form-control" required rows="3" placeholder="Masukkan indikator..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Baseline Tahun</label>
+                        <input type="number" class="form-control" value="2024">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Baseline Nilai</label>
+                        <input type="number" class="form-control" step="0.01">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Target Tahun</label>
+                        <input type="number" class="form-control" value="2025">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target Nilai</label>
+                        <input type="number" class="form-control" step="0.01">
+                    </div>
+                </div>
+            `);
+        }
+        
+        function testRiskInput() {
+            createModal('Tambah Data Risiko', `
+                <div class="form-group">
+                    <label class="form-label">Kode Risiko *</label>
+                    <input type="text" class="form-control" required placeholder="RSK-001">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kategori Risiko *</label>
+                    <select class="form-control" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="1">Operasional</option>
+                        <option value="2">Finansial</option>
+                        <option value="3">Strategis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Deskripsi Risiko</label>
+                    <textarea class="form-control" rows="3" placeholder="Masukkan deskripsi risiko..."></textarea>
+                </div>
+            `);
+        }
+        
+        function testMonitoringEvaluasi() {
+            createModal('Tambah Monitoring & Evaluasi', `
+                <div class="form-group">
+                    <label class="form-label">Tanggal Monitoring *</label>
+                    <input type="date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status Risiko</label>
+                    <select class="form-control">
+                        <option value="Stabil">Stabil</option>
+                        <option value="Meningkat">Meningkat</option>
+                        <option value="Menurun">Menurun</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Progress Mitigasi (%)</label>
+                    <input type="number" class="form-control" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Evaluasi</label>
+                    <textarea class="form-control" rows="3" placeholder="Masukkan evaluasi..."></textarea>
+                </div>
+            `);
+        }
+        
+        function testPeluang() {
+            createModal('Tambah Peluang', `
+                <div class="form-group">
+                    <label class="form-label">Kode *</label>
+                    <input type="text" class="form-control" required value="PLG-001" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama Peluang *</label>
+                    <input type="text" class="form-control" required placeholder="Masukkan nama peluang...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Deskripsi</label>
+                    <textarea class="form-control" rows="3" placeholder="Masukkan deskripsi..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Probabilitas (1-5)</label>
+                        <input type="number" class="form-control" min="1" max="5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dampak Positif (1-5)</label>
+                        <input type="number" class="form-control" min="1" max="5">
+                    </div>
+                </div>
+            `);
+        }
+        
+        // Initialize
+        addLog('Sistem siap. Silakan mulai testing!', 'success');
+    </script>
+</body>
+</html>

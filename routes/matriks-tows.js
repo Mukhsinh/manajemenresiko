@@ -61,23 +61,46 @@ router.get('/:id', authenticateUser, async (req, res) => {
   try {
     // Use supabaseAdmin to bypass RLS
     const clientToUse = supabaseAdmin || supabase;
+    
+    // First get the main record
     const { data, error } = await clientToUse
       .from('swot_tows_strategi')
-      .select('*, rencana_strategis(id, kode, nama_rencana, organization_id)')
-      .eq('swot_tows_strategi.id', req.params.id)
+      .select('id, user_id, rencana_strategis_id, tahun, tipe_strategi, strategi, created_at, updated_at')
+      .eq('id', req.params.id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching swot_tows_strategi:', error);
+      throw error;
+    }
     if (!data) return res.status(404).json({ error: 'Data tidak ditemukan' });
     
-    // Check organization access through rencana_strategis
-    if (!req.user.isSuperAdmin && data.rencana_strategis?.organization_id) {
-      if (!req.user.organizations || !req.user.organizations.includes(data.rencana_strategis.organization_id)) {
-        return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+    // If there's a rencana_strategis_id, fetch the related data separately
+    let rencanaStrategis = null;
+    if (data.rencana_strategis_id) {
+      const { data: rsData, error: rsError } = await clientToUse
+        .from('rencana_strategis')
+        .select('id, kode, nama_rencana, organization_id')
+        .eq('id', data.rencana_strategis_id)
+        .single();
+      
+      if (!rsError && rsData) {
+        rencanaStrategis = rsData;
+        
+        // Check organization access through rencana_strategis
+        if (!req.user.isSuperAdmin && rsData.organization_id) {
+          if (!req.user.organizations || !req.user.organizations.includes(rsData.organization_id)) {
+            return res.status(403).json({ error: 'Anda tidak memiliki akses ke data ini' });
+          }
+        }
       }
     }
     
-    res.json(data);
+    // Return combined data
+    res.json({
+      ...data,
+      rencana_strategis: rencanaStrategis
+    });
   } catch (error) {
     console.error('Matriks TOWS error:', error);
     res.status(500).json({ error: error.message });

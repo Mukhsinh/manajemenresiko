@@ -1,0 +1,231 @@
+/**
+ * Rencana Strategis Blue Header Styles
+ * 
+ * Mengubah header tabel dari ungu gradasi menjadi biru solid
+ * Version: 1.0.0
+ * Date: 2026-01-10
+ */
+
+/* ============================================
+   BLUE SOLID TABLE HEADER
+   ============================================ */
+
+/* Main table header - Blue Solid */
+.rencana-strategis-wrapper .table thead,
+#rencana-strategis .table thead,
+[data-page="rencana-strategis"] .table thead {
+  background: #007bff !important;
+}
+
+.rencana-strategis-wrapper .table thead th,
+#rencana-strategis .table thead th,
+[data-page="rencana-strategis"] .table thead th {
+  background: #007bff !important;
+  background-image: none !important;
+  background-color: #007bff !important;
+  color: #ffffff !important;
+  border-color: #0056b3 !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.5px !important;
+  padding: 1rem !important;
+  vertical-align: middle !important;
+}
+
+/* Remove any gradient that might be applied */
+.rencana-strategis-wrapper .table thead th::before,
+.rencana-strategis-wrapper .table thead th::after {
+  display: none !important;
+}
+
+/* Hover effect - slightly darker blue */
+.rencana-strategis-wrapper .table thead th:hover,
+#rencana-strategis .table thead th:hover,
+[data-page="rencana-strategis"] .table thead th:hover {
+  background: #0056b3 !important;
+  background-color: #0056b3 !important;
+  cursor: default;
+}
+
+/* Sortable header hover */
+.rencana-strategis-wrapper .table thead th.sortable:hover {
+  background: #0056b3 !important;
+  cursor: pointer;
+}
+
+/* Icon color in header */
+.rencana-strategis-wrapper .table thead th i,
+.rencana-strategis-wrapper .table thead th .fas,
+.rencana-strategis-wrapper .table thead th .far,
+.rencana-strategis-wrapper .table thead th .fab {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ============================================
+   OVERRIDE EXISTING PURPLE/GRADIENT STYLES
+   ============================================ */
+
+/* Override any inline styles */
+.rencana-strategis-wrapper .table thead[style*="background"],
+.rencana-strategis-wrapper .table thead th[style*="background"] {
+  background: #007bff !important;
+  background-image: none !important;
+}
+
+/* Override gradient backgrounds */
+.rencana-strategis-wrapper .table thead[style*="gradient"],
+.rencana-strategis-wrapper .table thead th[style*="gradient"] {
+  background: #007bff !important;
+  background-image: none !important;
+}
+
+/* Override f8f9fa gray header */
+.rencana-strategis-wrapper .table thead[style*="f8f9fa"],
+.rencana-strategis-wrapper .table thead th[style*="f8f9fa"] {
+  background: #007bff !important;
+  color: #ffffff !important;
+}
+
+/* ============================================
+   FILTER SECTION STYLING
+   ============================================ */
+
+#rs-filter-section {
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  border: 1px solid #e9ecef !important;
+}
+
+#rs-filter-section .card-body {
+  padding: 1rem 1.25rem !important;
+}
+
+#rs-filter-section .form-label {
+  font-weight: 500 !important;
+  color: #6c757d !important;
+  margin-bottom: 0.25rem !important;
+}
+
+#rs-filter-section .form-select,
+#rs-filter-section .form-control {
+  border-radius: 8px !important;
+  border: 1px solid #dee2e6 !important;
+  font-size: 0.875rem !important;
+}
+
+#rs-filter-section .form-select:focus,
+#rs-filter-section .form-control:focus {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15) !important;
+}
+
+#rs-filter-section .btn {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+#rs-filter-section .btn-primary {
+  background: #007bff !important;
+  border-color: #007bff !important;
+}
+
+#rs-filter-section .btn-primary:hover {
+  background: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+/* ============================================
+   BUTTON LOADING STATES
+   ============================================ */
+
+.rencana-strategis-wrapper .btn[disabled] {
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+}
+
+.rencana-strategis-wrapper .btn .fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+#rs-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+#rs-toast-container .alert {
+  min-width: 300px;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   FILTER COUNT BADGE
+   ============================================ */
+
+#rs-filter-count {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  padding: 0.35rem 0.65rem !important;
+  border-radius: 20px !important;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  #rs-filter-section .row > div {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  #rs-filter-section .btn {
+    width: 100% !important;
+  }
+  
+  .rencana-strategis-wrapper .table thead th {
+    font-size: 0.7rem !important;
+    padding: 0.75rem 0.5rem !important;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .rencana-strategis-wrapper .table thead th {
+    background: #007bff !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  #rs-filter-section {
+    display: none !important;
+  }
+}

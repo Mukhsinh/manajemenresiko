@@ -10,7 +10,9 @@ const AnalisisSwotModule = (() => {
       kategori: '',
       rencanaStrategis: '',
       tahun: ''
-    }
+    },
+    isLoading: false,
+    isInitialized: false
   };
 
   const api = () => (window.app ? window.app.apiCall : window.apiCall);
@@ -19,11 +21,25 @@ const AnalisisSwotModule = (() => {
   async function load() {
     console.log('=== ANALISIS SWOT MODULE LOAD START ===');
     
-    // Check if page is active before loading
-    const swotPage = document.getElementById('analisis-swot');
-    if (!swotPage || !swotPage.classList.contains('active')) {
-      console.warn('⚠️ Analisis SWOT page not active, aborting load');
+    // Prevent multiple simultaneous loads
+    if (state.isLoading) {
+      console.log('AnalisisSwotModule: Already loading, skipping...');
       return;
+    }
+    
+    state.isLoading = true;
+    
+    // Get container - don't check if page is active, just load the data
+    const container = document.getElementById('analisis-swot-content');
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 40px; text-align: center;">
+          <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p style="margin-top: 15px; color: #666;">Memuat data Analisis SWOT...</p>
+        </div>
+      `;
     }
     
     try {
@@ -33,10 +49,13 @@ const AnalisisSwotModule = (() => {
       console.log('Rendering enhanced interface...');
       render();
       
+      state.isInitialized = true;
       console.log('=== ANALISIS SWOT MODULE LOAD COMPLETE ===');
     } catch (error) {
       console.error('=== ANALISIS SWOT MODULE LOAD ERROR ===', error);
       showError('Terjadi kesalahan saat memuat halaman: ' + error.message);
+    } finally {
+      state.isLoading = false;
     }
   }
 
@@ -171,10 +190,7 @@ const AnalisisSwotModule = (() => {
 
   function renderBasicContent(container) {
     container.innerHTML = `
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h3 class="card-title mb-1"><i data-lucide="bar-chart-3"></i> Analisis SWOT</h3>
-        </div>
+      <div class="d-flex justify-content-end align-items-center mb-4">
         <div class="action-buttons">
           <button class="btn btn-success" onclick="AnalisisSwotModule.downloadTemplate()">
             <i class="fas fa-download"></i> Template
@@ -233,7 +249,7 @@ const AnalisisSwotModule = (() => {
       </div>
 
       <!-- Data Table -->
-      <div class="card border-0">
+      <div class="card border-0 swot-table-container">
         <div class="card-header bg-transparent border-0">
           <h5 class="mb-0">Data Analisis SWOT</h5>
           <small class="text-muted">Kelola data analisis SWOT dengan fitur lengkap dan badge kategori yang tidak overflow</small>
@@ -256,7 +272,7 @@ const AnalisisSwotModule = (() => {
               </thead>
               <tbody id="swotTableBody">
                 <tr>
-                  <td colspan="9" class="loading">
+                  <td colspan="9" style="text-align: center; padding: 40px;">
                     <i class="fas fa-spinner fa-spin"></i> Memuat data...
                   </td>
                 </tr>
@@ -269,59 +285,80 @@ const AnalisisSwotModule = (() => {
   }
 
   function initializeEnhancedFeatures() {
+    // Load enhanced fix CSS (badge colors, table scroll, button fix)
+    const enhancedCssId = 'analisis-swot-enhanced-fix-css';
+    if (!document.getElementById(enhancedCssId)) {
+      const enhancedLink = document.createElement('link');
+      enhancedLink.id = enhancedCssId;
+      enhancedLink.rel = 'stylesheet';
+      enhancedLink.href = '/css/analisis-swot-enhanced-fix.css';
+      document.head.appendChild(enhancedLink);
+      console.log('✓ Enhanced fix CSS loaded for Analisis SWOT (badge, scroll, buttons)');
+    }
+    
+    // Load white cards CSS if not already loaded
+    const cssId = 'analisis-swot-white-cards-css';
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement('link');
+      link.id = cssId;
+      link.rel = 'stylesheet';
+      link.href = '/css/analisis-swot-white-cards.css';
+      document.head.appendChild(link);
+      console.log('✓ White cards CSS loaded for Analisis SWOT');
+    }
+    
     // Add enhanced CSS styles
     const style = document.createElement('style');
+    style.id = 'analisis-swot-enhanced-inline';
     style.textContent = `
-      /* Enhanced SWOT Analysis Styles */
+      /* Enhanced SWOT Analysis Styles - White Theme */
       .page-header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 2rem 0;
-          margin-bottom: 2rem;
-          border-radius: 12px;
+          background: #ffffff !important;
+          color: #1e293b !important;
+          padding: 16px 20px !important;
+          margin-bottom: 16px !important;
+          border-radius: 8px !important;
+          border: 1px solid #e2e8f0 !important;
       }
       
       .action-buttons {
           display: flex;
-          gap: 0.5rem;
+          gap: 6px;
           flex-wrap: wrap;
           align-items: center;
       }
       
       .btn-action {
-          padding: 0.5rem 1rem;
-          border-radius: 8px;
+          padding: 6px 12px;
+          border-radius: 6px;
           font-weight: 500;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          font-size: 0.875rem;
+          font-size: 12px;
       }
       
       .btn-action:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.12);
       }
       
-      /* FIXED: Badge Styles - Contained within table cells */
+      /* Badge Styles - Compact */
       .badge-kategori {
           display: inline-block;
-          padding: 6px 10px;
-          font-size: 11px;
+          padding: 4px 8px;
+          font-size: 10px;
           font-weight: 600;
           line-height: 1.2;
           text-align: center;
           white-space: nowrap;
           vertical-align: baseline;
-          border-radius: 6px;
-          max-width: 100%;
-          width: 100%;
-          box-sizing: border-box;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          border-radius: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
       }
       
-      /* Additional overflow fixes for SWOT table */
+      /* Table overflow fixes */
       .swot-table td, .swot-table th {
           overflow: hidden;
           text-overflow: ellipsis;
@@ -329,59 +366,128 @@ const AnalisisSwotModule = (() => {
       }
       
       .swot-table .objek-analisis-column {
-          max-width: 400px;
-          min-width: 200px;
+          max-width: 350px;
+          min-width: 180px;
       }
       
       .swot-table .kategori-column {
-          max-width: 120px;
-          min-width: 100px;
+          max-width: 100px;
+          min-width: 80px;
       }
       
-      .btn-icon {
-          max-width: 40px;
-          overflow: hidden;
+      /* Badge colors - Bright solid colors without outline */
+      .badge-strength { 
+        background: #22c55e !important; 
+        color: #ffffff !important; 
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .badge-weakness { 
+        background: #ef4444 !important; 
+        color: #ffffff !important; 
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .badge-opportunity { 
+        background: #3b82f6 !important; 
+        color: #ffffff !important; 
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .badge-threat { 
+        background: #f59e0b !important; 
+        color: #ffffff !important; 
+        border: none !important;
+        box-shadow: none !important;
       }
       
-      .badge-strength { background-color: #10b981; color: white; }
-      .badge-weakness { background-color: #ef4444; color: white; }
-      .badge-opportunity { background-color: #3b82f6; color: white; }
-      .badge-threat { background-color: #f59e0b; color: #1e293b; }
-      
-      /* FIXED: Column Styles - Proper width constraints */
+      /* Column Styles */
       .kategori-column {
-          width: 120px;
-          min-width: 120px;
-          max-width: 120px;
+          width: 100px;
+          min-width: 80px;
+          max-width: 100px;
           text-align: center;
           padding: 8px 4px !important;
       }
       
-      .kategori-column .badge-kategori {
-          width: 100%;
-          max-width: 110px;
-      }
-      
-      /* FIXED: Action Buttons */
+      /* Action Buttons - Compact */
       .btn-icon {
-          padding: 6px 8px;
+          padding: 4px 8px;
           margin: 0 2px;
-          border-radius: 6px;
+          border-radius: 4px;
           border: none;
           cursor: pointer;
           transition: all 0.2s ease;
-          font-size: 0.75rem;
-          min-width: 32px;
+          font-size: 11px;
+          min-width: 28px;
       }
       
       .btn-edit { background-color: #17a2b8; color: white; }
       .btn-delete { background-color: #dc3545; color: white; }
       
       .btn-icon:hover {
-          transform: scale(1.1);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          transform: scale(1.05);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      }
+      
+      /* Summary Cards - White & Compact */
+      .summary-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 12px;
+          margin-bottom: 16px;
+      }
+      
+      .summary-card {
+          background: #ffffff !important;
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 8px !important;
+          padding: 12px 14px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+      }
+      
+      /* Table Container - White */
+      .card.border-0,
+      .table-container {
+          background: #ffffff !important;
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 8px !important;
+      }
+      
+      .card-header {
+          background: #ffffff !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+          padding: 12px 16px !important;
+      }
+      
+      .card-header h5 {
+          color: #1e293b !important;
+          font-size: 14px !important;
+          font-weight: 600 !important;
+      }
+      
+      /* Table Header - Light gray */
+      .table thead th {
+          background: #f8fafc !important;
+          color: #475569 !important;
+          font-weight: 600 !important;
+          font-size: 12px !important;
+          padding: 10px 12px !important;
+      }
+      
+      /* No overflow */
+      .container-fluid {
+          padding: 16px !important;
+          overflow-x: hidden !important;
       }
     `;
+    
+    // Remove existing inline style if present
+    const existingStyle = document.getElementById('analisis-swot-enhanced-inline');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
     document.head.appendChild(style);
   }
 
@@ -603,39 +709,85 @@ const AnalisisSwotModule = (() => {
     if (state.filteredData.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" class="no-data">
-            <i class="fas fa-info-circle"></i> Tidak ada data yang sesuai dengan filter
+          <td colspan="9" class="no-data" style="text-align: center; padding: 40px; color: #64748b;">
+            <i class="fas fa-info-circle" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+            Tidak ada data yang sesuai dengan filter
           </td>
         </tr>
       `;
       return;
     }
 
-    tbody.innerHTML = state.filteredData.map(item => `
-      <tr>
-        <td class="unit-kerja-column">${item.unit_kerja_name}</td>
-        <td class="kategori-column">
-          <span class="badge-kategori badge-${item.kategori.toLowerCase()}">${item.kategori}</span>
-        </td>
-        <td class="rencana-strategis-column">
-          <div class="kode" style="font-weight: 600; color: #495057; margin-bottom: 2px;">${item.rencana_strategis_info.kode}</div>
-          <div class="nama" style="color: #6c757d; font-size: 0.85em; line-height: 1.2;">${item.rencana_strategis_info.nama}</div>
-        </td>
-        <td class="objek-analisis-column">${item.objek_analisis}</td>
-        <td class="bobot-column">${item.bobot}</td>
-        <td class="rank-column">${item.rank}</td>
-        <td class="score-column">${item.score || 0}</td>
-        <td class="tahun-column">${item.tahun}</td>
-        <td class="aksi-column">
-          <button class="btn-icon btn-edit" onclick="AnalisisSwotModule.editData('${item.id}')" title="Edit">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-icon btn-delete" onclick="AnalisisSwotModule.deleteData('${item.id}')" title="Hapus">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = state.filteredData.map(item => {
+      const kategoriLower = (item.kategori || '').toLowerCase();
+      const unitKerjaName = item.unit_kerja_name || 'Unknown';
+      const rsInfo = item.rencana_strategis_info || { kode: '-', nama: 'Tidak terkait' };
+      const objekAnalisis = item.objek_analisis || '-';
+      const bobot = item.bobot || 0;
+      const rank = item.rank || 0;
+      const score = item.score || 0;
+      const tahun = item.tahun || '-';
+      const itemId = item.id;
+      
+      return `
+        <tr data-id="${itemId}">
+          <td class="unit-kerja-column">${unitKerjaName}</td>
+          <td class="kategori-column">
+            <span class="badge-kategori badge-${kategoriLower}">${item.kategori || '-'}</span>
+          </td>
+          <td class="rencana-strategis-column">
+            <div class="kode" style="font-weight: 600; color: #495057; margin-bottom: 2px;">${rsInfo.kode}</div>
+            <div class="nama" style="color: #6c757d; font-size: 0.85em; line-height: 1.2;">${rsInfo.nama}</div>
+          </td>
+          <td class="objek-analisis-column" title="${objekAnalisis}">${objekAnalisis}</td>
+          <td class="bobot-column">${bobot}</td>
+          <td class="rank-column">${rank}</td>
+          <td class="score-column">${score}</td>
+          <td class="tahun-column">${tahun}</td>
+          <td class="aksi-column">
+            <button type="button" class="btn-icon btn-edit" data-id="${itemId}" title="Edit Data">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button type="button" class="btn-icon btn-delete" data-id="${itemId}" title="Hapus Data">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    
+    // Attach event listeners for edit and delete buttons
+    attachButtonEventListeners();
+  }
+  
+  function attachButtonEventListeners() {
+    // Edit buttons
+    document.querySelectorAll('.btn-edit[data-id]').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = this.getAttribute('data-id');
+        if (id) {
+          console.log('Edit button clicked for ID:', id);
+          editData(id);
+        }
+      });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.btn-delete[data-id]').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = this.getAttribute('data-id');
+        if (id) {
+          console.log('Delete button clicked for ID:', id);
+          deleteData(id);
+        }
+      });
+    });
+    
+    console.log('✓ Button event listeners attached');
   }
 
   function showError(message) {
@@ -681,11 +833,48 @@ const AnalisisSwotModule = (() => {
     downloadReport,
     editData,
     deleteData,
+    updateData,
     closeModal,
     handleFileSelect,
     processImport,
     saveData
   };
+
+  // Update data function (for edit form)
+  async function updateData(event, id) {
+    event.preventDefault();
+    
+    try {
+      const formData = {
+        unit_kerja_id: document.getElementById('editUnitKerja').value,
+        kategori: document.getElementById('editKategori').value,
+        rencana_strategis_id: document.getElementById('editRencanaStrategis')?.value || null,
+        objek_analisis: document.getElementById('editObjekAnalisis').value,
+        bobot: parseInt(document.getElementById('editBobot').value),
+        rank: parseInt(document.getElementById('editRank').value),
+        tahun: parseInt(document.getElementById('editTahun').value)
+      };
+
+      await api()(`/api/analisis-swot/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(formData)
+      });
+
+      // Close modal
+      const modal = document.querySelector('.modal.active');
+      if (modal) modal.remove();
+
+      // Refresh data
+      await fetchInitialData();
+      populateFilters();
+      renderSummaryCards();
+      renderTable();
+      
+      alert('Data berhasil diupdate');
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+  }
 
   // Close modal function
   function closeModal(modalId) {
@@ -895,8 +1084,8 @@ const AnalisisSwotModule = (() => {
                 </div>
               </div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Rencana Strategis</label>
+            <div class="mb-3" style="display: none;">
+              <label class="form-label">Rencana Strategis (Opsional)</label>
               <select class="form-control" id="rencanaStrategis">
                 <option value="">Pilih Rencana Strategis (Opsional)</option>
                 ${state.rencanaStrategisList.map(rencana => `<option value="${rencana.id}">${rencana.kode} - ${rencana.nama_rencana}</option>`).join('')}
@@ -1024,8 +1213,8 @@ const AnalisisSwotModule = (() => {
                   </div>
                 </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Rencana Strategis</label>
+              <div class="mb-3" style="display: none;">
+                <label class="form-label">Rencana Strategis (Opsional)</label>
                 <select class="form-control" id="editRencanaStrategis">
                   <option value="">Pilih Rencana Strategis (Opsional)</option>
                   ${state.rencanaStrategisList.map(rencana => `<option value="${rencana.id}" ${data.rencana_strategis_id === rencana.id ? 'selected' : ''}>${rencana.kode} - ${rencana.nama_rencana}</option>`).join('')}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Monitoring Evaluasi - Edit & Delete</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { margin-bottom: 20px; color: #1f2937; }
+        .test-panel { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .test-result { padding: 10px; border-radius: 6px; margin: 5px 0; }
+        .test-pass { background: #d1fae5; color: #065f46; }
+        .test-fail { background: #fee2e2; color: #991b1b; }
+        .test-info { background: #dbeafe; color: #1e40af; }
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; margin: 5px; }
+        .btn-primary { background: #3b82f6; color: #fff; }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        #monitoring-evaluasi-content { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-vial"></i> Test Monitoring Evaluasi - Edit & Delete</h1>
+        
+        <div class="test-panel">
+            <h3>Test Controls</h3>
+            <button class="btn btn-primary" onclick="runTests()">Run All Tests</button>
+            <button class="btn btn-success" onclick="testLoad()">Test Load</button>
+            <button class="btn btn-primary" onclick="testEditFunction()">Test Edit Function</button>
+            <button class="btn btn-danger" onclick="testDeleteFunction()">Test Delete Function</button>
+        </div>
+        
+        <div class="test-panel">
+            <h3>Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+        
+        <div id="monitoring-evaluasi-content">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Mock API
+        const mockData = [
+            { id: 'test-1', tanggal_monitoring: '2025-01-10', status_risiko: 'Stabil', nilai_risiko: 12, progress_mitigasi: 75, evaluasi: 'Test evaluasi 1', risk_input_id: 'r1', risk_inputs: { kode_risiko: 'RSK-001', sasaran: 'Test sasaran' } },
+            { id: 'test-2', tanggal_monitoring: '2025-01-09', status_risiko: 'Meningkat', nilai_risiko: 16, progress_mitigasi: 45, evaluasi: 'Test evaluasi 2', risk_input_id: 'r2', risk_inputs: { kode_risiko: 'RSK-002', sasaran: 'Test sasaran 2' } }
+        ];
+
+        async function apiCall(url, options = {}) {
+            console.log('API Call:', url, options);
+            await new Promise(r => setTimeout(r, 100));
+            
+            if (url.includes('/api/monitoring-evaluasi/') && !options.method) {
+                const id = url.split('/').pop();
+                const item = mockData.find(d => d.id === id);
+                if (item) return item;
+                throw new Error('Not found');
+            }
+            if (url === '/api/monitoring-evaluasi' || url.includes('/test')) return mockData;
+            if (url === '/api/risks') return [{ id: 'r1', kode_risiko: 'RSK-001', sasaran: 'Test' }];
+            if (options.method === 'DELETE') return { success: true };
+            if (options.method === 'PUT') return { success: true };
+            return mockData;
+        }
+
+        function addResult(name, passed, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+            div.innerHTML = `<strong>${passed ? '✓' : '✗'} ${name}</strong>: ${message}`;
+            document.getElementById('test-results').appendChild(div);
+        }
+
+        function addInfo(message) {
+            const div = document.createElement('div');
+            div.className = 'test-result test-info';
+            div.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+            document.getElementById('test-results').appendChild(div);
+        }
+
+        async function testLoad() {
+            document.getElementById('test-results').innerHTML = '';
+            addInfo('Testing MonitoringEvaluasi.load()...');
+            try {
+                await MonitoringEvaluasi.load();
+                addResult('Load Function', true, 'Module loaded successfully');
+            } catch (e) {
+                addResult('Load Function', false, e.message);
+            }
+        }
+
+        async function testEditFunction() {
+            addInfo('Testing MonitoringEvaluasi.edit()...');
+            
+            // Check if function exists
+            if (typeof MonitoringEvaluasi.edit === 'function') {
+                addResult('Edit Function Exists', true, 'MonitoringEvaluasi.edit is a function');
+            } else {
+                addResult('Edit Function Exists', false, 'MonitoringEvaluasi.edit is NOT a function');
+                return;
+            }
+            
+            // Test calling edit
+            try {
+                await MonitoringEvaluasi.edit('test-1');
+                setTimeout(() => {
+                    const modal = document.querySelector('.modal');
+                    if (modal) {
+                        addResult('Edit Modal Opens', true, 'Modal opened successfully');
+                        
+                        // Check if form fields are populated
+                        const tanggal = document.getElementById('monitoring-tanggal');
+                        if (tanggal && tanggal.value) {
+                            addResult('Form Populated', true, 'Form fields are populated');
+                        } else {
+                            addResult('Form Populated', false, 'Form fields are NOT populated');
+                        }
+                        
+                        // Close modal
+                        modal.remove();
+                    } else {
+                        addResult('Edit Modal Opens', false, 'Modal did NOT open');
+                    }
+                }, 500);
+            } catch (e) {
+                addResult('Edit Function Call', false, e.message);
+            }
+        }
+
+        function testDeleteFunction() {
+            addInfo('Testing MonitoringEvaluasi.confirmDelete()...');
+            
+            if (typeof MonitoringEvaluasi.confirmDelete === 'function') {
+                addResult('Delete Function Exists', true, 'MonitoringEvaluasi.confirmDelete is a function');
+            } else {
+                addResult('Delete Function Exists', false, 'MonitoringEvaluasi.confirmDelete is NOT a function');
+            }
+            
+            if (typeof MonitoringEvaluasi.delete === 'function') {
+                addResult('Delete Async Function Exists', true, 'MonitoringEvaluasi.delete is a function');
+            } else {
+                addResult('Delete Async Function Exists', false, 'MonitoringEvaluasi.delete is NOT a function');
+            }
+        }
+
+        async function runTests() {
+            document.getElementById('test-results').innerHTML = '';
+            
+            // Test 1: Check if MonitoringEvaluasi is available
+            if (typeof MonitoringEvaluasi !== 'undefined') {
+                addResult('Module Available', true, 'MonitoringEvaluasi is defined on window');
+            } else {
+                addResult('Module Available', false, 'MonitoringEvaluasi is NOT defined');
+                return;
+            }
+            
+            await testLoad();
+            await testEditFunction();
+            testDeleteFunction();
+        }
+    </script>
+    <script src="/js/monitoring-evaluasi.js"></script>
+    <script>
+        // Auto-run tests after script loads
+        setTimeout(runTests, 500);
+    </script>
+</body>
+</html>

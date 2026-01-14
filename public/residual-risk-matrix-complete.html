@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Risk Matrix - Manajemen Risiko</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        .badge-low-risk {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge-medium-risk {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .badge-high-risk {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .badge-extreme-high {
+            background-color: #f5c6cb;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .badge-secondary {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .error-panel {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .success-panel {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        /* Risk Matrix Styles */
+        .risk-matrix-container {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr);
+            grid-template-rows: 60px repeat(5, 1fr);
+            gap: 2px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .matrix-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .matrix-header {
+            background: #6c757d;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .matrix-label {
+            background: #495057;
+            color: white;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+        
+        .matrix-cell.low-risk {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .matrix-cell.medium-risk {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        
+        .matrix-cell.high-risk {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .matrix-cell.extreme-risk {
+            background: #f5c6cb;
+            color: #721c24;
+            border: 2px solid #f1b0b7;
+        }
+        
+        .matrix-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .risk-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 5;
+        }
+        
+        .risk-point.inherent {
+            background: #dc3545;
+        }
+        
+        .risk-point.residual {
+            background: #28a745;
+        }
+        
+        .matrix-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .legend-symbol {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        .comparison-chart {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Panel -->
+    <div id="debug-panel" class="debug-panel" style="display: none;">
+        <div id="debug-content">Debug info will appear here...</div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-alt"></i> PINTAR MR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="riskDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-exclamation-triangle"></i> Analisis Risiko
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="risk-profile.html">Risk Profile</a></li>
+                            <li><a class="dropdown-item active" href="residual-risk.html">Residual Risk</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="navbar-text">
+                            <i class="fas fa-user"></i> Administrator
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2><i class="fas fa-chart-pie text-primary"></i> Residual Risk Matrix</h2>
+                        <p class="text-muted">Matriks Analisis Risiko Residual dengan Visualisasi Interaktif</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary" onclick="toggleDebug()">
+                            <i class="fas fa-bug"></i> Debug
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="loadData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadExcel()">
+                            <i class="fas fa-download"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div id="content-area">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Memuat data residual risk matrix...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let residualData = [];
+        let debugMode = false;
+        let tooltip = null;
+        
+        function debugLog(message) {
+            console.log(message);
+            if (debugMode) {
+                const debugContent = document.getElementById('debug-content');
+                const timestamp = new Date().toLocaleTimeString();
+                debugContent.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                debugContent.scrollTop = debugContent.scrollHeight;
+            }
+        }
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugPanel = document.getElementById('debug-panel');
+            debugPanel.style.display = debugMode ? 'block' : 'none';
+            if (debugMode) {
+                debugLog('Debug mode enabled');
+                debugLog(`Current URL: ${window.location.href}`);
+                debugLog(`API URL will be: ${window.location.origin}/api/reports/residual-risk-simple`);
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('DOM loaded, initializing...');
+            tooltip = document.getElementById('tooltip');
+            
+            // Auto-load data after a short delay
+            setTimeout(() => {
+                debugLog('Auto-loading data...');
+                loadData();
+            }, 500);
+        });
+
+        async function loadData() {
+            try {
+                debugLog('Starting data load...');
+                
+                const container = document.getElementById('content-area');
+                if (!container) {
+                    throw new Error('Content area not found');
+                }
+                
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Memuat data residual risk matrix...</p>
+                    </div>
+                `;
+                
+                const apiUrl = '/api/reports/residual-risk-simple';
+                debugLog(`Fetching data from API: ${apiUrl}`);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                debugLog(`API Response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debugLog(`API Error response: ${errorText}`);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const responseText = await response.text();
+                debugLog(`Raw response length: ${responseText.length} characters`);
+                
+                try {
+                    residualData = JSON.parse(responseText);
+                } catch (parseError) {
+                    debugLog(`JSON Parse Error: ${parseError.message}`);
+                    throw new Error(`Failed to parse JSON response: ${parseError.message}`);
+                }
+                
+                debugLog(`Data loaded: ${residualData.length} records`);
+                
+                if (!Array.isArray(residualData)) {
+                    debugLog(`ERROR: Data is not an array, type: ${typeof residualData}`);
+                    throw new Error('Invalid data format received from API - expected array');
+                }
+                
+                debugLog('Rendering content...');
+                renderContent();
+                debugLog('✅ Data loaded and rendered successfully');
+                
+            } catch (error) {
+                debugLog(`❌ Error loading data: ${error.message}`);
+                console.error('Error loading data:', error);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('content-area');
+            container.innerHTML = `
+                <div class="error-panel">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadData()">
+                        <i class="fas fa-sync-alt"></i> Coba Lagi
+                    </button>
+                    <button class="btn btn-secondary ms-2" onclick="toggleDebug()">
+                        <i class="fas fa-bug"></i> Show Debug
+                    </button>
+                </div>
+            `;
+        }
+        
+        function renderContent() {
+            const container = document.getElementById('content-area');
+            
+            if (residualData.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <h4><i class="fas fa-info-circle"></i> Tidak Ada Data</h4>
+                        <p>Belum ada data residual risk yang tersedia.</p>
+                        <button class="btn btn-secondary" onclick="toggleDebug()">
+                            <i class="fas fa-bug"></i> Show Debug Info
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate statistics
+            const stats = calculateStatistics();
+            debugLog(`Statistics calculated: ${JSON.stringify(stats)}`);
+            
+            container.innerHTML = `
+                <div class="success-panel">
+                    <h4><i class="fas fa-check-circle"></i> Data Berhasil Dimuat</h4>
+                    <p>Berhasil memuat ${residualData.length} record residual risk analysis dengan matriks interaktif.</p>
+                </div>
+                
+                ${renderStatistics(stats)}
+                ${renderRiskMatrix()}
+                ${renderComparisonCharts()}
+                ${renderTable()}
+            `;
+            
+            // Initialize charts after content is rendered
+            setTimeout(() => {
+                initializeCharts();
+            }, 100);
+        }
+        
+        function calculateStatistics() {
+            let totalInherent = 0;
+            let totalResidual = 0;
+            let validInherentCount = 0;
+            let riskLevelCounts = {
+                'LOW RISK': 0,
+                'MEDIUM RISK': 0,
+                'HIGH RISK': 0,
+                'EXTREME HIGH': 0,
+                'VERY HIGH': 0
+            };
+            
+            let matrixData = [];
+            
+            residualData.forEach(item => {
+                const risk = item.risk_inputs || {};
+                let inherent = {};
+                
+                // Try to get inherent data
+                if (risk.risk_inherent_analysis) {
+                    if (Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                        inherent = risk.risk_inherent_analysis[0];
+                    } else if (!Array.isArray(risk.risk_inherent_analysis)) {
+                        inherent = risk.risk_inherent_analysis;
+                    }
+                }
+                
+                const inherentValue = parseFloat(inherent.risk_value) || 0;
+                const residualValue = parseFloat(item.risk_value) || 0;
+                
+                if (inherentValue > 0) {
+                    totalInherent += inherentValue;
+                    validInherentCount++;
+                }
+                
+                if (residualValue > 0) {
+                    totalResidual += residualValue;
+                }
+                
+                // Count risk levels
+                const riskLevel = (item.risk_level || '').toUpperCase();
+                if (riskLevel.includes('LOW')) {
+                    riskLevelCounts['LOW RISK']++;
+                } else if (riskLevel.includes('MEDIUM')) {
+                    riskLevelCounts['MEDIUM RISK']++;
+                } else if (riskLevel.includes('HIGH') && !riskLevel.includes('EXTREME')) {
+                    riskLevelCounts['HIGH RISK']++;
+                } else if (riskLevel.includes('EXTREME') || riskLevel.includes('VERY HIGH')) {
+                    riskLevelCounts['EXTREME HIGH']++;
+                }
+                
+                // Prepare matrix data
+                matrixData.push({
+                    id: item.id,
+                    kode_risiko: risk.kode_risiko || 'N/A',
+                    inherent_probability: inherent.probability || 0,
+                    inherent_impact: inherent.impact || 0,
+                    inherent_value: inherentValue,
+                    residual_probability: item.probability || 0,
+                    residual_impact: item.impact || 0,
+                    residual_value: residualValue,
+                    unit_kerja: risk.master_work_units?.name || 'N/A',
+                    sasaran: risk.sasaran || 'N/A'
+                });
+            });
+
+            const avgInherent = validInherentCount > 0 ? totalInherent / validInherentCount : 0;
+            const avgResidual = residualData.length > 0 ? totalResidual / residualData.length : 0;
+            const reduction = avgInherent > 0 ? ((avgInherent - avgResidual) / avgInherent * 100).toFixed(1) : '0.0';
+
+            return {
+                total: residualData.length,
+                avgInherent: avgInherent,
+                avgResidual: avgResidual,
+                reduction: reduction,
+                riskLevelCounts: riskLevelCounts,
+                validInherentCount: validInherentCount,
+                matrixData: matrixData
+            };
+        }
+        
+        function renderStatistics(stats) {
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card" style="background: #ffffff;">
+                        <div class="stat-value">${stats.total}</div>
+                        <div class="stat-label">Total Residual Risk</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-value">${stats.avgInherent.toFixed(2)}</div>
+                        <div class="stat-label">Avg Inherent Value</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="stat-value">${stats.avgResidual.toFixed(2)}</div>
+                        <div class="stat-label">Avg Residual Value</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <div class="stat-value">${stats.reduction}%</div>
+                        <div class="stat-label">Risk Reduction</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderRiskMatrix() {
+            const stats = calculateStatistics();
+            
+            return `
+                <div class="risk-matrix-container">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-th"></i> Interactive Risk Matrix
+                        <small class="text-muted d-block">Matriks Risiko Interaktif (Probability vs Impact)</small>
+                    </h4>
+                    
+                    <div class="risk-matrix" id="risk-matrix">
+                        <!-- Matrix will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="matrix-legend">
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #dc3545;"></div>
+                            <span>Inherent Risk</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #28a745;"></div>
+                            <span>Residual Risk</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #d4edda; border-color: #c3e6cb;"></div>
+                            <span>Low Risk (1-4)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #fff3cd; border-color: #ffeaa7;"></div>
+                            <span>Medium Risk (5-9)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #f8d7da; border-color: #f5c6cb;"></div>
+                            <span>High Risk (10-15)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #f5c6cb; border-color: #f1b0b7;"></div>
+                            <span>Extreme Risk (16-25)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderComparisonCharts() {
+            return `
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="comparison-chart">
+                            <h5 class="text-center mb-3">
+                                <i class="fas fa-chart-bar"></i> Risk Level Distribution
+                            </h5>
+                            <div class="chart-container">
+                                <canvas id="riskLevelChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="comparison-chart">
+                            <h5 class="text-center mb-3">
+                                <i class="fas fa-chart-line"></i> Inherent vs Residual Comparison
+                            </h5>
+                            <div class="chart-container">
+                                <canvas id="comparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function initializeMatrix() {
+            const matrixContainer = document.getElementById('risk-matrix');
+            if (!matrixContainer) return;
+            
+            const stats = calculateStatistics();
+            let matrixHTML = '';
+            
+            // Create matrix grid (6x6 including headers)
+            // Row 0: Headers
+            matrixHTML += '<div class="matrix-cell matrix-header"></div>'; // Empty corner
+            for (let impact = 1; impact <= 5; impact++) {
+                matrixHTML += `<div class="matrix-cell matrix-header">Impact ${impact}</div>`;
+            }
+            
+            // Rows 1-5: Probability labels + risk cells
+            for (let prob = 5; prob >= 1; prob--) {
+                matrixHTML += `<div class="matrix-cell matrix-label">Prob ${prob}</div>`;
+                
+                for (let impact = 1; impact <= 5; impact++) {
+                    const riskValue = prob * impact;
+                    let riskClass = 'low-risk';
+                    
+                    if (riskValue >= 16) riskClass = 'extreme-risk';
+                    else if (riskValue >= 10) riskClass = 'high-risk';
+                    else if (riskValue >= 5) riskClass = 'medium-risk';
+                    
+                    matrixHTML += `
+                        <div class="matrix-cell ${riskClass}" 
+                             data-probability="${prob}" 
+                             data-impact="${impact}" 
+                             data-risk-value="${riskValue}"
+                             onclick="showCellDetails(${prob}, ${impact})">
+                            ${riskValue}
+                        </div>
+                    `;
+                }
+            }
+            
+            matrixContainer.innerHTML = matrixHTML;
+            
+            // Add risk points to matrix
+            addRiskPointsToMatrix(stats.matrixData);
+        }
+        
+        function addRiskPointsToMatrix(matrixData) {
+            matrixData.forEach((risk, index) => {
+                // Add inherent risk point
+                if (risk.inherent_probability > 0 && risk.inherent_impact > 0) {
+                    addRiskPoint(risk.inherent_probability, risk.inherent_impact, 'inherent', risk, index);
+                }
+                
+                // Add residual risk point
+                if (risk.residual_probability > 0 && risk.residual_impact > 0) {
+                    addRiskPoint(risk.residual_probability, risk.residual_impact, 'residual', risk, index);
+                }
+            });
+        }
+        
+        function addRiskPoint(probability, impact, type, riskData, index) {
+            const matrixContainer = document.getElementById('risk-matrix');
+            if (!matrixContainer) return;
+            
+            // Find the target cell
+            const targetCell = matrixContainer.querySelector(
+                `[data-probability="${probability}"][data-impact="${impact}"]`
+            );
+            
+            if (targetCell) {
+                const point = document.createElement('div');
+                point.className = `risk-point ${type}`;
+                point.style.left = type === 'inherent' ? '20%' : '70%';
+                point.style.top = '20%';
+                point.setAttribute('data-risk-id', riskData.id);
+                point.setAttribute('data-type', type);
+                
+                // Add event listeners
+                point.addEventListener('mouseenter', (e) => showTooltip(e, riskData, type));
+                point.addEventListener('mouseleave', hideTooltip);
+                point.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showRiskDetails(riskData);
+                });
+                
+                targetCell.appendChild(point);
+            }
+        }
+        
+        function showTooltip(event, riskData, type) {
+            if (!tooltip) return;
+            
+            const value = type === 'inherent' ? riskData.inherent_value : riskData.residual_value;
+            const prob = type === 'inherent' ? riskData.inherent_probability : riskData.residual_probability;
+            const impact = type === 'inherent' ? riskData.inherent_impact : riskData.residual_impact;
+            
+            tooltip.innerHTML = `
+                <strong>${riskData.kode_risiko}</strong><br>
+                <strong>${type === 'inherent' ? 'Inherent' : 'Residual'} Risk</strong><br>
+                Unit: ${riskData.unit_kerja}<br>
+                Probability: ${prob}<br>
+                Impact: ${impact}<br>
+                Risk Value: ${value}<br>
+                <em>${riskData.sasaran.substring(0, 50)}...</em>
+            `;
+            
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 10 + 'px';
+            tooltip.classList.add('show');
+        }
+        
+        function hideTooltip() {
+            if (tooltip) {
+                tooltip.classList.remove('show');
+            }
+        }
+        
+        function showCellDetails(probability, impact) {
+            const riskValue = probability * impact;
+            let level = 'Low Risk';
+            
+            if (riskValue >= 16) level = 'Extreme Risk';
+            else if (riskValue >= 10) level = 'High Risk';
+            else if (riskValue >= 5) level = 'Medium Risk';
+            
+            alert(`Risk Cell Details:\nProbability: ${probability}\nImpact: ${impact}\nRisk Value: ${riskValue}\nLevel: ${level}`);
+        }
+        
+        function showRiskDetails(riskData) {
+            const details = `
+Risk Details:
+Kode Risiko: ${riskData.kode_risiko}
+Unit Kerja: ${riskData.unit_kerja}
+Sasaran: ${riskData.sasaran}
+
+Inherent Risk:
+- Probability: ${riskData.inherent_probability}
+- Impact: ${riskData.inherent_impact}
+- Value: ${riskData.inherent_value}
+
+Residual Risk:
+- Probability: ${riskData.residual_probability}
+- Impact: ${riskData.residual_impact}
+- Value: ${riskData.residual_value}
+
+Risk Reduction: ${riskData.inherent_value > 0 ? (((riskData.inherent_value - riskData.residual_value) / riskData.inherent_value * 100).toFixed(1)) : 0}%
+            `;
+            
+            alert(details);
+        }
+        
+        function initializeCharts() {
+            initializeMatrix();
+            initializeRiskLevelChart();
+            initializeComparisonChart();
+        }
+        
+        function initializeRiskLevelChart() {
+            const ctx = document.getElementById('riskLevelChart');
+            if (!ctx) return;
+            
+            const stats = calculateStatistics();
+            const labels = Object.keys(stats.riskLevelCounts);
+            const data = Object.values(stats.riskLevelCounts);
+            const colors = ['#28a745', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1'];
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initializeComparisonChart() {
+            const ctx = document.getElementById('comparisonChart');
+            if (!ctx) return;
+            
+            const stats = calculateStatistics();
+            const labels = stats.matrixData.map(item => item.kode_risiko);
+            const inherentData = stats.matrixData.map(item => item.inherent_value);
+            const residualData = stats.matrixData.map(item => item.residual_value);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Inherent Risk',
+                            data: inherentData,
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Residual Risk',
+                            data: residualData,
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Risk Value'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Risk Code'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderTable() {
+            return `
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem;"><i class="fas fa-table"></i> Detail Residual Risk Analysis</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Kode Risiko</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Sasaran</th>
+                                    <th>Inherent</th>
+                                    <th>Residual</th>
+                                    <th>Reduction</th>
+                                    <th>Level</th>
+                                    <th>Review Status</th>
+                                    <th>Next Review</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${residualData.map((item, index) => {
+                                    const risk = item.risk_inputs || {};
+                                    
+                                    // Get inherent data
+                                    let inherent = {};
+                                    if (risk.risk_inherent_analysis) {
+                                        if (Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                                            inherent = risk.risk_inherent_analysis[0];
+                                        } else if (!Array.isArray(risk.risk_inherent_analysis)) {
+                                            inherent = risk.risk_inherent_analysis;
+                                        }
+                                    }
+                                    
+                                    const inherentValue = parseFloat(inherent.risk_value) || 0;
+                                    const inherentLevel = inherent.risk_level || 'UNKNOWN';
+                                    const residualValue = parseFloat(item.risk_value) || 0;
+                                    
+                                    // Calculate reduction percentage
+                                    let reduction = '-';
+                                    if (inherentValue > 0 && residualValue >= 0) {
+                                        const reductionPercent = ((inherentValue - residualValue) / inherentValue * 100);
+                                        reduction = reductionPercent.toFixed(1) + '%';
+                                    }
+                                    
+                                    // Truncate long text
+                                    const truncateText = (text, maxLength = 30) => {
+                                        if (!text) return '-';
+                                        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+                                    };
+                                    
+                                    return `
+                                        <tr>
+                                            <td><strong>${index + 1}</strong></td>
+                                            <td><strong>${risk.kode_risiko || '-'}</strong></td>
+                                            <td>${truncateText(risk.master_work_units?.name)}</td>
+                                            <td title="${risk.sasaran || ''}">${truncateText(risk.sasaran, 40)}</td>
+                                            <td><span class="badge-status ${getBadgeClass(inherentLevel)}">${inherentValue || '-'}</span></td>
+                                            <td><span class="badge-status ${getBadgeClass(item.risk_level)}">${residualValue || '-'}</span></td>
+                                            <td><strong style="color: #0d4f1c; font-weight: 700;">${reduction}</strong></td>
+                                            <td><span class="badge-status ${getBadgeClass(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                                            <td><span class="badge-status badge-secondary">${item.review_status || '-'}</span></td>
+                                            <td>${item.next_review_date || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getBadgeClass(level) {
+            const levelUpper = (level || '').toUpperCase();
+            
+            if (levelUpper.includes('LOW') || levelUpper.includes('RENDAH')) {
+                return 'badge-low-risk';
+            } else if (levelUpper.includes('MEDIUM') || levelUpper.includes('SEDANG')) {
+                return 'badge-medium-risk';
+            } else if (levelUpper.includes('HIGH') && !levelUpper.includes('EXTREME')) {
+                return 'badge-high-risk';
+            } else if (levelUpper.includes('EXTREME') || levelUpper.includes('VERY HIGH') || levelUpper.includes('SANGAT')) {
+                return 'badge-extreme-high';
+            } else {
+                return 'badge-secondary';
+            }
+        }
+        
+        async function downloadExcel() {
+            try {
+                debugLog('Starting Excel download...');
+                
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                button.disabled = true;
+                
+                const response = await fetch('/api/reports/residual-risk/excel', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `residual-risk-matrix-${new Date().toISOString().split('T')[0]}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    debugLog('✅ Excel file downloaded successfully');
+                    
+                    showSuccessMessage('File Excel berhasil diunduh');
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Download failed: ${response.status} - ${errorText}`);
+                }
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+            } catch (error) {
+                debugLog(`❌ Excel download error: ${error.message}`);
+                
+                if (event.target) {
+                    event.target.innerHTML = '<i class="fas fa-download"></i> Export Excel';
+                    event.target.disabled = false;
+                }
+                
+                showError('Error downloading Excel: ' + error.message);
+            }
+        }
+        
+        function showSuccessMessage(message) {
+            const container = document.getElementById('content-area');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success alert-dismissible fade show';
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.insertBefore(successDiv, container.firstChild);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+
+        function logout() {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

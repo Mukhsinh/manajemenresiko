@@ -1,0 +1,368 @@
+/**
+ * COMPREHENSIVE UI FIX - DYNAMIC STYLING ENFORCEMENT
+ * Ensures headers remain white and UI stays consistent
+ * Created: December 27, 2025
+ */
+
+(function() {
+    'use strict';
+    
+    console.log('🎨 Comprehensive UI Fix loaded');
+    
+    // Configuration
+    const UI_CONFIG = {
+        headerBackgroundColor: '#ffffff',
+        headerTextColor: '#2c3e50',
+        headerBorderLeft: '4px solid #8B0000',
+        tableHeaderBackground: '#f8f9fa',
+        tableHeaderColor: '#495057',
+        preventPurpleGradients: true,
+        enforceButtonStyling: true,
+        enforceTypography: true
+    };
+    
+    // Selectors to monitor and fix
+    const HEADER_SELECTORS = [
+        '.page-header',
+        '.card-header',
+        '.section-header',
+        '.kop-header',
+        '.header-section',
+        '.page-title-section',
+        '.content-header',
+        '.main-header',
+        '.analisis-swot-header',
+        '.residual-risk-header',
+        '.rencana-strategis-header',
+        '.strategic-map-header',
+        '.sasaran-strategi-header',
+        '.iku-header'
+    ];
+    
+    const TABLE_HEADER_SELECTORS = [
+        '.table thead',
+        '.data-table thead',
+        'table thead',
+        '.table th',
+        '.data-table th',
+        'table th'
+    ];
+    
+    const PURPLE_GRADIENT_PATTERNS = [
+        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        '#667eea',
+        '#764ba2',
+        'purple'
+    ];
+    
+    /**
+     * Fix header colors and styling
+     */
+    function fixHeaderStyling() {
+        HEADER_SELECTORS.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                // Remove any purple gradient backgrounds
+                element.style.background = UI_CONFIG.headerBackgroundColor;
+                element.style.backgroundColor = UI_CONFIG.headerBackgroundColor;
+                element.style.backgroundImage = 'none';
+                element.style.color = UI_CONFIG.headerTextColor;
+                element.style.borderLeft = UI_CONFIG.headerBorderLeft;
+                
+                // Remove any inline styles that might contain purple gradients
+                const currentStyle = element.getAttribute('style') || '';
+                if (PURPLE_GRADIENT_PATTERNS.some(pattern => currentStyle.includes(pattern))) {
+                    element.removeAttribute('style');
+                    element.style.background = UI_CONFIG.headerBackgroundColor;
+                    element.style.color = UI_CONFIG.headerTextColor;
+                    element.style.borderLeft = UI_CONFIG.headerBorderLeft;
+                }
+            });
+        });
+    }
+    
+    /**
+     * Fix table header styling
+     */
+    function fixTableHeaderStyling() {
+        TABLE_HEADER_SELECTORS.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                element.style.background = UI_CONFIG.tableHeaderBackground;
+                element.style.backgroundColor = UI_CONFIG.tableHeaderBackground;
+                element.style.backgroundImage = 'none';
+                element.style.color = UI_CONFIG.tableHeaderColor;
+                element.style.fontWeight = '600';
+                element.style.borderBottom = '2px solid #dee2e6';
+            });
+        });
+    }
+    
+    /**
+     * Fix button styling and order
+     */
+    function fixButtonStyling() {
+        if (!UI_CONFIG.enforceButtonStyling) return;
+        
+        // Fix action button containers
+        const actionContainers = document.querySelectorAll('.action-buttons, .master-actions-bar, .button-group, .action-group');
+        actionContainers.forEach(container => {
+            container.style.display = 'flex';
+            container.style.gap = '0.5rem';
+            container.style.alignItems = 'center';
+            container.style.flexWrap = 'wrap';
+            container.style.marginBottom = '1rem';
+        });
+        
+        // Fix individual buttons
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            // Add hover effect
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-1px)';
+                this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+    }
+    
+    /**
+     * Fix typography
+     */
+    function fixTypography() {
+        if (!UI_CONFIG.enforceTypography) return;
+        
+        // Fix page titles
+        const pageTitles = document.querySelectorAll('.page-title, .card-title, .section-title');
+        pageTitles.forEach(title => {
+            title.style.fontFamily = "'Plus Jakarta Sans', 'Segoe UI', sans-serif";
+            title.style.fontWeight = '600';
+            title.style.color = '#2c3e50';
+            title.style.marginBottom = '0.5rem';
+        });
+        
+        // Fix subtitles
+        const subtitles = document.querySelectorAll('.page-subtitle, .card-subtitle');
+        subtitles.forEach(subtitle => {
+            subtitle.style.fontSize = '0.875rem';
+            subtitle.style.color = '#6c757d';
+            subtitle.style.fontStyle = 'italic';
+        });
+    }
+    
+    /**
+     * Remove purple gradients from any element
+     */
+    function removePurpleGradients() {
+        if (!UI_CONFIG.preventPurpleGradients) return;
+        
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(element => {
+            const computedStyle = window.getComputedStyle(element);
+            const backgroundImage = computedStyle.backgroundImage;
+            
+            if (PURPLE_GRADIENT_PATTERNS.some(pattern => backgroundImage.includes(pattern))) {
+                element.style.background = '#ffffff';
+                element.style.backgroundImage = 'none';
+            }
+            
+            // Check inline styles
+            const inlineStyle = element.getAttribute('style') || '';
+            if (PURPLE_GRADIENT_PATTERNS.some(pattern => inlineStyle.includes(pattern))) {
+                element.style.background = '#ffffff';
+                element.style.backgroundImage = 'none';
+            }
+        });
+    }
+    
+    /**
+     * Fix specific page issues
+     */
+    function fixSpecificPages() {
+        // Fix error page purple gradient
+        const errorPages = document.querySelectorAll('.error-page');
+        errorPages.forEach(page => {
+            page.style.background = '#ffffff';
+            page.style.backgroundImage = 'none';
+        });
+        
+        // Fix any remaining purple elements
+        const purpleElements = document.querySelectorAll('[style*="purple"], [style*="#764ba2"], [style*="#667eea"]');
+        purpleElements.forEach(element => {
+            element.style.background = '#ffffff';
+            element.style.backgroundImage = 'none';
+        });
+    }
+    
+    /**
+     * Apply all fixes
+     */
+    function applyAllFixes() {
+        try {
+            fixHeaderStyling();
+            fixTableHeaderStyling();
+            fixButtonStyling();
+            fixTypography();
+            removePurpleGradients();
+            fixSpecificPages();
+            
+            console.log('✅ All UI fixes applied successfully');
+        } catch (error) {
+            console.error('❌ Error applying UI fixes:', error);
+        }
+    }
+    
+    /**
+     * Create mutation observer to watch for DOM changes
+     */
+    function createMutationObserver() {
+        const observer = new MutationObserver(function(mutations) {
+            let shouldApplyFixes = false;
+            
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Check if new nodes contain elements we need to fix
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            const hasHeaders = HEADER_SELECTORS.some(selector => 
+                                node.matches && node.matches(selector) || 
+                                node.querySelector && node.querySelector(selector)
+                            );
+                            
+                            const hasTableHeaders = TABLE_HEADER_SELECTORS.some(selector => 
+                                node.matches && node.matches(selector) || 
+                                node.querySelector && node.querySelector(selector)
+                            );
+                            
+                            if (hasHeaders || hasTableHeaders) {
+                                shouldApplyFixes = true;
+                            }
+                        }
+                    });
+                } else if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    // Check if style changes might affect our elements
+                    const target = mutation.target;
+                    const isTargetElement = HEADER_SELECTORS.some(selector => 
+                        target.matches && target.matches(selector)
+                    ) || TABLE_HEADER_SELECTORS.some(selector => 
+                        target.matches && target.matches(selector)
+                    );
+                    
+                    if (isTargetElement) {
+                        shouldApplyFixes = true;
+                    }
+                }
+            });
+            
+            if (shouldApplyFixes) {
+                setTimeout(applyAllFixes, 10);
+            }
+        });
+        
+        // Start observing
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+        
+        return observer;
+    }
+    
+    /**
+     * Initialize the UI fix system
+     */
+    function initialize() {
+        console.log('🚀 Initializing Comprehensive UI Fix System');
+        
+        // Check if already initialized to prevent duplicate runs
+        if (window.uiFixSystemInitialized) {
+            console.log('⚠️ UI Fix System already initialized, skipping...');
+            return;
+        }
+        
+        // Mark as initialized
+        window.uiFixSystemInitialized = true;
+        
+        // Apply fixes when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyAllFixes);
+        } else {
+            applyAllFixes();
+        }
+        
+        // Apply fixes after a short delay to catch late-loading content (optimized)
+        setTimeout(applyAllFixes, 500);
+        setTimeout(applyAllFixes, 1500); // Reduced from multiple timeouts
+        
+        // Create mutation observer
+        createMutationObserver();
+        
+        // Apply fixes on page navigation (throttled)
+        let navigationTimeout;
+        window.addEventListener('popstate', function() {
+            clearTimeout(navigationTimeout);
+            navigationTimeout = setTimeout(applyAllFixes, 200);
+        });
+        
+        // Apply fixes on hash change (throttled)
+        let hashTimeout;
+        window.addEventListener('hashchange', function() {
+            clearTimeout(hashTimeout);
+            hashTimeout = setTimeout(applyAllFixes, 200);
+        });
+        
+        // Override common navigation functions
+        const originalNavigateToPage = window.navigateToPage;
+        if (originalNavigateToPage) {
+            window.navigateToPage = function() {
+                const result = originalNavigateToPage.apply(this, arguments);
+                setTimeout(applyAllFixes, 100);
+                return result;
+            };
+        }
+        
+        // Reduced periodic check - only every 30 seconds and only when page is visible
+        const periodicCheck = setInterval(() => {
+            if (!document.hidden) {
+                applyAllFixes();
+            }
+        }, 30000); // Every 30 seconds instead of 10
+        
+        // Stop periodic checks when page is hidden for too long
+        let hiddenTimeout;
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                hiddenTimeout = setTimeout(() => {
+                    clearInterval(periodicCheck);
+                    console.log('🔇 UI Fix periodic checks stopped (page hidden)');
+                }, 60000); // Stop after 1 minute of being hidden
+            } else {
+                clearTimeout(hiddenTimeout);
+            }
+        });
+        
+        console.log('✅ Comprehensive UI Fix System initialized (optimized)');
+    }
+    
+    // Expose functions for debugging
+    window.uiFix = {
+        applyAllFixes,
+        fixHeaderStyling,
+        fixTableHeaderStyling,
+        fixButtonStyling,
+        fixTypography,
+        removePurpleGradients,
+        config: UI_CONFIG
+    };
+    
+    // Initialize when script loads
+    initialize();
+    
+})();

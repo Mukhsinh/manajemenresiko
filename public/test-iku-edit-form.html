@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IKU Edit Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .test-info h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .test-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-info li {
+            margin: 5px 0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover {
+            color: #1e293b;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+            padding: 0 1.5rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .test-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .test-result.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+        .test-result.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-info">
+            <h3><i class="fas fa-flask"></i> Test Form Edit Indikator Kinerja Utama</h3>
+            <p><strong>Tujuan Test:</strong></p>
+            <ul>
+                <li>✓ Form edit harus menampilkan data yang sudah ada</li>
+                <li>✓ Semua field harus terisi dengan data existing</li>
+                <li>✓ Tombol "Batal" harus menutup modal dengan satu klik</li>
+                <li>✓ Tombol "X" harus menutup modal dengan satu klik</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="testEditForm()">
+                <i class="fas fa-edit"></i> Test Edit Form
+            </button>
+            <button class="btn btn-success" onclick="testAddForm()">
+                <i class="fas fa-plus"></i> Test Add Form (Kosong)
+            </button>
+        </div>
+
+        <div id="test-result" class="test-result"></div>
+
+        <div style="margin-top: 20px;">
+            <h4>Sample Data untuk Test:</h4>
+            <pre id="sample-data" style="background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto;"></pre>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        // Sample data untuk testing
+        const sampleData = {
+            id: 'test-123',
+            rencana_strategis_id: 'rs-001',
+            sasaran_strategi_id: 'ss-001',
+            indikator: 'Meningkatkan kepuasan pelanggan melalui pelayanan yang berkualitas',
+            baseline_tahun: 2023,
+            baseline_nilai: 75.5,
+            target_tahun: 2025,
+            target_nilai: 90.0,
+            initiatif_strategi: 'Implementasi sistem feedback pelanggan dan pelatihan SDM',
+            pic: 'Budi Santoso'
+        };
+
+        const sampleRencanaStrategis = [
+            { id: 'rs-001', nama_rencana: 'Rencana Strategis 2023-2025' },
+            { id: 'rs-002', nama_rencana: 'Rencana Strategis 2024-2026' }
+        ];
+
+        const sampleSasaranStrategi = [
+            { id: 'ss-001', sasaran: 'Meningkatkan kualitas pelayanan publik' },
+            { id: 'ss-002', sasaran: 'Meningkatkan efisiensi operasional' }
+        ];
+
+        // Display sample data
+        document.getElementById('sample-data').textContent = JSON.stringify(sampleData, null, 2);
+
+        function showModal(id = null, data = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">${id ? 'Edit' : 'Tambah'} Indikator Kinerja Utama</h3>
+                        <button class="modal-close" onclick="closeModal(this)">&times;</button>
+                    </div>
+                    <form id="indikator-kinerja-form" onsubmit="handleSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">Rencana Strategis *</label>
+                            <select class="form-control" id="iku-rencana-strategis" required>
+                                <option value="">Pilih Rencana Strategis</option>
+                                ${sampleRencanaStrategis.map(r => `<option value="${r.id}">${r.nama_rencana}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sasaran Strategi</label>
+                            <select class="form-control" id="iku-sasaran-strategi">
+                                <option value="">Pilih Sasaran Strategi (Opsional)</option>
+                                ${sampleSasaranStrategi.map(s => `<option value="${s.id}">${s.sasaran}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Indikator *</label>
+                            <textarea class="form-control" id="iku-indikator" required rows="3"></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0 1.5rem;">
+                            <div class="form-group" style="padding: 0;">
+                                <label class="form-label">Baseline Tahun</label>
+                                <input type="number" class="form-control" id="iku-baseline-tahun">
+                            </div>
+                            <div class="form-group" style="padding: 0;">
+                                <label class="form-label">Baseline Nilai</label>
+                                <input type="number" class="form-control" id="iku-baseline-nilai" step="0.01">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0 1.5rem;">
+                            <div class="form-group" style="padding: 0;">
+                                <label class="form-label">Target Tahun</label>
+                                <input type="number" class="form-control" id="iku-target-tahun">
+                            </div>
+                            <div class="form-group" style="padding: 0;">
+                                <label class="form-label">Target Nilai</label>
+                                <input type="number" class="form-control" id="iku-target-nilai" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Initiatif Strategi</label>
+                            <textarea class="form-control" id="iku-initiatif" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">PIC</label>
+                            <input type="text" class="form-control" id="iku-pic">
+                        </div>
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; padding: 0 1.5rem 1.5rem;">
+                            <button type="button" class="btn btn-secondary" onclick="closeModal(this)">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Load data for edit after modal is fully rendered
+            if (id && data) {
+                setTimeout(() => {
+                    loadForEdit(data);
+                }, 50);
+            }
+        }
+
+        function loadForEdit(data) {
+            try {
+                console.log('Loading data for edit:', data);
+                
+                const formElements = {
+                    'iku-rencana-strategis': data.rencana_strategis_id || '',
+                    'iku-sasaran-strategi': data.sasaran_strategi_id || '',
+                    'iku-indikator': data.indikator || '',
+                    'iku-baseline-tahun': data.baseline_tahun || '',
+                    'iku-baseline-nilai': data.baseline_nilai || '',
+                    'iku-target-tahun': data.target_tahun || '',
+                    'iku-target-nilai': data.target_nilai || '',
+                    'iku-initiatif': data.initiatif_strategi || '',
+                    'iku-pic': data.pic || ''
+                };
+                
+                let allFieldsPopulated = true;
+                const results = [];
+                
+                for (const [elementId, value] of Object.entries(formElements)) {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.value = value;
+                        results.push(`✓ ${elementId}: ${value || '(kosong)'}`);
+                        console.log(`Set ${elementId} to:`, value);
+                    } else {
+                        allFieldsPopulated = false;
+                        results.push(`✗ ${elementId}: Element tidak ditemukan!`);
+                        console.warn(`Element not found: ${elementId}`);
+                    }
+                }
+                
+                // Show test result
+                const resultDiv = document.getElementById('test-result');
+                if (allFieldsPopulated) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4><i class="fas fa-check-circle"></i> Test BERHASIL!</h4>
+                        <p>Semua field berhasil diisi dengan data existing:</p>
+                        <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+                        <p><strong>Silakan cek form modal yang terbuka untuk memverifikasi data terisi dengan benar.</strong></p>
+                    `;
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `
+                        <h4><i class="fas fa-times-circle"></i> Test GAGAL!</h4>
+                        <p>Beberapa field tidak dapat diisi:</p>
+                        <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+                    `;
+                }
+                
+                console.log('Form populated successfully');
+            } catch (error) {
+                console.error('Error loading data for edit:', error);
+                const resultDiv = document.getElementById('test-result');
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4><i class="fas fa-times-circle"></i> Error!</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        function closeModal(button) {
+            const modal = button.closest('.modal');
+            if (modal) {
+                modal.remove();
+                console.log('Modal closed successfully');
+                
+                // Update test result
+                const resultDiv = document.getElementById('test-result');
+                if (resultDiv.classList.contains('success')) {
+                    resultDiv.innerHTML += `<p style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #059669;"><i class="fas fa-check"></i> <strong>Modal berhasil ditutup dengan satu klik!</strong></p>`;
+                }
+            }
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            alert('Form submitted! (Test mode - tidak menyimpan data)');
+            closeModal(event.target);
+        }
+
+        function testEditForm() {
+            showModal(sampleData.id, sampleData);
+        }
+
+        function testAddForm() {
+            showModal();
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.className = 'test-result success';
+            resultDiv.innerHTML = `
+                <h4><i class="fas fa-info-circle"></i> Form Tambah Dibuka</h4>
+                <p>Form tambah harus menampilkan field kosong (kecuali default values untuk tahun).</p>
+                <p><strong>Silakan cek form modal dan coba tombol Batal/X untuk menutup.</strong></p>
+            `;
+        }
+    </script>
+</body>
+</html>

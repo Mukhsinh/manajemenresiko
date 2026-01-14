@@ -1,0 +1,71 @@
+/**
+ * Daftar Rencana Strategis Header - Dark Solid Text
+ * CSS khusus untuk memastikan teks "Daftar Rencana Strategis" berwarna gelap solid
+ */
+
+/* ============================================
+   DAFTAR RENCANA STRATEGIS HEADER - DARK SOLID
+   ============================================ */
+
+/* Target semua kemungkinan selector untuk header Daftar Rencana Strategis */
+.card-header h5,
+.card-header h5.mb-0,
+.card-header .mb-0,
+.card-header > div > h5,
+.card-header .d-flex > div > h5,
+.card-header .d-flex h5,
+.card .card-header h5,
+.card .card-header h5.mb-0,
+#rs-list-section .card-header h5,
+#rs-table-section .card-header h5,
+#table-section .card-header h5,
+.rencana-strategis-wrapper .card-header h5,
+.rencana-strategis-wrapper .card-header h5.mb-0,
+.rs-v7-wrapper .card-header h5,
+#rencana-strategis .card-header h5,
+#rencana-strategis-content .card-header h5,
+[id*="rencana"] .card-header h5,
+[id*="renstra"] .card-header h5,
+div[class*="rencana"] .card-header h5 {
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+
+/* Icon di samping header - biru */
+.card-header h5 i,
+.card-header h5 i.fa-table,
+.card-header h5 i.fas.fa-table,
+.card-header h5 i.text-primary,
+.card-header h5 .fa-table {
+  color: #3b82f6 !important;
+  -webkit-text-fill-color: #3b82f6 !important;
+}
+
+/* Subtitle/small text di bawah header */
+.card-header small,
+.card-header .text-muted,
+.card-header > div > small,
+.card-header .d-flex > div > small {
+  color: #6b7280 !important;
+  -webkit-text-fill-color: #6b7280 !important;
+}
+
+/* Card header background putih untuk kontras */
+.card-header.bg-white,
+.card .card-header {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+/* Override untuk header yang mungkin punya gradient */
+.card-header[style*="gradient"],
+.card-header[style*="background"] {
+  background: #ffffff !important;
+  background-image: none !important;
+}

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Diagram Kartesius Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/diagram-kartesius-enhanced.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        h2 { color: #333; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Test Diagram Kartesius Fix</h1>
+        
+        <!-- Test Badge Kuadran -->
+        <div class="test-section">
+            <h2>1. Badge Kuadran - Warna Solid Cerah</h2>
+            <div class="d-flex gap-3 flex-wrap">
+                <span class="badge-kuadran badge-kuadran-i">KUADRAN I</span>
+                <span class="badge-kuadran badge-kuadran-ii">KUADRAN II</span>
+                <span class="badge-kuadran badge-kuadran-iii">KUADRAN III</span>
+                <span class="badge-kuadran badge-kuadran-iv">KUADRAN IV</span>
+            </div>
+        </div>
+        
+        <!-- Test Badge Strategi -->
+        <div class="test-section">
+            <h2>2. Badge Strategi - Warna Solid</h2>
+            <div class="d-flex gap-3 flex-wrap">
+                <span class="badge-strategi badge-strategi-growth">Growth</span>
+                <span class="badge-strategi badge-strategi-stability">Stability</span>
+                <span class="badge-strategi badge-strategi-survival">Survival</span>
+                <span class="badge-strategi badge-strategi-diversification">Diversification</span>
+            </div>
+        </div>
+        
+        <!-- Test Table -->
+        <div class="test-section">
+            <h2>3. Tabel dengan Kolom Lebar Tetap</h2>
+            <div id="diagram-kartesius-content">
+                <div class="table-container" style="overflow-x: auto;">
+                    <table class="table" style="min-width: 1000px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Tahun</th>
+                                <th style="width: 100px;">Kode</th>
+                                <th style="width: 200px;">Unit Kerja</th>
+                                <th style="width: 120px;">X-Axis</th>
+                                <th style="width: 120px;">Y-Axis</th>
+                                <th style="width: 140px; text-align: center;">Kuadran</th>
+                                <th style="width: 150px; text-align: center;">Strategi</th>
+                                <th style="width: 100px; text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2025</td>
+                                <td><strong>001</strong></td>
+                                <td>ICU-PICU-NICU</td>
+                                <td>125.50</td>
+                                <td>89.25</td>
+                                <td style="text-align: center;"><span class="badge-kuadran badge-kuadran-i">KUADRAN I</span></td>
+                                <td style="text-align: center;"><span class="badge-strategi badge-strategi-growth">Growth</span></td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025</td>
+                                <td><strong>002</strong></td>
+                                <td>IGD PONEK</td>
+                                <td>-45.30</td>
+                                <td>67.80</td>
+                                <td style="text-align: center;"><span class="badge-kuadran badge-kuadran-ii">KUADRAN II</span></td>
+                                <td style="text-align: center;"><span class="badge-strategi badge-strategi-stability">Stability</span></td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025</td>
+                                <td><strong>003</strong></td>
+                                <td>Laboratorium (PK-PA)</td>
+                                <td>-78.20</td>
+                                <td>-34.50</td>
+                                <td style="text-align: center;"><span class="badge-kuadran badge-kuadran-iii">KUADRAN III</span></td>
+                                <td style="text-align: center;"><span class="badge-strategi badge-strategi-survival">Survival</span></td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025</td>
+                                <td><strong>004</strong></td>
+                                <td>Farmasi</td>
+                                <td>56.40</td>
+                                <td>-22.10</td>
+                                <td style="text-align: center;"><span class="badge-kuadran badge-kuadran-iv">KUADRAN IV</span></td>
+                                <td style="text-align: center;"><span class="badge-strategi badge-strategi-diversification">Diversification</span></td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-edit btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete btn-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Filter -->
+        <div class="test-section">
+            <h2>4. Filter Group</h2>
+            <div class="filter-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label>Unit Kerja</label>
+                    <select class="form-control">
+                        <option value="">Semua Unit Kerja</option>
+                        <option>001 - ICU-PICU-NICU</option>
+                        <option>002 - IGD PONEK</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jenis</label>
+                    <select class="form-control">
+                        <option value="">Semua Jenis</option>
+                        <option>Rawat Inap</option>
+                        <option>Rawat Jalan</option>
+                        <option>Penunjang Medis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kategori (Perspektif)</label>
+                    <select class="form-control">
+                        <option value="">Semua Perspektif</option>
+                        <option>Klinis</option>
+                        <option>Non Klinis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tahun</label>
+                    <select class="form-control">
+                        <option>2025</option>
+                        <option>2024</option>
+                        <option>2023</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary"><i class="fas fa-filter"></i> Terapkan Filter</button>
+                <button class="btn btn-secondary"><i class="fas fa-undo"></i> Reset Filter</button>
+            </div>
+        </div>
+        
+        <!-- Checklist -->
+        <div class="test-section">
+            <h2>✅ Checklist Perbaikan</h2>
+            <ul class="list-group">
+                <li class="list-group-item">✅ Filter berfungsi normal (Unit Kerja, Jenis, Kategori, Tahun)</li>
+                <li class="list-group-item">✅ Badge Kuadran dengan warna cerah solid (Hijau, Biru, Merah, Oranye)</li>
+                <li class="list-group-item">✅ Badge Strategi dengan warna solid</li>
+                <li class="list-group-item">✅ Tombol Edit dan Hapus berfungsi</li>
+                <li class="list-group-item">✅ Tabel dengan kolom lebar tetap (tidak overflow)</li>
+                <li class="list-group-item">✅ Legend grafik disembunyikan</li>
+                <li class="list-group-item">✅ Simbol di grafik diperkecil (radius 7-10px)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+/* ============================================
+   RISK REGISTER WHITE HEADER FIX
+   Date: January 13, 2026
+   
+   Changes:
+   1. "Daftar Risk Register" section: WHITE background
+   2. Table header (thead): BLUE like page kop (#1e3a5f)
+   ============================================ */
+
+/* Section header "Daftar Risk Register" - WHITE background */
+.risk-register-table-header,
+.risk-register-wrapper .card-header,
+.risk-register-section-header,
+[data-section="risk-register"] .section-header,
+.daftar-risk-register {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Title text in white header */
+.risk-register-table-header h3,
+.risk-register-table-header .section-title,
+.risk-register-table-header span,
+.risk-register-table-header i {
+    color: #1e293b !important;
+}
+
+/* Table header (thead) - BLUE like page kop */
+.risk-register-table thead,
+.risk-register-table thead tr,
+.risk-register-container table thead,
+.risk-register-page table thead,
+#risk-register-table thead,
+[data-page="risk-register"] table thead,
+.data-table.risk-register thead {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%) !important;
+    background-color: #1e3a5f !important;
+}
+
+.risk-register-table thead th,
+.risk-register-container table thead th,
+.risk-register-page table thead th,
+#risk-register-table thead th,
+[data-page="risk-register"] table thead th,
+.data-table.risk-register thead th {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%) !important;
+    background-color: #1e3a5f !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 0.875rem 0.625rem !important;
+    border-bottom: 2px solid #0f172a !important;
+}
+
+/* Ensure action buttons are visible on white background */
+.risk-register-table-header .btn,
+.risk-register-table-header button {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Override any conflicting styles */
+body .risk-register-table-header {
+    background: #ffffff !important;
+}
+
+body .risk-register-table thead th {
+    background: #1e3a5f !important;
+    color: #ffffff !important;
+}

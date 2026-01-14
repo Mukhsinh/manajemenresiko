@@ -1,0 +1,212 @@
+/**
+ * RENCANA STRATEGIS CLEAN CSS v1.1
+ * Menghapus global background dan mempercepat loading
+ * CRITICAL: Menyembunyikan selection list secara agresif
+ * Created: 2026-01-10
+ * Updated: 2026-01-10
+ */
+
+/* ============================================
+   HALAMAN RENCANA STRATEGIS - CLEAN BACKGROUND
+   ============================================ */
+
+/* Pastikan halaman RS memiliki background putih bersih */
+#rencana-strategis {
+    background-color: #f8f9fa !important;
+    min-height: 100vh;
+}
+
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#rencana-strategis-content {
+    background-color: #f8f9fa !important;
+    min-height: 400px;
+    padding: 0 !important;
+}
+
+/* ============================================
+   CRITICAL: HAPUS SELECTION LIST SECARA AGRESIF
+   ============================================ */
+
+/* Sembunyikan SEMUA selection list elements */
+.rencana-strategis-selection,
+.rs-selection-wrapper,
+.rs-selection-list,
+.rencana-strategis-selection-list,
+#rs-selection-container,
+#selection-section,
+[data-rs-selection-list],
+[data-rs-selection-list="true"],
+.list-group:has(.list-group-item[onclick*="viewRencanaDetail"]),
+.card:has(.card-header:contains("Pilih Rencana Strategis")) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
+
+/* Pastikan hanya wrapper yang tampil */
+#rencana-strategis-content .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* CRITICAL: Sembunyikan div yang bukan wrapper di dalam content */
+#rencana-strategis-content > div:not(.rencana-strategis-wrapper):not(.text-center):not(.alert) {
+    display: none !important;
+}
+
+/* ============================================
+   WRAPPER RENCANA STRATEGIS - TAMPILAN BERSIH
+   ============================================ */
+
+.rencana-strategis-wrapper {
+    background-color: #f8f9fa !important;
+    padding: 1rem !important;
+}
+
+/* ============================================
+   STAT CARDS - TAMPILAN MODERN
+   ============================================ */
+
+.rencana-strategis-wrapper .card {
+    background-color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+}
+
+/* ============================================
+   TABLE - TAMPILAN BERSIH
+   ============================================ */
+
+.rencana-strategis-wrapper .table {
+    background-color: #ffffff !important;
+}
+
+.rencana-strategis-wrapper .table thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+}
+
+.rencana-strategis-wrapper .table th {
+    border: none !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    padding: 1rem !important;
+}
+
+.rencana-strategis-wrapper .table td {
+    padding: 0.875rem 1rem !important;
+    vertical-align: middle !important;
+    border-color: #f1f3f4 !important;
+}
+
+.rencana-strategis-wrapper .table tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* ============================================
+   FORM - TAMPILAN MODERN
+   ============================================ */
+
+.rencana-strategis-wrapper .form-control,
+.rencana-strategis-wrapper .form-select {
+    border-radius: 8px !important;
+    border: 1px solid #dee2e6 !important;
+    padding: 0.625rem 1rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .form-control:focus,
+.rencana-strategis-wrapper .form-select:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* ============================================
+   BUTTONS - TAMPILAN MODERN
+   ============================================ */
+
+.rencana-strategis-wrapper .btn {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+}
+
+.rencana-strategis-wrapper .btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ============================================
+   LOADING STATE - CEPAT DAN SMOOTH
+   ============================================ */
+
+.rencana-strategis-wrapper .spinner-border {
+    width: 2rem !important;
+    height: 2rem !important;
+    border-width: 0.2rem !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .rencana-strategis-wrapper {
+        padding: 0.5rem !important;
+    }
+    
+    .rencana-strategis-wrapper .card-body {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK
+   ============================================ */
+
+/* Pastikan halaman lain tidak terpengaruh */
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"] {
+    display: none !important;
+}
+
+/* Sembunyikan RS page saat tidak aktif */
+#rencana-strategis:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    pointer-events: none !important;
+}

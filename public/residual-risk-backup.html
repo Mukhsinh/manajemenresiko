@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Risk Analysis - Manajemen Risiko</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        .badge-low-risk {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge-medium-risk {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .badge-high-risk {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .badge-extreme-high {
+            background-color: #f5c6cb;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .badge-secondary {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .risk-matrix-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .risk-matrix-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .legend-symbol {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .legend-symbol.star {
+            border-radius: 0;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .legend-symbol.triangle {
+            border-radius: 0;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .error-panel {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .success-panel {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Panel -->
+    <div id="debug-panel" class="debug-panel" style="display: none;">
+        <div id="debug-content">Debug info will appear here...</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-alt"></i> PINTAR MR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="riskDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-exclamation-triangle"></i> Analisis Risiko
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="risk-profile.html">Risk Profile</a></li>
+                            <li><a class="dropdown-item active" href="residual-risk.html">Residual Risk</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="navbar-text">
+                            <i class="fas fa-user"></i> Administrator
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2><i class="fas fa-chart-pie text-primary"></i> Residual Risk</h2>
+                        <p class="text-muted">Analisis Risiko Residual</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary" onclick="toggleDebug()">
+                            <i class="fas fa-bug"></i> Debug
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="loadData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadExcel()">
+                            <i class="fas fa-download"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div id="content-area">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Memuat data residual risk...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let residualData = [];
+        let debugMode = false;
+        let matrixChart = null;
+        
+        function debugLog(message) {
+            console.log(message);
+            if (debugMode) {
+                const debugContent = document.getElementById('debug-content');
+                const timestamp = new Date().toLocaleTimeString();
+                debugContent.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                // Auto scroll to bottom
+                debugContent.scrollTop = debugContent.scrollHeight;
+            }
+        }
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugPanel = document.getElementById('debug-panel');
+            debugPanel.style.display = debugMode ? 'block' : 'none';
+            if (debugMode) {
+                debugLog('Debug mode enabled');
+                debugLog(`Current URL: ${window.location.href}`);
+                debugLog(`API URL will be: ${window.location.origin}/api/reports/residual-risk-simple`);
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('DOM loaded, initializing...');
+            
+            // Auto-load data after a short delay
+            setTimeout(() => {
+                debugLog('Auto-loading data...');
+                loadData();
+            }, 500);
+        });
+
+        async function loadData() {
+            try {
+                debugLog('Starting data load...');
+                
+                // Show loading state
+                const container = document.getElementById('content-area');
+                if (!container) {
+                    throw new Error('Content area not found');
+                }
+                
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Memuat data residual risk...</p>
+                    </div>
+                `;
+                
+                const apiUrl = '/api/reports/residual-risk-simple';
+                debugLog(`Fetching data from API: ${apiUrl}`);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                debugLog(`API Response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debugLog(`API Error response: ${errorText}`);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const responseText = await response.text();
+                debugLog(`Raw response length: ${responseText.length} characters`);
+                
+                try {
+                    residualData = JSON.parse(responseText);
+                } catch (parseError) {
+                    debugLog(`JSON Parse Error: ${parseError.message}`);
+                    debugLog(`First 500 chars of response: ${responseText.substring(0, 500)}`);
+                    throw new Error(`Failed to parse JSON response: ${parseError.message}`);
+                }
+                
+                debugLog(`Data loaded: ${residualData.length} records`);
+                
+                if (!Array.isArray(residualData)) {
+                    debugLog(`ERROR: Data is not an array, type: ${typeof residualData}`);
+                    throw new Error('Invalid data format received from API - expected array');
+                }
+                
+                if (residualData.length > 0) {
+                    debugLog(`Sample record keys: ${Object.keys(residualData[0]).join(', ')}`);
+                    if (residualData[0].risk_inputs) {
+                        debugLog(`Sample risk_inputs keys: ${Object.keys(residualData[0].risk_inputs).join(', ')}`);
+                    }
+                }
+                
+                debugLog('Rendering content...');
+                renderContent();
+                debugLog('✅ Data loaded and rendered successfully');
+                
+            } catch (error) {
+                debugLog(`❌ Error loading data: ${error.message}`);
+                debugLog(`Error stack: ${error.stack}`);
+                console.error('Error loading data:', error);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('content-area');
+            container.innerHTML = `
+                <div class="error-panel">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadData()">
+                        <i class="fas fa-sync-alt"></i> Coba Lagi
+                    </button>
+                    <button class="btn btn-secondary ms-2" onclick="toggleDebug()">
+                        <i class="fas fa-bug"></i> Show Debug
+                    </button>
+                </div>
+            `;
+        }
+        
+        function renderContent() {
+            const container = document.getElementById('content-area');
+            
+            if (residualData.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <h4><i class="fas fa-info-circle"></i> Tidak Ada Data</h4>
+                        <p>Belum ada data residual risk yang tersedia.</p>
+                        <button class="btn btn-secondary" onclick="toggleDebug()">
+                            <i class="fas fa-bug"></i> Show Debug Info
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate statistics
+            const stats = calculateStatistics();
+            debugLog(`Statistics calculated: ${JSON.stringify(stats)}`);
+            
+            container.innerHTML = `
+                <div class="success-panel">
+                    <h4><i class="fas fa-check-circle"></i> Data Berhasil Dimuat</h4>
+                    <p>Berhasil memuat ${residualData.length} record residual risk analysis.</p>
+                </div>
+                
+                <!-- Risk Matrix Visualization -->
+                <div class="risk-matrix-container">
+                    <h4 style="margin-bottom: 1rem;">
+                        <i class="fas fa-chart-area text-primary"></i> Residual Risk Matrix
+                    </h4>
+                    <p class="text-muted mb-3">Matriks visualisasi risiko residual dengan perbandingan inherent dan risk appetite</p>
+                    <div style="position: relative; height: 500px;">
+                        <canvas id="residual-risk-matrix"></canvas>
+                    </div>
+                    <div class="risk-matrix-legend">
+                        <div class="legend-item">
+                            <div class="legend-symbol star" style="background-color: #FFD700; border: 2px solid #000;"></div>
+                            <span>Residual Risk (Bintang Emas)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background-color: #00FFFF; border: 2px solid #000;"></div>
+                            <span>Inherent Risk (Lingkaran Cyan)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol triangle" style="background-color: #FFFFFF; border: 2px solid #000;"></div>
+                            <span>Risk Appetite (Segitiga Putih)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Residual Risk Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        ${renderStatistics(stats)}
+                        ${renderTable()}
+                    </div>
+                </div>
+            `;
+            
+            // Render matrix chart after DOM is ready
+            setTimeout(() => {
+                renderEnhancedMatrix();
+            }, 100);
+        }
+        
+        function calculateStatistics() {
+            let totalInherent = 0;
+            let totalResidual = 0;
+            let validInherentCount = 0;
+            let riskLevelCounts = {
+                'LOW RISK': 0,
+                'MEDIUM RISK': 0,
+                'HIGH RISK': 0,
+                'EXTREME HIGH': 0,
+                'VERY HIGH': 0
+            };
+            
+            residualData.forEach(item => {
+                const risk = item.risk_inputs || {};
+                let inherent = {};
+                
+                // Try to get inherent data - handle both array and object formats
+                if (risk.risk_inherent_analysis) {
+                    if (Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                        inherent = risk.risk_inherent_analysis[0];
+                    } else if (!Array.isArray(risk.risk_inherent_analysis)) {
+                        inherent = risk.risk_inherent_analysis;
+                    }
+                }
+                
+                const inherentValue = parseFloat(inherent.risk_value) || 0;
+                const residualValue = parseFloat(item.risk_value) || 0;
+                
+                if (inherentValue > 0) {
+                    totalInherent += inherentValue;
+                    validInherentCount++;
+                }
+                
+                if (residualValue > 0) {
+                    totalResidual += residualValue;
+                }
+                
+                // Count risk levels
+                const riskLevel = (item.risk_level || '').toUpperCase();
+                if (riskLevel.includes('LOW')) {
+                    riskLevelCounts['LOW RISK']++;
+                } else if (riskLevel.includes('MEDIUM')) {
+                    riskLevelCounts['MEDIUM RISK']++;
+                } else if (riskLevel.includes('HIGH') && !riskLevel.includes('EXTREME')) {
+                    riskLevelCounts['HIGH RISK']++;
+                } else if (riskLevel.includes('EXTREME') || riskLevel.includes('VERY HIGH')) {
+                    riskLevelCounts['EXTREME HIGH']++;
+                }
+            });
+
+            const avgInherent = validInherentCount > 0 ? totalInherent / validInherentCount : 0;
+            const avgResidual = residualData.length > 0 ? totalResidual / residualData.length : 0;
+            const reduction = avgInherent > 0 ? ((avgInherent - avgResidual) / avgInherent * 100).toFixed(1) : '0.0';
+
+            return {
+                total: residualData.length,
+                avgInherent: avgInherent,
+                avgResidual: avgResidual,
+                reduction: reduction,
+                riskLevelCounts: riskLevelCounts,
+                validInherentCount: validInherentCount
+            };
+        }
+        
+        function renderStatistics(stats) {
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card" style="background: #ffffff;">
+                        <div class="stat-value">${stats.total}</div>
+                        <div class="stat-label">Total Residual Risk</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-value">${stats.avgInherent.toFixed(2)}</div>
+                        <div class="stat-label">Avg Inherent Value</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="stat-value">${stats.avgResidual.toFixed(2)}</div>
+                        <div class="stat-label">Avg Residual Value</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <div class="stat-value">${stats.reduction}%</div>
+                        <div class="stat-label">Risk Reduction</div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-pie"></i> Risk Level Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="risk-level-stats">
+                                    ${Object.entries(stats.riskLevelCounts || {}).map(([level, count]) => `
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge-status ${getBadgeClass(level)}">${level}</span>
+                                            <strong>${count} risks</strong>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-info-circle"></i> Data Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Total Records:</strong> ${stats.total}</p>
+                                <p><strong>Records with Inherent Data:</strong> ${stats.validInherentCount}</p>
+                                <p><strong>Data Coverage:</strong> ${stats.total > 0 ? ((stats.validInherentCount / stats.total) * 100).toFixed(1) : 0}%</p>
+                                <p><strong>Last Updated:</strong> ${new Date().toLocaleDateString('id-ID')}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderTable() {
+            return `
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem;"><i class="fas fa-table"></i> Detail Residual Risk Analysis</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Kode Risiko</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Sasaran</th>
+                                    <th>Inherent</th>
+                                    <th>Residual</th>
+                                    <th>Reduction</th>
+                                    <th>Level</th>
+                                    <th>Review Status</th>
+                                    <th>Next Review</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${residualData.map((item, index) => {
+                                    const risk = item.risk_inputs || {};
+                                    
+                                    // Get inherent data - handle both array and object formats
+                                    let inherent = {};
+                                    if (risk.risk_inherent_analysis) {
+                                        if (Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                                            inherent = risk.risk_inherent_analysis[0];
+                                        } else if (!Array.isArray(risk.risk_inherent_analysis)) {
+                                            inherent = risk.risk_inherent_analysis;
+                                        }
+                                    }
+                                    
+                                    const inherentValue = parseFloat(inherent.risk_value) || 0;
+                                    const inherentLevel = inherent.risk_level || 'UNKNOWN';
+                                    const residualValue = parseFloat(item.risk_value) || 0;
+                                    
+                                    // Calculate reduction percentage
+                                    let reduction = '-';
+                                    if (inherentValue > 0 && residualValue >= 0) {
+                                        const reductionPercent = ((inherentValue - residualValue) / inherentValue * 100);
+                                        reduction = reductionPercent.toFixed(1) + '%';
+                                    }
+                                    
+                                    // Truncate long text
+                                    const truncateText = (text, maxLength = 30) => {
+                                        if (!text) return '-';
+                                        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+                                    };
+                                    
+                                    return `
+                                        <tr>
+                                            <td><strong>${index + 1}</strong></td>
+                                            <td><strong>${risk.kode_risiko || '-'}</strong></td>
+                                            <td>${truncateText(risk.master_work_units?.name)}</td>
+                                            <td title="${risk.sasaran || ''}">${truncateText(risk.sasaran, 40)}</td>
+                                            <td><span class="badge-status ${getBadgeClass(inherentLevel)}">${inherentValue || '-'}</span></td>
+                                            <td><span class="badge-status ${getBadgeClass(item.risk_level)}">${residualValue || '-'}</span></td>
+                                            <td><strong style="color: #0d4f1c; font-weight: 700;">${reduction}</strong></td>
+                                            <td><span class="badge-status ${getBadgeClass(item.risk_level)}">${item.risk_level || '-'}</span></td>
+                                            <td><span class="badge-status badge-secondary">${item.review_status || '-'}</span></td>
+                                            <td>${item.next_review_date || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getBadgeClass(level) {
+            const levelUpper = (level || '').toUpperCase();
+            
+            if (levelUpper.includes('LOW') || levelUpper.includes('RENDAH')) {
+                return 'badge-low-risk';
+            } else if (levelUpper.includes('MEDIUM') || levelUpper.includes('SEDANG')) {
+                return 'badge-medium-risk';
+            } else if (levelUpper.includes('HIGH') && !levelUpper.includes('EXTREME')) {
+                return 'badge-high-risk';
+            } else if (levelUpper.includes('EXTREME') || levelUpper.includes('VERY HIGH') || levelUpper.includes('SANGAT')) {
+                return 'badge-extreme-high';
+            } else {
+                return 'badge-secondary';
+            }
+        }
+        
+        async function downloadExcel() {
+            try {
+                debugLog('Starting Excel download...');
+                
+                // Show loading state
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                button.disabled = true;
+                
+                const response = await fetch('/api/reports/residual-risk/excel', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `residual-risk-${new Date().toISOString().split('T')[0]}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    debugLog('✅ Excel file downloaded successfully');
+                    
+                    // Show success message
+                    showSuccessMessage('File Excel berhasil diunduh');
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Download failed: ${response.status} - ${errorText}`);
+                }
+                
+                // Restore button
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+            } catch (error) {
+                debugLog(`❌ Excel download error: ${error.message}`);
+                
+                // Restore button
+                if (event.target) {
+                    event.target.innerHTML = '<i class="fas fa-download"></i> Export Excel';
+                    event.target.disabled = false;
+                }
+                
+                showError('Error downloading Excel: ' + error.message);
+            }
+        }
+        
+        function showSuccessMessage(message) {
+            const container = document.getElementById('content-area');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success alert-dismissible fade show';
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.insertBefore(successDiv, container.firstChild);
+            
+            // Auto dismiss after 3 seconds
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        function renderEnhancedMatrix() {
+            const ctx = document.getElementById('residual-risk-matrix');
+            if (!ctx || typeof Chart === 'undefined') {
+                debugLog('Chart context not available or Chart.js not loaded');
+                return;
+            }
+
+            if (residualData.length === 0) {
+                debugLog('No data available for matrix chart');
+                return;
+            }
+
+            if (matrixChart) {
+                matrixChart.destroy();
+                matrixChart = null;
+            }
+
+            // Prepare data points with star icons for residual risk
+            const residualPoints = [];
+            const inherentPoints = [];
+            const appetitePoints = [];
+
+            residualData
+                .filter(item => item.risk_inputs)
+                .forEach(item => {
+                    const risk = item.risk_inputs || {};
+                    const basePoint = {
+                        x: parseFloat(item.impact) || Math.random() * 4 + 1,
+                        y: parseFloat(item.probability) || Math.random() * 4 + 1,
+                        riskId: risk.kode_risiko || 'N/A',
+                        value: parseFloat(item.risk_value) || 0,
+                        level: item.risk_level || 'LOW RISK',
+                        unitName: risk.master_work_units?.name || 'Unknown Unit',
+                        lastUpdated: item.updated_at ? new Date(item.updated_at).toLocaleDateString('id-ID') : 'N/A'
+                    };
+
+                    if (basePoint.x > 0 && basePoint.y > 0) {
+                        // Add residual risk point (star - gold)
+                        residualPoints.push(basePoint);
+
+                        // Add inherent risk point (circle - cyan)
+                        let inherent = {};
+                        if (risk.risk_inherent_analysis && Array.isArray(risk.risk_inherent_analysis) && risk.risk_inherent_analysis.length > 0) {
+                            inherent = risk.risk_inherent_analysis[0];
+                        } else if (risk.risk_inherent_analysis && !Array.isArray(risk.risk_inherent_analysis)) {
+                            inherent = risk.risk_inherent_analysis;
+                        }
+                        
+                        const inherentValue = parseFloat(inherent.risk_value) || 0;
+                        if (inherentValue > 0) {
+                            inherentPoints.push({
+                                ...basePoint,
+                                x: parseFloat(inherent.impact) || basePoint.x + 0.5,
+                                y: parseFloat(inherent.probability) || basePoint.y + 0.5,
+                                value: inherentValue,
+                                level: inherent.risk_level || 'LOW RISK'
+                            });
+                        }
+
+                        // Add risk appetite point (triangle - white)
+                        appetitePoints.push({
+                            ...basePoint,
+                            x: Math.max(1, basePoint.x - 1),
+                            y: Math.max(1, basePoint.y - 1),
+                            value: Math.max(1, basePoint.value - 2),
+                            level: 'LOW RISK'
+                        });
+                    }
+                });
+
+            debugLog(`Matrix data prepared: ${residualPoints.length} residual, ${inherentPoints.length} inherent, ${appetitePoints.length} appetite points`);
+
+            try {
+                matrixChart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Residual Risk (Bintang)',
+                                data: residualPoints,
+                                backgroundColor: '#FFD700', // Gold
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 15,
+                                pointHoverRadius: 18,
+                                pointStyle: 'star'
+                            },
+                            {
+                                label: 'Inherent Risk (Lingkaran)',
+                                data: inherentPoints,
+                                backgroundColor: '#00FFFF', // Cyan
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 12,
+                                pointHoverRadius: 15,
+                                pointStyle: 'circle'
+                            },
+                            {
+                                label: 'Risk Appetite (Segitiga)',
+                                data: appetitePoints,
+                                backgroundColor: '#FFFFFF', // White
+                                borderColor: '#000000',
+                                borderWidth: 2,
+                                pointRadius: 12,
+                                pointHoverRadius: 15,
+                                pointStyle: 'triangle'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                min: 0.5,
+                                max: 5.5,
+                                ticks: { 
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        const labels = {
+                                            1: '1 = Ringan Sekali',
+                                            2: '2 = Ringan', 
+                                            3: '3 = Sedang',
+                                            4: '4 = Berat',
+                                            5: '5 = Sangat Berat'
+                                        };
+                                        return labels[value] || value;
+                                    }
+                                },
+                                title: { display: true, text: 'Dampak (Impact)', font: { weight: 'bold', size: 14 } },
+                                grid: {
+                                    color: '#e2e8f0',
+                                    lineWidth: 1
+                                }
+                            },
+                            y: {
+                                min: 0.5,
+                                max: 5.5,
+                                ticks: { 
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        const labels = {
+                                            1: '1 = Sangat Kecil ≤ 10%',
+                                            2: '2 = Kecil (10% < p < 40%)',
+                                            3: '3 = Sedang (40% < p ≤ 60%)', 
+                                            4: '4 = Besar (60% < p < 80%)',
+                                            5: '5 = Sangat Besar (> 80%)'
+                                        };
+                                        return labels[value] || value;
+                                    }
+                                },
+                                title: { display: true, text: 'Probabilitas', font: { weight: 'bold', size: 14 } },
+                                grid: {
+                                    color: '#e2e8f0',
+                                    lineWidth: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    generateLabels: function(chart) {
+                                        return [
+                                            {
+                                                text: 'Residual Risk (Bintang Emas)',
+                                                fillStyle: '#FFD700',
+                                                strokeStyle: '#000000',
+                                                pointStyle: 'star'
+                                            },
+                                            {
+                                                text: 'Inherent Risk (Lingkaran Cyan)', 
+                                                fillStyle: '#00FFFF',
+                                                strokeStyle: '#000000',
+                                                pointStyle: 'circle'
+                                            },
+                                            {
+                                                text: 'Risk Appetite (Segitiga Putih)',
+                                                fillStyle: '#FFFFFF',
+                                                strokeStyle: '#000000', 
+                                                pointStyle: 'triangle'
+                                            }
+                                        ];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#FFFFFF',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                cornerRadius: 8,
+                                displayColors: true,
+                                callbacks: {
+                                    title: function(context) {
+                                        const point = context[0].raw;
+                                        return `🎯 ${point.riskId || 'Risk Point'}`;
+                                    },
+                                    label: function(context) {
+                                        const point = context.raw;
+                                        const dataset = context.dataset;
+                                        
+                                        let icon = '●';
+                                        if (dataset.pointStyle === 'star') icon = '⭐';
+                                        else if (dataset.pointStyle === 'triangle') icon = '▲';
+                                        
+                                        return [
+                                            `${icon} Type: ${dataset.label}`,
+                                            `📊 Risk Value: ${point.value || 'N/A'}`,
+                                            `🎚️ Level: ${point.level || 'Unknown'}`,
+                                            `💥 Impact: ${point.x} (${getImpactLabel(point.x)})`,
+                                            `📈 Probability: ${point.y} (${getProbabilityLabel(point.y)})`,
+                                            `🏢 Unit: ${point.unitName || 'N/A'}`
+                                        ];
+                                    },
+                                    footer: function(context) {
+                                        const point = context[0].raw;
+                                        if (point.lastUpdated) {
+                                            return `📅 Updated: ${point.lastUpdated}`;
+                                        }
+                                        return '';
+                                    }
+                                }
+                            }
+                        },
+                        // Enhanced background plugin for risk matrix colors
+                        plugins: [{
+                            id: 'enhancedRiskMatrixBackground',
+                            beforeDraw: function(chart) {
+                                const ctx = chart.ctx;
+                                const chartArea = chart.chartArea;
+                                
+                                if (!chartArea) return;
+                                
+                                ctx.save();
+                                
+                                // Define enhanced risk zones with better colors and gradients
+                                const zones = [
+                                    // Green zones (Low Risk) - Enhanced
+                                    { xMin: 0.5, xMax: 1.5, yMin: 0.5, yMax: 5.5, color: 'rgba(34, 197, 94, 0.3)', label: 'Low Risk' },
+                                    { xMin: 1.5, xMax: 2.5, yMin: 0.5, yMax: 2.5, color: 'rgba(34, 197, 94, 0.3)', label: 'Low Risk' },
+                                    
+                                    // Yellow zones (Medium Risk) - Enhanced
+                                    { xMin: 1.5, xMax: 2.5, yMin: 2.5, yMax: 3.5, color: 'rgba(234, 179, 8, 0.3)', label: 'Medium Risk' },
+                                    { xMin: 2.5, xMax: 3.5, yMin: 0.5, yMax: 2.5, color: 'rgba(234, 179, 8, 0.3)', label: 'Medium Risk' },
+                                    
+                                    // Orange zones (High Risk) - Enhanced
+                                    { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(249, 115, 22, 0.3)', label: 'High Risk' },
+                                    { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(249, 115, 22, 0.3)', label: 'High Risk' },
+                                    { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(249, 115, 22, 0.3)', label: 'High Risk' },
+                                    
+                                    // Red zones (Extreme Risk) - Enhanced
+                                    { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'Extreme Risk' },
+                                    { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'Extreme Risk' }
+                                ];
+                                
+                                // Draw background zones with enhanced styling
+                                zones.forEach(zone => {
+                                    const xStart = chart.scales.x.getPixelForValue(zone.xMin);
+                                    const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
+                                    const yStart = chart.scales.y.getPixelForValue(zone.yMax);
+                                    const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
+                                    
+                                    // Create gradient for better visual effect
+                                    const gradient = ctx.createLinearGradient(xStart, yStart, xEnd, yEnd);
+                                    gradient.addColorStop(0, zone.color);
+                                    gradient.addColorStop(1, zone.color.replace('0.3', '0.1').replace('0.4', '0.2'));
+                                    
+                                    ctx.fillStyle = gradient;
+                                    ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                                    
+                                    // Add subtle border
+                                    ctx.strokeStyle = zone.color.replace('0.3', '0.5').replace('0.4', '0.6');
+                                    ctx.lineWidth = 1;
+                                    ctx.strokeRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                                });
+                                
+                                ctx.restore();
+                            }
+                        }],
+                        interaction: {
+                            intersect: false,
+                            mode: 'point'
+                        }
+                    }
+                });
+                
+                debugLog('✅ Enhanced matrix chart created successfully');
+                
+            } catch (error) {
+                debugLog(`❌ Error creating enhanced matrix chart: ${error.message}`);
+                console.error('Error creating enhanced matrix chart:', error);
+            }
+        }
+        
+        function getImpactLabel(value) {
+            const labels = {
+                1: 'Ringan Sekali',
+                2: 'Ringan', 
+                3: 'Sedang',
+                4: 'Berat',
+                5: 'Sangat Berat'
+            };
+            return labels[Math.round(value)] || 'Unknown';
+        }
+        
+        function getProbabilityLabel(value) {
+            const labels = {
+                1: 'Sangat Kecil ≤ 10%',
+                2: 'Kecil (10% < p < 40%)',
+                3: 'Sedang (40% < p ≤ 60%)', 
+                4: 'Besar (60% < p < 80%)',
+                5: 'Sangat Besar (> 80%)'
+            };
+            return labels[Math.round(value)] || 'Unknown';
+        }
+
+        // Logout function
+        function logout() {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

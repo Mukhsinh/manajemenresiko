@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Optimized Loading Verification</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #ffffff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .test-content {
+            padding: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+        .status-info { background-color: #17a2b8; }
+        
+        .performance-meter {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .performance-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #ffc107 70%, #dc3545 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .btn-test {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-card">
+            <div class="test-header">
+                <h1><i class="fas fa-rocket me-2"></i>Optimized Loading Verification</h1>
+                <p class="mb-0">Verifikasi perbaikan loading dan UI optimization</p>
+            </div>
+        </div>
+        
+        <!-- Status Overview -->
+        <div class="test-card">
+            <div class="test-content">
+                <h3><i class="fas fa-chart-line me-2"></i>Status Overview</h3>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center p-3 border rounded">
+                            <div class="status-indicator status-info" id="pengaturan-status"></div>
+                            <strong>Pengaturan API</strong>
+                            <div id="pengaturan-text">Testing...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 border rounded">
+                            <div class="status-indicator status-info" id="ui-fix-status"></div>
+                            <strong>UI Fix System</strong>
+                            <div id="ui-fix-text">Testing...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 border rounded">
+                            <div class="status-indicator status-info" id="loading-status"></div>
+                            <strong>Loading Speed</strong>
+                            <div id="loading-text">Testing...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 border rounded">
+                            <div class="status-indicator status-info" id="rencana-status"></div>
+                            <strong>Rencana Strategis</strong>
+                            <div id="rencana-text">Testing...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Metrics -->
+        <div class="test-card">
+            <div class="test-content">
+                <h3><i class="fas fa-tachometer-alt me-2"></i>Performance Metrics</h3>
+                
+                <div class="mb-3">
+                    <label>API Response Time:</label>
+                    <div class="performance-meter">
+                        <div class="performance-bar" id="api-performance" style="width: 0%"></div>
+                    </div>
+                    <small id="api-time">0ms</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label>UI Fix Initialization:</label>
+                    <div class="performance-meter">
+                        <div class="performance-bar" id="ui-performance" style="width: 0%"></div>
+                    </div>
+                    <small id="ui-time">0ms</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Page Load Complete:</label>
+                    <div class="performance-meter">
+                        <div class="performance-bar" id="page-performance" style="width: 0%"></div>
+                    </div>
+                    <small id="page-time">0ms</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-card">
+            <div class="test-content">
+                <h3><i class="fas fa-play-circle me-2"></i>Test Controls</h3>
+                <button class="btn btn-primary btn-test" onclick="runAllTests()">
+                    <i class="fas fa-play"></i> Run All Tests
+                </button>
+                <button class="btn btn-success btn-test" onclick="testPengaturanAPI()">
+                    <i class="fas fa-cog"></i> Test Pengaturan API
+                </button>
+                <button class="btn btn-info btn-test" onclick="testUIOptimization()">
+                    <i class="fas fa-paint-brush"></i> Test UI Optimization
+                </button>
+                <button class="btn btn-warning btn-test" onclick="testLoadingSpeed()">
+                    <i class="fas fa-stopwatch"></i> Test Loading Speed
+                </button>
+                <button class="btn btn-secondary btn-test" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i> Clear Logs
+                </button>
+            </div>
+        </div>
+        
+        <!-- Test Logs -->
+        <div class="test-card">
+            <div class="test-content">
+                <h3><i class="fas fa-terminal me-2"></i>Test Logs</h3>
+                <div class="log-container" id="test-logs">
+                    <div>🚀 Optimized Loading Verification System Ready</div>
+                    <div>📋 Click "Run All Tests" to start verification</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Test system
+        let testStartTime = Date.now();
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('test-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logs.innerHTML += `<div>[${timestamp}] ${icon} ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function updateStatus(elementId, status, text) {
+            const indicator = document.getElementById(elementId);
+            const textElement = document.getElementById(elementId.replace('-status', '-text'));
+            
+            indicator.className = `status-indicator status-${status}`;
+            textElement.textContent = text;
+        }
+        
+        function updatePerformance(elementId, timeMs, maxTime = 1000) {
+            const bar = document.getElementById(elementId);
+            const timeElement = document.getElementById(elementId.replace('-performance', '-time'));
+            
+            const percentage = Math.min((timeMs / maxTime) * 100, 100);
+            bar.style.width = percentage + '%';
+            timeElement.textContent = timeMs + 'ms';
+        }
+        
+        async function testPengaturanAPI() {
+            log('Testing Pengaturan API endpoint...');
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch('/api/pengaturan');
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                if (response.status === 401) {
+                    updateStatus('pengaturan-status', 'success', 'Available (Auth Required)');
+                    log('Pengaturan API endpoint is available (requires authentication)', 'success');
+                } else if (response.status === 404) {
+                    updateStatus('pengaturan-status', 'error', '404 Not Found');
+                    log('Pengaturan API endpoint returns 404 - still not fixed', 'error');
+                } else {
+                    updateStatus('pengaturan-status', 'success', `HTTP ${response.status}`);
+                    log(`Pengaturan API endpoint responded with status ${response.status}`, 'success');
+                }
+                
+                updatePerformance('api-performance', responseTime);
+                
+            } catch (error) {
+                updateStatus('pengaturan-status', 'error', 'Network Error');
+                log(`Pengaturan API test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUIOptimization() {
+            log('Testing UI Optimization system...');
+            const startTime = Date.now();
+            
+            // Check if UI fix system is initialized
+            if (window.uiFixSystemInitialized) {
+                updateStatus('ui-fix-status', 'success', 'Optimized');
+                log('UI Fix system is optimized (duplicate prevention active)', 'success');
+            } else {
+                updateStatus('ui-fix-status', 'warning', 'Not Optimized');
+                log('UI Fix system optimization not detected', 'warning');
+            }
+            
+            // Check if comprehensive UI fix is loaded
+            if (window.uiFix) {
+                log('Comprehensive UI Fix functions available', 'success');
+            } else {
+                log('Comprehensive UI Fix not loaded', 'warning');
+            }
+            
+            const endTime = Date.now();
+            updatePerformance('ui-performance', endTime - startTime);
+        }
+        
+        async function testLoadingSpeed() {
+            log('Testing loading speed optimization...');
+            const startTime = Date.now();
+            
+            try {
+                // Test parallel API calls
+                const apiStartTime = Date.now();
+                
+                const [rencanaResult, visiMisiResult] = await Promise.allSettled([
+                    fetch('/api/rencana-strategis/public'),
+                    fetch('/api/visi-misi/public')
+                ]);
+                
+                const apiEndTime = Date.now();
+                const apiTime = apiEndTime - apiStartTime;
+                
+                if (rencanaResult.status === 'fulfilled' && visiMisiResult.status === 'fulfilled') {
+                    updateStatus('loading-status', 'success', `${apiTime}ms`);
+                    log(`Parallel API calls completed in ${apiTime}ms`, 'success');
+                    
+                    // Test data parsing
+                    const rencanaData = await rencanaResult.value.json();
+                    const visiMisiData = await visiMisiResult.value.json();
+                    
+                    log(`Loaded ${rencanaData.length} rencana strategis records`, 'info');
+                    log(`Loaded ${visiMisiData.length} visi misi records`, 'info');
+                    
+                } else {
+                    updateStatus('loading-status', 'error', 'API Failed');
+                    log('One or more API calls failed', 'error');
+                }
+                
+                updatePerformance('api-performance', apiTime);
+                
+            } catch (error) {
+                updateStatus('loading-status', 'error', 'Error');
+                log(`Loading speed test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testRencanaStrategisModule() {
+            log('Testing Rencana Strategis module optimization...');
+            
+            // Check if module is loaded
+            if (window.RencanaStrategisModule) {
+                updateStatus('rencana-status', 'success', 'Module Loaded');
+                log('Rencana Strategis module is available', 'success');
+                
+                // Check if optimization flags are set
+                if (window.rencanaStrategisLoaded) {
+                    log('Duplicate loading prevention is active', 'success');
+                } else {
+                    log('Duplicate loading prevention not detected', 'warning');
+                }
+                
+            } else {
+                updateStatus('rencana-status', 'warning', 'Module Not Loaded');
+                log('Rencana Strategis module not loaded yet', 'warning');
+            }
+        }
+        
+        async function runAllTests() {
+            log('🚀 Starting comprehensive optimization verification...', 'info');
+            clearLogs();
+            
+            testStartTime = Date.now();
+            
+            // Reset all status indicators
+            updateStatus('pengaturan-status', 'info', 'Testing...');
+            updateStatus('ui-fix-status', 'info', 'Testing...');
+            updateStatus('loading-status', 'info', 'Testing...');
+            updateStatus('rencana-status', 'info', 'Testing...');
+            
+            // Run all tests
+            await testPengaturanAPI();
+            await testUIOptimization();
+            await testLoadingSpeed();
+            await testRencanaStrategisModule();
+            
+            const totalTime = Date.now() - testStartTime;
+            updatePerformance('page-performance', totalTime, 3000);
+            
+            log(`🎉 All tests completed in ${totalTime}ms`, 'success');
+            log('📋 Check status indicators above for results', 'info');
+        }
+        
+        function clearLogs() {
+            document.getElementById('test-logs').innerHTML = '';
+        }
+        
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Optimization verification system initialized');
+            
+            // Wait a bit for other scripts to load
+            setTimeout(() => {
+                log('🔍 Running automatic verification...');
+                runAllTests();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

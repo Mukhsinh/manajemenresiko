@@ -1,0 +1,208 @@
+/* Matriks TOWS Modal Styles - Fix overflow and cancel button issues */
+
+/* Modal container */
+.matriks-tows-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Modal overlay/backdrop */
+.matriks-tows-modal .modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 9998 !important;
+  cursor: pointer;
+}
+
+/* Modal content - prevent overflow */
+.matriks-tows-modal .modal-content {
+  position: relative !important;
+  z-index: 9999 !important;
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  max-width: 600px !important;
+  width: 100% !important;
+  max-height: calc(100vh - 2rem) !important;
+  overflow-y: auto !important;
+  margin: auto !important;
+}
+
+/* Modal header */
+.matriks-tows-modal .modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 1rem 1.5rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background: #f9fafb !important;
+  border-radius: 8px 8px 0 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Modal title */
+.matriks-tows-modal .modal-title {
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+}
+
+/* Modal close button */
+.matriks-tows-modal .modal-close {
+  background: none !important;
+  border: none !important;
+  font-size: 1.5rem !important;
+  cursor: pointer !important;
+  color: #6b7280 !important;
+  line-height: 1 !important;
+  padding: 0.25rem !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.matriks-tows-modal .modal-close:hover {
+  color: #1f2937 !important;
+  background: #e5e7eb !important;
+}
+
+/* Form inside modal */
+.matriks-tows-modal form {
+  padding: 1.5rem !important;
+}
+
+/* Form groups */
+.matriks-tows-modal .form-group {
+  margin-bottom: 1rem !important;
+}
+
+.matriks-tows-modal .form-label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+}
+
+/* Form controls */
+.matriks-tows-modal .form-control {
+  width: 100% !important;
+  padding: 0.625rem 0.75rem !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  color: #1f2937 !important;
+  background-color: #fff !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.matriks-tows-modal .form-control:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.matriks-tows-modal textarea.form-control {
+  resize: vertical !important;
+  min-height: 100px !important;
+}
+
+.matriks-tows-modal select.form-control {
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 0.5rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1.5em 1.5em !important;
+  padding-right: 2.5rem !important;
+}
+
+/* Form actions */
+.matriks-tows-modal .form-actions {
+  display: flex !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+  margin-top: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* Buttons */
+.matriks-tows-modal .btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+}
+
+.matriks-tows-modal .btn-secondary {
+  background: #f9fafb !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+}
+
+.matriks-tows-modal .btn-secondary:hover {
+  background: #e5e7eb !important;
+  border-color: #9ca3af !important;
+}
+
+.matriks-tows-modal .btn-primary {
+  background: #3b82f6 !important;
+  border: 1px solid #3b82f6 !important;
+  color: white !important;
+}
+
+.matriks-tows-modal .btn-primary:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .matriks-tows-modal .modal-content {
+    max-width: calc(100% - 2rem) !important;
+    margin: 1rem !important;
+  }
+  
+  .matriks-tows-modal .modal-header {
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .matriks-tows-modal form {
+    padding: 1rem !important;
+  }
+  
+  .matriks-tows-modal .form-actions {
+    flex-direction: column-reverse !important;
+  }
+  
+  .matriks-tows-modal .btn {
+    width: 100% !important;
+  }
+}

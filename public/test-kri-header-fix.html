@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test KRI Header Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style-new.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            background: #ffffff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .page-content {
+            display: none;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        .navigation-test {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background: #0056b3;
+        }
+        
+        .nav-btn.active {
+            background: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-bug"></i> Test KRI Header Color Fix</h1>
+        <p>Memverifikasi bahwa header tetap putih di semua halaman dan tidak berubah menjadi ungu gradasi</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Navigation Test</h2>
+        <p>Klik tombol navigasi di bawah untuk berpindah halaman dan perhatikan warna header:</p>
+        
+        <div class="navigation-test">
+            <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+            <button class="nav-btn" onclick="showPage('kri')">Key Risk Indicator</button>
+            <button class="nav-btn" onclick="showPage('risk-profile')">Risk Profile</button>
+            <button class="nav-btn" onclick="showPage('residual-risk')">Residual Risk</button>
+            <button class="nav-btn" onclick="showPage('analisis-swot')">Analisis SWOT</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page-content active">
+        <div class="page-header">
+            <h1 class="page-title"><i class="page-title-icon fas fa-home"></i> Dashboard</h1>
+            <p class="page-subtitle">Ringkasan Manajemen Risiko</p>
+        </div>
+        <div class="test-section">
+            <h3>Dashboard Content</h3>
+            <p>Header di atas harus berwarna putih dengan gradasi abu-abu terang.</p>
+        </div>
+    </div>
+
+    <!-- KRI Page -->
+    <div id="kri" class="page-content">
+        <div class="page-header">
+            <h1 class="page-title"><i class="page-title-icon fas fa-gauge-high"></i> Key Risk Indicator</h1>
+            <p class="page-subtitle">Indikator Risiko Utama</p>
+        </div>
+        <div id="kri-content"></div>
+        <div class="test-section">
+            <h3>KRI Content</h3>
+            <p>Header di atas harus tetap berwarna putih, BUKAN ungu gradasi.</p>
+            <button onclick="loadKRIModule()" class="nav-btn">Load KRI Module</button>
+        </div>
+    </div>
+
+    <!-- Risk Profile Page -->
+    <div id="risk-profile" class="page-content">
+        <div class="page-header">
+            <h1 class="page-title"><i class="page-title-icon fas fa-chart-bar"></i> Risk Profile</h1>
+            <p class="page-subtitle">Profil Risiko Inheren</p>
+        </div>
+        <div class="test-section">
+            <h3>Risk Profile Content</h3>
+            <p>Header di atas harus berwarna putih dengan gradasi abu-abu terang.</p>
+        </div>
+    </div>
+
+    <!-- Residual Risk Page -->
+    <div id="residual-risk" class="page-content">
+        <div class="page-header">
+            <h1 class="page-title"><i class="page-title-icon fas fa-chart-pie"></i> Residual Risk</h1>
+            <p class="page-subtitle">Analisis Risiko Residual</p>
+        </div>
+        <div class="test-section">
+            <h3>Residual Risk Content</h3>
+            <p>Header di atas harus berwarna putih dengan gradasi abu-abu terang.</p>
+        </div>
+    </div>
+
+    <!-- Analisis SWOT Page -->
+    <div id="analisis-swot" class="page-content">
+        <div class="page-header">
+            <h1 class="page-title"><i class="page-title-icon fas fa-chart-bar"></i> Analisis SWOT</h1>
+            <p class="page-subtitle">Analisis SWOT dengan Skoring dan Pembobotan</p>
+        </div>
+        <div class="test-section">
+            <h3>Analisis SWOT Content</h3>
+            <p>Header di atas harus berwarna putih dengan gradasi abu-abu terang.</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results">
+            <p><strong>✅ Expected Behavior:</strong></p>
+            <ul>
+                <li>Semua header halaman harus berwarna putih dengan gradasi abu-abu terang</li>
+                <li>Tidak ada header yang berubah menjadi ungu gradasi</li>
+                <li>KRI module dapat dimuat tanpa mempengaruhi warna header</li>
+            </ul>
+            
+            <p><strong>🔍 Test Instructions:</strong></p>
+            <ol>
+                <li>Klik setiap tombol navigasi dan perhatikan warna header</li>
+                <li>Pada halaman KRI, klik "Load KRI Module" dan pastikan header tidak berubah warna</li>
+                <li>Kembali ke halaman lain dan pastikan header masih normal</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/services/apiService.js"></script>
+    <script src="/js/services/authService.js"></script>
+    <script src="/js/kri.js"></script>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            console.log(`Switched to page: ${pageId}`);
+        }
+
+        async function loadKRIModule() {
+            try {
+                console.log('Loading KRI module...');
+                
+                // Check header color before loading
+                const headerBefore = document.querySelector('#kri .page-header');
+                const beforeStyle = window.getComputedStyle(headerBefore);
+                console.log('Header background before KRI load:', beforeStyle.background);
+                
+                // Load KRI module
+                if (window.kriModule) {
+                    await window.kriModule.load();
+                    console.log('KRI module loaded successfully');
+                    
+                    // Check header color after loading
+                    setTimeout(() => {
+                        const headerAfter = document.querySelector('#kri .page-header');
+                        const afterStyle = window.getComputedStyle(headerAfter);
+                        console.log('Header background after KRI load:', afterStyle.background);
+                        
+                        // Update test results
+                        const resultsDiv = document.getElementById('test-results');
+                        const testResult = document.createElement('div');
+                        testResult.style.marginTop = '20px';
+                        testResult.style.padding = '15px';
+                        testResult.style.borderRadius = '5px';
+                        
+                        if (afterStyle.background.includes('667eea') || afterStyle.background.includes('764ba2')) {
+                            testResult.style.background = '#ffebee';
+                            testResult.style.color = '#c62828';
+                            testResult.innerHTML = `
+                                <h4>❌ Test FAILED</h4>
+                                <p>Header masih berubah menjadi ungu gradasi setelah KRI module dimuat.</p>
+                                <p>Background: ${afterStyle.background}</p>
+                            `;
+                        } else {
+                            testResult.style.background = '#e8f5e8';
+                            testResult.style.color = '#2e7d32';
+                            testResult.innerHTML = `
+                                <h4>✅ Test PASSED</h4>
+                                <p>Header tetap berwarna putih setelah KRI module dimuat.</p>
+                                <p>Background: ${afterStyle.background}</p>
+                            `;
+                        }
+                        
+                        resultsDiv.appendChild(testResult);
+                    }, 500);
+                } else {
+                    throw new Error('KRI module not available');
+                }
+            } catch (error) {
+                console.error('Error loading KRI module:', error);
+                alert('Error loading KRI module: ' + error.message);
+            }
+        }
+
+        // Initial page load
+        console.log('Test page loaded. Ready for header color testing.');
+    </script>
+</body>
+</html>

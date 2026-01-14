@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sasaran Strategi Edit - Final Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .test-section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-section h2 { color: #007bff; margin-bottom: 15px; font-size: 1.2rem; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px; margin-bottom: 10px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .log { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; margin-top: 15px; }
+        .log-entry { margin-bottom: 5px; }
+        .log-success { color: #4ec9b0; }
+        .log-error { color: #f14c4c; }
+        .log-info { color: #569cd6; }
+        .status { padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        .btn-edit { background: #17a2b8; color: white; padding: 5px 10px; font-size: 12px; }
+        .btn-delete { background: #dc3545; color: white; padding: 5px 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bullseye"></i> Test Sasaran Strategi Edit - Final Fix</h1>
+        
+        <div class="test-section">
+            <h2>Status Module</h2>
+            <div id="module-status" class="status status-pending">Checking...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Actions</h2>
+            <button class="btn btn-primary" onclick="testAddNew()">
+                <i class="fas fa-plus"></i> Test Tambah Baru
+            </button>
+            <button class="btn btn-success" onclick="testEdit()">
+                <i class="fas fa-edit"></i> Test Edit (ID dari data)
+            </button>
+            <button class="btn btn-warning" onclick="loadData()">
+                <i class="fas fa-sync"></i> Reload Data
+            </button>
+            <button class="btn btn-danger" onclick="clearLog()">
+                <i class="fas fa-trash"></i> Clear Log
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2>Data Sasaran Strategi</h2>
+            <div id="data-container">
+                <p>Loading data...</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Console Log</h2>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <!-- Mock API -->
+    <script>
+        // Simple API mock
+        window.apiCall = async function(url, options = {}) {
+            log('API Call: ' + url, 'info');
+            
+            // Mock data
+            const mockRencanaStrategis = [
+                { id: 'rs-1', nama_rencana: 'Rencana Strategis 2024-2028', kode: 'RS-001' },
+                { id: 'rs-2', nama_rencana: 'Rencana Strategis 2023-2027', kode: 'RS-002' }
+            ];
+            
+            const mockTowsStrategi = [
+                { id: 'tows-1', tipe_strategi: 'SO', strategi: 'Memanfaatkan kekuatan untuk mengoptimalkan peluang digital' },
+                { id: 'tows-2', tipe_strategi: 'WO', strategi: 'Mengatasi kelemahan dengan memanfaatkan peluang kerjasama' },
+                { id: 'tows-3', tipe_strategi: 'ST', strategi: 'Menggunakan kekuatan untuk menghadapi ancaman kompetitor' },
+                { id: 'tows-4', tipe_strategi: 'WT', strategi: 'Meminimalkan kelemahan dan menghindari ancaman' }
+            ];
+            
+            const mockSasaranStrategi = [
+                { 
+                    id: 'ss-1', 
+                    sasaran: 'Meningkatkan kepuasan stakeholder eksternal melalui pelayanan prima',
+                    perspektif: 'ES',
+                    rencana_strategis_id: 'rs-1',
+                    tows_strategi_id: 'tows-1',
+                    rencana_strategis: mockRencanaStrategis[0],
+                    swot_tows_strategi: mockTowsStrategi[0]
+                },
+                { 
+                    id: 'ss-2', 
+                    sasaran: 'Mengoptimalkan proses bisnis internal untuk efisiensi operasional',
+                    perspektif: 'IBP',
+                    rencana_strategis_id: 'rs-1',
+                    tows_strategi_id: 'tows-2',
+                    rencana_strategis: mockRencanaStrategis[0],
+                    swot_tows_strategi: mockTowsStrategi[1]
+                },
+                { 
+                    id: 'ss-3', 
+                    sasaran: 'Meningkatkan kompetensi SDM melalui program pelatihan berkelanjutan',
+                    perspektif: 'LG',
+                    rencana_strategis_id: 'rs-2',
+                    tows_strategi_id: null,
+                    rencana_strategis: mockRencanaStrategis[1],
+                    swot_tows_strategi: null
+                }
+            ];
+            
+            // Route handling
+            if (url.includes('/api/sasaran-strategi/') && !url.includes('?')) {
+                const id = url.split('/').pop();
+                const item = mockSasaranStrategi.find(s => s.id === id);
+                if (item) {
+                    log('Found item: ' + JSON.stringify(item), 'success');
+                    return item;
+                }
+                throw new Error('Not found');
+            }
+            
+            if (url.includes('/api/sasaran-strategi')) {
+                return mockSasaranStrategi;
+            }
+            
+            if (url.includes('/api/rencana-strategis')) {
+                return mockRencanaStrategis;
+            }
+            
+            if (url.includes('/api/matriks-tows')) {
+                return mockTowsStrategi;
+            }
+            
+            return [];
+        };
+        
+        window.app = { apiCall: window.apiCall };
+    </script>
+
+    <!-- Load main module -->
+    <script src="/js/sasaran-strategi.js"></script>
+    
+    <!-- Load fix -->
+    <script src="/js/sasaran-strategi-edit-fix-v2.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry log-' + type;
+            entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        async function checkModuleStatus() {
+            const statusDiv = document.getElementById('module-status');
+            
+            if (window.SasaranStrategiModule) {
+                const hasGetState = typeof window.SasaranStrategiModule.getState === 'function';
+                const hasShowModal = typeof window.SasaranStrategiModule.showModal === 'function';
+                const hasEdit = typeof window.SasaranStrategiModule.edit === 'function';
+                
+                if (hasGetState && hasShowModal && hasEdit) {
+                    statusDiv.className = 'status status-success';
+                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Module loaded successfully with all required functions';
+                    log('Module check: All functions available', 'success');
+                    
+                    // Test getState
+                    const state = window.SasaranStrategiModule.getState();
+                    log('getState() returned: rencana=' + (state.rencanaStrategis?.length || 0) + ', tows=' + (state.towsStrategi?.length || 0), 'info');
+                } else {
+                    statusDiv.className = 'status status-error';
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Module loaded but missing functions: ' +
+                        (!hasGetState ? 'getState ' : '') +
+                        (!hasShowModal ? 'showModal ' : '') +
+                        (!hasEdit ? 'edit ' : '');
+                    log('Module check: Missing functions', 'error');
+                }
+            } else {
+                statusDiv.className = 'status status-error';
+                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Module not loaded';
+                log('Module check: Not loaded', 'error');
+            }
+        }
+        
+        async function loadData() {
+            log('Loading data...', 'info');
+            
+            if (window.SasaranStrategiModule && window.SasaranStrategiModule.load) {
+                await window.SasaranStrategiModule.load();
+                log('Data loaded via module', 'success');
+            }
+            
+            // Render table
+            renderDataTable();
+        }
+        
+        function renderDataTable() {
+            const container = document.getElementById('data-container');
+            
+            if (!window.SasaranStrategiModule || typeof window.SasaranStrategiModule.getState !== 'function') {
+                container.innerHTML = '<p class="status status-error">Module not available</p>';
+                return;
+            }
+            
+            const state = window.SasaranStrategiModule.getState();
+            const data = state.data || [];
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p>No data available. Click "Reload Data" to load.</p>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rencana Strategis</th>
+                            <th>Sasaran</th>
+                            <th>Perspektif</th>
+                            <th>TOWS</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.rencana_strategis?.nama_rencana || '-'}</td>
+                        <td>${item.sasaran}</td>
+                        <td>${item.perspektif || '-'}</td>
+                        <td>${item.swot_tows_strategi?.tipe_strategi || '-'}</td>
+                        <td>
+                            <button class="btn btn-edit" onclick="testEditById('${item.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            
+            log('Rendered ' + data.length + ' items', 'success');
+        }
+        
+        function testAddNew() {
+            log('Testing Add New...', 'info');
+            if (window.SasaranStrategiModule && window.SasaranStrategiModule.showModal) {
+                window.SasaranStrategiModule.showModal();
+            } else {
+                log('showModal not available', 'error');
+            }
+        }
+        
+        function testEdit() {
+            log('Testing Edit with first item...', 'info');
+            if (window.SasaranStrategiModule && window.SasaranStrategiModule.getState) {
+                const state = window.SasaranStrategiModule.getState();
+                if (state.data && state.data.length > 0) {
+                    testEditById(state.data[0].id);
+                } else {
+                    log('No data to edit. Load data first.', 'error');
+                }
+            }
+        }
+        
+        function testEditById(id) {
+            log('Testing Edit with ID: ' + id, 'info');
+            if (window.SasaranStrategiModule && window.SasaranStrategiModule.edit) {
+                window.SasaranStrategiModule.edit(id);
+            } else {
+                log('edit function not available', 'error');
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded', 'info');
+            setTimeout(() => {
+                checkModuleStatus();
+                loadData();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

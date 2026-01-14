@@ -135,41 +135,54 @@ class BukuPedomanManager {
             ],
             flowchart: {
                 title: "Flowchart Proses Bisnis Sistem Manajemen Risiko",
-                description: "Diagram alur proses bisnis manajemen risiko terintegrasi",
+                description: "Diagram alur proses bisnis manajemen risiko terintegrasi berdasarkan ISO 31000:2018",
                 processes: [
-                    {
-                        id: "start",
-                        type: "start",
-                        label: "Mulai",
-                        x: 50,
-                        y: 50
-                    },
-                    {
-                        id: "strategic_planning",
-                        type: "process",
-                        label: "Perencanaan Strategis\n(Visi, Misi, SWOT, Strategic Map)",
-                        x: 50,
-                        y: 150
-                    },
-                    {
-                        id: "risk_identification",
-                        type: "process", 
-                        label: "Identifikasi Risiko\n(Risk Register, Kategorisasi)",
-                        x: 50,
-                        y: 250
-                    },
-                    {
-                        id: "end",
-                        type: "end",
-                        label: "Selesai",
-                        x: 50,
-                        y: 350
-                    }
+                    // Row 1 - Start
+                    { id: "start", type: "start", label: "Mulai", x: 400, y: 50 },
+                    
+                    // Row 2 - Strategic Planning
+                    { id: "strategic_planning", type: "process", label: "Perencanaan Strategis", x: 400, y: 120 },
+                    
+                    // Row 3 - Three parallel processes
+                    { id: "visi_misi", type: "process", label: "Visi & Misi", x: 150, y: 200 },
+                    { id: "swot_analysis", type: "process", label: "Analisis SWOT", x: 400, y: 200 },
+                    { id: "strategic_map", type: "process", label: "Strategic Map", x: 650, y: 200 },
+                    
+                    // Row 4 - Risk Identification
+                    { id: "risk_identification", type: "process", label: "Identifikasi Risiko", x: 400, y: 290 },
+                    
+                    // Row 5 - Risk Analysis
+                    { id: "risk_analysis", type: "process", label: "Analisis Risiko", x: 400, y: 370 },
+                    
+                    // Row 6 - Risk Evaluation (Decision)
+                    { id: "risk_evaluation", type: "decision", label: "Evaluasi", x: 400, y: 450 },
+                    
+                    // Row 7 - Risk Treatment
+                    { id: "risk_treatment", type: "process", label: "Penanganan Risiko", x: 400, y: 540 },
+                    
+                    // Row 8 - Monitoring
+                    { id: "monitoring", type: "process", label: "Monitoring & Review", x: 400, y: 620 },
+                    
+                    // Row 9 - Reporting
+                    { id: "reporting", type: "process", label: "Pelaporan", x: 400, y: 700 },
+                    
+                    // Row 10 - End
+                    { id: "end", type: "end", label: "Selesai", x: 400, y: 780 }
                 ],
                 connections: [
                     { from: "start", to: "strategic_planning" },
-                    { from: "strategic_planning", to: "risk_identification" },
-                    { from: "risk_identification", to: "end" }
+                    { from: "strategic_planning", to: "visi_misi" },
+                    { from: "strategic_planning", to: "swot_analysis" },
+                    { from: "strategic_planning", to: "strategic_map" },
+                    { from: "visi_misi", to: "risk_identification" },
+                    { from: "swot_analysis", to: "risk_identification" },
+                    { from: "strategic_map", to: "risk_identification" },
+                    { from: "risk_identification", to: "risk_analysis" },
+                    { from: "risk_analysis", to: "risk_evaluation" },
+                    { from: "risk_evaluation", to: "risk_treatment", label: "Ya" },
+                    { from: "risk_treatment", to: "monitoring" },
+                    { from: "monitoring", to: "reporting" },
+                    { from: "reporting", to: "end" }
                 ]
             }
         };
@@ -330,15 +343,29 @@ class BukuPedomanManager {
     }
 
     renderFlowchart() {
+        // Use enhanced flowchart module if available
+        if (window.EnhancedFlowchartModule) {
+            console.log('Using EnhancedFlowchartModule for flowchart rendering');
+            // Return a placeholder that will be filled by the enhanced module
+            setTimeout(() => {
+                const container = document.getElementById('flowchart-container');
+                if (container) {
+                    window.EnhancedFlowchartModule.render('flowchart-container');
+                }
+            }, 100);
+            return '<div id="flowchart-loading" style="text-align:center;padding:50px;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#3498db;"></i><p style="margin-top:1rem;color:#666;">Memuat flowchart...</p></div>';
+        }
+        
+        // Fallback to original flowchart
         const flowchart = this.handbookData.flowchart;
         
         return `
-            <div class="flowchart-svg-container">
-                <svg width="800" height="800" viewBox="0 0 800 800" class="flowchart-svg">
+            <div class="flowchart-svg-container" style="overflow: auto; max-height: 800px; width: 100%;">
+                <svg width="1000" height="1100" viewBox="0 0 1000 1100" class="flowchart-svg" style="background: white; border-radius: 8px; display: block; margin: 0 auto;">
                     <!-- Background -->
                     <defs>
                         <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f0f0f0" stroke-width="0.5"/>
                         </pattern>
                         
                         <!-- Gradients for different process types -->
@@ -361,37 +388,49 @@ class BukuPedomanManager {
                             <stop offset="0%" style="stop-color:#F44336;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#D32F2F;stop-opacity:1" />
                         </linearGradient>
+                        
+                        <!-- Arrow marker -->
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+                        </marker>
                     </defs>
                     
                     <rect width="100%" height="100%" fill="url(#grid)" />
                     
+                    <!-- Title -->
+                    <text x="400" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#333" font-weight="bold">
+                        Proses Manajemen Risiko ISO 31000:2018
+                    </text>
+                    
+                    <!-- Connections (draw first so they appear behind nodes) -->
+                    ${flowchart.connections.map(conn => this.renderFlowchartConnection(conn, flowchart.processes)).join('')}
+                    
                     <!-- Process Nodes -->
                     ${flowchart.processes.map(process => this.renderFlowchartNode(process)).join('')}
-                    
-                    <!-- Connections -->
-                    ${flowchart.connections.map(conn => this.renderFlowchartConnection(conn, flowchart.processes)).join('')}
                 </svg>
             </div>
             
             <!-- Legend -->
-            <div class="flowchart-legend">
-                <h4>Keterangan:</h4>
-                <div class="legend-items">
-                    <div class="legend-item">
-                        <div class="legend-symbol start"></div>
-                        <span>Mulai/Selesai</span>
+            <div class="flowchart-legend" style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                <h4 style="margin: 0 0 15px 0; color: #333; font-size: 14px;">📋 Keterangan:</h4>
+                <div class="legend-items" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 30px; height: 20px; background: linear-gradient(135deg, #4CAF50, #45a049); border-radius: 10px;"></div>
+                        <span style="font-size: 12px; color: #666;">Mulai/Selesai</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-symbol process"></div>
-                        <span>Proses</span>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 30px; height: 20px; background: linear-gradient(135deg, #2196F3, #1976D2); border-radius: 4px;"></div>
+                        <span style="font-size: 12px; color: #666;">Proses</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-symbol decision"></div>
-                        <span>Keputusan</span>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #FF9800, #F57C00); transform: rotate(45deg);"></div>
+                        <span style="font-size: 12px; color: #666; margin-left: 5px;">Keputusan</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-symbol connection"></div>
-                        <span>Alur Proses</span>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 30px; height: 2px; background: #666; position: relative;">
+                            <div style="position: absolute; right: -2px; top: -4px; width: 0; height: 0; border-left: 8px solid #666; border-top: 5px solid transparent; border-bottom: 5px solid transparent;"></div>
+                        </div>
+                        <span style="font-size: 12px; color: #666;">Alur Proses</span>
                     </div>
                 </div>
             </div>
@@ -399,35 +438,35 @@ class BukuPedomanManager {
     }
 
     renderFlowchartNode(process) {
-        const x = process.x * 6; // Scale up coordinates
-        const y = process.y * 6;
+        const x = process.x;
+        const y = process.y;
         
         let shape = '';
-        let fill = '';
         
         switch (process.type) {
             case 'start':
+                shape = `<ellipse cx="${x}" cy="${y}" rx="40" ry="20" fill="url(#startGradient)" stroke="#388E3C" stroke-width="2"/>`;
+                break;
             case 'end':
-                shape = `<ellipse cx="${x}" cy="${y}" rx="60" ry="30" fill="url(#${process.type === 'start' ? 'start' : 'end'}Gradient)" stroke="#333" stroke-width="2"/>`;
+                shape = `<ellipse cx="${x}" cy="${y}" rx="40" ry="20" fill="url(#endGradient)" stroke="#C62828" stroke-width="2"/>`;
                 break;
             case 'process':
-                shape = `<rect x="${x-70}" y="${y-25}" width="140" height="50" rx="5" fill="url(#processGradient)" stroke="#333" stroke-width="2"/>`;
+                shape = `<rect x="${x-60}" y="${y-18}" width="120" height="36" rx="4" fill="url(#processGradient)" stroke="#1565C0" stroke-width="2"/>`;
                 break;
             case 'decision':
-                shape = `<polygon points="${x},${y-30} ${x+50},${y} ${x},${y+30} ${x-50},${y}" fill="url(#decisionGradient)" stroke="#333" stroke-width="2"/>`;
+                shape = `<polygon points="${x},${y-22} ${x+35},${y} ${x},${y+22} ${x-35},${y}" fill="url(#decisionGradient)" stroke="#EF6C00" stroke-width="2"/>`;
                 break;
         }
         
-        // Text
-        const lines = process.label.split('\n');
-        const textElements = lines.map((line, index) => 
-            `<text x="${x}" y="${y + (index - lines.length/2 + 0.5) * 12}" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" font-weight="bold">${line}</text>`
-        ).join('');
+        // Text - handle single line labels
+        const label = process.label;
+        const textY = process.type === 'decision' ? y + 4 : y + 5;
+        const fontSize = process.type === 'decision' ? '9' : '10';
         
         return `
-            <g class="flowchart-node" data-id="${process.id}">
+            <g class="flowchart-node" data-id="${process.id}" style="cursor: pointer;">
                 ${shape}
-                ${textElements}
+                <text x="${x}" y="${textY}" text-anchor="middle" font-family="Arial, sans-serif" font-size="${fontSize}" fill="white" font-weight="bold">${label}</text>
             </g>
         `;
     }
@@ -438,30 +477,62 @@ class BukuPedomanManager {
         
         if (!fromProcess || !toProcess) return '';
         
-        const x1 = fromProcess.x * 6;
-        const y1 = fromProcess.y * 6;
-        const x2 = toProcess.x * 6;
-        const y2 = toProcess.y * 6;
+        let x1 = fromProcess.x;
+        let y1 = fromProcess.y;
+        let x2 = toProcess.x;
+        let y2 = toProcess.y;
         
-        // Calculate arrow position
-        const angle = Math.atan2(y2 - y1, x2 - x1);
-        const arrowLength = 10;
-        const arrowAngle = Math.PI / 6;
+        // Adjust start and end points based on node type and direction
+        const nodeHeight = fromProcess.type === 'start' || fromProcess.type === 'end' ? 20 : 18;
+        const nodeWidth = 60;
         
-        const arrowX1 = x2 - arrowLength * Math.cos(angle - arrowAngle);
-        const arrowY1 = y2 - arrowLength * Math.sin(angle - arrowAngle);
-        const arrowX2 = x2 - arrowLength * Math.cos(angle + arrowAngle);
-        const arrowY2 = y2 - arrowLength * Math.sin(angle + arrowAngle);
+        // Determine if connection is vertical, horizontal, or diagonal
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        
+        // Adjust y1 (from bottom of source node)
+        if (Math.abs(dy) > Math.abs(dx)) {
+            // Mostly vertical
+            if (dy > 0) {
+                y1 += nodeHeight; // Start from bottom
+                y2 -= (toProcess.type === 'decision' ? 22 : nodeHeight); // End at top
+            } else {
+                y1 -= nodeHeight;
+                y2 += (toProcess.type === 'decision' ? 22 : nodeHeight);
+            }
+        } else {
+            // Mostly horizontal
+            if (dx > 0) {
+                x1 += nodeWidth;
+                x2 -= nodeWidth;
+            } else {
+                x1 -= nodeWidth;
+                x2 += nodeWidth;
+            }
+        }
+        
+        // Create path - use curved lines for better appearance
+        let path;
+        if (Math.abs(dx) < 10) {
+            // Straight vertical line
+            path = `M ${x1} ${y1} L ${x2} ${y2}`;
+        } else if (Math.abs(dy) < 10) {
+            // Straight horizontal line
+            path = `M ${x1} ${y1} L ${x2} ${y2}`;
+        } else {
+            // Curved line for diagonal connections
+            const midY = (y1 + y2) / 2;
+            path = `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
+        }
         
         // Label position
         const labelX = (x1 + x2) / 2;
-        const labelY = (y1 + y2) / 2 - 5;
+        const labelY = (y1 + y2) / 2 - 8;
         
         return `
             <g class="flowchart-connection">
-                <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
-                <polygon points="${x2},${y2} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}" fill="#333"/>
-                ${connection.label ? `<text x="${labelX}" y="${labelY}" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666" font-weight="bold">${connection.label}</text>` : ''}
+                <path d="${path}" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                ${connection.label ? `<text x="${labelX}" y="${labelY}" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333" font-weight="bold" style="background: white;">${connection.label}</text>` : ''}
             </g>
         `;
     }
@@ -524,18 +595,263 @@ class BukuPedomanManager {
     }
 
     showFlowchart() {
-        const modal = document.getElementById('flowchart-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+        console.log('showFlowchart() called');
+        
+        let modal = document.getElementById('flowchart-modal');
+        
+        // If modal doesn't exist, create it first
+        if (!modal) {
+            console.log('Modal not found, creating dynamically...');
+            this.createFlowchartModal();
+            modal = document.getElementById('flowchart-modal');
         }
+        
+        if (modal) {
+            console.log('Displaying flowchart modal...');
+            
+            // Apply comprehensive inline styles to ensure modal displays correctly
+            modal.style.cssText = `
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                background-color: rgba(0, 0, 0, 0.8) !important;
+                z-index: 99999 !important;
+                padding: 20px !important;
+                box-sizing: border-box !important;
+            `;
+            document.body.style.overflow = 'hidden';
+            
+            // Ensure modal content is visible with comprehensive styling
+            const modalContent = modal.querySelector('.flowchart-modal-content, .modal-content');
+            if (modalContent) {
+                modalContent.style.cssText = `
+                    display: flex !important;
+                    flex-direction: column !important;
+                    width: 90vw !important;
+                    max-width: 1200px !important;
+                    max-height: 90vh !important;
+                    overflow: hidden !important;
+                    background-color: white !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.4) !important;
+                    animation: modalSlideIn 0.3s ease-out !important;
+                `;
+            }
+            
+            // Style modal header
+            const modalHeader = modal.querySelector('.modal-header');
+            if (modalHeader) {
+                modalHeader.style.cssText = `
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    padding: 20px 30px !important;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    color: white !important;
+                    border-radius: 16px 16px 0 0 !important;
+                `;
+            }
+            
+            // Style modal body
+            const modalBody = modal.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.style.cssText = `
+                    flex: 1 !important;
+                    padding: 30px !important;
+                    overflow-y: auto !important;
+                    background: #f8f9fa !important;
+                `;
+            }
+            
+            // Style modal footer
+            const modalFooter = modal.querySelector('.modal-footer');
+            if (modalFooter) {
+                modalFooter.style.cssText = `
+                    padding: 20px 30px !important;
+                    background: white !important;
+                    border-top: 1px solid #e9ecef !important;
+                    display: flex !important;
+                    justify-content: flex-end !important;
+                    gap: 10px !important;
+                    border-radius: 0 0 16px 16px !important;
+                `;
+            }
+            
+            // Style close button
+            const closeBtn = modal.querySelector('.modal-close');
+            if (closeBtn) {
+                closeBtn.style.cssText = `
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    border: none !important;
+                    color: white !important;
+                    font-size: 1.5rem !important;
+                    cursor: pointer !important;
+                    padding: 8px 12px !important;
+                    border-radius: 8px !important;
+                    transition: all 0.3s ease !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                `;
+            }
+            
+            // Style flowchart container
+            const flowchartContainer = modal.querySelector('.flowchart-container, #flowchart-container');
+            if (flowchartContainer) {
+                flowchartContainer.style.cssText = `
+                    background: white !important;
+                    border-radius: 12px !important;
+                    padding: 30px !important;
+                    border: 1px solid #e9ecef !important;
+                    margin-bottom: 20px !important;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+                    min-height: 400px !important;
+                `;
+            }
+            
+            console.log('Flowchart modal opened successfully');
+        }
+    }
+    
+    createFlowchartModal() {
+        console.log('Creating flowchart modal dynamically...');
+        
+        // Create modal dynamically if it doesn't exist
+        const existingModal = document.getElementById('flowchart-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const modal = document.createElement('div');
+        modal.id = 'flowchart-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content flowchart-modal-content" style="
+                display: flex;
+                flex-direction: column;
+                width: 90vw;
+                max-width: 1200px;
+                max-height: 90vh;
+                overflow: hidden;
+                background-color: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            ">
+                <div class="modal-header" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 20px 30px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 16px 16px 0 0;
+                ">
+                    <h3 style="margin: 0; font-size: 1.5rem;">${this.handbookData?.flowchart?.title || 'Flowchart Proses Bisnis'}</h3>
+                    <button class="modal-close" onclick="bukuPedomanManager.closeFlowchart()" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: none;
+                        color: white;
+                        font-size: 1.5rem;
+                        cursor: pointer;
+                        padding: 8px 12px;
+                        border-radius: 8px;
+                    ">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="
+                    flex: 1;
+                    padding: 30px;
+                    overflow-y: auto;
+                    background: #f8f9fa;
+                ">
+                    <p class="flowchart-description" style="
+                        margin-bottom: 20px;
+                        color: #495057;
+                        font-size: 1rem;
+                        line-height: 1.6;
+                        text-align: center;
+                        padding: 15px;
+                        background: white;
+                        border-radius: 8px;
+                        border-left: 4px solid #667eea;
+                    ">${this.handbookData?.flowchart?.description || 'Diagram alur proses bisnis manajemen risiko'}</p>
+                    <div id="flowchart-container" class="flowchart-container" style="
+                        background: white;
+                        border-radius: 12px;
+                        padding: 30px;
+                        border: 1px solid #e9ecef;
+                        margin-bottom: 20px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                        min-height: 400px;
+                    ">
+                        ${this.renderFlowchart()}
+                    </div>
+                </div>
+                <div class="modal-footer" style="
+                    padding: 20px 30px;
+                    background: white;
+                    border-top: 1px solid #e9ecef;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    border-radius: 0 0 16px 16px;
+                ">
+                    <button class="btn btn-secondary" onclick="bukuPedomanManager.closeFlowchart()" style="
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-times"></i> Tutup
+                    </button>
+                    <button class="btn btn-primary" onclick="bukuPedomanManager.downloadFlowchartPDF()" style="
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-download"></i> Unduh Flowchart
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        console.log('Flowchart modal created and appended to body');
+        
+        // Don't call showFlowchart() here to avoid recursion
+        // The modal will be shown by the caller
     }
 
     closeFlowchart() {
         const modal = document.getElementById('flowchart-modal');
         if (modal) {
-            modal.style.display = 'none';
+            // Hide modal with animation
+            modal.style.opacity = '0';
+            modal.style.transition = 'opacity 0.2s ease-out';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.style.opacity = '';
+                modal.style.transition = '';
+            }, 200);
+            
             document.body.style.overflow = 'auto';
+            console.log('Flowchart modal closed');
         }
     }
 
@@ -543,42 +859,12 @@ class BukuPedomanManager {
         try {
             this.showLoading('Generating PDF...');
             
-            // Try to use apiService first, fallback to direct fetch
-            let response;
-            if (window.apiService) {
-                try {
-                    response = await window.apiService.get('/api/buku-pedoman/pdf');
-                } catch (error) {
-                    console.warn('apiService failed, using direct fetch:', error);
-                    response = await this.downloadPDFDirect();
-                }
-            } else {
-                response = await this.downloadPDFDirect();
-            }
+            // Try to generate PDF client-side first (more reliable)
+            await this.generateClientSidePDF();
             
-            if (response && response.success) {
-                // Create a temporary link to download the PDF
-                const link = document.createElement('a');
-                link.href = response.downloadUrl || '#';
-                link.download = `Buku_Pedoman_Manajemen_Risiko_${new Date().toISOString().split('T')[0]}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                this.showSuccess('PDF berhasil diunduh');
-            } else {
-                // Generate PDF using client-side method
-                await this.generateClientSidePDF();
-            }
         } catch (error) {
             console.error('Error downloading PDF:', error);
-            // Fallback to client-side PDF generation
-            try {
-                await this.generateClientSidePDF();
-            } catch (fallbackError) {
-                console.error('Client-side PDF generation failed:', fallbackError);
-                this.showError('Gagal mengunduh PDF. Silakan coba lagi atau gunakan fungsi print.');
-            }
+            this.showError('Gagal mengunduh PDF: ' + error.message);
         } finally {
             this.hideLoading();
         }
@@ -621,73 +907,113 @@ class BukuPedomanManager {
 
     async generateClientSidePDF() {
         try {
-            this.showLoading('Generating PDF using client-side method...');
+            this.showLoading('Generating PDF...');
             
-            // Check if jsPDF is available
-            if (typeof window.jspdf === 'undefined') {
+            // Load jsPDF if not available
+            if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+                await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+            }
+
+            const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+            if (!jsPDF) {
                 throw new Error('jsPDF library not available');
             }
 
-            const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
             
-            // Add title page
-            pdf.setFontSize(20);
-            pdf.text('Buku Pedoman Sistem Manajemen Risiko', 20, 30);
+            // Title page
+            pdf.setFontSize(24);
+            pdf.setTextColor(44, 62, 80);
+            pdf.text(this.handbookData.title, pageWidth / 2, 50, { align: 'center' });
+            
             pdf.setFontSize(16);
-            pdf.text('Berdasarkan ISO 31000:2018', 20, 45);
-            pdf.setFontSize(12);
-            pdf.text('Penulis: MUKHSIN HADI, SE, M.Si, CGAA, CPFRM, CSEP, CRP, CPRM, CSCAP, CPAB', 20, 60);
-            pdf.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 20, 75);
+            pdf.setTextColor(52, 73, 94);
+            pdf.text(this.handbookData.subtitle, pageWidth / 2, 65, { align: 'center' });
+            
+            pdf.setFontSize(11);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text('Penulis & Pengembang:', pageWidth / 2, 90, { align: 'center' });
+            
+            pdf.setFontSize(10);
+            pdf.text(this.handbookData.author, pageWidth / 2, 100, { align: 'center' });
+            
+            pdf.setFontSize(10);
+            pdf.text(`Versi ${this.handbookData.version}`, pageWidth / 2, 120, { align: 'center' });
+            pdf.text(`Tanggal: ${new Date(this.handbookData.date).toLocaleDateString('id-ID')}`, pageWidth / 2, 128, { align: 'center' });
             
             // Add content from handbook data
             if (this.handbookData && this.handbookData.chapters) {
-                let yPosition = 100;
-                
                 this.handbookData.chapters.forEach((chapter, chapterIndex) => {
-                    // Check if we need a new page
-                    if (yPosition > 250) {
-                        pdf.addPage();
-                        yPosition = 20;
-                    }
+                    // New page for each chapter
+                    pdf.addPage();
+                    let yPosition = margin;
                     
-                    // Add chapter title
+                    // Chapter title
                     pdf.setFontSize(16);
-                    pdf.text(`Bab ${chapter.id}: ${chapter.title}`, 20, yPosition);
+                    pdf.setTextColor(44, 62, 80);
+                    pdf.text(`Bab ${chapter.id}: ${chapter.title}`, margin, yPosition);
                     yPosition += 15;
+                    
+                    // Draw line under chapter title
+                    pdf.setDrawColor(52, 152, 219);
+                    pdf.setLineWidth(0.5);
+                    pdf.line(margin, yPosition - 5, pageWidth - margin, yPosition - 5);
+                    yPosition += 5;
                     
                     // Add sections
                     if (chapter.sections) {
                         chapter.sections.forEach(section => {
-                            if (yPosition > 270) {
+                            // Check if we need a new page
+                            if (yPosition > pageHeight - 40) {
                                 pdf.addPage();
-                                yPosition = 20;
+                                yPosition = margin;
                             }
                             
-                            pdf.setFontSize(14);
-                            pdf.text(`${section.id} ${section.title}`, 20, yPosition);
-                            yPosition += 10;
+                            // Section title
+                            pdf.setFontSize(12);
+                            pdf.setTextColor(52, 73, 94);
+                            pdf.text(`${section.id} ${section.title}`, margin, yPosition);
+                            yPosition += 8;
                             
-                            // Add content (simplified)
+                            // Section content
                             pdf.setFontSize(10);
-                            const lines = pdf.splitTextToSize(section.content, 170);
+                            pdf.setTextColor(60, 60, 60);
+                            
+                            // Split content into lines that fit the page width
+                            const lines = pdf.splitTextToSize(section.content, contentWidth);
+                            
                             lines.forEach(line => {
-                                if (yPosition > 280) {
+                                if (yPosition > pageHeight - 20) {
                                     pdf.addPage();
-                                    yPosition = 20;
+                                    yPosition = margin;
                                 }
-                                pdf.text(line, 20, yPosition);
+                                pdf.text(line, margin, yPosition);
                                 yPosition += 5;
                             });
-                            yPosition += 5;
+                            
+                            yPosition += 8; // Space between sections
                         });
                     }
                 });
             }
             
+            // Add page numbers
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(9);
+                pdf.setTextColor(128, 128, 128);
+                pdf.text(`Halaman ${i} dari ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+            }
+            
             // Save the PDF
-            pdf.save(`Buku_Pedoman_Manajemen_Risiko_${new Date().toISOString().split('T')[0]}.pdf`);
-            this.showSuccess('PDF berhasil diunduh menggunakan client-side generation');
+            const fileName = `Buku_Pedoman_Manajemen_Risiko_${new Date().toISOString().split('T')[0]}.pdf`;
+            pdf.save(fileName);
+            this.showSuccess(`PDF berhasil diunduh: ${fileName}`);
             
         } catch (error) {
             console.error('Client-side PDF generation failed:', error);
@@ -695,64 +1021,306 @@ class BukuPedomanManager {
         }
     }
 
+    async loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
     printHandbook() {
-        // Create a print-friendly version
-        // Use iframe for printing instead of opening new window
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.right = '0';
-        iframe.style.bottom = '0';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-        
-        const printContent = this.generatePrintContent();
-        
-        iframe.onload = function() {
-            const printWindow = iframe.contentWindow;
-            printWindow.document.write(`
+        try {
+            // Check if handbook data is available
+            if (!this.handbookData) {
+                this.showError('Data buku pedoman belum dimuat. Silakan tunggu atau refresh halaman.');
+                return;
+            }
+            
+            // Generate print content
+            const printContent = this.generatePrintContent();
+            
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+            
+            if (!printWindow) {
+                // Popup blocked - try alternative method
+                console.warn('Popup blocked, trying alternative print method');
+                this.printAlternative(printContent);
+                return;
+            }
+            
+            const printDocument = `
+                <!DOCTYPE html>
+                <html lang="id">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${this.handbookData.title}</title>
+                    <style>
+                        * { 
+                            box-sizing: border-box; 
+                            margin: 0;
+                            padding: 0;
+                        }
+                        body { 
+                            font-family: 'Times New Roman', Times, serif; 
+                            margin: 0;
+                            padding: 25px;
+                            line-height: 1.7;
+                            color: #333;
+                            background: white;
+                            font-size: 12pt;
+                        }
+                        .print-header { 
+                            text-align: center; 
+                            margin-bottom: 40px; 
+                            border-bottom: 3px solid #2c3e50; 
+                            padding-bottom: 30px; 
+                        }
+                        .print-header h1 {
+                            font-size: 22pt;
+                            color: #2c3e50;
+                            margin-bottom: 10px;
+                            font-weight: bold;
+                        }
+                        .print-header h2 {
+                            font-size: 14pt;
+                            color: #34495e;
+                            font-weight: normal;
+                            margin-bottom: 20px;
+                        }
+                        .print-header .author {
+                            font-size: 10pt;
+                            color: #666;
+                            margin-bottom: 10px;
+                        }
+                        .print-header .meta {
+                            font-size: 9pt;
+                            color: #888;
+                            margin-top: 10px;
+                        }
+                        .toc {
+                            margin-bottom: 40px;
+                            page-break-after: always;
+                        }
+                        .toc h3 {
+                            color: #2c3e50;
+                            border-bottom: 2px solid #3498db;
+                            padding-bottom: 10px;
+                            margin-bottom: 20px;
+                            font-size: 14pt;
+                        }
+                        .toc ul {
+                            list-style: none;
+                            padding-left: 0;
+                        }
+                        .toc > ul > li {
+                            margin: 12px 0;
+                        }
+                        .toc ul ul {
+                            padding-left: 25px;
+                            margin-top: 8px;
+                        }
+                        .toc ul ul li {
+                            margin: 5px 0;
+                            color: #555;
+                            font-size: 10pt;
+                        }
+                        .chapter { 
+                            page-break-before: always; 
+                            margin-bottom: 30px; 
+                        }
+                        .chapter:first-of-type { 
+                            page-break-before: auto; 
+                        }
+                        .chapter-title { 
+                            color: #2c3e50; 
+                            border-bottom: 2px solid #3498db; 
+                            padding-bottom: 12px;
+                            font-size: 16pt;
+                            margin-bottom: 25px;
+                            font-weight: bold;
+                        }
+                        .section { 
+                            margin: 25px 0; 
+                            page-break-inside: avoid;
+                        }
+                        .section-title { 
+                            color: #34495e; 
+                            margin: 20px 0 15px 0;
+                            font-size: 13pt;
+                            border-left: 4px solid #3498db;
+                            padding-left: 12px;
+                            font-weight: bold;
+                        }
+                        .section-content { 
+                            margin-left: 16px;
+                            text-align: justify;
+                            font-size: 11pt;
+                        }
+                        .section-content p {
+                            margin-bottom: 12px;
+                            text-indent: 20px;
+                        }
+                        .section-content p:first-child {
+                            text-indent: 0;
+                        }
+                        .footer {
+                            margin-top: 50px;
+                            padding-top: 20px;
+                            border-top: 2px solid #ddd;
+                            text-align: center;
+                            color: #888;
+                            font-size: 9pt;
+                        }
+                        .print-btn {
+                            position: fixed;
+                            top: 10px;
+                            right: 10px;
+                            padding: 12px 24px;
+                            background: #3498db;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            font-weight: bold;
+                            z-index: 1000;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                        }
+                        .print-btn:hover {
+                            background: #2980b9;
+                        }
+                        @media print {
+                            body { 
+                                margin: 0; 
+                                padding: 15mm;
+                                font-size: 11pt;
+                            }
+                            .chapter { 
+                                page-break-before: always; 
+                            }
+                            .chapter:first-of-type { 
+                                page-break-before: auto; 
+                            }
+                            .section {
+                                page-break-inside: avoid;
+                            }
+                            .print-btn {
+                                display: none !important;
+                            }
+                        }
+                        @page {
+                            margin: 15mm;
+                            size: A4;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="print-btn" onclick="window.print()">🖨️ Cetak Sekarang</button>
+                    ${printContent}
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(printDocument);
+            printWindow.document.close();
+            
+            // Focus the window and trigger print after content loads
+            printWindow.focus();
+            
+            // Wait for content to load before printing
+            printWindow.onload = function() {
+                setTimeout(function() {
+                    printWindow.print();
+                }, 300);
+            };
+            
+            this.showSuccess('Jendela cetak dibuka. Klik tombol "Cetak Sekarang" atau gunakan Ctrl+P.');
+            
+        } catch (error) {
+            console.error('Print error:', error);
+            this.showError('Gagal mencetak: ' + error.message);
+        }
+    }
+    
+    printAlternative(printContent) {
+        // Alternative print method using iframe
+        try {
+            // Remove existing print iframe
+            const existingFrame = document.getElementById('print-frame');
+            if (existingFrame) {
+                existingFrame.remove();
+            }
+            
+            // Create hidden iframe
+            const iframe = document.createElement('iframe');
+            iframe.id = 'print-frame';
+            iframe.style.cssText = 'position: fixed; right: 0; bottom: 0; width: 0; height: 0; border: 0;';
+            document.body.appendChild(iframe);
+            
+            const iframeDoc = iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>${this.handbookData.title}</title>
                     <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-                        .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-                        .chapter { page-break-before: always; margin-bottom: 30px; }
-                        .chapter:first-child { page-break-before: auto; }
-                        .chapter-title { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-                        .section { margin: 20px 0; }
-                    .section-title { color: #555; margin: 15px 0 10px 0; }
-                    .section-content { margin-left: 20px; }
-                    @media print {
-                        body { margin: 0; }
-                        .chapter { page-break-before: always; }
-                    }
-                </style>
-            </head>
-            <body>
-                ${printContent}
-            </body>
-            </html>
-                `);
-                
-                printWindow.document.close();
-                
-                // Wait a bit for content to load, then print
-                setTimeout(() => {
-                    printWindow.print();
-                    
-                    // Remove iframe after printing
-                    setTimeout(() => {
-                        if (iframe.parentNode) {
-                            document.body.removeChild(iframe);
+                        * { box-sizing: border-box; }
+                        body { 
+                            font-family: 'Times New Roman', Times, serif; 
+                            padding: 20px;
+                            line-height: 1.6;
+                            color: #333;
                         }
-                    }, 1000);
-                }, 500);
-            }.bind(this);
+                        .print-header { 
+                            text-align: center; 
+                            margin-bottom: 30px; 
+                            border-bottom: 2px solid #2c3e50; 
+                            padding-bottom: 20px; 
+                        }
+                        .print-header h1 { font-size: 20pt; color: #2c3e50; margin-bottom: 8px; }
+                        .print-header h2 { font-size: 12pt; color: #34495e; font-weight: normal; }
+                        .chapter { page-break-before: always; margin-bottom: 20px; }
+                        .chapter:first-of-type { page-break-before: auto; }
+                        .chapter-title { color: #2c3e50; border-bottom: 1px solid #3498db; padding-bottom: 8px; font-size: 14pt; margin-bottom: 15px; }
+                        .section { margin: 15px 0; }
+                        .section-title { color: #34495e; font-size: 12pt; margin: 15px 0 10px 0; border-left: 3px solid #3498db; padding-left: 10px; }
+                        .section-content { margin-left: 13px; text-align: justify; font-size: 10pt; }
+                        @page { margin: 15mm; }
+                    </style>
+                </head>
+                <body>${printContent}</body>
+                </html>
+            `);
+            iframeDoc.close();
             
-            iframe.src = 'about:blank';
+            // Wait for iframe to load then print
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                
+                // Remove iframe after printing
+                setTimeout(() => {
+                    iframe.remove();
+                }, 1000);
+            }, 500);
+            
+            this.showSuccess('Memproses cetak...');
+            
+        } catch (error) {
+            console.error('Alternative print failed:', error);
+            this.showError('Gagal mencetak. Silakan coba lagi atau izinkan popup di browser Anda.');
+        }
     }
 
     generatePrintContent() {
@@ -760,8 +1328,34 @@ class BukuPedomanManager {
             <div class="print-header">
                 <h1>${this.handbookData.title}</h1>
                 <h2>${this.handbookData.subtitle}</h2>
-                <p><strong>Penulis & Pengembang:</strong> ${this.handbookData.author}</p>
-                <p><strong>Versi:</strong> ${this.handbookData.version} | <strong>Tanggal:</strong> ${new Date(this.handbookData.date).toLocaleDateString('id-ID')}</p>
+                <div class="author">
+                    <strong>Penulis & Pengembang:</strong><br>
+                    ${this.handbookData.author}
+                </div>
+                <div class="meta">
+                    <strong>Versi:</strong> ${this.handbookData.version} | 
+                    <strong>Tanggal:</strong> ${new Date(this.handbookData.date).toLocaleDateString('id-ID', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}
+                </div>
+            </div>
+            
+            <div class="toc" style="margin-bottom: 30px;">
+                <h3 style="color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Daftar Isi</h3>
+                <ul style="list-style: none; padding-left: 0;">
+                    ${this.handbookData.chapters.map(chapter => `
+                        <li style="margin: 8px 0;">
+                            <strong>Bab ${chapter.id}:</strong> ${chapter.title}
+                            <ul style="list-style: none; padding-left: 20px; margin-top: 5px;">
+                                ${chapter.sections.map(section => `
+                                    <li style="margin: 3px 0; color: #666;">${section.id} ${section.title}</li>
+                                `).join('')}
+                            </ul>
+                        </li>
+                    `).join('')}
+                </ul>
             </div>
             
             ${this.handbookData.chapters.map(chapter => `
@@ -777,36 +1371,144 @@ class BukuPedomanManager {
                     `).join('')}
                 </div>
             `).join('')}
+            
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #888; font-size: 11px;">
+                <p>Dokumen ini dicetak dari Sistem Manajemen Risiko PINTAR MR</p>
+                <p>© ${new Date().getFullYear()} - Hak Cipta Dilindungi Undang-Undang</p>
+            </div>
         `;
     }
 
     async downloadFlowchartPDF() {
         try {
-            showLoading('Generating flowchart PDF...');
+            this.showLoading('Generating flowchart PDF...');
             
-            // Use html2canvas to capture the flowchart
-            const flowchartContainer = document.getElementById('flowchart-container');
-            const canvas = await html2canvas(flowchartContainer, {
-                scale: 2,
-                backgroundColor: '#ffffff'
-            });
+            // Load required libraries
+            if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+                await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+            }
             
-            // Create PDF with jsPDF
-            const { jsPDF } = window.jspdf;
+            // Try to use html2canvas if available, otherwise create simple PDF
+            let useHtml2Canvas = false;
+            if (typeof html2canvas === 'undefined') {
+                try {
+                    await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+                    useHtml2Canvas = true;
+                } catch (e) {
+                    console.warn('html2canvas not available, using simple PDF');
+                }
+            } else {
+                useHtml2Canvas = true;
+            }
+            
+            const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+            if (!jsPDF) {
+                throw new Error('jsPDF library not available');
+            }
+            
             const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
             
-            const imgWidth = 297; // A4 landscape width in mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            if (useHtml2Canvas) {
+                // Use html2canvas to capture the flowchart
+                const flowchartContainer = document.getElementById('flowchart-container');
+                if (flowchartContainer) {
+                    const canvas = await html2canvas(flowchartContainer, {
+                        scale: 2,
+                        backgroundColor: '#ffffff',
+                        logging: false
+                    });
+                    
+                    const imgWidth = pageWidth - 20;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    // Add title
+                    pdf.setFontSize(16);
+                    pdf.setTextColor(44, 62, 80);
+                    pdf.text(this.handbookData.flowchart.title, pageWidth / 2, 15, { align: 'center' });
+                    
+                    // Add image
+                    const yOffset = 25;
+                    if (imgHeight > pageHeight - yOffset - 20) {
+                        // Scale down if too tall
+                        const scaledHeight = pageHeight - yOffset - 20;
+                        const scaledWidth = (canvas.width * scaledHeight) / canvas.height;
+                        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (pageWidth - scaledWidth) / 2, yOffset, scaledWidth, scaledHeight);
+                    } else {
+                        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, yOffset, imgWidth, imgHeight);
+                    }
+                }
+            } else {
+                // Create simple text-based flowchart PDF
+                pdf.setFontSize(18);
+                pdf.setTextColor(44, 62, 80);
+                pdf.text(this.handbookData.flowchart.title, pageWidth / 2, 20, { align: 'center' });
+                
+                pdf.setFontSize(12);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text(this.handbookData.flowchart.description, pageWidth / 2, 30, { align: 'center' });
+                
+                // Draw process boxes
+                let y = 50;
+                const boxWidth = 80;
+                const boxHeight = 25;
+                const centerX = pageWidth / 2;
+                
+                this.handbookData.flowchart.processes.forEach((process, index) => {
+                    if (y > pageHeight - 40) {
+                        pdf.addPage();
+                        y = 30;
+                    }
+                    
+                    // Draw box
+                    if (process.type === 'start' || process.type === 'end') {
+                        pdf.setFillColor(process.type === 'start' ? 76 : 244, process.type === 'start' ? 175 : 67, process.type === 'start' ? 80 : 54);
+                        pdf.roundedRect(centerX - boxWidth/2, y, boxWidth, boxHeight, 10, 10, 'F');
+                    } else if (process.type === 'decision') {
+                        pdf.setFillColor(255, 152, 0);
+                        pdf.rect(centerX - boxWidth/2, y, boxWidth, boxHeight, 'F');
+                    } else {
+                        pdf.setFillColor(33, 150, 243);
+                        pdf.rect(centerX - boxWidth/2, y, boxWidth, boxHeight, 'F');
+                    }
+                    
+                    // Add text
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(255, 255, 255);
+                    const lines = process.label.split('\n');
+                    lines.forEach((line, lineIndex) => {
+                        pdf.text(line, centerX, y + 10 + (lineIndex * 5), { align: 'center' });
+                    });
+                    
+                    // Draw arrow to next
+                    if (index < this.handbookData.flowchart.processes.length - 1) {
+                        pdf.setDrawColor(100, 100, 100);
+                        pdf.setLineWidth(0.5);
+                        pdf.line(centerX, y + boxHeight, centerX, y + boxHeight + 10);
+                        // Arrow head
+                        pdf.line(centerX - 3, y + boxHeight + 7, centerX, y + boxHeight + 10);
+                        pdf.line(centerX + 3, y + boxHeight + 7, centerX, y + boxHeight + 10);
+                    }
+                    
+                    y += boxHeight + 15;
+                });
+            }
             
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(`Flowchart_Manajemen_Risiko_${new Date().toISOString().split('T')[0]}.pdf`);
+            // Add footer
+            pdf.setFontSize(8);
+            pdf.setTextColor(128, 128, 128);
+            pdf.text(`Generated: ${new Date().toLocaleDateString('id-ID')}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
             
-            showSuccess('Flowchart PDF berhasil diunduh');
+            const fileName = `Flowchart_Manajemen_Risiko_${new Date().toISOString().split('T')[0]}.pdf`;
+            pdf.save(fileName);
+            
+            this.showSuccess(`Flowchart PDF berhasil diunduh: ${fileName}`);
         } catch (error) {
             console.error('Error downloading flowchart PDF:', error);
-            showError('Gagal mengunduh flowchart PDF');
+            this.showError('Gagal mengunduh flowchart PDF: ' + error.message);
         } finally {
-            hideLoading();
+            this.hideLoading();
         }
     }
 
@@ -895,7 +1597,7 @@ class BukuPedomanManager {
         `;
         loadingDiv.innerHTML = `
             <div style="margin-bottom: 10px;">
-                <div style="border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <div style="border: 3px solid #f3f3f3; border-top: 3px solid #ffffff; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
             </div>
             <div>${message}</div>
         `;

@@ -70,7 +70,7 @@ const Peluang = {
             style.textContent = `
                 /* Enhanced Peluang Styles */
                 .page-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: #ffffff;
                     color: white;
                     padding: 2rem 0;
                     margin-bottom: 2rem;
@@ -174,7 +174,7 @@ const Peluang = {
                 <div class="card-body">
                     <!-- Statistics -->
                     <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: 8px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                             <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">${data.length}</div>
                             <div style="font-size: 0.875rem; opacity: 0.9;">Total Peluang</div>
                         </div>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Renstra Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/renstra.css">
+    <style>
+        body { background: #f5f7fa; padding: 20px; }
+        .test-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .test-info { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="test-header">
+            <h1><i class="fas fa-clipboard-list me-2"></i>Test Halaman Renstra</h1>
+            <p class="mb-0">Halaman baru yang bersih tanpa konflik dengan rencana-strategis lama</p>
+        </div>
+        
+        <div class="test-info">
+            <h5><i class="fas fa-info-circle me-2 text-primary"></i>Informasi</h5>
+            <ul class="mb-0">
+                <li>Halaman ini menggunakan tabel <code>rencana_strategis</code> yang sama</li>
+                <li>Tidak menggunakan MutationObserver (mencegah freeze)</li>
+                <li>Tidak menggunakan setInterval (mencegah memory leak)</li>
+                <li>Single initialization untuk mencegah race condition</li>
+            </ul>
+        </div>
+        
+        <!-- Renstra Page Content -->
+        <div id="renstra" class="page-content active">
+            <div class="page-header mb-3">
+                <h1 class="page-title"><i class="page-title-icon fas fa-clipboard-list"></i> Renstra</h1>
+                <p class="page-subtitle">Rencana Strategis Organisasi (Versi Baru)</p>
+            </div>
+            <div id="renstra-content">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 text-muted">Memuat modul renstra...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mock API for testing
+        window.currentSession = { access_token: 'test-token' };
+        
+        // Mock waitForAuthReady
+        window.waitForAuthReady = function(timeout) {
+            return new Promise(function(resolve) {
+                setTimeout(resolve, 100);
+            });
+        };
+    </script>
+    <script src="/js/renstra.js"></script>
+    <script>
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Test page loaded, initializing RenstraModule...');
+            if (window.RenstraModule) {
+                RenstraModule.init();
+            } else {
+                console.error('❌ RenstraModule not found!');
+            }
+        });
+    </script>
+</body>
+</html>
+</body>
+</html>

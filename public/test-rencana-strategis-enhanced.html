@@ -3,333 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Rencana Strategis Enhanced</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/rencana-strategis-enhanced.css">
+    <title>Rencana Strategis - Enhanced UI</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/rencana-strategis-enhanced.css" rel="stylesheet">
+    
     <style>
         body {
-            margin: 0;
-            padding: 20px;
-            background-color: #f8fafc;
+            background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .container {
-            max-width: 100%;
+        .container-fluid {
+            max-width: 1400px;
             margin: 0 auto;
         }
         
-        .page-header {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            text-align: center;
+        /* Additional custom styles */
+        .page-content {
+            min-height: 100vh;
+            padding: 2rem 0;
         }
         
-        .page-title {
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 600;
+        .page-content.active {
+            display: block;
         }
         
-        .page-subtitle {
-            margin: 0.5rem 0 0 0;
-            opacity: 0.9;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.1);
-            overflow: hidden;
-        }
-        
-        .card-header {
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .card-title {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-        
-        .text-muted {
-            color: #64748b;
-            margin: 0.5rem 0 0 0;
-        }
-        
-        .action-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-warning {
-            background-color: #f59e0b;
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: #10b981;
-            color: white;
-        }
-        
-        .btn-info {
-            background-color: #0ea5e9;
-            color: white;
-        }
-        
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .card-body {
-            padding: 0;
-        }
-        
-        .d-flex {
-            display: flex;
-        }
-        
-        .justify-content-between {
-            justify-content: space-between;
-        }
-        
-        .align-items-center {
-            align-items: center;
-        }
-        
-        .mb-0 {
-            margin-bottom: 0;
-        }
-        
-        .p-0 {
-            padding: 0;
-        }
-        
-        @media (max-width: 768px) {
-            .page-header {
-                padding: 1.5rem;
-            }
-            
-            .page-title {
-                font-size: 1.5rem;
-            }
-            
-            .action-group {
-                flex-direction: column;
-            }
+        .shadow-sm {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
         }
     </style>
+    <link rel="stylesheet" href="css/remove-purple-colors.css">
 </head>
 <body>
-    <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-chart-line"></i>
-                Test Rencana Strategis Enhanced
-            </h1>
-            <p class="page-subtitle">Pengujian tampilan tabel yang telah diperbaiki</p>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h3 class="card-title">Daftar Rencana Strategis</h3>
-                        <p class="text-muted mb-0">Kelola sasaran strategis dan indikator kinerja utama</p>
-                    </div>
-                    <div class="action-group">
-                        <button class="btn btn-warning"><i class="fas fa-download"></i> Template</button>
-                        <button class="btn btn-success"><i class="fas fa-upload"></i> Import</button>
-                        <button class="btn btn-info"><i class="fas fa-file-excel"></i> Export</button>
-                    </div>
+    <div class="page-content active" id="rencana-strategis">
+        <div id="rencana-strategis-content" class="container-fluid p-4">
+            <!-- Content will be loaded here by JavaScript -->
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Kode</th>
-                                <th>Nama Rencana & Deskripsi</th>
-                                <th>Target</th>
-                                <th>Periode</th>
-                                <th>Sasaran Strategis</th>
-                                <th>Indikator Kinerja Utama</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr data-id="1">
-                                <td><strong>RS-2025-001</strong></td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <strong title="Peningkatan Sistem Keselamatan Pasien Terintegrasi">Peningkatan Sistem Keselamatan Pasien Terintegrasi</strong>
-                                        <small class="text-muted d-block" title="Mengembangkan dan mengimplementasikan sistem keselamatan pasien yang komprehensif dan terintegrasi untuk mengurangi risiko insiden keselamatan pasien dan meningkatkan kualitas pelayanan kesehatan.">Mengembangkan dan mengimplementasikan sistem keselamatan pasien yang komprehensif dan terintegrasi untuk mengurangi risiko insiden keselamatan pasien...</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-cell-content" title="Menurunkan angka insiden keselamatan pasien sebesar 50% dan mencapai akreditasi keselamatan pasien tingkat internasional">
-                                        <span class="text-primary">Menurunkan angka insiden keselamatan pasien sebesar 50% dan mencapai akreditasi keselamatan pasien tingkat internasional</span>
-                                    </div>
-                                </td>
-                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
-                                <td>
-                                    <div class="table-cell-content" title="Implementasi sistem pelaporan insiden keselamatan pasien elektronik; Pelatihan berkelanjutan untuk seluruh staf medis dan non-medis; Pengembangan protokol keselamatan pasien berbasis evidence-based practice">
-                                        <small class="text-info">Implementasi sistem pelaporan insiden keselamatan pasien elektronik; Pelatihan berkelanjutan untuk seluruh staf medis dan non-medis ... (+1 lainnya)</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-cell-content" title="Angka insiden keselamatan pasien ≤ 2 per 1000 hari rawat; Tingkat kepatuhan terhadap protokol keselamatan pasien ≥ 95%; Skor kepuasan pasien terhadap keselamatan pelayanan ≥ 4.5/5.0">
-                                        <small class="text-success">Angka insiden keselamatan pasien ≤ 2 per 1000 hari rawat; Tingkat kepatuhan terhadap protokol keselamatan pasien ≥ 95% ... (+1 lainnya)</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-success" title="Aktif">Aktif</span>
-                                </td>
-                                <td class="table-actions">
-                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-edit btn-sm" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-delete btn-sm" title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr data-id="2">
-                                <td><strong>RS-2025-002</strong></td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <strong>Sistem Manajemen Keuangan Rumah Sakit Terintegrasi</strong>
-                                        <small class="text-muted d-block">Mengembangkan sistem manajemen keuangan dan aset yang terintegrasi untuk meningkatkan efisiensi penggunaan sumber daya, transparansi keuangan...</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <span class="text-primary">Mencapai efisiensi operasional 20% dan meningkatkan revenue growth sebesar 15% dengan tetap mempertahankan kualitas pelayanan</span>
-                                    </div>
-                                </td>
-                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <small class="text-info">Implementasi sistem Enterprise Resource Planning (ERP) terintegrasi; Pengembangan sistem cost accounting ... (+1 lainnya)</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <small class="text-success">Rasio efisiensi operasional meningkat 20%; Tingkat pertumbuhan pendapatan 15% ... (+1 lainnya)</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-success" title="Aktif">Aktif</span>
-                                </td>
-                                <td class="table-actions">
-                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-edit btn-sm" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-delete btn-sm" title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr data-id="3">
-                                <td><strong>RS-2025-003</strong></td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <strong>Implementasi Sistem Tata Kelola Rumah Sakit Berbasis Manajemen Resiko</strong>
-                                        <small class="text-muted d-block">Mengembangkan dan mengimplementasikan sistem tata kelola rumah sakit yang menerapkan prinsip-prinsip good corporate governance...</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <span class="text-primary">Mencapai skor tata kelola organisasi ≥ 85% berdasarkan standar nasional dan memperoleh sertifikasi ISO 9001:2015</span>
-                                    </div>
-                                </td>
-                                <td><span class="text-muted">01/01/2025 s/d 31/12/2025</span></td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <small class="text-info">Pengembangan sistem manajemen risiko terintegrasi; Implementasi sistem audit internal dan eksternal berkelanjutan ... (+1 lainnya)</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-cell-content">
-                                        <small class="text-success">Skor tata kelola organisasi ≥ 85%; Tingkat kepatuhan regulasi 100% ... (+1 lainnya)</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-warning" title="Draft">Draft</span>
-                                </td>
-                                <td class="table-actions">
-                                    <button class="btn btn-info btn-sm" title="Lihat Detail">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-edit btn-sm" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-delete btn-sm" title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <p class="mt-3 text-muted">Memuat halaman Rencana Strategis...</p>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- XLSX Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Mock API for testing -->
     <script>
-        // Add some interactivity for testing
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('Button clicked:', this.textContent.trim());
-            });
-        });
-
-        // Test responsive behavior
-        function checkResponsive() {
-            const tableContainer = document.querySelector('.table-container');
-            const table = document.querySelector('.data-table');
+        // Mock API function
+        window.apiCall = async (endpoint, options = {}) => {
+            console.log('Mock API call:', endpoint, options);
             
-            console.log('Table container width:', tableContainer.offsetWidth);
-            console.log('Table width:', table.offsetWidth);
-            console.log('Scroll width:', tableContainer.scrollWidth);
-            console.log('Has horizontal scroll:', tableContainer.scrollWidth > tableContainer.offsetWidth);
-        }
-
-        window.addEventListener('resize', checkResponsive);
-        window.addEventListener('load', checkResponsive);
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            if (endpoint.includes('/api/rencana-strategis/public') || endpoint.includes('/api/rencana-strategis')) {
+                if (options.method === 'POST') {
+                    return { message: 'Rencana strategis berhasil dibuat', data: { id: Date.now(), ...options.body } };
+                } else if (options.method === 'PUT') {
+                    return { message: 'Rencana strategis berhasil diupdate', data: { id: endpoint.split('/').pop(), ...options.body } };
+                } else if (options.method === 'DELETE') {
+                    return { message: 'Rencana strategis berhasil dihapus' };
+                } else {
+                    // GET request - return mock data
+                    return [
+                        {
+                            id: '1',
+                            kode: 'RS-2025-001',
+                            nama_rencana: 'Peningkatan Kualitas Pelayanan',
+                            deskripsi: 'Meningkatkan kualitas pelayanan kepada masyarakat melalui digitalisasi dan pelatihan SDM',
+                            periode_mulai: '2025-01-01',
+                            periode_selesai: '2025-12-31',
+                            target: 'Mencapai tingkat kepuasan masyarakat 90%',
+                            indikator_kinerja: 'Indeks Kepuasan Masyarakat',
+                            status: 'Aktif',
+                            visi_misi_id: '1',
+                            sasaran_strategis: ['Digitalisasi layanan', 'Pelatihan SDM', 'Monitoring berkala'],
+                            indikator_kinerja_utama: ['IKM > 90%', 'Waktu pelayanan < 30 menit', 'Zero complaint']
+                        },
+                        {
+                            id: '2',
+                            kode: 'RS-2025-002',
+                            nama_rencana: 'Pengembangan Infrastruktur TI',
+                            deskripsi: 'Membangun infrastruktur teknologi informasi yang handal dan terintegrasi',
+                            periode_mulai: '2025-02-01',
+                            periode_selesai: '2025-11-30',
+                            target: 'Implementasi sistem terintegrasi 100%',
+                            indikator_kinerja: 'Persentase sistem terintegrasi',
+                            status: 'Draft',
+                            visi_misi_id: '1',
+                            sasaran_strategis: ['Upgrade hardware', 'Implementasi software', 'Training user'],
+                            indikator_kinerja_utama: ['Uptime 99.9%', 'Response time < 2 detik', 'User adoption 95%']
+                        },
+                        {
+                            id: '3',
+                            kode: 'RS-2025-003',
+                            nama_rencana: 'Program Inovasi Berkelanjutan',
+                            deskripsi: 'Mengembangkan budaya inovasi untuk peningkatan efisiensi dan efektivitas organisasi',
+                            periode_mulai: '2025-03-01',
+                            periode_selesai: '2025-12-31',
+                            target: 'Minimal 10 inovasi per tahun',
+                            indikator_kinerja: 'Jumlah inovasi yang diimplementasikan',
+                            status: 'Selesai',
+                            visi_misi_id: '2',
+                            sasaran_strategis: ['Workshop inovasi', 'Kompetisi ide', 'Implementasi pilot project'],
+                            indikator_kinerja_utama: ['10 inovasi/tahun', 'ROI > 15%', 'Adoption rate 80%']
+                        }
+                    ];
+                }
+            } else if (endpoint.includes('/api/visi-misi')) {
+                return [
+                    {
+                        id: '1',
+                        visi: 'Menjadi organisasi terdepan dalam pelayanan publik',
+                        misi: '1. Memberikan pelayanan prima kepada masyarakat\n2. Mengembangkan SDM yang kompeten\n3. Memanfaatkan teknologi untuk efisiensi',
+                        tahun: 2025,
+                        organization_id: '1'
+                    },
+                    {
+                        id: '2',
+                        visi: 'Organisasi inovatif dan berkelanjutan',
+                        misi: '1. Mengembangkan inovasi berkelanjutan\n2. Membangun kemitraan strategis\n3. Menjaga kelestarian lingkungan',
+                        tahun: 2025,
+                        organization_id: '1'
+                    }
+                ];
+            } else if (endpoint.includes('/generate/kode')) {
+                const year = new Date().getFullYear();
+                const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                return { kode: `RS-${year}-${random}` };
+            }
+            
+            return [];
+        };
+        
+        // Mock auth ready function
+        window.waitForAuthReady = async (timeout = 5000) => {
+            return new Promise(resolve => setTimeout(resolve, 100));
+        };
     </script>
+    
+    <!-- Load the enhanced module -->
+    <script src="js/rencana-strategis-enhanced.js"></script>
+    
+    <script>
+        // Initialize the module when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initializing Rencana Strategis Enhanced...');
+            
+            try {
+                await RencanaStrategisModuleEnhanced.load();
+                console.log('✅ Rencana Strategis Enhanced initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize:', error);
+            }
+        });
+    </script>
+    <script src="js/remove-purple-colors.js"></script>
 </body>
 </html>

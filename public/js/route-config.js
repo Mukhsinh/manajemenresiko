@@ -22,6 +22,7 @@ const ROUTE_CONFIG = {
     '/sasaran-strategi': { handler: 'sasaran-strategi', auth: true, title: 'Sasaran Strategi', icon: 'fas fa-bullseye' },
     '/strategic-map': { handler: 'strategic-map', auth: true, title: 'Strategic Map', icon: 'fas fa-map' },
     '/indikator-kinerja-utama': { handler: 'indikator-kinerja-utama', auth: true, title: 'Indikator Kinerja Utama', icon: 'fas fa-chart-bar' },
+    '/evaluasi-iku': { handler: 'evaluasi-iku', auth: true, title: 'Evaluasi IKU', icon: 'fas fa-chart-line' },
     
     // Risk Management Module - Direct routes (no nested paths)
     '/risk-input': { handler: 'risk-input', auth: true, title: 'Input Data Risiko', icon: 'fas fa-plus-circle' },
@@ -68,6 +69,7 @@ const LEGACY_PAGE_TO_URL = {
     'sasaran-strategi': '/sasaran-strategi',
     'strategic-map': '/strategic-map',
     'indikator-kinerja-utama': '/indikator-kinerja-utama',
+    'evaluasi-iku': '/evaluasi-iku',
     'risk-input': '/risk-input',
     'identifikasi-risiko': '/identifikasi-risiko',
     'risk-profile': '/risk-profile',

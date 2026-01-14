@@ -15,7 +15,9 @@
     "test:unit": "jest tests/unit --verbose",
     "test:integration": "jest tests/integration --verbose",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test-fix": "node test-infinite-loop-fix.js",
+    "start-fixed": "node server.js"
   },
   "keywords": [
     "risk-management",

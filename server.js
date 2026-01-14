@@ -25,6 +25,35 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
+// Middleware to prevent caching of fixed JS files
+app.use('/js/page-initialization-system-fixed.js', (req, res, next) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
+app.use('/js/rencana-strategis-fixed.js', (req, res, next) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
+app.use('/js/rencana-strategis.js', (req, res, next) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
+app.use('/js/startup-script.js', (req, res, next) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -105,17 +134,84 @@ app.use('/api/user-management', require('./routes/user-management'));
 app.use('/api/risks', require('./routes/risks'));
 app.use('/api/risk-profile', require('./routes/risk-profile'));
 app.use('/api/master-data', require('./routes/master-data'));
+// Add residual risk reports endpoint BEFORE general reports
+app.get('/api/reports/residual-risk/test', (req, res) => {
+  res.json({ message: 'Residual risk endpoint working', timestamp: new Date().toISOString() });
+});
+
+// Residual risk data endpoint
+app.get('/api/reports/residual-risk/public', async (req, res) => {
+  try {
+    console.log('=== RESIDUAL RISK PUBLIC ENDPOINT ===');
+    
+    // For now, return mock data to test the endpoint
+    const mockData = [
+      {
+        id: 1,
+        probability: 3,
+        impact: 4,
+        risk_value: 12,
+        risk_level: 'HIGH RISK',
+        probability_percentage: '40-60%',
+        financial_impact: 50000000,
+        review_status: 'Reviewed',
+        next_review_date: '2025-03-01',
+        risk_inputs: {
+          id: 1,
+          kode_risiko: 'RSK-2025-001',
+          sasaran: 'Meningkatkan kualitas pelayanan',
+          penyebab_risiko: 'Kurangnya tenaga medis',
+          dampak_risiko: 'Penurunan kualitas pelayanan',
+          status_risiko: 'Active',
+          jenis_risiko: 'Threat',
+          master_work_units: {
+            id: 1,
+            name: 'Unit Gawat Darurat',
+            jenis: 'Pelayanan',
+            kategori: 'Medis'
+          },
+          master_risk_categories: {
+            id: 1,
+            name: 'Risiko Operasional'
+          },
+          rencana_strategis: {
+            id: 1,
+            kode: 'RS-2025-001',
+            nama_rencana: 'Peningkatan Pelayanan Medis'
+          },
+          risk_inherent_analysis: {
+            probability: 4,
+            impact: 4,
+            risk_value: 16,
+            risk_level: 'EXTREME HIGH',
+            probability_percentage: '60-80%',
+            financial_impact: 75000000
+          }
+        }
+      }
+    ];
+    
+    console.log('Returning mock residual risk data:', mockData.length, 'items');
+    res.json(mockData);
+  } catch (error) {
+    console.error('Residual risk endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.use('/api/reports/residual-risk', require('./routes/residual-risk-reports'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/visi-misi', require('./routes/visi-misi'));
 app.use('/api/rencana-strategis', require('./routes/rencana-strategis'));
+app.use('/api/renstra', require('./routes/renstra'));
 app.use('/api/monitoring-evaluasi', require('./routes/monitoring-evaluasi'));
 app.use('/api/peluang', require('./routes/peluang'));
 app.use('/api/kri', require('./routes/kri'));
 // app.use('/api/loss-event', require('./routes/loss-event'));
 app.use('/api/ews', require('./routes/ews'));
 // app.use('/api/organizations', require('./routes/organizations'));
-// app.use('/api/pengaturan', require('./routes/pengaturan'));
+app.use('/api/pengaturan', require('./routes/pengaturan'));
 // app.use('/api/chat', require('./routes/chat'));
 app.use('/api/ai-assistant', require('./routes/ai-assistant-direct'));
 app.use('/api/analisis-swot', require('./routes/analisis-swot'));
@@ -124,11 +220,44 @@ app.use('/api/matriks-tows', require('./routes/matriks-tows'));
 app.use('/api/sasaran-strategi', require('./routes/sasaran-strategi'));
 app.use('/api/strategic-map', require('./routes/strategic-map'));
 app.use('/api/indikator-kinerja-utama', require('./routes/indikator-kinerja-utama'));
+app.use('/api/evaluasi-iku', require('./routes/evaluasi-iku'));
+app.use('/api/evaluasi-iku-bulanan', require('./routes/evaluasi-iku-bulanan'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/test-org-filter', require('./routes/test-org-filter'));
 app.use('/api/buku-pedoman', require('./routes/buku-pedoman'));
 
 // Serve index.html for all routes (SPA) - must be last
+
+// Route for rencana strategis page - serve main SPA
+app.get('/rencana-strategis', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Route for renstra page (clean implementation) - serve main SPA
+app.get('/renstra', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Route for risk residual page - serve main SPA  
+app.get('/risk-residual', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Route for residual risk page - serve main SPA (alternative URL)
+app.get('/residual-risk', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
+// Route for residual risk page
+app.get('/residual-risk', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/risk-residual', (req, res) => {
+    res.redirect('/residual-risk');
+});
+
 app.get('*', (req, res) => {
   // Skip API routes
   if (req.path.startsWith('/api/')) {

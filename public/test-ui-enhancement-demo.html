@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Enhancement Demo - Complete Framework Test</title>
+    
+    <!-- Load UI Enhancement Framework CSS -->
+    <link rel="stylesheet" href="/css/ui-enhancement-framework.css">
+    
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        
+        .demo-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .demo-title {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-loading { background-color: #f59e0b; }
+        .status-success { background-color: #10b981; }
+        .status-error { background-color: #ef4444; }
+        
+        .performance-metrics {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        
+        .test-table {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .test-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .test-form {
+            max-width: 500px;
+            margin-top: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+        
+        .log-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UI Enhancement Framework Demo</h1>
+        <p>This page demonstrates the complete UI enhancement framework with all components working together.</p>
+        
+        <!-- Framework Status -->
+        <div class="demo-section">
+            <h2 class="demo-title">Framework Status</h2>
+            <div id="framework-status">
+                <div class="status-item">
+                    <span class="status-indicator status-loading" id="framework-indicator"></span>
+                    <span id="framework-text">Initializing UI Enhancement Framework...</span>
+                </div>
+                <div class="status-item" style="margin-top: 0.5rem;">
+                    <span class="status-indicator status-loading" id="modules-indicator"></span>
+                    <span id="modules-text">Loading modules...</span>
+                </div>
+                <div class="status-item" style="margin-top: 0.5rem;">
+                    <span class="status-indicator status-loading" id="enhancements-indicator"></span>
+                    <span id="enhancements-text">Applying enhancements...</span>
+                </div>
+            </div>
+            
+            <div class="performance-metrics" id="performance-metrics" style="display: none;">
+                <h4>Performance Metrics</h4>
+                <div id="metrics-content"></div>
+            </div>
+        </div>
+        
+        <!-- Button Standardization Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">Standardized Action Buttons</h2>
+            <p>These buttons should be automatically enhanced with icons and consistent styling:</p>
+            
+            <div class="test-buttons">
+                <button class="btn-edit" onclick="alert('Edit clicked')">Edit</button>
+                <button class="btn-delete" onclick="alert('Delete clicked')">Delete</button>
+                <button class="btn-add" onclick="alert('Add clicked')">Add New</button>
+                <button onclick="editItem(1)">Ubah</button>
+                <button onclick="deleteItem(1)">Hapus</button>
+                <button onclick="createNew()">Tambah</button>
+            </div>
+        </div>
+        
+        <!-- Table Enhancement Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">Enhanced Data Table</h2>
+            <p>This table should have blue headers, responsive container, and standardized action buttons:</p>
+            
+            <table class="test-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>John Doe</td>
+                        <td>john.doe@example.com</td>
+                        <td>Active</td>
+                        <td>
+                            <button onclick="editUser(1)">Edit</button>
+                            <button onclick="deleteUser(1)">Delete</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>Inactive</td>
+                        <td>
+                            <button onclick="editUser(2)">Edit</button>
+                            <button onclick="deleteUser(2)">Delete</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Bob Johnson with a very long name that might cause overflow issues</td>
+                        <td>bob.johnson.with.very.long.email@example-domain.com</td>
+                        <td>Pending Approval</td>
+                        <td>
+                            <button onclick="editUser(3)">Edit</button>
+                            <button onclick="deleteUser(3)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Card Enhancement Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">Enhanced Cards with Icons</h2>
+            <p>These cards should have consistent styling, proper structure, and contextual icons:</p>
+            
+            <div class="test-cards">
+                <div class="card" data-card-type="user">
+                    <h3>User Management</h3>
+                    <p>Manage user accounts, permissions, and access levels. This card should automatically get a user icon.</p>
+                    <button class="btn-primary">Manage Users</button>
+                </div>
+                
+                <div class="card" data-card-type="risk">
+                    <h3>Risk Assessment</h3>
+                    <p>Monitor and evaluate potential risks in your organization. This should get a risk-related icon.</p>
+                    <button class="btn-primary">View Risks</button>
+                </div>
+                
+                <div class="card" data-card-type="report">
+                    <h3>Analytics Report</h3>
+                    <p>Generate comprehensive reports and analytics for better decision making.</p>
+                    <button class="btn-primary">Generate Report</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Default Card</h3>
+                    <p>This card has no specific type and should get a default icon based on content analysis.</p>
+                    <button class="btn-primary">View Details</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Enhancement Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">Enhanced Form</h2>
+            <p>This form should have enhanced styling and responsive behavior:</p>
+            
+            <form class="test-form" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select a role</option>
+                        <option value="admin">Administrator</option>
+                        <option value="user">User</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="4" placeholder="Additional notes..."></textarea>
+                </div>
+                
+                <div class="test-buttons">
+                    <button type="submit">Save</button>
+                    <button type="button" onclick="resetForm()">Reset</button>
+                    <button type="button" onclick="cancelForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Container Overflow Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">Container Overflow Handling</h2>
+            <p>These elements test overflow prevention and responsive behavior:</p>
+            
+            <div style="width: 300px; border: 1px solid #ccc; padding: 1rem; margin: 1rem 0;">
+                <h4>Narrow Container Test</h4>
+                <p>This is a very long paragraph that should wrap properly and not cause horizontal overflow in the narrow container. The text should break at appropriate points.</p>
+                
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Very Long Header Name</th>
+                            <th>Another Long Header</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Very long content that might overflow</td>
+                            <td>More long content to test</td>
+                            <td>
+                                <button onclick="test()">Edit</button>
+                                <button onclick="test()">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Debug Information -->
+        <div class="demo-section">
+            <h2 class="demo-title">Debug Information</h2>
+            <p>Real-time logging of framework initialization and operations:</p>
+            
+            <div class="log-output" id="debug-log">
+                <div>Waiting for framework initialization...</div>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <button onclick="clearLog()">Clear Log</button>
+                <button onclick="testFramework()">Test Framework</button>
+                <button onclick="reloadFramework()">Reload Framework</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load UI Enhancement Framework JavaScript -->
+    <script src="/js/lucide-icon-system.js"></script>
+    <script src="/js/module-loader.js"></script>
+    <script src="/js/responsive-container-system.js"></script>
+    <script src="/js/container-management.js"></script>
+    <script src="/js/ui-enhancement-framework.js"></script>
+    <script src="/js/ui-integration.js"></script>
+    
+    <script>
+        // Demo functionality
+        let logContainer;
+        
+        function log(message, type = 'info') {
+            if (!logContainer) {
+                logContainer = document.getElementById('debug-log');
+            }
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #6b7280;">[${timestamp}]</span> <span style="color: ${getLogColor(type)};">${message}</span>`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function getLogColor(type) {
+            switch (type) {
+                case 'success': return '#10b981';
+                case 'error': return '#ef4444';
+                case 'warning': return '#f59e0b';
+                default: return '#f9fafb';
+            }
+        }
+        
+        function updateStatus(indicator, text, status, message) {
+            const indicatorEl = document.getElementById(indicator);
+            const textEl = document.getElementById(text);
+            
+            indicatorEl.className = `status-indicator status-${status}`;
+            textEl.textContent = message;
+        }
+        
+        function clearLog() {
+            if (logContainer) {
+                logContainer.innerHTML = '<div>Log cleared.</div>';
+            }
+        }
+        
+        function testFramework() {
+            log('Testing framework functionality...', 'info');
+            
+            if (window.UIEnhancementFramework) {
+                const status = window.UIEnhancementFramework.getStatus();
+                log(`Framework Status: ${JSON.stringify(status, null, 2)}`, 'info');
+            } else {
+                log('UIEnhancementFramework not available', 'error');
+            }
+            
+            if (window.IconSystem) {
+                log('IconSystem is available', 'success');
+            } else {
+                log('IconSystem not available', 'error');
+            }
+            
+            if (window.ResponsiveContainerSystem) {
+                log('ResponsiveContainerSystem is available', 'success');
+            } else {
+                log('ResponsiveContainerSystem not available', 'error');
+            }
+        }
+        
+        function reloadFramework() {
+            log('Reloading framework...', 'warning');
+            
+            if (window.UIIntegration && window.UIIntegration.retry) {
+                window.UIIntegration.retry();
+            } else {
+                location.reload();
+            }
+        }
+        
+        // Demo button handlers
+        function editItem(id) { alert(`Edit item ${id}`); }
+        function deleteItem(id) { alert(`Delete item ${id}`); }
+        function createNew() { alert('Create new item'); }
+        function editUser(id) { alert(`Edit user ${id}`); }
+        function deleteUser(id) { alert(`Delete user ${id}`); }
+        
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            log('Form submitted successfully', 'success');
+            alert('Form submitted!');
+        }
+        
+        function resetForm() {
+            document.querySelector('.test-form').reset();
+            log('Form reset', 'info');
+        }
+        
+        function cancelForm() {
+            log('Form cancelled', 'warning');
+            alert('Form cancelled');
+        }
+        
+        function test() {
+            log('Test button clicked', 'info');
+        }
+        
+        // Framework event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            log('DOM Content Loaded', 'success');
+            updateStatus('framework-indicator', 'framework-text', 'loading', 'DOM ready, initializing framework...');
+        });
+        
+        window.addEventListener('uiIntegrationReady', (event) => {
+            log('UI Integration Ready', 'success');
+            log(`Loaded dependencies: ${event.detail.loadedDependencies.join(', ')}`, 'info');
+            updateStatus('modules-indicator', 'modules-text', 'success', 'All modules loaded successfully');
+        });
+        
+        window.addEventListener('uiFrameworkReady', (event) => {
+            log('UI Framework Ready', 'success');
+            log(`Initialization time: ${event.detail.metrics.totalInitTime.toFixed(2)}ms`, 'info');
+            
+            updateStatus('framework-indicator', 'framework-text', 'success', 'Framework initialized successfully');
+            updateStatus('enhancements-indicator', 'enhancements-text', 'success', 'All enhancements applied');
+            
+            // Show performance metrics
+            const metricsEl = document.getElementById('performance-metrics');
+            const metricsContent = document.getElementById('metrics-content');
+            
+            metricsContent.innerHTML = `
+                <div><strong>Total Init Time:</strong> ${event.detail.metrics.totalInitTime.toFixed(2)}ms</div>
+                <div><strong>Modules:</strong> ${Array.from(event.detail.framework.modules.keys()).join(', ')}</div>
+                <div><strong>Status:</strong> ${event.detail.framework.initialized ? 'Ready' : 'Initializing'}</div>
+            `;
+            
+            metricsEl.style.display = 'block';
+        });
+        
+        window.addEventListener('breakpointChange', (event) => {
+            log(`Breakpoint changed to: ${event.detail.breakpoint}`, 'info');
+        });
+        
+        // Error handling
+        window.addEventListener('error', (event) => {
+            log(`Error: ${event.error.message}`, 'error');
+        });
+        
+        // Initial log
+        log('Demo page loaded, waiting for framework...', 'info');
+    </script>
+</body>
+</html>

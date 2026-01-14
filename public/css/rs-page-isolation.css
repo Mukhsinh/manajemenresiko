@@ -1,0 +1,149 @@
+/**
+ * RS PAGE ISOLATION CSS v2.1
+ * Ensures Rencana Strategis content ONLY appears on RS page
+ * Prevents CSS/content leak to other pages
+ * Created: 2026-01-07
+ * Updated: 2026-01-09 - Enhanced isolation
+ */
+
+/* ============================================
+   CRITICAL: Page Content Isolation
+   ============================================ */
+
+/* All page-content elements should be isolated */
+.page-content {
+    position: relative;
+    z-index: 1;
+    contain: layout style;
+    isolation: isolate;
+}
+
+/* Hidden pages - completely invisible */
+.page-content:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+}
+
+/* Active page - fully visible */
+.page-content.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+}
+
+/* ============================================
+   RS Page Specific - ONLY visible on RS page
+   ============================================ */
+
+/* RS page container */
+#rencana-strategis {
+    position: relative;
+    z-index: 1;
+    contain: layout style;
+    isolation: isolate;
+}
+
+/* RS page when active */
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#rencana-strategis.active #rencana-strategis-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 400px;
+}
+
+#rencana-strategis.active .rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#rencana-strategis-content {
+    position: relative;
+    z-index: 1;
+    contain: layout style;
+}
+
+/* ============================================
+   CRITICAL: Hide RS Content on Other Pages
+   ============================================ */
+
+/* Hide RS wrapper on ALL non-RS pages */
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) #rs-selection-container,
+.page-content:not(#rencana-strategis) .rs-filter-section {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   Z-INDEX LAYERING CONTROL
+   ============================================ */
+
+/* Ensure proper stacking context */
+.main-content {
+    position: relative;
+    z-index: 1;
+}
+
+.content-area {
+    position: relative;
+    z-index: 1;
+}
+
+/* RS page should not have higher z-index than other pages */
+#rencana-strategis.active {
+    z-index: 1 !important;
+}
+
+/* Other pages should have same z-index */
+.page-content.active {
+    z-index: 1 !important;
+}
+
+/* ============================================
+   CLEANUP ORPHANED RS ELEMENTS
+   ============================================ */
+
+/* Hide any RS elements that might be outside page-content */
+body > .rencana-strategis-wrapper,
+body > .rencana-strategis-container,
+body > .rs-selection-wrapper,
+.main-content > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper),
+.content-area > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper) {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   PRINT STYLES - Maintain isolation
+   ============================================ */
+
+@media print {
+    .page-content:not(.active) {
+        display: none !important;
+    }
+    
+    .page-content:not(#rencana-strategis) .rencana-strategis-wrapper {
+        display: none !important;
+    }
+}

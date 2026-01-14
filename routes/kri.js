@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
-// const { generateKodeKRI } = require('../utils/codeGenerator');
-// const { buildOrganizationFilter } = require('../utils/organization');
 
-// Debug endpoint without authentication for testing - MUST BE FIRST
+// ============================================================================
+// IMPORTANT: Route order matters! Specific routes MUST come before /:id
+// ============================================================================
+
+// Debug endpoint without authentication for testing
 router.get('/debug', async (req, res) => {
   try {
     console.log('🔍 Debug endpoint accessed for kri');
@@ -16,44 +18,27 @@ router.get('/debug', async (req, res) => {
       .from('key_risk_indicator')
       .select(`
         *,
-        master_risk_categories (
-          name
-        ),
-        master_work_units (
-          name,
-          code
-        ),
-        risk_inputs (
-          kode_risiko
-        )
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
       `)
       .order('created_at', { ascending: false })
       .limit(10);
 
-    if (error) {
-      console.error('Debug query error:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log(`✅ Debug query successful, returning ${data?.length || 0} items`);
     res.json({ 
       success: true, 
       data: data || [], 
-      count: data?.length || 0,
-      message: 'Debug data retrieved successfully'
+      count: data?.length || 0
     });
   } catch (error) {
     console.error('Debug endpoint error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message, 
-      data: [],
-      message: 'Debug endpoint failed'
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Simple endpoint without complex auth for testing - MUST BE SECOND
+// Simple endpoint without auth
 router.get('/simple', async (req, res) => {
   try {
     const client = supabaseAdmin || supabase;
@@ -62,22 +47,13 @@ router.get('/simple', async (req, res) => {
       .from('key_risk_indicator')
       .select(`
         *,
-        master_risk_categories (
-          name
-        ),
-        master_work_units (
-          name,
-          code
-        ),
-        risk_inputs (
-          kode_risiko
-        )
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
       `)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    
-    console.log('Simple endpoint - returning data:', data?.length || 0, 'items');
     res.json(data || []);
   } catch (error) {
     console.error('Simple KRI error:', error);
@@ -85,40 +61,22 @@ router.get('/simple', async (req, res) => {
   }
 });
 
-// Public endpoint for testing (no auth required) - MUST BE THIRD
+// Public endpoint (no auth)
 router.get('/public', async (req, res) => {
   try {
-    console.log('=== KRI PUBLIC ENDPOINT ===');
-    
     const client = supabaseAdmin || supabase;
     
     const { data, error } = await client
       .from('key_risk_indicator')
       .select(`
         *,
-        master_risk_categories (
-          name
-        ),
-        master_work_units (
-          name,
-          code
-        ),
-        risk_inputs (
-          kode_risiko
-        )
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
       `)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('KRI public query error:', error);
-      throw error;
-    }
-
-    console.log('Public query result:', {
-      count: data?.length || 0,
-      hasData: data && data.length > 0
-    });
-
+    if (error) throw error;
     res.json(data || []);
   } catch (error) {
     console.error('Public endpoint error:', error);
@@ -126,101 +84,72 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// Get all KRI
-router.get('/', authenticateUser, async (req, res) => {
+// Test endpoint without auth (fallback for frontend)
+router.get('/test-no-auth', async (req, res) => {
   try {
-    console.log('=== KRI REQUEST ===');
-    console.log('User info:', {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role,
-      organizations: req.user.organizations
-    });
-    
     const client = supabaseAdmin || supabase;
     
-    let query = client
+    const { data, error } = await client
       .from('key_risk_indicator')
       .select(`
         *,
-        master_risk_categories (
-          name
-        ),
-        master_work_units (
-          name,
-          code
-        ),
-        risk_inputs (
-          kode_risiko
-        )
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
       `)
       .order('created_at', { ascending: false });
-    
-    // Apply organization filter
-    if (!req.user.isSuperAdmin && req.user.organizations && req.user.organizations.length > 0) {
-      query = buildOrganizationFilter(query, req.user);
-    }
 
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('KRI query error:', error);
-      throw error;
-    }
-    
-    console.log('Query result:', {
-      count: data?.length || 0,
-      hasData: data && data.length > 0
-    });
-    console.log('=== END REQUEST ===');
-    
+    if (error) throw error;
     res.json(data || []);
   } catch (error) {
-    console.error('KRI error:', error);
+    console.error('Test no-auth error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get by ID
-router.get('/:id', authenticateUser, async (req, res) => {
+// Get by ID without auth (fallback for frontend)
+router.get('/by-id/:id', async (req, res) => {
   try {
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
+    const id = req.params.id;
+    console.log('=== KRI GET BY ID (no auth) ===', id);
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
     const client = supabaseAdmin || supabase;
     
-    let query = client
+    const { data, error } = await client
       .from('key_risk_indicator')
       .select(`
         *,
-        master_risk_categories (
-          name
-        ),
-        master_work_units (
-          name,
-          code
-        ),
-        risk_inputs (
-          kode_risiko
-        )
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
       `)
-      .eq('id', req.params.id);
-    
-    // query = buildOrganizationFilter(query, req.user);
-    const { data, error } = await query.single();
+      .eq('id', id)
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ error: 'KRI tidak ditemukan' });
+      }
+      throw error;
+    }
     if (!data) return res.status(404).json({ error: 'KRI tidak ditemukan' });
+    
     res.json(data);
   } catch (error) {
-    console.error('KRI error:', error);
+    console.error('KRI get by ID (no auth) error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Generate kode
+// Generate kode - MUST be before /:id
 router.get('/generate/kode', authenticateUser, async (req, res) => {
   try {
-    // Simple kode generation without external dependency
     const kode = `KRI-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
     res.json({ kode });
   } catch (error) {
@@ -229,9 +158,38 @@ router.get('/generate/kode', authenticateUser, async (req, res) => {
   }
 });
 
-// Create
+// Get all KRI (with auth)
+router.get('/', authenticateUser, async (req, res) => {
+  try {
+    console.log('=== KRI GET ALL ===');
+    
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
+      .from('key_risk_indicator')
+      .select(`
+        *,
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    console.log('KRI count:', data?.length || 0);
+    res.json(data || []);
+  } catch (error) {
+    console.error('KRI error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create new KRI
 router.post('/', authenticateUser, async (req, res) => {
   try {
+    console.log('=== KRI CREATE ===');
+    
     const {
       kode,
       nama_indikator,
@@ -249,10 +207,9 @@ router.post('/', authenticateUser, async (req, res) => {
       tanggal_pengukuran_terakhir
     } = req.body;
 
-    // Generate kode jika tidak ada
-    const finalKode = kode || await generateKodeKRI(req.user.id);
+    const finalKode = kode || `KRI-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
-    // Determine status based on nilai_aktual
+    // Determine status
     let finalStatus = status_indikator || 'Aman';
     if (nilai_aktual !== null && nilai_aktual !== undefined) {
       if (batas_kritis && nilai_aktual >= batas_kritis) {
@@ -264,8 +221,6 @@ router.post('/', authenticateUser, async (req, res) => {
       }
     }
 
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
     const client = supabaseAdmin || supabase;
     
     const { data, error } = await client
@@ -292,16 +247,63 @@ router.post('/', authenticateUser, async (req, res) => {
       .single();
 
     if (error) throw error;
+    
+    console.log('KRI created:', finalKode);
     res.json({ message: 'KRI berhasil dibuat', data });
   } catch (error) {
-    console.error('KRI error:', error);
+    console.error('KRI create error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update
+// Get by ID - MUST be after all specific GET routes
+router.get('/:id', authenticateUser, async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.log('=== KRI GET BY ID ===', id);
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      console.log('Invalid UUID format:', id);
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
+      .from('key_risk_indicator')
+      .select(`
+        *,
+        master_risk_categories (name),
+        master_work_units (name, code),
+        risk_inputs (kode_risiko)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('KRI get by ID error:', error);
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ error: 'KRI tidak ditemukan' });
+      }
+      throw error;
+    }
+    if (!data) return res.status(404).json({ error: 'KRI tidak ditemukan' });
+    
+    console.log('KRI found:', data.kode);
+    res.json(data);
+  } catch (error) {
+    console.error('KRI get by ID error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update KRI
 router.put('/:id', authenticateUser, async (req, res) => {
   try {
+    console.log('=== KRI UPDATE ===', req.params.id);
+    
     const {
       nama_indikator,
       kategori_risiko_id,
@@ -318,7 +320,7 @@ router.put('/:id', authenticateUser, async (req, res) => {
       tanggal_pengukuran_terakhir
     } = req.body;
 
-    // Determine status based on nilai_aktual
+    // Determine status
     let finalStatus = status_indikator;
     if (nilai_aktual !== null && nilai_aktual !== undefined) {
       if (batas_kritis && nilai_aktual >= batas_kritis) {
@@ -330,11 +332,9 @@ router.put('/:id', authenticateUser, async (req, res) => {
       }
     }
 
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
     const client = supabaseAdmin || supabase;
     
-    let updateQuery = client
+    const { data, error } = await client
       .from('key_risk_indicator')
       .update({
         nama_indikator,
@@ -352,105 +352,53 @@ router.put('/:id', authenticateUser, async (req, res) => {
         tanggal_pengukuran_terakhir,
         updated_at: new Date().toISOString()
       })
-      .eq('id', req.params.id);
-    
-    // updateQuery = buildOrganizationFilter(updateQuery, req.user);
-    const { data, error } = await updateQuery
+      .eq('id', req.params.id)
       .select()
       .single();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'KRI tidak ditemukan' });
+    
+    console.log('KRI updated:', data.kode);
     res.json({ message: 'KRI berhasil diupdate', data });
   } catch (error) {
-    console.error('KRI error:', error);
+    console.error('KRI update error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Delete
+// Delete KRI
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
+    console.log('=== KRI DELETE ===', req.params.id);
+    
     const client = supabaseAdmin || supabase;
     
-    let deleteQuery = client
+    // Check if exists first
+    const { data: existing, error: checkError } = await client
+      .from('key_risk_indicator')
+      .select('id, kode')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (checkError || !existing) {
+      return res.status(404).json({ error: 'KRI tidak ditemukan' });
+    }
+    
+    // Delete
+    const { error } = await client
       .from('key_risk_indicator')
       .delete()
       .eq('id', req.params.id);
-    
-    // deleteQuery = buildOrganizationFilter(deleteQuery, req.user);
-    const { error } = await deleteQuery;
 
     if (error) throw error;
-    res.json({ message: 'KRI berhasil dihapus' });
-  } catch (error) {
-    console.error('KRI error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Debug route to check user organizations and KRI data
-router.get('/debug', authenticateUser, async (req, res) => {
-  try {
-    console.log('KRI Debug - User info:', {
-      id: req.user.id,
-      email: req.user.email,
-      organizations: req.user.organizations,
-      role: req.user.role,
-      isSuperAdmin: req.user.isSuperAdmin
-    });
-
-    // Use supabaseAdmin to bypass RLS
-    const { supabaseAdmin } = require('../config/supabase');
-    const client = supabaseAdmin || supabase;
     
-    // Get total KRI count without filter
-    const { count: totalKRI } = await client
-      .from('key_risk_indicator')
-      .select('*', { count: 'exact', head: true });
-
-    // Get KRI with organization filter
-    let filteredQuery = client
-      .from('key_risk_indicator')
-      .select('*', { count: 'exact', head: true });
-    
-    // filteredQuery = buildOrganizationFilter(filteredQuery, req.user);
-    const { count: filteredKRI } = await filteredQuery;
-
-    // Get sample data
-    const { data: sampleData } = await client
-      .from('key_risk_indicator')
-      .select('id, kode, nama_indikator, organization_id')
-      .limit(5);
-
-    // Get user's organization details
-    const { data: userOrgs } = await client
-      .from('organizations')
-      .select('*')
-      .in('id', req.user.organizations || []);
-
-    res.json({
-      user: {
-        id: req.user.id,
-        email: req.user.email,
-        organizations: req.user.organizations,
-        role: req.user.role,
-        isSuperAdmin: req.user.isSuperAdmin
-      },
-      data_counts: {
-        total_kri: totalKRI || 0,
-        filtered_kri: filteredKRI || 0
-      },
-      sample_data: sampleData || [],
-      user_organizations: userOrgs || []
-    });
+    console.log('KRI deleted:', existing.kode);
+    res.json({ message: 'KRI berhasil dihapus', deletedKode: existing.kode });
   } catch (error) {
-    console.error('KRI debug error:', error);
+    console.error('KRI delete error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 module.exports = router;
-

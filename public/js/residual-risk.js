@@ -11,7 +11,9 @@ const ResidualRiskModule = (() => {
       kategori_risiko_id: ''
     },
     chart: null,
-    comparisonChart: null
+    comparisonChart: null,
+    isLoading: false,
+    isInitialized: false
   };
 
   const api = () => (window.app ? window.app.apiCall : window.apiCall);
@@ -78,22 +80,43 @@ const ResidualRiskModule = (() => {
   }
 
   async function load() {
+    // Prevent multiple simultaneous loads
+    if (state.isLoading) {
+      console.log('ResidualRiskModule: Already loading, skipping...');
+      return;
+    }
+    
+    state.isLoading = true;
     console.log('ResidualRiskModule: Starting load...');
-    console.log('ResidualRiskModule: Current state:', {
-      hasApiFunction: !!api(),
-      hasWindow: typeof window !== 'undefined',
-      hasDocument: typeof document !== 'undefined',
-      hasContainer: !!document.getElementById('residual-risk-content')
-    });
+    
+    const container = document.getElementById('residual-risk-content');
+    if (!container) {
+      console.error('ResidualRiskModule: Container not found!');
+      state.isLoading = false;
+      return;
+    }
+    
+    // Show loading state
+    container.innerHTML = `
+      <div style="padding: 40px; text-align: center;">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p style="margin-top: 15px; color: #666;">Memuat data Residual Risk...</p>
+      </div>
+    `;
     
     try {
       console.log('ResidualRiskModule: Fetching data...');
       await Promise.all([fetchMasterData(), fetchResidualRisk()]);
       render();
-      console.log('ResidualRiskModule: Load completed successfully');
+      state.isInitialized = true;
+      console.log('ResidualRiskModule: Load completed successfully with', state.data.length, 'items');
     } catch (error) {
       console.error('ResidualRiskModule: Load failed:', error);
       showError('Failed to load residual risk data: ' + error.message);
+    } finally {
+      state.isLoading = false;
     }
   }
 
@@ -226,16 +249,16 @@ const ResidualRiskModule = (() => {
                 </div>
                 <div class="risk-matrix-legend">
                   <div class="legend-item">
-                    <div class="legend-symbol circle" style="background-color: #00FFFF; border: 2px solid #000;"></div>
-                    <span><i data-lucide="circle"></i> Inherent Risk Rating</span>
+                    <div class="legend-symbol circle" style="background-color: #00E5FF; border: 2px solid #000; width: 14px; height: 14px;"></div>
+                    <span>Inherent Risk Rating</span>
                   </div>
                   <div class="legend-item">
-                    <div class="legend-symbol star" style="background-color: #FFD700; border: 2px solid #000; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);"></div>
-                    <span><i data-lucide="star"></i> Residual Risk Rating (★)</span>
+                    <div class="legend-symbol star" style="background-color: #FFD700; border: 2px solid #000; width: 14px; height: 14px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);"></div>
+                    <span>Residual Risk Rating (★)</span>
                   </div>
                   <div class="legend-item">
-                    <div class="legend-symbol triangle" style="background-color: #FFFFFF; border: 2px solid #000; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
-                    <span><i data-lucide="triangle"></i> Risk Appetite</span>
+                    <div class="legend-symbol triangle" style="background-color: #FFFFFF; border: 2px solid #000; width: 14px; height: 14px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                    <span>Risk Appetite</span>
                   </div>
                 </div>
               </div>
@@ -318,7 +341,7 @@ const ResidualRiskModule = (() => {
     if (state.data.length === 0) {
       return `
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+          <div style="background: #ffffff; padding: 1.5rem; border-radius: 8px; color: white;">
             <div style="font-size: 2rem; font-weight: bold;">0</div>
             <div style="font-size: 0.875rem; opacity: 0.9;">Total Residual Risk</div>
           </div>
@@ -383,7 +406,7 @@ const ResidualRiskModule = (() => {
 
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+        <div style="background: #ffffff; padding: 1.5rem; border-radius: 8px; color: white;">
           <div style="font-size: 2rem; font-weight: bold;">${stats.total}</div>
           <div style="font-size: 0.875rem; opacity: 0.9;">Total Residual Risk</div>
         </div>
@@ -456,15 +479,18 @@ const ResidualRiskModule = (() => {
                 
                 console.log('Values:', { inherentValue, residualValue, reduction }); // Debug log
                 
+                // Get review status badge class with warning
+                const reviewBadgeClass = getReviewStatusBadgeClass(item.review_status, item.next_review_date);
+                
                 return `
                   <tr>
                     <td><strong>${risk.kode_risiko || '-'}</strong></td>
                     <td>${risk.master_work_units?.name || '-'}<br><small class="text-muted">${risk.master_work_units?.jenis || '-'} - ${risk.master_work_units?.kategori || '-'}</small></td>
                     <td><span class="badge-status ${getBadgeClassForRiskLevel(inherentLevel)}">${inherentValue || '-'}</span></td>
                     <td><span class="badge-status ${getBadgeClassForRiskLevel(item.risk_level)}">${residualValue || '-'}</span></td>
-                    <td><strong style="color: #0d4f1c; font-weight: 700;">${reduction}</strong></td>
+                    <td><strong style="color: #059669; font-weight: 700;">${reduction}</strong></td>
                     <td><span class="badge-status ${getBadgeClassForRiskLevel(item.risk_level)}">${item.risk_level || '-'}</span></td>
-                    <td><span class="badge-status badge-secondary">${item.review_status || '-'}</span></td>
+                    <td><span class="badge-status ${reviewBadgeClass}">${item.review_status || '-'}</span></td>
                     <td>${item.next_review_date || '-'}</td>
                   </tr>
                 `;
@@ -559,22 +585,22 @@ const ResidualRiskModule = (() => {
             {
               label: 'Inherent Risk Rating',
               data: inherentPoints,
-              backgroundColor: '#00FFFF', // Cyan
+              backgroundColor: '#00E5FF', // Bright Cyan
               borderColor: '#000000',
               borderWidth: 2,
-              pointRadius: 12,
-              pointHoverRadius: 15,
+              pointRadius: 8,  // Smaller icon
+              pointHoverRadius: 10,
               pointStyle: 'circle'
             },
             {
               label: 'Residual Risk Rating',
               data: residualPoints,
-              backgroundColor: '#FFD700', // Gold for star
+              backgroundColor: '#FFD700', // Bright Gold for star
               borderColor: '#000000',
               borderWidth: 2,
-              pointRadius: 15,
-              pointHoverRadius: 18,
-              pointStyle: 'star' // Star shape for residual risk
+              pointRadius: 10, // Smaller star
+              pointHoverRadius: 12,
+              pointStyle: 'star'
             },
             {
               label: 'Risk Appetite',
@@ -582,8 +608,8 @@ const ResidualRiskModule = (() => {
               backgroundColor: '#FFFFFF', // White
               borderColor: '#000000',
               borderWidth: 2,
-              pointRadius: 12,
-              pointHoverRadius: 15,
+              pointRadius: 8,  // Smaller icon
+              pointHoverRadius: 10,
               pointStyle: 'triangle'
             }
           ]
@@ -681,9 +707,9 @@ const ResidualRiskModule = (() => {
               }
             }
           },
-          // Add background plugin for risk matrix colors
+          // Add background plugin for risk matrix colors with GRADIENT
           plugins: [{
-            id: 'riskMatrixBackground',
+            id: 'riskMatrixGradientBackground',
             beforeDraw: function(chart) {
               const ctx = chart.ctx;
               const chartArea = chart.chartArea;
@@ -692,74 +718,94 @@ const ResidualRiskModule = (() => {
               
               ctx.save();
               
-              // Define risk zones with enhanced colors and better coverage
+              // Define risk zones with GRADIENT colors - from green (low) to red (extreme)
+              const zoneGradients = {
+                low: {
+                  colors: ['rgba(16, 185, 129, 0.75)', 'rgba(5, 150, 105, 0.55)'],
+                  border: 'rgba(4, 120, 87, 0.9)',
+                  label: '#065F46',
+                  labelBg: 'rgba(255, 255, 255, 0.85)'
+                },
+                medium: {
+                  colors: ['rgba(245, 158, 11, 0.75)', 'rgba(217, 119, 6, 0.55)'],
+                  border: 'rgba(180, 83, 9, 0.9)',
+                  label: '#92400E',
+                  labelBg: 'rgba(255, 255, 255, 0.85)'
+                },
+                high: {
+                  colors: ['rgba(249, 115, 22, 0.8)', 'rgba(234, 88, 12, 0.6)'],
+                  border: 'rgba(194, 65, 12, 0.9)',
+                  label: '#9A3412',
+                  labelBg: 'rgba(255, 255, 255, 0.85)'
+                },
+                extreme: {
+                  colors: ['rgba(239, 68, 68, 0.85)', 'rgba(153, 27, 27, 0.7)'],
+                  border: 'rgba(127, 29, 29, 0.95)',
+                  label: '#7F1D1D',
+                  labelBg: 'rgba(255, 255, 255, 0.9)'
+                }
+              };
+              
               const zones = [
-                // Green zones (Low Risk) - Enhanced visibility
-                { xMin: 0.5, xMax: 1.5, yMin: 0.5, yMax: 5.5, color: 'rgba(34, 197, 94, 0.3)', label: 'LOW' },
-                { xMin: 1.5, xMax: 2.5, yMin: 0.5, yMax: 2.5, color: 'rgba(34, 197, 94, 0.3)', label: 'LOW' },
+                // Green zones (Low Risk) - Bottom left area
+                { xMin: 0.5, xMax: 1.5, yMin: 0.5, yMax: 5.5, zone: 'low', label: 'LOW' },
+                { xMin: 1.5, xMax: 2.5, yMin: 0.5, yMax: 2.5, zone: 'low', label: 'LOW' },
                 
-                // Yellow zones (Medium Risk) - Enhanced visibility
-                { xMin: 1.5, xMax: 2.5, yMin: 2.5, yMax: 3.5, color: 'rgba(234, 179, 8, 0.3)', label: 'MEDIUM' },
-                { xMin: 2.5, xMax: 3.5, yMin: 0.5, yMax: 2.5, color: 'rgba(234, 179, 8, 0.3)', label: 'MEDIUM' },
+                // Yellow zones (Medium Risk)
+                { xMin: 1.5, xMax: 2.5, yMin: 2.5, yMax: 3.5, zone: 'medium', label: 'MEDIUM' },
+                { xMin: 2.5, xMax: 3.5, yMin: 0.5, yMax: 2.5, zone: 'medium', label: 'MEDIUM' },
                 
-                // Orange zones (High Risk) - Enhanced visibility
-                { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
-                { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
-                { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(249, 115, 22, 0.3)', label: 'HIGH' },
+                // Orange zones (High Risk)
+                { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, zone: 'high', label: 'HIGH' },
+                { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, zone: 'high', label: 'HIGH' },
+                { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, zone: 'high', label: 'HIGH' },
                 
-                // Red zones (Extreme Risk) - Enhanced visibility
-                { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'EXTREME' },
-                { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.4)', label: 'EXTREME' }
+                // Red zones (Extreme Risk) - Top right area
+                { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, zone: 'extreme', label: 'EXTREME' },
+                { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, zone: 'extreme', label: 'EXTREME' }
               ];
               
-              // Draw background zones with enhanced styling
-              zones.forEach(zone => {
-                const xStart = chart.scales.x.getPixelForValue(zone.xMin);
-                const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
-                const yStart = chart.scales.y.getPixelForValue(zone.yMax);
-                const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
+              // Draw each zone with gradient background
+              zones.forEach(zoneConfig => {
+                const xStart = chart.scales.x.getPixelForValue(zoneConfig.xMin);
+                const xEnd = chart.scales.x.getPixelForValue(zoneConfig.xMax);
+                const yStart = chart.scales.y.getPixelForValue(zoneConfig.yMax);
+                const yEnd = chart.scales.y.getPixelForValue(zoneConfig.yMin);
                 
-                // Fill background color
-                ctx.fillStyle = zone.color;
+                const zoneStyle = zoneGradients[zoneConfig.zone];
+                
+                // Create diagonal gradient for each zone
+                const gradient = ctx.createLinearGradient(xStart, yStart, xEnd, yEnd);
+                gradient.addColorStop(0, zoneStyle.colors[0]);
+                gradient.addColorStop(1, zoneStyle.colors[1]);
+                
+                // Fill with gradient
+                ctx.fillStyle = gradient;
                 ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
                 
-                // Add subtle border
-                ctx.strokeStyle = zone.color.replace('0.3', '0.6').replace('0.4', '0.8');
-                ctx.lineWidth = 1;
+                // Draw border
+                ctx.strokeStyle = zoneStyle.border;
+                ctx.lineWidth = 2;
                 ctx.strokeRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
                 
-                // Add zone label in center
+                // Add zone label with background
                 const centerX = (xStart + xEnd) / 2;
                 const centerY = (yStart + yEnd) / 2;
                 
-                ctx.fillStyle = zone.color.replace('0.3', '0.8').replace('0.4', '0.9');
-                ctx.font = 'bold 10px Arial';
+                ctx.font = 'bold 11px Arial';
+                const textWidth = ctx.measureText(zoneConfig.label).width;
+                
+                // Draw label background
+                ctx.fillStyle = zoneStyle.labelBg;
+                ctx.beginPath();
+                ctx.roundRect(centerX - textWidth/2 - 6, centerY - 8, textWidth + 12, 18, 4);
+                ctx.fill();
+                
+                // Draw label text
+                ctx.fillStyle = zoneStyle.label;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(zone.label, centerX, centerY);
-              });
-              
-              ctx.restore();
-            }
-          }],range zones (High Risk)
-                { xMin: 1.5, xMax: 2.5, yMin: 3.5, yMax: 5.5, color: 'rgba(249, 115, 22, 0.2)' },
-                { xMin: 2.5, xMax: 3.5, yMin: 2.5, yMax: 4.5, color: 'rgba(249, 115, 22, 0.2)' },
-                { xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5, color: 'rgba(249, 115, 22, 0.2)' },
-                
-                // Red zones (Extreme Risk)
-                { xMin: 2.5, xMax: 3.5, yMin: 4.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.2)' },
-                { xMin: 3.5, xMax: 5.5, yMin: 2.5, yMax: 5.5, color: 'rgba(239, 68, 68, 0.2)' }
-              ];
-              
-              // Draw background zones
-              zones.forEach(zone => {
-                const xStart = chart.scales.x.getPixelForValue(zone.xMin);
-                const xEnd = chart.scales.x.getPixelForValue(zone.xMax);
-                const yStart = chart.scales.y.getPixelForValue(zone.yMax);
-                const yEnd = chart.scales.y.getPixelForValue(zone.yMin);
-                
-                ctx.fillStyle = zone.color;
-                ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+                ctx.fillText(zoneConfig.label, centerX, centerY);
               });
               
               ctx.restore();
@@ -911,7 +957,7 @@ const ResidualRiskModule = (() => {
     return colorMap[level] || 'secondary';
   }
 
-  // New function for solid badge colors based on Excel reference
+  // Enhanced function for solid bright badge colors
   function getBadgeClassForRiskLevel(level) {
     const levelUpper = (level || '').toUpperCase();
     
@@ -924,6 +970,41 @@ const ResidualRiskModule = (() => {
     } else if (levelUpper.includes('EXTREME') || levelUpper.includes('SANGAT')) {
       return 'badge-extreme-high';
     } else {
+      return 'badge-secondary';
+    }
+  }
+
+  // Get review status badge class with warning for near deadline
+  // - Hijau cerah solid: > 1 bulan dari deadline (aman)
+  // - Merah solid berkedip: < 1 bulan dari deadline (urgent)
+  // - Merah gelap berkedip cepat: < 7 hari atau overdue (critical)
+  function getReviewStatusBadgeClass(reviewStatus, nextReviewDate) {
+    if (!nextReviewDate || nextReviewDate === '-') {
+      return 'badge-secondary';
+    }
+    
+    try {
+      const reviewDate = new Date(nextReviewDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      reviewDate.setHours(0, 0, 0, 0);
+      
+      const diffTime = reviewDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Less than 7 days or overdue - critical (dark red fast blinking)
+      if (diffDays < 7) {
+        return 'badge-review-critical';
+      }
+      // Less than 30 days (1 month) - urgent (red solid blinking)
+      else if (diffDays < 30) {
+        return 'badge-review-urgent';
+      }
+      // More than 30 days - safe (bright green solid)
+      else {
+        return 'badge-review-safe';
+      }
+    } catch (e) {
       return 'badge-secondary';
     }
   }

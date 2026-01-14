@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Peluang Enhanced</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/peluang-enhanced.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .test-header h1 {
+            margin: 0 0 10px 0;
+        }
+        .test-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-info { background: #06b6d4; color: white; }
+        .btn-info:hover { background: #0891b2; }
+        .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+        .test-status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+        }
+        .test-status.error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-lightbulb"></i> Test Peluang Enhanced</h1>
+            <p>Halaman test untuk memverifikasi perbaikan tombol Edit, Hapus, warna Status, dan scroll tabel</p>
+        </div>
+        
+        <div id="peluang-content">
+            <div class="card">
+                <div class="card-body" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #3b82f6;"></i>
+                    <p style="margin-top: 16px;">Memuat data...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-status" id="test-status">
+            <h4><i class="fas fa-check-circle" style="color: #10b981;"></i> Status Test</h4>
+            <ul id="test-results">
+                <li>Menunggu data dimuat...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simple API call function
+        async function apiCall(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            };
+            
+            const response = await fetch(url, {
+                ...options,
+                headers: { ...headers, ...options.headers },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: response.statusText }));
+                throw new Error(error.error || error.message || 'Request failed');
+            }
+            
+            return response.json();
+        }
+    </script>
+    <script src="/js/peluang-enhanced.js"></script>
+    <script>
+        // Run tests
+        document.addEventListener('DOMContentLoaded', async () => {
+            const results = document.getElementById('test-results');
+            const statusDiv = document.getElementById('test-status');
+            
+            try {
+                // Load data
+                await PeluangEnhanced.load();
+                
+                // Run tests
+                const tests = [];
+                
+                // Test 1: Check if table container has scroll
+                const tableContainer = document.querySelector('.peluang-table-container');
+                tests.push({
+                    name: 'Table container dengan scroll',
+                    passed: tableContainer && getComputedStyle(tableContainer).overflowY === 'auto'
+                });
+                
+                // Test 2: Check status badges
+                const statusBadges = document.querySelectorAll('.status-badge');
+                tests.push({
+                    name: 'Status badges dengan warna cerah',
+                    passed: statusBadges.length > 0
+                });
+                
+                // Test 3: Check edit buttons
+                const editButtons = document.querySelectorAll('.btn-edit-action');
+                tests.push({
+                    name: 'Tombol Edit tersedia',
+                    passed: editButtons.length > 0
+                });
+                
+                // Test 4: Check delete buttons
+                const deleteButtons = document.querySelectorAll('.btn-delete-action');
+                tests.push({
+                    name: 'Tombol Hapus tersedia',
+                    passed: deleteButtons.length > 0
+                });
+                
+                // Test 5: Check stats cards
+                const statsCards = document.querySelectorAll('.peluang-stat-card');
+                tests.push({
+                    name: 'Statistik cards ditampilkan',
+                    passed: statsCards.length === 4
+                });
+                
+                // Display results
+                results.innerHTML = tests.map(t => `
+                    <li style="color: ${t.passed ? '#10b981' : '#ef4444'}">
+                        <i class="fas fa-${t.passed ? 'check' : 'times'}-circle"></i>
+                        ${t.name}: ${t.passed ? 'PASSED' : 'FAILED'}
+                    </li>
+                `).join('');
+                
+                const allPassed = tests.every(t => t.passed);
+                if (!allPassed) {
+                    statusDiv.classList.add('error');
+                }
+                
+            } catch (error) {
+                results.innerHTML = `<li style="color: #ef4444"><i class="fas fa-times-circle"></i> Error: ${error.message}</li>`;
+                statusDiv.classList.add('error');
+            }
+        });
+    </script>
+</body>
+</html>

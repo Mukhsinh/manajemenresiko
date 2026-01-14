@@ -1,0 +1,454 @@
+/* Analisis SWOT - White Cards & Clean Layout */
+/* Kartu putih, ukuran lebih kecil, kontainer putih */
+
+/* Summary Cards - White Background, Smaller Size */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 0;
+}
+
+.summary-card {
+  background: #ffffff !important;
+  border-radius: 10px;
+  padding: 16px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: auto;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Card Colors - Border only, white background */
+.summary-card.strength {
+  border-left-color: #10b981;
+  background: #ffffff !important;
+  color: #1e293b !important;
+}
+
+.summary-card.weakness {
+  border-left-color: #ef4444;
+  background: #ffffff !important;
+  color: #1e293b !important;
+}
+
+.summary-card.opportunity {
+  border-left-color: #3b82f6;
+  background: #ffffff !important;
+  color: #1e293b !important;
+}
+
+.summary-card.threat {
+  border-left-color: #f59e0b;
+  background: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Card Icon - Colored based on type */
+.summary-card .card-icon {
+  font-size: 20px;
+  margin-bottom: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-card.strength .card-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.summary-card.weakness .card-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.summary-card.opportunity .card-icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.summary-card.threat .card-icon {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+/* Card Title - Smaller */
+.summary-card .card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #64748b !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Card Value - Colored based on type */
+.summary-card .card-value {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.summary-card.strength .card-value { color: #10b981 !important; }
+.summary-card.weakness .card-value { color: #ef4444 !important; }
+.summary-card.opportunity .card-value { color: #3b82f6 !important; }
+.summary-card.threat .card-value { color: #f59e0b !important; }
+
+/* Card Subtitle */
+.summary-card .card-subtitle {
+  font-size: 11px;
+  color: #94a3b8 !important;
+  margin-bottom: 12px;
+}
+
+/* Card Stats - Smaller */
+.summary-card .card-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.summary-card .card-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.summary-card .card-stat-label {
+  font-size: 10px;
+  color: #94a3b8 !important;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.summary-card .card-stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569 !important;
+}
+
+/* Filter Section - White Background */
+.filter-section {
+  background: #ffffff !important;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #e2e8f0;
+}
+
+/* Table Container Header - White Background */
+.card.border-0 {
+  background: #ffffff !important;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.card-header.bg-transparent {
+  background: #ffffff !important;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header h5 {
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.card-header small.text-muted {
+  color: #64748b !important;
+  font-size: 12px;
+}
+
+/* Table Container - No Overflow */
+.table-container {
+  overflow-x: auto;
+  border-radius: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Page Header - White */
+.page-header {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.page-header h3,
+.page-header .card-title {
+  color: #1e293b !important;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Remove any blue backgrounds */
+.bg-primary,
+.bg-info,
+.bg-blue {
+  background: #ffffff !important;
+}
+
+/* Container Fluid - Clean spacing */
+.container-fluid {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Responsive n .form-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    text-transform: uppercase !important;
+    margin-bottom: 4px !important;
+}
+
+.filter-section .form-select,
+.filter-section .form-control {
+    font-size: 13px !important;
+    padding: 6px 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    background: #ffffff !important;
+}
+
+.filter-section .form-select:focus,
+.filter-section .form-control:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ============================================
+   PAGE HEADER - WHITE
+   ============================================ */
+
+.page-header {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    padding: 16px 20px !important;
+    margin-bottom: 16px !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.page-header h1,
+.page-header h3,
+.page-header .card-title {
+    color: #1e293b !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+}
+
+.page-header p {
+    color: #64748b !important;
+    font-size: 13px !important;
+    margin: 4px 0 0 0 !important;
+}
+
+/* ============================================
+   NO OVERFLOW SPACING
+   ============================================ */
+
+/* Remove any extra margins/paddings */
+.container-fluid {
+    padding: 16px !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+#analisis-swot-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+}
+
+/* Ensure no horizontal scroll */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.col-md-3,
+.col-md-4,
+.col-md-6,
+.col-md-8,
+.col-md-12 {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+/* Table responsive without overflow */
+.table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ============================================
+   BADGE STYLES - COMPACT
+   ============================================ */
+
+.badge-kategori {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+}
+
+.badge-strength {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+}
+
+.badge-weakness {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.badge-opportunity {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+.badge-threat {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+/* ============================================
+   ACTION BUTTONS - COMPACT
+   ============================================ */
+
+.action-buttons {
+    display: flex !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+}
+
+.action-buttons .btn {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+}
+
+.btn-icon {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    border-radius: 4px !important;
+    min-width: 28px !important;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .summary-cards,
+    #summaryCards {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    
+    .summary-card {
+        padding: 10px 12px !important;
+    }
+    
+    .summary-card .card-value {
+        font-size: 18px !important;
+    }
+    
+    .container-fluid {
+        padding: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-cards,
+    #summaryCards {
+        grid-template-columns: 1fr !important;
+    }
+}
+adjustments */
+@media (max-width: 1200px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .summary-card {
+    padding: 14px !important;
+  }
+  
+  .summary-card .card-value {
+    font-size: 20px;
+  }
+  
+  .filter-section {
+    padding: 12px 16px;
+  }
+}
+
+/* Ensure no overflow on main content */
+#analisis-swot-content {
+  overflow-x: hidden;
+  padding: 0;
+}
+
+/* Card body padding fix */
+.card-body.p-0 {
+  padding: 0 !important;
+}
+
+/* Table header white background */
+.swot-table thead {
+  background: #f8fafc !important;
+}
+
+.swot-table thead th {
+  background: #f8fafc !important;
+  color: #475569;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 10px;
+  border-bottom: 2px solid #e2e8f0;
+}

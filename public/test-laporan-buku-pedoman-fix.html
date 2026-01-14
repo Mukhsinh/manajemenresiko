@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Perbaikan Laporan & Buku Pedoman</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; padding: 20px; }
+        .test-section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-title { color: #2c3e50; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .test-btn { margin: 5px; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .log-container { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+        .log-success { color: #4ec9b0; }
+        .log-error { color: #f14c4c; }
+        .log-info { color: #569cd6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4"><i class="fas fa-tools"></i> Test Perbaikan Laporan & Buku Pedoman</h1>
+        
+        <!-- Test Laporan -->
+        <div class="test-section">
+            <h3 class="test-title"><i class="fas fa-file-alt text-primary"></i> Test Halaman Laporan</h3>
+            <p class="text-muted">Menguji fungsi tombol Excel, PDF, dan View pada halaman /laporan</p>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-file-excel"></i> Test Excel Download
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-success btn-sm test-btn" onclick="testExcelDownload('risk-register')">
+                                Risk Register Excel
+                            </button>
+                            <button class="btn btn-success btn-sm test-btn" onclick="testExcelDownload('risk-profile')">
+                                Risk Profile Excel
+                            </button>
+                            <button class="btn btn-success btn-sm test-btn" onclick="testExcelDownload('residual-risk')">
+                                Residual Risk Excel
+                            </button>
+                            <div id="excel-status" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <i class="fas fa-file-pdf"></i> Test PDF Download
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-danger btn-sm test-btn" onclick="testPDFDownload('risk-register')">
+                                Risk Register PDF
+                            </button>
+                            <button class="btn btn-danger btn-sm test-btn" onclick="testPDFDownload('risk-profile')">
+                                Risk Profile PDF
+                            </button>
+                            <button class="btn btn-danger btn-sm test-btn" onclick="testPDFDownload('residual-risk')">
+                                Residual Risk PDF
+                            </button>
+                            <div id="pdf-status" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <i class="fas fa-eye"></i> Test Preview Data
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-info btn-sm test-btn" onclick="testPreview('risk-register')">
+                                Preview Risk Register
+                            </button>
+                            <button class="btn btn-info btn-sm test-btn" onclick="testPreview('risk-profile')">
+                                Preview Risk Profile
+                            </button>
+                            <div id="preview-status" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Buku Pedoman -->
+        <div class="test-section">
+            <h3 class="test-title"><i class="fas fa-book text-success"></i> Test Halaman Buku Pedoman</h3>
+            <p class="text-muted">Menguji fungsi tombol Unduh PDF, Cetak, dan Lihat Flowchart pada halaman /buku-pedoman</p>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fas fa-file-pdf"></i> Test Unduh PDF
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary test-btn" onclick="testBukuPedomanPDF()">
+                                <i class="fas fa-download"></i> Unduh PDF Buku Pedoman
+                            </button>
+                            <div id="buku-pdf-status" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <i class="fas fa-print"></i> Test Cetak
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-secondary test-btn" onclick="testBukuPedomanPrint()">
+                                <i class="fas fa-print"></i> Cetak Buku Pedoman
+                            </button>
+                            <div id="buku-print-status" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <i class="fas fa-project-diagram"></i> Test Flowchart
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-warning test-btn" onclick="testBukuPedomanFlowchart()">
+                                <i class="fas fa-eye"></i> Lihat Flowchart
+                            </button>
+                            <button class="btn btn-outline-warning test-btn" onclick="testFlowchartPDF()">
+                                <i class="fas fa-download"></i> Unduh Flowchart PDF
+                            </button>
+                            <div id="buku-flowchart-status" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log Output -->
+        <div class="test-section">
+            <h3 class="test-title"><i class="fas fa-terminal"></i> Log Output</h3>
+            <div id="log-container" class="log-container">
+                <div class="log-info">[INFO] Test page loaded. Ready to test...</div>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm mt-2" onclick="clearLog()">
+                <i class="fas fa-trash"></i> Clear Log
+            </button>
+        </div>
+        
+        <!-- Buku Pedoman Content Container (for testing) -->
+        <div id="buku-pedoman-content" style="display: none;"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+        // Log functions
+        function log(message, type = 'info') {
+            const container = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : 'log-info';
+            container.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log-container').innerHTML = '<div class="log-info">[INFO] Log cleared.</div>';
+        }
+        
+        function setStatus(elementId, status, message) {
+            const el = document.getElementById(elementId);
+            const className = status === 'success' ? 'status-success' : status === 'error' ? 'status-error' : 'status-pending';
+            el.innerHTML = `<span class="status-badge ${className}">${message}</span>`;
+        }
+        
+        // Mock API call for testing
+        async function mockApiCall(endpoint) {
+            log(`Calling API: ${endpoint}`, 'info');
+            
+            // Simulate API response
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const mockData = [
+                        { kode_risiko: 'RISK-001', sasaran: 'Test Risk 1', risk_level: 'HIGH RISK', unit_kerja: 'IT Dept' },
+                        { kode_risiko: 'RISK-002', sasaran: 'Test Risk 2', risk_level: 'MEDIUM RISK', unit_kerja: 'Finance' },
+                        { kode_risiko: 'RISK-003', sasaran: 'Test Risk 3', risk_level: 'LOW RISK', unit_kerja: 'HR' }
+                    ];
+                    resolve(mockData);
+                }, 500);
+            });
+        }
+        
+        // Test Excel Download
+        async function testExcelDownload(reportId) {
+            log(`Testing Excel download for: ${reportId}`, 'info');
+            setStatus('excel-status', 'pending', 'Downloading...');
+            
+            try {
+                // Test the endpoint
+                const response = await fetch(`/api/reports/${reportId}/excel`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    log(`Excel downloaded: ${blob.size} bytes`, 'success');
+                    setStatus('excel-status', 'success', `✓ Downloaded ${blob.size} bytes`);
+                    
+                    // Trigger download
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${reportId}-test.xlsx`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`Excel download error: ${error.message}`, 'error');
+                setStatus('excel-status', 'error', `✗ Error: ${error.message}`);
+            }
+        }
+        
+        // Test PDF Download
+        async function testPDFDownload(reportId) {
+            log(`Testing PDF download for: ${reportId}`, 'info');
+            setStatus('pdf-status', 'pending', 'Generating PDF...');
+            
+            try {
+                // Try server-side first
+                const response = await fetch(`/api/reports/${reportId}/pdf`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/pdf' }
+                });
+                
+                const contentType = response.headers.get('content-type') || '';
+                
+                if (response.ok && contentType.includes('pdf')) {
+                    const blob = await response.blob();
+                    log(`PDF downloaded from server: ${blob.size} bytes`, 'success');
+                    setStatus('pdf-status', 'success', `✓ Server PDF ${blob.size} bytes`);
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${reportId}-test.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    // Fallback to client-side PDF
+                    log('Server PDF not available, generating client-side...', 'info');
+                    await generateClientPDF(reportId);
+                    setStatus('pdf-status', 'success', '✓ Client-side PDF generated');
+                }
+            } catch (error) {
+                log(`PDF download error: ${error.message}`, 'error');
+                setStatus('pdf-status', 'error', `✗ Error: ${error.message}`);
+            }
+        }
+        
+        // Generate client-side PDF
+        async function generateClientPDF(reportId) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            doc.setFontSize(16);
+            doc.text(`Test Report: ${reportId}`, 148, 20, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 148, 30, { align: 'center' });
+            
+            // Add sample table
+            const data = await mockApiCall(`/api/reports/${reportId}`);
+            
+            if (doc.autoTable) {
+                doc.autoTable({
+                    startY: 40,
+                    head: [['Kode Risiko', 'Sasaran', 'Risk Level', 'Unit Kerja']],
+                    body: data.map(d => [d.kode_risiko, d.sasaran, d.risk_level, d.unit_kerja]),
+                    theme: 'grid'
+                });
+            }
+            
+            doc.save(`${reportId}-client-test.pdf`);
+            log('Client-side PDF saved', 'success');
+        }
+        
+        // Test Preview
+        async function testPreview(reportId) {
+            log(`Testing preview for: ${reportId}`, 'info');
+            setStatus('preview-status', 'pending', 'Loading preview...');
+            
+            try {
+                const data = await mockApiCall(`/api/reports/${reportId}`);
+                log(`Preview loaded: ${data.length} records`, 'success');
+                setStatus('preview-status', 'success', `✓ Loaded ${data.length} records`);
+                
+                // Show preview in modal
+                alert(`Preview Data:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Preview error: ${error.message}`, 'error');
+                setStatus('preview-status', 'error', `✗ Error: ${error.message}`);
+            }
+        }
+        
+        // Test Buku Pedoman PDF
+        async function testBukuPedomanPDF() {
+            log('Testing Buku Pedoman PDF download...', 'info');
+            setStatus('buku-pdf-status', 'pending', 'Generating PDF...');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                pdf.setFontSize(20);
+                pdf.text('Buku Pedoman Sistem Manajemen Risiko', 105, 30, { align: 'center' });
+                pdf.setFontSize(14);
+                pdf.text('Berdasarkan ISO 31000:2018', 105, 45, { align: 'center' });
+                pdf.setFontSize(10);
+                pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, 60, { align: 'center' });
+                
+                pdf.addPage();
+                pdf.setFontSize(16);
+                pdf.text('Bab 1: Pendahuluan', 20, 20);
+                pdf.setFontSize(10);
+                const content = 'Manajemen risiko merupakan bagian integral dari tata kelola organisasi yang baik. Berdasarkan ISO 31000:2018, manajemen risiko adalah aktivitas terkoordinasi untuk mengarahkan dan mengendalikan organisasi berkaitan dengan risiko.';
+                const lines = pdf.splitTextToSize(content, 170);
+                pdf.text(lines, 20, 35);
+                
+                pdf.save('Buku_Pedoman_Test.pdf');
+                log('Buku Pedoman PDF saved successfully', 'success');
+                setStatus('buku-pdf-status', 'success', '✓ PDF Generated');
+            } catch (error) {
+                log(`Buku Pedoman PDF error: ${error.message}`, 'error');
+                setStatus('buku-pdf-status', 'error', `✗ Error: ${error.message}`);
+            }
+        }
+        
+        // Test Buku Pedoman Print
+        function testBukuPedomanPrint() {
+            log('Testing Buku Pedoman print...', 'info');
+            setStatus('buku-print-status', 'pending', 'Opening print dialog...');
+            
+            try {
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                
+                if (!printWindow) {
+                    throw new Error('Popup blocked');
+                }
+                
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Buku Pedoman - Print Test</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h1 { color: #2c3e50; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Buku Pedoman Sistem Manajemen Risiko</h1>
+                        <h2>Berdasarkan ISO 31000:2018</h2>
+                        <p>Test print content...</p>
+                        <script>
+                            window.onload = function() {
+                                setTimeout(function() { window.print(); }, 500);
+                            };
+                        </script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                
+                log('Print dialog opened', 'success');
+                setStatus('buku-print-status', 'success', '✓ Print dialog opened');
+            } catch (error) {
+                log(`Print error: ${error.message}`, 'error');
+                setStatus('buku-print-status', 'error', `✗ Error: ${error.message}`);
+            }
+        }
+        
+        // Test Flowchart
+        function testBukuPedomanFlowchart() {
+            log('Testing Flowchart display...', 'info');
+            setStatus('buku-flowchart-status', 'pending', 'Loading flowchart...');
+            
+            try {
+                // Create modal
+                const modal = document.createElement('div');
+                modal.id = 'test-flowchart-modal';
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `
+                    <div style="background:white;border-radius:12px;padding:30px;max-width:800px;max-height:90vh;overflow:auto;">
+                        <h3 style="margin-bottom:20px;">Flowchart Proses Manajemen Risiko</h3>
+                        <svg width="600" height="400" style="border:1px solid #ddd;border-radius:8px;">
+                            <rect x="250" y="20" width="100" height="40" rx="20" fill="#4CAF50"/>
+                            <text x="300" y="45" text-anchor="middle" fill="white" font-size="12">Mulai</text>
+                            
+                            <line x1="300" y1="60" x2="300" y2="90" stroke="#333" stroke-width="2"/>
+                            
+                            <rect x="200" y="90" width="200" height="50" fill="#2196F3"/>
+                            <text x="300" y="120" text-anchor="middle" fill="white" font-size="11">Identifikasi Risiko</text>
+                            
+                            <line x1="300" y1="140" x2="300" y2="170" stroke="#333" stroke-width="2"/>
+                            
+                            <rect x="200" y="170" width="200" height="50" fill="#2196F3"/>
+                            <text x="300" y="200" text-anchor="middle" fill="white" font-size="11">Analisis Risiko</text>
+                            
+                            <line x1="300" y1="220" x2="300" y2="250" stroke="#333" stroke-width="2"/>
+                            
+                            <rect x="200" y="250" width="200" height="50" fill="#2196F3"/>
+                            <text x="300" y="280" text-anchor="middle" fill="white" font-size="11">Evaluasi Risiko</text>
+                            
+                            <line x1="300" y1="300" x2="300" y2="330" stroke="#333" stroke-width="2"/>
+                            
+                            <rect x="250" y="330" width="100" height="40" rx="20" fill="#f44336"/>
+                            <text x="300" y="355" text-anchor="middle" fill="white" font-size="12">Selesai</text>
+                        </svg>
+                        <div style="margin-top:20px;text-align:right;">
+                            <button onclick="document.getElementById('test-flowchart-modal').remove()" class="btn btn-secondary">Tutup</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                log('Flowchart displayed', 'success');
+                setStatus('buku-flowchart-status', 'success', '✓ Flowchart displayed');
+            } catch (error) {
+                log(`Flowchart error: ${error.message}`, 'error');
+                setStatus('buku-flowchart-status', 'error', `✗ Error: ${error.message}`);
+            }
+        }
+        
+        // Test Flowchart PDF
+        async function testFlowchartPDF() {
+            log('Testing Flowchart PDF download...', 'info');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                
+                pdf.setFontSize(16);
+                pdf.text('Flowchart Proses Manajemen Risiko', 148, 20, { align: 'center' });
+                
+                // Draw simple flowchart
+                const centerX = 148;
+                let y = 40;
+                
+                // Start
+                pdf.setFillColor(76, 175, 80);
+                pdf.roundedRect(centerX - 25, y, 50, 20, 10, 10, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(10);
+                pdf.text('Mulai', centerX, y + 13, { align: 'center' });
+                
+                y += 30;
+                pdf.setDrawColor(51, 51, 51);
+                pdf.line(centerX, y - 10, centerX, y);
+                
+                // Process boxes
+                const processes = ['Identifikasi Risiko', 'Analisis Risiko', 'Evaluasi Risiko', 'Perlakuan Risiko'];
+                processes.forEach((proc, i) => {
+                    pdf.setFillColor(33, 150, 243);
+                    pdf.rect(centerX - 40, y, 80, 20, 'F');
+                    pdf.setTextColor(255, 255, 255);
+                    pdf.text(proc, centerX, y + 13, { align: 'center' });
+                    y += 30;
+                    if (i < processes.length - 1) {
+                        pdf.setDrawColor(51, 51, 51);
+                        pdf.line(centerX, y - 10, centerX, y);
+                    }
+                });
+                
+                // End
+                pdf.setFillColor(244, 67, 54);
+                pdf.roundedRect(centerX - 25, y, 50, 20, 10, 10, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.text('Selesai', centerX, y + 13, { align: 'center' });
+                
+                pdf.save('Flowchart_Test.pdf');
+                log('Flowchart PDF saved', 'success');
+                setStatus('buku-flowchart-status', 'success', '✓ Flowchart PDF saved');
+            } catch (error) {
+                log(`Flowchart PDF error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize
+        log('Test page initialized. Click buttons to test functionality.', 'info');
+    </script>
+</body>
+</html>

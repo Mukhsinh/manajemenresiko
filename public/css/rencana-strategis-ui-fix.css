@@ -1,0 +1,589 @@
+/**
+ * Rencana Strategis UI Fix
+ * Perbaikan tampilan sesuai permintaan:
+ * 1. Warna tulisan 'Form Input Rencana Strategis' dan 'Daftar Rencana Strategis' menjadi hitam
+ * 2. Badge status dengan warna solid cerah di kolom status
+ * 3. Background icon aksi dengan warna solid cerah
+ * 4. Kartu statistik lebih kecil dengan tulisan lebih besar dan warna solid cerah
+ * 5. Tulisan di kop header (RSUD Bendan, Mukhsin Hadi) menjadi putih
+ */
+
+/* ============================================
+   1. WARNA TULISAN HEADER FORM & DAFTAR - HITAM
+   ============================================ */
+
+/* Form Input Rencana Strategis - Hitam */
+.rencana-strategis-wrapper #rs-form-section .card-header h5,
+.rencana-strategis-wrapper .card-header h5:contains("Form Input"),
+#rencana-strategis .card-header h5,
+.card-header h5[class*="form-title"],
+#rs-form-section .card-header h5 {
+  color: #1a1a1a !important;
+  background: transparent !important;
+}
+
+/* Override gradient background untuk form header */
+.rencana-strategis-wrapper #rs-form-section .card-header {
+  background: #f8f9fa !important;
+  border-bottom: 2px solid #e9ecef !important;
+}
+
+/* Daftar Rencana Strategis - Hitam Solid */
+.rencana-strategis-wrapper .card-header h5,
+.rencana-strategis-wrapper .card-header .card-title,
+#rencana-strategis .card-header h5,
+.card-header h5:has(i.fa-list),
+.card-header h5:has(i.fa-table),
+/* Selector lebih spesifik untuk Daftar Rencana Strategis */
+.card-header h5.mb-0,
+.card-header .mb-0,
+#rs-table-section .card-header h5,
+#table-section .card-header h5,
+.rencana-strategis-wrapper .card .card-header h5,
+.rencana-strategis-wrapper .card .card-header h5.mb-0,
+[id*="rencana"] .card-header h5,
+[id*="renstra"] .card-header h5,
+div[class*="rencana"] .card-header h5,
+.card-header h5:has(i.fas.fa-table),
+.card-header h5:has(.fa-table),
+.card-header > div > h5,
+.card-header .d-flex h5,
+.card-header .d-flex > div > h5 {
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* Total data text - Hitam */
+.rencana-strategis-wrapper .card-header small,
+.rencana-strategis-wrapper .card-header .text-muted,
+.rencana-strategis-wrapper .card-header span.badge,
+#rencana-strategis .card-header small {
+  color: #333333 !important;
+}
+
+/* ============================================
+   2. BADGE STATUS - WARNA SOLID CERAH
+   ============================================ */
+
+/* Badge Aktif - Hijau Cerah Solid */
+.rencana-strategis-wrapper .badge.bg-success,
+.rencana-strategis-wrapper .badge[class*="aktif"],
+.rencana-strategis-wrapper .badge:contains("Aktif"),
+#rencana-strategis .badge.bg-success,
+table .badge.bg-success {
+  background: #22c55e !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3) !important;
+}
+
+/* Badge Draft - Kuning/Orange Cerah Solid */
+.rencana-strategis-wrapper .badge.bg-warning,
+.rencana-strategis-wrapper .badge[class*="draft"],
+.rencana-strategis-wrapper .badge:contains("Draft"),
+#rencana-strategis .badge.bg-warning,
+table .badge.bg-warning {
+  background: #f59e0b !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Badge Selesai - Biru Cerah Solid */
+.rencana-strategis-wrapper .badge.bg-primary,
+.rencana-strategis-wrapper .badge[class*="selesai"],
+.rencana-strategis-wrapper .badge:contains("Selesai"),
+#rencana-strategis .badge.bg-primary,
+table .badge.bg-primary {
+  background: #3b82f6 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Badge Secondary/Inactive - Abu-abu Cerah Solid */
+.rencana-strategis-wrapper .badge.bg-secondary,
+#rencana-strategis .badge.bg-secondary,
+table .badge.bg-secondary {
+  background: #6b7280 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 2px 4px rgba(107, 114, 128, 0.3) !important;
+}
+
+/* Badge Info - Cyan Cerah Solid */
+.rencana-strategis-wrapper .badge.bg-info,
+#rencana-strategis .badge.bg-info,
+table .badge.bg-info {
+  background: #06b6d4 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3) !important;
+}
+
+/* ============================================
+   3. ICON AKSI - BACKGROUND SOLID CERAH
+   ============================================ */
+
+/* View/Detail Button - Biru Cerah */
+.rencana-strategis-wrapper .btn-outline-info,
+.rencana-strategis-wrapper .btn-info,
+.rencana-strategis-wrapper .btn-group-sm .btn-outline-info,
+#rencana-strategis .btn-outline-info,
+table .btn-outline-info {
+  background: #0ea5e9 !important;
+  border: none !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 0.35rem 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-info:hover,
+.rencana-strategis-wrapper .btn-info:hover,
+#rencana-strategis .btn-outline-info:hover {
+  background: #0284c7 !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 3px 8px rgba(14, 165, 233, 0.4) !important;
+}
+
+/* Edit Button - Kuning/Amber Cerah */
+.rencana-strategis-wrapper .btn-outline-warning,
+.rencana-strategis-wrapper .btn-warning,
+.rencana-strategis-wrapper .btn-group-sm .btn-outline-warning,
+#rencana-strategis .btn-outline-warning,
+table .btn-outline-warning {
+  background: #f59e0b !important;
+  border: none !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 0.35rem 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-warning:hover,
+.rencana-strategis-wrapper .btn-warning:hover,
+#rencana-strategis .btn-outline-warning:hover {
+  background: #d97706 !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.4) !important;
+}
+
+/* Delete Button - Merah Cerah */
+.rencana-strategis-wrapper .btn-outline-danger,
+.rencana-strategis-wrapper .btn-danger,
+.rencana-strategis-wrapper .btn-group-sm .btn-outline-danger,
+#rencana-strategis .btn-outline-danger,
+table .btn-outline-danger {
+  background: #ef4444 !important;
+  border: none !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 0.35rem 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.rencana-strategis-wrapper .btn-outline-danger:hover,
+.rencana-strategis-wrapper .btn-danger:hover,
+#rencana-strategis .btn-outline-danger:hover {
+  background: #dc2626 !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Action button group spacing */
+.rencana-strategis-wrapper .btn-group-sm,
+#rencana-strategis .btn-group-sm {
+  gap: 4px !important;
+  display: inline-flex !important;
+}
+
+/* ============================================
+   4. KARTU STATISTIK - LEBIH KECIL, TULISAN BESAR, WARNA SOLID CERAH
+   ============================================ */
+
+/* Container kartu statistik */
+.rencana-strategis-wrapper .row.g-3.mb-4 > div > .card,
+#rencana-strategis .stat-card,
+.stat-card {
+  border: none !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  min-height: auto !important;
+  max-height: 100px !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 > div > .card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15) !important;
+}
+
+/* Card body - lebih compact */
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body,
+.stat-card .card-body {
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+/* Icon container - lebih kecil */
+.rencana-strategis-wrapper .row.g-3.mb-4 .flex-shrink-0,
+.stat-card .icon-container {
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+}
+
+/* Angka statistik - lebih besar */
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body h3,
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body h2,
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body .stat-number,
+.stat-card h3,
+.stat-card .stat-number {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0 !important;
+  line-height: 1.1 !important;
+}
+
+/* Label statistik - lebih besar */
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body p,
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body .stat-label,
+.stat-card p,
+.stat-card .stat-label {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* Kartu Rencana Aktif - Hijau Cerah Solid */
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(1) > .card,
+.stat-card.aktif,
+.stat-card:has(.fa-check-circle) {
+  background: #22c55e !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(1) .card-body h3,
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(1) .card-body p,
+.stat-card.aktif h3,
+.stat-card.aktif p {
+  color: #ffffff !important;
+}
+
+/* Kartu Draft - Orange Cerah Solid */
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(2) > .card,
+.stat-card.draft,
+.stat-card:has(.fa-edit) {
+  background: #f59e0b !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(2) .card-body h3,
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(2) .card-body p,
+.stat-card.draft h3,
+.stat-card.draft p {
+  color: #ffffff !important;
+}
+
+/* Kartu Selesai - Biru Cerah Solid */
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(3) > .card,
+.stat-card.selesai,
+.stat-card:has(.fa-flag-checkered) {
+  background: #3b82f6 !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(3) .card-body h3,
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(3) .card-body p,
+.stat-card.selesai h3,
+.stat-card.selesai p {
+  color: #ffffff !important;
+}
+
+/* Kartu Total - Ungu Cerah Solid */
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(4) > .card,
+.stat-card.total,
+.stat-card:has(.fa-list) {
+  background: #8b5cf6 !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(4) .card-body h3,
+.rencana-strategis-wrapper .row.g-3.mb-4 > div:nth-child(4) .card-body p,
+.stat-card.total h3,
+.stat-card.total p {
+  color: #ffffff !important;
+}
+
+/* Icon dalam kartu - putih */
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body i,
+.rencana-strategis-wrapper .row.g-3.mb-4 .card-body svg,
+.stat-card i,
+.stat-card svg {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 1.5rem !important;
+}
+
+/* ============================================
+   5. KOP HEADER - TULISAN PUTIH (RSUD BENDAN, MUKHSIN HADI)
+   ============================================ */
+
+/* Kop Header - Main container */
+.kop-header {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;
+}
+
+/* Kop Header - Nama Instansi (RSUD Bendan) */
+.kop-header h2,
+.kop-header #kop-instansi,
+.kop-info h2,
+#kop-instansi {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Kop Header - Alamat dan Kontak */
+.kop-header p,
+.kop-header #kop-alamat,
+.kop-header #kop-kontak,
+.kop-info p,
+#kop-alamat,
+#kop-kontak {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Kop Header - Nama Pelapor (Mukhsin Hadi) */
+.kop-header h3,
+.kop-header #kop-reporter-name,
+.kop-reporter h3,
+#kop-reporter-name {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Kop Header - Role Pelapor */
+.kop-header #kop-reporter-role,
+.kop-reporter p,
+#kop-reporter-role {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Kop Header - Section Label */
+.kop-header .kop-section-label,
+.kop-section-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+  text-transform: uppercase !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Kop Header - Pill (PINTAR MR, Date) */
+.kop-header .kop-pill,
+.kop-pill {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+}
+
+.kop-header .kop-app,
+.kop-app {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.kop-header .kop-date,
+.kop-date,
+#kop-date {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Header organization info - fallback selectors */
+.organization-header h4,
+.organization-header h5,
+.organization-header .org-name,
+.organization-header .org-title,
+.header-org-info h4,
+.header-org-info h5,
+.header-org-info .hospital-name,
+.header-org-info .user-name,
+#header-organization h4,
+#header-organization h5,
+.top-header .org-name,
+.top-header .user-name,
+.page-header-top h4,
+.page-header-top h5,
+.main-header .org-info h4,
+.main-header .org-info h5,
+.main-header .user-info span,
+.main-header .user-info h5,
+/* Specific selectors for RSUD Bendan and Mukhsin Hadi */
+.header-content h4,
+.header-content h5,
+.header-content .hospital-name,
+.header-content .user-name,
+.navbar-brand + div h4,
+.navbar-brand + div h5,
+.header-right h4,
+.header-right h5,
+.header-right span,
+/* Blue header area text */
+.bg-primary h4,
+.bg-primary h5,
+.bg-primary span,
+.bg-primary .text-white,
+header .org-name,
+header .user-name,
+header h4,
+header h5 {
+  color: #ffffff !important;
+}
+
+/* Subtitle/address in header */
+.organization-header p,
+.organization-header small,
+.organization-header .org-address,
+.header-org-info p,
+.header-org-info small,
+.header-org-info .address,
+#header-organization p,
+#header-organization small,
+.top-header p,
+.top-header small,
+.page-header-top p,
+.page-header-top small,
+.main-header .org-info p,
+.main-header .org-info small,
+.header-content p,
+.header-content small,
+.bg-primary p,
+.bg-primary small,
+header p,
+header small {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* User role/position text */
+.organization-header .role,
+.organization-header .position,
+.header-org-info .role,
+.header-org-info .position,
+.main-header .user-info small,
+.main-header .user-role,
+.header-content .role,
+.header-content .position,
+.bg-primary .role,
+.bg-primary .position,
+header .role,
+header .position {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ============================================
+   ADDITIONAL FIXES
+   ============================================ */
+
+/* ============================================
+   DAFTAR RENCANA STRATEGIS HEADER - DARK SOLID TEXT
+   ============================================ */
+
+/* Force dark text for "Daftar Rencana Strategis" header */
+.card-header h5,
+.card-header h5.mb-0,
+.card-header .mb-0,
+.card-header > div > h5,
+.card-header .d-flex > div > h5,
+.card-header .d-flex h5,
+h5:has(.fa-table),
+h5:has(i.fa-table),
+h5:has(i.fas.fa-table) {
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Icon next to Daftar Rencana Strategis - blue */
+.card-header h5 i.fa-table,
+.card-header h5 i.fas.fa-table,
+.card-header h5 .fa-table {
+  color: #3b82f6 !important;
+  -webkit-text-fill-color: #3b82f6 !important;
+}
+
+/* Ensure form header has proper styling */
+#rs-form-section .card-header {
+  background: #ffffff !important;
+  border-left: 4px solid #3b82f6 !important;
+}
+
+#rs-form-section .card-header h5 {
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+}
+
+/* Table header styling */
+.rencana-strategis-wrapper .card > .card-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.rencana-strategis-wrapper .card > .card-header h5 {
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+}
+
+/* Responsive adjustments for stat cards */
+@media (max-width: 768px) {
+  .rencana-strategis-wrapper .row.g-3.mb-4 > div > .card {
+    max-height: 80px !important;
+  }
+  
+  .rencana-strategis-wrapper .row.g-3.mb-4 .card-body {
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  .rencana-strategis-wrapper .row.g-3.mb-4 .card-body h3 {
+    font-size: 1.5rem !important;
+  }
+  
+  .rencana-strategis-wrapper .row.g-3.mb-4 .card-body p {
+    font-size: 0.75rem !important;
+  }
+  
+  .rencana-strategis-wrapper .row.g-3.mb-4 .flex-shrink-0 {
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+  }
+}

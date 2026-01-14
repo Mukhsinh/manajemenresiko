@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RS Filter & Isolation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/rencana-strategis.css">
+    <link rel="stylesheet" href="/css/rs-strict-isolation.css">
+    <style>
+        body { padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        .test-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4"><i class="fas fa-vial me-2"></i>Test RS Filter & Isolation</h1>
+        
+        <div class="test-section">
+            <h4>1. Test Filter Functionality</h4>
+            <div id="filter-test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h4>2. Test Page Isolation</h4>
+            <div id="isolation-test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h4>3. Live Demo - RS Module</h4>
+            <div id="rencana-strategis" class="page-content active">
+                <div id="rencana-strategis-content">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-3">Loading module...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h4>4. Other Page (Should NOT show RS content)</h4>
+            <div id="dashboard" class="page-content">
+                <div id="dashboard-content">
+                    <p>This is dashboard content. RS content should NOT appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/rs-strict-isolation.js"></script>
+    <script src="/js/rencana-strategis-enhanced-v6.js"></script>
+    
+    <script>
+        // Mock API
+        window.apiCall = async (endpoint) => {
+            if (endpoint.includes('rencana-strategis')) {
+                return [
+                    { id: '1', kode: 'RS-2025-001', nama_rencana: 'Rencana Test 1', status: 'Aktif', periode_mulai: '2025-01-01', periode_selesai: '2025-12-31', deskripsi: 'Deskripsi test', target: 'Target test' },
+                    { id: '2', kode: 'RS-2025-002', nama_rencana: 'Rencana Test 2', status: 'Draft', periode_mulai: '2025-06-01', periode_selesai: '2026-05-31', deskripsi: 'Deskripsi draft', target: 'Target draft' },
+                    { id: '3', kode: 'RS-2024-001', nama_rencana: 'Rencana Lama', status: 'Selesai', periode_mulai: '2024-01-01', periode_selesai: '2024-12-31', deskripsi: 'Sudah selesai', target: 'Tercapai' }
+                ];
+            }
+            if (endpoint.includes('visi-misi')) {
+                return [{ id: 'vm1', misi: '1. Misi pertama\n2. Misi kedua' }];
+            }
+            return [];
+        };
+        
+        // Test functions
+        function addResult(containerId, message, status) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result test-${status}`;
+            div.innerHTML = `<i class="fas fa-${status === 'pass' ? 'check' : status === 'fail' ? 'times' : 'info'}-circle me-2"></i>${message}`;
+            container.appendChild(div);
+        }
+        
+        async function runTests() {
+            // Load module first
+            await RencanaStrategisModule.load();
+            
+            // Test 1: Filter functionality
+            const filterResults = document.getElementById('filter-test-results');
+            
+            // Check if filter elements exist
+            const filterSearch = document.getElementById('rs-filter-search');
+            const filterStatus = document.getElementById('rs-filter-status');
+            const filterTahun = document.getElementById('rs-filter-tahun');
+            
+            if (filterSearch) {
+                addResult('filter-test-results', 'Search filter element exists', 'pass');
+            } else {
+                addResult('filter-test-results', 'Search filter element NOT found', 'fail');
+            }
+            
+            if (filterStatus) {
+                addResult('filter-test-results', 'Status filter element exists', 'pass');
+            } else {
+                addResult('filter-test-results', 'Status filter element NOT found', 'fail');
+            }
+            
+            if (filterTahun) {
+                addResult('filter-test-results', 'Tahun filter element exists', 'pass');
+            } else {
+                addResult('filter-test-results', 'Tahun filter element NOT found', 'fail');
+            }
+            
+            // Test filter functionality
+            if (filterStatus) {
+                filterStatus.value = 'Aktif';
+                RencanaStrategisModule.handleFilterChange('status', 'Aktif');
+                const filteredCount = RencanaStrategisModule.state.filteredData.length;
+                addResult('filter-test-results', `Status filter works: ${filteredCount} items with status "Aktif"`, filteredCount === 1 ? 'pass' : 'info');
+                
+                // Reset
+                RencanaStrategisModule.clearFilters();
+            }
+            
+            // Test 2: Page isolation
+            const rsPage = document.getElementById('rencana-strategis');
+            const dashboardPage = document.getElementById('dashboard');
+            
+            if (rsPage && rsPage.classList.contains('active')) {
+                addResult('isolation-test-results', 'RS page is active', 'pass');
+            } else {
+                addResult('isolation-test-results', 'RS page is NOT active', 'fail');
+            }
+            
+            const rsWrapper = rsPage?.querySelector('.rencana-strategis-wrapper');
+            if (rsWrapper) {
+                addResult('isolation-test-results', 'RS wrapper exists in RS page', 'pass');
+            } else {
+                addResult('isolation-test-results', 'RS wrapper NOT found in RS page', 'fail');
+            }
+            
+            const dashboardRsWrapper = dashboardPage?.querySelector('.rencana-strategis-wrapper');
+            if (!dashboardRsWrapper) {
+                addResult('isolation-test-results', 'No RS wrapper in dashboard page (correct)', 'pass');
+            } else {
+                addResult('isolation-test-results', 'RS wrapper LEAKED to dashboard page!', 'fail');
+            }
+            
+            // Check CSS isolation
+            const computedStyle = window.getComputedStyle(dashboardPage);
+            if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+                addResult('isolation-test-results', 'Dashboard page is hidden (correct)', 'pass');
+            } else {
+                addResult('isolation-test-results', 'Dashboard page visibility: ' + computedStyle.display, 'info');
+            }
+        }
+        
+        // Run tests after page load
+        setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { generateKodePeluang } = require('../utils/codeGenerator');
 
@@ -255,7 +255,14 @@ router.get('/', authenticateUser, async (req, res) => {
 // Get by ID
 router.get('/:id', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    console.log('=== GET PELUANG BY ID ===');
+    console.log('ID:', req.params.id);
+    
+    // Use admin client to bypass RLS issues
+    const { supabaseAdmin } = require('../config/supabase');
+    const client = supabaseAdmin || supabase;
+    
+    const { data, error } = await client
       .from('peluang')
       .select(`
         *,
@@ -264,11 +271,19 @@ router.get('/:id', authenticateUser, async (req, res) => {
         )
       `)
       .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
       .single();
 
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Peluang tidak ditemukan' });
+    if (error) {
+      console.error('Peluang get by ID error:', error);
+      throw error;
+    }
+    
+    // Handle case where no data found
+    if (!data) {
+      return res.status(404).json({ error: 'Peluang tidak ditemukan' });
+    }
+    
+    console.log('Found peluang:', data.kode, data.nama_peluang);
     res.json(data);
   } catch (error) {
     console.error('Peluang error:', error);

@@ -43,7 +43,7 @@ const StrategicMapModule = (() => {
       style.textContent = `
         /* Enhanced Strategic Map Styles */
         .page-header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: #ffffff;
           color: white;
           padding: 2rem 0;
           margin-bottom: 2rem;
@@ -57,12 +57,70 @@ const StrategicMapModule = (() => {
           align-items: center;
         }
         
-        .table-container {
+        /* Scrollable table container */
+        .strategic-map-table-container {
+          max-height: 500px;
+          overflow-y: auto;
           overflow-x: auto;
-          max-width: 100%;
           background: white;
           border-radius: 12px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          border: 1px solid #e2e8f0;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 4px;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar-thumb {
+          background: #94a3b8;
+          border-radius: 4px;
+        }
+        
+        .strategic-map-table-container::-webkit-scrollbar-thumb:hover {
+          background: #64748b;
+        }
+        
+        .strategic-map-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        
+        .strategic-map-table thead {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background: #1e40af;
+        }
+        
+        .strategic-map-table thead th {
+          background: #1e40af;
+          color: white;
+          padding: 14px 16px;
+          text-align: left;
+          font-weight: 600;
+          font-size: 0.875rem;
+          border-bottom: 2px solid #1e3a8a;
+        }
+        
+        .strategic-map-table tbody tr {
+          border-bottom: 1px solid #e2e8f0;
+          transition: background-color 0.15s ease;
+        }
+        
+        .strategic-map-table tbody tr:hover {
+          background-color: #f8fafc;
+        }
+        
+        .strategic-map-table tbody td {
+          padding: 12px 16px;
+          vertical-align: middle;
         }
         
         .strategic-map-card {
@@ -71,35 +129,196 @@ const StrategicMapModule = (() => {
           border: none;
         }
         
-        .badge-status {
-          padding: 6px 12px;
+        /* Solid bright badge colors for perspektif */
+        .badge-perspektif {
+          display: inline-block;
+          padding: 8px 14px;
           border-radius: 6px;
           font-weight: 600;
-          font-size: 0.875rem;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          white-space: nowrap;
         }
         
-        .btn-icon {
-          padding: 6px 8px;
-          margin: 0 2px;
+        .badge-eksternal-stakeholder {
+          background-color: #0ea5e9 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-internal-business-process {
+          background-color: #22c55e !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-learning-growth {
+          background-color: #f59e0b !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-financial {
+          background-color: #ef4444 !important;
+          color: #ffffff !important;
+        }
+        
+        .badge-default {
+          background-color: #6b7280 !important;
+          color: #ffffff !important;
+        }
+        
+        /* Action buttons */
+        .btn-action {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          padding: 0;
+          margin: 0 3px;
           border-radius: 6px;
           border: none;
           cursor: pointer;
           transition: all 0.2s ease;
+          font-size: 14px;
         }
         
-        .btn-edit {
-          background-color: #17a2b8;
+        .btn-action-edit {
+          background-color: #0ea5e9;
           color: white;
         }
         
-        .btn-delete {
-          background-color: #dc3545;
-          color: white;
-        }
-        
-        .btn-icon:hover {
+        .btn-action-edit:hover {
+          background-color: #0284c7;
           transform: scale(1.1);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+        }
+        
+        .btn-action-delete {
+          background-color: #ef4444;
+          color: white;
+        }
+        
+        .btn-action-delete:hover {
+          background-color: #dc2626;
+          transform: scale(1.1);
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+        
+        /* Modal styles */
+        .sm-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+        }
+        
+        .sm-modal-content {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 450px;
+          width: 90%;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sm-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sm-modal-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #1e293b;
+          margin: 0;
+        }
+        
+        .sm-modal-close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: #64748b;
+          padding: 0;
+          line-height: 1;
+        }
+        
+        .sm-modal-close:hover {
+          color: #1e293b;
+        }
+        
+        .sm-form-group {
+          margin-bottom: 16px;
+        }
+        
+        .sm-form-label {
+          display: block;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 6px;
+          font-size: 0.875rem;
+        }
+        
+        .sm-form-input {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          transition: border-color 0.15s ease;
+        }
+        
+        .sm-form-input:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .sm-modal-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid #e2e8f0;
+        }
+        
+        .sm-btn {
+          padding: 10px 20px;
+          border-radius: 6px;
+          font-weight: 500;
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          border: none;
+        }
+        
+        .sm-btn-secondary {
+          background: #f1f5f9;
+          color: #475569;
+        }
+        
+        .sm-btn-secondary:hover {
+          background: #e2e8f0;
+        }
+        
+        .sm-btn-primary {
+          background: #3b82f6;
+          color: white;
+        }
+        
+        .sm-btn-primary:hover {
+          background: #2563eb;
         }
       `;
       document.head.appendChild(style);
@@ -135,19 +354,19 @@ const StrategicMapModule = (() => {
           <div id="strategic-map-visualization" style="position: relative; min-height: 600px; border: 1px solid #dee2e6; border-radius: 8px; padding: 2rem; background: #f8f9fa;">
             ${renderVisualization()}
           </div>
-          <div class="table-container" style="margin-top: 2rem;">
-            <table class="table">
+          <div class="strategic-map-table-container" style="margin-top: 2rem;">
+            <table class="strategic-map-table">
               <thead>
                 <tr>
-                  <th>Perspektif</th>
+                  <th style="width: 200px;">Perspektif</th>
                   <th>Sasaran Strategi</th>
-                  <th>Posisi X</th>
-                  <th>Posisi Y</th>
-                  <th>Aksi</th>
+                  <th style="width: 100px;">Posisi X</th>
+                  <th style="width: 100px;">Posisi Y</th>
+                  <th style="width: 120px;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                ${state.data.length === 0 ? '<tr><td colspan="5" class="text-center">Tidak ada data. Klik "Generate Map Otomatis" untuk membuat strategic map dari sasaran strategi yang tersedia.</td></tr>' : ''}
+                ${state.data.length === 0 ? '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">Tidak ada data. Klik "Generate Map Otomatis" untuk membuat strategic map dari sasaran strategi yang tersedia.</td></tr>' : ''}
                 ${(() => {
                   const seenIds = new Set();
                   return state.data.filter(item => {
@@ -158,15 +377,15 @@ const StrategicMapModule = (() => {
                     return true;
                   }).map(item => `
                   <tr>
-                    <td><span class="badge-status badge-${getPerspektifColor(item.perspektif)}">${item.perspektif}</span></td>
+                    <td><span class="badge-perspektif ${getPerspektifBadgeClass(item.perspektif)}">${item.perspektif}</span></td>
                     <td>${item.sasaran_strategi?.sasaran || '-'}</td>
-                    <td>${item.posisi_x}</td>
-                    <td>${item.posisi_y}</td>
-                    <td>
-                      <button class="btn btn-edit btn-sm" onclick="StrategicMapModule.edit('${item.id}')">
+                    <td style="text-align: center; font-weight: 500;">${item.posisi_x}</td>
+                    <td style="text-align: center; font-weight: 500;">${item.posisi_y}</td>
+                    <td style="text-align: center;">
+                      <button class="btn-action btn-action-edit" onclick="StrategicMapModule.openEditModal('${item.id}')" title="Edit">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button class="btn btn-delete btn-sm" onclick="StrategicMapModule.delete('${item.id}')">
+                      <button class="btn-action btn-action-delete" onclick="StrategicMapModule.delete('${item.id}')" title="Hapus">
                         <i class="fas fa-trash"></i>
                       </button>
                     </td>
@@ -258,31 +477,151 @@ const StrategicMapModule = (() => {
   }
 
   function getPerspektifColor(perspektif) {
+    // Return CSS class for badge styling
     const colorMap = {
-      'Eksternal Stakeholder': 'normal',
-      'Internal Business Process': 'aman',
-      'Learning & Growth': 'hati-hati',
-      'Financial': 'kritis',
-      'ES': 'normal',
-      'IBP': 'aman',
-      'LG': 'hati-hati',
-      'Fin': 'kritis'
+      'Eksternal Stakeholder': 'eksternal',
+      'Internal Business Process': 'internal',
+      'Learning & Growth': 'learning',
+      'Financial': 'financial',
+      'ES': 'eksternal',
+      'IBP': 'internal',
+      'LG': 'learning',
+      'Fin': 'financial'
     };
     return colorMap[perspektif] || 'secondary';
   }
 
+  function getPerspektifBadgeStyle(perspektif) {
+    // Return inline style for solid bright colors
+    const styleMap = {
+      'Eksternal Stakeholder': 'background: #0ea5e9; color: #ffffff;',
+      'Internal Business Process': 'background: #22c55e; color: #ffffff;',
+      'Learning & Growth': 'background: #f59e0b; color: #ffffff;',
+      'Financial': 'background: #ef4444; color: #ffffff;',
+      'ES': 'background: #0ea5e9; color: #ffffff;',
+      'IBP': 'background: #22c55e; color: #ffffff;',
+      'LG': 'background: #f59e0b; color: #ffffff;',
+      'Fin': 'background: #ef4444; color: #ffffff;'
+    };
+    return styleMap[perspektif] || 'background: #6b7280; color: #ffffff;';
+  }
+
   function getPerspektifColorHex(perspektif) {
     const colorMap = {
-      'Eksternal Stakeholder': '#3498db',
-      'Internal Business Process': '#27ae60',
-      'Learning & Growth': '#f39c12',
-      'Financial': '#e74c3c',
-      'ES': '#3498db',
-      'IBP': '#27ae60',
-      'LG': '#f39c12',
-      'Fin': '#e74c3c'
+      'Eksternal Stakeholder': '#0ea5e9',
+      'Internal Business Process': '#22c55e',
+      'Learning & Growth': '#f59e0b',
+      'Financial': '#ef4444',
+      'ES': '#0ea5e9',
+      'IBP': '#22c55e',
+      'LG': '#f59e0b',
+      'Fin': '#ef4444'
     };
-    return colorMap[perspektif] || '#95a5a6';
+    return colorMap[perspektif] || '#6b7280';
+  }
+
+  function getPerspektifBadgeClass(perspektif) {
+    const classMap = {
+      'Eksternal Stakeholder': 'badge-eksternal-stakeholder',
+      'Internal Business Process': 'badge-internal-business-process',
+      'Learning & Growth': 'badge-learning-growth',
+      'Financial': 'badge-financial',
+      'ES': 'badge-eksternal-stakeholder',
+      'IBP': 'badge-internal-business-process',
+      'LG': 'badge-learning-growth',
+      'Fin': 'badge-financial'
+    };
+    return classMap[perspektif] || 'badge-default';
+  }
+
+  function openEditModal(id) {
+    const item = state.data.find(d => d.id === id);
+    if (!item) {
+      console.error('Item not found:', id);
+      alert('Data tidak ditemukan');
+      return;
+    }
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('sm-edit-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'sm-edit-modal';
+    modal.className = 'sm-modal-overlay';
+    modal.innerHTML = `
+      <div class="sm-modal-content">
+        <div class="sm-modal-header">
+          <h3 class="sm-modal-title">Edit Posisi Strategic Map</h3>
+          <button class="sm-modal-close" onclick="document.getElementById('sm-edit-modal').remove()">&times;</button>
+        </div>
+        <form id="sm-edit-form">
+          <div class="sm-form-group">
+            <label class="sm-form-label">Perspektif</label>
+            <input type="text" class="sm-form-input" value="${item.perspektif}" disabled style="background: #f1f5f9;">
+          </div>
+          <div class="sm-form-group">
+            <label class="sm-form-label">Sasaran Strategi</label>
+            <input type="text" class="sm-form-input" value="${item.sasaran_strategi?.sasaran || '-'}" disabled style="background: #f1f5f9;">
+          </div>
+          <div class="sm-form-group">
+            <label class="sm-form-label">Posisi X</label>
+            <input type="number" class="sm-form-input" id="sm-edit-x" value="${item.posisi_x}" step="1" required>
+          </div>
+          <div class="sm-form-group">
+            <label class="sm-form-label">Posisi Y</label>
+            <input type="number" class="sm-form-input" id="sm-edit-y" value="${item.posisi_y}" step="1" required>
+          </div>
+          <div class="sm-form-group">
+            <label class="sm-form-label">Warna</label>
+            <input type="color" class="sm-form-input" id="sm-edit-warna" value="${item.warna || '#3498db'}" style="height: 45px; padding: 4px;">
+          </div>
+          <div class="sm-modal-actions">
+            <button type="button" class="sm-btn sm-btn-secondary" onclick="document.getElementById('sm-edit-modal').remove()">Batal</button>
+            <button type="submit" class="sm-btn sm-btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+
+    // Add form submit handler
+    document.getElementById('sm-edit-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      await saveEditPosition(id);
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+
+  async function saveEditPosition(id) {
+    try {
+      const data = {
+        posisi_x: parseFloat(document.getElementById('sm-edit-x').value),
+        posisi_y: parseFloat(document.getElementById('sm-edit-y').value),
+        warna: document.getElementById('sm-edit-warna').value
+      };
+
+      await api()(`/api/strategic-map/${id}`, { method: 'PUT', body: data });
+      
+      // Remove modal
+      const modal = document.getElementById('sm-edit-modal');
+      if (modal) modal.remove();
+      
+      await load();
+      alert('Posisi berhasil diupdate');
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Error: ' + (error.message || 'Gagal menyimpan perubahan'));
+    }
   }
 
   async function generate() {
@@ -611,7 +950,9 @@ const StrategicMapModule = (() => {
     handleDragStart,
     handleDrop,
     edit,
+    openEditModal,
     savePosition,
+    saveEditPosition,
     delete: deleteItem,
     toggleDownloadMenu,
     downloadExcel,

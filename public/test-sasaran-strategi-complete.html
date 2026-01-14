@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Sasaran Strategi - Complete Fix</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/sasaran-strategi-enhanced.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; min-height: 100vh; }
+    .test-header { background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); color: #fff; padding: 20px; }
+    .test-header h1 { font-size: 24px; margin-bottom: 8px; }
+    .test-header p { opacity: 0.9; font-size: 14px; }
+    .test-info { background: #fff; padding: 20px; margin: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .test-info h3 { color: #1e3a5f; margin-bottom: 12px; }
+    .test-info ul { margin-left: 20px; }
+    .test-info li { margin-bottom: 8px; color: #555; }
+    .test-info .check { color: #10B981; }
+    #main-content { padding: 20px; }
+    .status-bar { background: #fff; padding: 12px 20px; margin: 0 20px; border-radius: 8px; display: flex; gap: 20px; align-items: center; }
+    .status-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .status-dot.success { background: #10B981; }
+    .status-dot.warning { background: #F59E0B; }
+    .status-dot.error { background: #EF4444; }
+  </style>
+</head>
+<body>
+  <div class="test-header">
+    <h1><i class="fas fa-bullseye"></i> Test Sasaran Strategi - Complete Fix</h1>
+    <p>Verifikasi scrollable table, edit/delete buttons, dan badge colors</p>
+  </div>
+  
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="status-dot" id="status-scroll"></span>
+      <span>Scrollable Table</span>
+    </div>
+    <div class="status-item">
+      <span class="status-dot" id="status-edit"></span>
+      <span>Edit Button</span>
+    </div>
+    <div class="status-item">
+      <span class="status-dot" id="status-delete"></span>
+      <span>Delete Button</span>
+    </div>
+    <div class="status-item">
+      <span class="status-dot" id="status-badge"></span>
+      <span>Badge Colors</span>
+    </div>
+  </div>
+  
+  <div class="test-info">
+    <h3><i class="fas fa-clipboard-check"></i> Fitur yang Diperbaiki:</h3>
+    <ul>
+      <li><span class="check">✓</span> <strong>Scrollable Table:</strong> Tabel dapat di-scroll vertikal dan horizontal</li>
+      <li><span class="check">✓</span> <strong>Sticky Header:</strong> Header tabel tetap terlihat saat scroll</li>
+      <li><span class="check">✓</span> <strong>Edit Button:</strong> Tombol edit membuka modal dengan data yang benar</li>
+      <li><span class="check">✓</span> <strong>Delete Button:</strong> Tombol delete menampilkan konfirmasi dan menghapus item</li>
+      <li><span class="check">✓</span> <strong>Badge Perspektif:</strong> Warna cerah solid (Green, Blue, Purple, Orange)</li>
+      <li><span class="check">✓</span> <strong>Badge TOWS:</strong> Warna cerah untuk SO, WO, ST, WT</li>
+      <li><span class="check">✓</span> <strong>Fixed Column Width:</strong> Kolom perspektif memiliki lebar tetap untuk mencegah overflow</li>
+    </ul>
+  </div>
+  
+  <div id="main-content">
+    <div id="sasaran-strategi-content">
+      <!-- Content will be loaded here -->
+      <p style="text-align: center; padding: 40px; color: #666;">
+        <i class="fas fa-spinner fa-spin"></i> Loading Sasaran Strategi...
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Mock API for testing
+    const mockData = {
+      sasaran: [
+        { id: '1', sasaran: 'Meningkatkan kepuasan stakeholder eksternal melalui pelayanan prima dan responsif', perspektif: 'ES', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'SO', strategi: 'Memanfaatkan teknologi digital untuk meningkatkan kualitas pelayanan' } },
+        { id: '2', sasaran: 'Mengoptimalkan proses bisnis internal untuk efisiensi operasional', perspektif: 'IBP', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'WO', strategi: 'Mengatasi keterbatasan SDM dengan sistem otomasi' } },
+        { id: '3', sasaran: 'Meningkatkan kompetensi dan kapabilitas SDM melalui program pelatihan berkelanjutan', perspektif: 'LG', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'ST', strategi: 'Menggunakan kekuatan internal untuk menghadapi ancaman eksternal' } },
+        { id: '4', sasaran: 'Mencapai keseimbangan keuangan yang berkelanjutan', perspektif: 'Fin', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'WT', strategi: 'Meminimalkan kelemahan dan menghindari ancaman' } },
+        { id: '5', sasaran: 'Meningkatkan kualitas layanan kesehatan berbasis bukti', perspektif: 'ES', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'SO', strategi: 'Memanfaatkan peluang pasar dengan kekuatan organisasi' } },
+        { id: '6', sasaran: 'Mengembangkan sistem informasi terintegrasi', perspektif: 'IBP', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: null },
+        { id: '7', sasaran: 'Membangun budaya inovasi dan pembelajaran organisasi', perspektif: 'LG', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'WO', strategi: 'Memanfaatkan peluang untuk mengatasi kelemahan' } },
+        { id: '8', sasaran: 'Meningkatkan pendapatan dari layanan unggulan', perspektif: 'Fin', rencana_strategis: { nama_rencana: 'Renstra 2024-2028' }, swot_tows_strategi: { tipe_strategi: 'SO', strategi: 'Strategi agresif untuk pertumbuhan' } },
+      ],
+      rencana: [
+        { id: 'rs1', nama_rencana: 'Renstra 2024-2028', kode: 'RS-001' },
+        { id: 'rs2', nama_rencana: 'Renstra 2020-2024', kode: 'RS-002' }
+      ],
+      tows: [
+        { id: 't1', tipe_strategi: 'SO', strategi: 'Memanfaatkan teknologi digital' },
+        { id: 't2', tipe_strategi: 'WO', strategi: 'Mengatasi keterbatasan SDM' },
+        { id: 't3', tipe_strategi: 'ST', strategi: 'Menghadapi ancaman eksternal' },
+        { id: 't4', tipe_strategi: 'WT', strategi: 'Meminimalkan kelemahan' }
+      ]
+    };
+
+    // Mock API function
+    window.apiCall = async (url, options = {}) => {
+      console.log('API Call:', url, options);
+      await new Promise(r => setTimeout(r, 300)); // Simulate network delay
+      
+      if (url.includes('/api/sasaran-strategi') && !url.includes('/')) {
+        return mockData.sasaran;
+      }
+      if (url.includes('/api/rencana-strategis')) {
+        return mockData.rencana;
+      }
+      if (url.includes('/api/matriks-tows')) {
+        return mockData.tows;
+      }
+      if (options.method === 'DELETE') {
+        const id = url.split('/').pop();
+        mockData.sasaran = mockData.sasaran.filter(s => s.id !== id);
+        return { success: true };
+      }
+      if (options.method === 'POST' || options.method === 'PUT') {
+        return { success: true, data: JSON.parse(options.body) };
+      }
+      return [];
+    };
+
+    // Update status indicators
+    function updateStatus(id, status) {
+      const dot = document.getElementById(id);
+      if (dot) {
+        dot.className = 'status-dot ' + status;
+      }
+    }
+
+    // Test functions
+    function runTests() {
+      setTimeout(() => {
+        // Check scrollable table
+        const wrapper = document.querySelector('.ss-table-wrapper');
+        if (wrapper && (wrapper.scrollHeight > wrapper.clientHeight || wrapper.scrollWidth > wrapper.clientWidth)) {
+          updateStatus('status-scroll', 'success');
+        } else {
+          updateStatus('status-scroll', 'warning');
+        }
+
+        // Check edit buttons
+        const editBtns = document.querySelectorAll('.ss-btn-edit');
+        if (editBtns.length > 0) {
+          updateStatus('status-edit', 'success');
+        } else {
+          updateStatus('status-edit', 'error');
+        }
+
+        // Check delete buttons
+        const deleteBtns = document.querySelectorAll('.ss-btn-delete');
+        if (deleteBtns.length > 0) {
+          updateStatus('status-delete', 'success');
+        } else {
+          updateStatus('status-delete', 'error');
+        }
+
+        // Check badges
+        const badges = document.querySelectorAll('.ss-badge');
+        if (badges.length > 0) {
+          updateStatus('status-badge', 'success');
+        } else {
+          updateStatus('status-badge', 'error');
+        }
+      }, 1000);
+    }
+  </script>
+  <script src="/js/sasaran-strategi.js"></script>
+  <script>
+    // Initialize module
+    document.addEventListener('DOMContentLoaded', () => {
+      SasaranStrategiModule.load().then(() => {
+        runTests();
+      });
+    });
+  </script>
+</body>
+</html>

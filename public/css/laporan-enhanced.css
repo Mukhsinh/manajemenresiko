@@ -1,0 +1,84 @@
+/* Laporan Page Enhanced Styles */
+
+/* Report Cards Hover Effect */
+.report-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Button Styles */
+#laporan-content .btn {
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#laporan-content .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#laporan-content .btn-success {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  border: none;
+}
+
+#laporan-content .btn-danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  border: none;
+}
+
+#laporan-content .btn-info {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  color: white;
+}
+
+/* Table Styles */
+#laporan-content .table {
+  margin-bottom: 0;
+}
+
+#laporan-content .table thead th {
+  border: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+#laporan-content .table tbody td {
+  vertical-align: middle;
+  border-color: #e9ecef;
+}
+
+/* Animation */
+@keyframes slideIn {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #laporan-content .report-card {
+    margin-bottom: 1rem;
+  }
+  
+  #laporan-content .btn-sm {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Page Header Enhancement */
+#laporan .page-header {
+  margin-bottom: 1.5rem;
+}
+
+#laporan .page-title {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+#laporan .page-subtitle {
+  color: #7f8c8d;
+}

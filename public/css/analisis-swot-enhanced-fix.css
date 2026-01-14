@@ -1,0 +1,547 @@
+/* Analisis SWOT Enhanced Fix - Badge Colors, Table Scroll, Button Fix */
+
+/* ============================================
+   1. BADGE KATEGORI - WARNA CERAH DAN SOLID
+   ============================================ */
+
+/* Reset semua badge styles */
+.badge-kategori,
+.badge-strength,
+.badge-weakness,
+.badge-opportunity,
+.badge-threat,
+span[class*="badge-"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px 14px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  border-radius: 6px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+  min-width: 90px !important;
+}
+
+/* STRENGTH - Hijau Cerah Solid */
+.badge-strength,
+.badge-kategori.badge-strength,
+span.badge-strength,
+.swot-table .badge-strength,
+#swotTableBody .badge-strength {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* WEAKNESS - Merah Cerah Solid */
+.badge-weakness,
+.badge-kategori.badge-weakness,
+span.badge-weakness,
+.swot-table .badge-weakness,
+#swotTableBody .badge-weakness {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* OPPORTUNITY - Biru Cerah Solid */
+.badge-opportunity,
+.badge-kategori.badge-opportunity,
+span.badge-opportunity,
+.swot-table .badge-opportunity,
+#swotTableBody .badge-opportunity {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* THREAT - Orange/Amber Cerah Solid */
+.badge-threat,
+.badge-kategori.badge-threat,
+span.badge-threat,
+.swot-table .badge-threat,
+#swotTableBody .badge-threat {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Kolom Kategori */
+.kategori-column,
+td.kategori-column,
+th.kategori-column {
+  text-align: center !important;
+  vertical-align: middle !important;
+  width: 120px !important;
+  min-width: 110px !important;
+  max-width: 130px !important;
+  padding: 10px 8px !important;
+}
+
+/* ============================================
+   2. TABLE SCROLL - PERBAIKAN SCROLL VERTIKAL
+   ============================================ */
+
+/* Container utama halaman */
+#analisis-swot-content {
+  height: calc(100vh - 120px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 16px !important;
+}
+
+/* Card container untuk tabel */
+.card.border-0,
+.table-card,
+.swot-table-container {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  margin-bottom: 20px !important;
+}
+
+/* Table container dengan scroll */
+.table-container,
+.table-responsive,
+.swot-table-wrapper {
+  max-height: calc(100vh - 380px) !important;
+  min-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  position: relative !important;
+  background: #ffffff !important;
+}
+
+/* Scrollbar styling */
+.table-container::-webkit-scrollbar,
+#analisis-swot-content::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.table-container::-webkit-scrollbar-track,
+#analisis-swot-content::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+#analisis-swot-content::-webkit-scrollbar-thumb {
+  background: #94a3b8 !important;
+  border-radius: 4px !important;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+#analisis-swot-content::-webkit-scrollbar-thumb:hover {
+  background: #64748b !important;
+}
+
+/* Table styling */
+.swot-table,
+#swotTable {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  table-layout: fixed !important;
+}
+
+/* Table header sticky */
+.swot-table thead,
+#swotTable thead {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}
+
+.swot-table thead th,
+#swotTable thead th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  padding: 12px 10px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  white-space: nowrap !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}
+
+/* Table body rows */
+.swot-table tbody tr,
+#swotTable tbody tr {
+  transition: background-color 0.15s ease !important;
+}
+
+.swot-table tbody tr:hover,
+#swotTable tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+.swot-table tbody tr:nth-child(even),
+#swotTable tbody tr:nth-child(even) {
+  background-color: #fafafa !important;
+}
+
+.swot-table tbody td,
+#swotTable tbody td {
+  padding: 12px 10px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+}
+
+/* Column widths */
+.unit-kerja-column { width: 12% !important; min-width: 100px !important; }
+.rencana-strategis-column { width: 18% !important; min-width: 150px !important; }
+.objek-analisis-column { width: 28% !important; min-width: 200px !important; }
+.bobot-column { width: 7% !important; min-width: 60px !important; text-align: center !important; }
+.rank-column { width: 6% !important; min-width: 50px !important; text-align: center !important; }
+.score-column { width: 7% !important; min-width: 60px !important; text-align: center !important; }
+.tahun-column { width: 7% !important; min-width: 60px !important; text-align: center !important; }
+.aksi-column { width: 10% !important; min-width: 100px !important; text-align: center !important; }
+
+/* ============================================
+   3. TOMBOL EDIT DAN HAPUS - PERBAIKAN FUNGSI
+   ============================================ */
+
+/* Action buttons container */
+.aksi-column {
+  white-space: nowrap !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Button icon base styles */
+.btn-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  margin: 0 3px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.btn-icon:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+}
+
+.btn-icon:active {
+  transform: scale(0.95) !important;
+}
+
+/* Edit button - Cyan/Teal */
+.btn-icon.btn-edit,
+.btn-edit,
+button.btn-edit {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3) !important;
+}
+
+.btn-icon.btn-edit:hover,
+.btn-edit:hover,
+button.btn-edit:hover {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(6, 182, 212, 0.4) !important;
+}
+
+/* Delete button - Red */
+.btn-icon.btn-delete,
+.btn-delete,
+button.btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+}
+
+.btn-icon.btn-delete:hover,
+.btn-delete:hover,
+button.btn-delete:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Icon inside buttons */
+.btn-icon i,
+.btn-edit i,
+.btn-delete i {
+  font-size: 13px !important;
+  pointer-events: none !important;
+}
+
+/* ============================================
+   4. MODAL STYLES - UNTUK EDIT FORM
+   ============================================ */
+
+/* Modal overlay */
+.modal {
+  display: none !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+.modal.active {
+  display: flex !important;
+}
+
+/* Modal content */
+.modal-content {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  animation: modalSlideIn 0.3s ease !important;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal header */
+.modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px 24px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.modal-title {
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+.modal-close {
+  background: none !important;
+  border: none !important;
+  font-size: 28px !important;
+  cursor: pointer !important;
+  color: #64748b !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal-close:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+}
+
+/* Modal footer */
+.modal-footer {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+/* Form controls in modal */
+.modal .form-control,
+.modal .form-select {
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.modal .form-control:focus,
+.modal .form-select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+  outline: none !important;
+}
+
+.modal .form-label {
+  font-weight: 500 !important;
+  color: #374151 !important;
+  margin-bottom: 6px !important;
+  font-size: 13px !important;
+}
+
+/* Modal buttons */
+.modal .btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  padding: 10px 20px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal .btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+}
+
+.modal .btn-secondary {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  padding: 10px 20px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal .btn-secondary:hover {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+/* ============================================
+   5. SUMMARY CARDS - WHITE THEME
+   ============================================ */
+
+.summary-cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+}
+
+.summary-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 16px 18px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.2s ease !important;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.summary-card.strength { border-left: 4px solid #22c55e !important; }
+.summary-card.weakness { border-left: 4px solid #ef4444 !important; }
+.summary-card.opportunity { border-left: 4px solid #3b82f6 !important; }
+.summary-card.threat { border-left: 4px solid #f59e0b !important; }
+
+/* ============================================
+   6. FILTER SECTION
+   ============================================ */
+
+.filter-section {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.filter-section .form-select,
+.filter-section .form-control {
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+
+.filter-section .form-label {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #64748b !important;
+  margin-bottom: 4px !important;
+}
+
+/* ============================================
+   7. RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .table-container {
+    max-height: calc(100vh - 420px) !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .table-container {
+    max-height: calc(100vh - 450px) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .btn-icon {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  
+  .badge-kategori {
+    padding: 4px 10px !important;
+    font-size: 10px !important;
+    min-width: 80px !important;
+  }
+}

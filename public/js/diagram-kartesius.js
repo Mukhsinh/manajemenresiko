@@ -3,44 +3,123 @@ const DiagramKartesiusModule = (() => {
   const state = {
     data: [],
     unitKerja: [],
+    availableYears: [],
     filters: {
       unit_kerja_id: '',
       jenis: '',
       kategori: '',
-      tahun: new Date().getFullYear()
+      tahun: null // Will be auto-detected
     },
     chart: null
   };
 
   const api = () => (window.app ? window.app.apiCall : window.apiCall);
 
+  // Generate year options for dropdown (5 years back, current year, 5 years forward)
+  function generateYearOptions(selectedYear) {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 5;
+    const endYear = currentYear + 5;
+    let options = '';
+    const selectedYearInt = parseInt(selectedYear) || currentYear;
+    
+    for (let year = endYear; year >= startYear; year--) {
+      const selected = year === selectedYearInt ? 'selected' : '';
+      // Mark years with data
+      const hasData = state.availableYears.includes(year);
+      const dataIndicator = hasData ? ' ✓' : '';
+      options += `<option value="${year}" ${selected}>${year}${dataIndicator}</option>`;
+    }
+    return options;
+  }
+
   async function load() {
+    // First, try to get available years from existing data
+    await detectAvailableYear();
     await fetchInitialData();
     render();
+  }
+  
+  async function detectAvailableYear() {
+    try {
+      // Fetch all diagram data without year filter to detect available years
+      const allData = await api()('/api/diagram-kartesius');
+      if (allData && allData.length > 0) {
+        // Get all unique years with data
+        state.availableYears = [...new Set(allData.map(d => d.tahun))].sort((a, b) => b - a);
+        if (state.availableYears.length > 0 && !state.filters.tahun) {
+          state.filters.tahun = state.availableYears[0];
+          console.log('📅 Auto-detected year with data:', state.filters.tahun);
+          console.log('📅 Available years:', state.availableYears);
+        }
+      } else {
+        // No data, default to current year
+        state.filters.tahun = state.filters.tahun || new Date().getFullYear();
+      }
+    } catch (error) {
+      console.log('Could not auto-detect year, using current year');
+      state.filters.tahun = state.filters.tahun || new Date().getFullYear();
+    }
   }
 
   async function fetchInitialData() {
     try {
+      // Build query params, only include non-empty values
+      const params = new URLSearchParams();
+      if (state.filters.unit_kerja_id) params.append('unit_kerja_id', state.filters.unit_kerja_id);
+      if (state.filters.jenis) params.append('jenis', state.filters.jenis);
+      if (state.filters.kategori) params.append('kategori', state.filters.kategori);
+      if (state.filters.tahun) params.append('tahun', state.filters.tahun);
+      
+      console.log('📊 Fetching diagram data with filters:', Object.fromEntries(params));
+      
       const [diagram, unitKerja] = await Promise.all([
-        api()('/api/diagram-kartesius?' + new URLSearchParams(state.filters)),
+        api()('/api/diagram-kartesius?' + params.toString()),
         api()('/api/master-data/work-units')
       ]);
+      
       state.data = diagram || [];
       state.unitKerja = unitKerja || [];
+      
+      // Normalize jenis and kategori values for consistent display
+      state.unitKerja = state.unitKerja.map(u => ({
+        ...u,
+        jenis: u.jenis ? capitalizeWords(u.jenis) : u.jenis,
+        kategori: u.kategori ? capitalizeWords(u.kategori) : u.kategori
+      }));
+      
+      console.log('📊 Loaded data:', state.data.length, 'diagrams,', state.unitKerja.length, 'units');
     } catch (error) {
       console.error('Error fetching data:', error);
       state.data = [];
       state.unitKerja = [];
     }
   }
+  
+  // Helper function to capitalize words
+  function capitalizeWords(str) {
+    if (!str) return str;
+    return str.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  }
 
   function render() {
     const container = document.getElementById('diagram-kartesius-content');
     if (!container) return;
 
-    // Get unique jenis and kategori options
-    const jenisOptions = [...new Set(state.unitKerja.map(u => u.jenis).filter(Boolean))];
-    const kategoriOptions = [...new Set(state.unitKerja.map(u => u.kategori).filter(Boolean))];
+    // Get unique jenis options from unit kerja data (already capitalized)
+    const jenisOptions = [...new Set(state.unitKerja.map(u => u.jenis).filter(Boolean))].sort();
+    
+    // Get unique kategori options from unit kerja data
+    const kategoriOptions = [...new Set(state.unitKerja.map(u => u.kategori).filter(Boolean))].sort();
+    
+    console.log('🔧 Filter options - Jenis:', jenisOptions, 'Kategori:', kategoriOptions);
+    console.log('🔧 Current filter state:', state.filters);
+
+    // Get current filter values (capitalize for display matching)
+    const currentJenis = state.filters.jenis ? capitalizeWords(state.filters.jenis) : '';
+    const currentKategori = state.filters.kategori ? capitalizeWords(state.filters.kategori) : '';
 
     container.innerHTML = `
       <div class="card">
@@ -61,59 +140,75 @@ const DiagramKartesiusModule = (() => {
           <div class="filter-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
             <div class="form-group">
               <label>Unit Kerja</label>
-              <select class="form-control" id="filter-unit-kerja" onchange="DiagramKartesiusModule.applyFilter()">
+              <select class="form-control" id="filter-unit-kerja">
                 <option value="">Semua Unit Kerja</option>
-                ${state.unitKerja.map(u => `<option value="${u.id}" ${state.filters.unit_kerja_id === u.id ? 'selected' : ''}>${u.code} - ${u.name}</option>`).join('')}
+                ${state.unitKerja.map(u => `<option value="${u.id}" ${state.filters.unit_kerja_id === u.id ? 'selected' : ''}>${u.code || ''} - ${u.name}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
               <label>Jenis</label>
-              <select class="form-control" id="filter-jenis" onchange="DiagramKartesiusModule.applyFilter()">
+              <select class="form-control" id="filter-jenis">
                 <option value="">Semua Jenis</option>
-                ${jenisOptions.map(j => `<option value="${j}" ${state.filters.jenis === j ? 'selected' : ''}>${j}</option>`).join('')}
+                ${jenisOptions.map(j => {
+                  const selected = currentJenis === j ? 'selected' : '';
+                  return `<option value="${j}" ${selected}>${j}</option>`;
+                }).join('')}
               </select>
             </div>
             <div class="form-group">
-              <label>Kategori</label>
-              <select class="form-control" id="filter-kategori" onchange="DiagramKartesiusModule.applyFilter()">
-                <option value="">Semua Kategori</option>
-                ${kategoriOptions.map(k => `<option value="${k}" ${state.filters.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+              <label>Kategori (Perspektif)</label>
+              <select class="form-control" id="filter-kategori">
+                <option value="">Semua Perspektif</option>
+                ${kategoriOptions.map(k => {
+                  const selected = currentKategori === k ? 'selected' : '';
+                  return `<option value="${k}" ${selected}>${k}</option>`;
+                }).join('')}
               </select>
             </div>
             <div class="form-group">
               <label>Tahun <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" id="filter-tahun" value="${state.filters.tahun}" onchange="DiagramKartesiusModule.applyFilter()">
+              <select class="form-control" id="filter-tahun">
+                ${generateYearOptions(state.filters.tahun)}
+              </select>
               <small class="form-text text-muted">
-                <strong>🚀 Sistem akan menghitung diagram untuk unit kerja yang dipilih secara otomatis!</strong>
+                <i class="fas fa-info-circle"></i> Sistem akan menghitung diagram untuk unit kerja yang dipilih secara otomatis!
               </small>
             </div>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <button class="btn btn-primary" onclick="DiagramKartesiusModule.applyFilter()">
+              <i class="fas fa-filter"></i> Terapkan Filter
+            </button>
+            <button class="btn btn-secondary" onclick="DiagramKartesiusModule.resetFilter()">
+              <i class="fas fa-undo"></i> Reset Filter
+            </button>
           </div>
           ${state.data.length > 0 ? `
             <div class="alert alert-success" style="margin-bottom: 1rem;">
               <h5><i class="fas fa-info-circle"></i> Interpretasi Kuadran SWOT</h5>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
-                <div><span class="badge-status badge-aman">KUADRAN I</span> <strong>Growth:</strong> Kekuatan + Peluang</div>
-                <div><span class="badge-status badge-normal">KUADRAN II</span> <strong>Stability:</strong> Kelemahan + Peluang</div>
-                <div><span class="badge-status badge-kritis">KUADRAN III</span> <strong>Survival:</strong> Kelemahan + Ancaman</div>
-                <div><span class="badge-status badge-hati-hati">KUADRAN IV</span> <strong>Diversification:</strong> Kekuatan + Ancaman</div>
+                <div><span class="badge-kuadran badge-kuadran-i">KUADRAN I</span> <strong>Growth:</strong> Kekuatan + Peluang</div>
+                <div><span class="badge-kuadran badge-kuadran-ii">KUADRAN II</span> <strong>Stability:</strong> Kelemahan + Peluang</div>
+                <div><span class="badge-kuadran badge-kuadran-iii">KUADRAN III</span> <strong>Survival:</strong> Kelemahan + Ancaman</div>
+                <div><span class="badge-kuadran badge-kuadran-iv">KUADRAN IV</span> <strong>Diversification:</strong> Kekuatan + Ancaman</div>
               </div>
             </div>
           ` : ''}
-          <div id="diagram-chart-container" style="position: relative; height: 700px; margin-bottom: 2rem;">
+          <div id="diagram-chart-container" style="position: relative; height: 600px; margin-bottom: 2rem;">
             <canvas id="diagram-chart"></canvas>
           </div>
-          <div class="table-container">
-            <table class="table">
+          <div class="table-container" style="overflow-x: auto;">
+            <table class="table" style="min-width: 1000px;">
               <thead>
                 <tr>
-                  <th>Tahun</th>
-                  <th>Kode Unit Kerja</th>
-                  <th>Unit Kerja</th>
-                  <th>X-Axis (Strength - Weakness)</th>
-                  <th>Y-Axis (Opportunity - Threat)</th>
-                  <th>Kuadran</th>
-                  <th>Strategi</th>
-                  <th>Aksi</th>
+                  <th style="width: 70px;">Tahun</th>
+                  <th style="width: 100px;">Kode</th>
+                  <th style="width: 200px;">Unit Kerja</th>
+                  <th style="width: 120px;">X-Axis</th>
+                  <th style="width: 120px;">Y-Axis</th>
+                  <th style="width: 140px; text-align: center;">Kuadran</th>
+                  <th style="width: 150px; text-align: center;">Strategi</th>
+                  <th style="width: 100px; text-align: center;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,19 +225,19 @@ const DiagramKartesiusModule = (() => {
                       <td>
                         ${unitName}
                         ${item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 
-                          '<span class="badge badge-primary ml-1">Agregasi</span>' : 
-                          '<span class="badge badge-secondary ml-1">Individual</span>'
+                          '<span class="badge badge-primary ml-1" style="font-size: 0.7rem;">Agregasi</span>' : 
+                          ''
                         }
                       </td>
                       <td>${parseFloat(item.x_axis).toFixed(2)}</td>
                       <td>${parseFloat(item.y_axis).toFixed(2)}</td>
-                      <td><span class="badge-status badge-${getKuadranColor(item.kuadran)}">KUADRAN ${item.kuadran}</span></td>
-                      <td><strong>${item.strategi}</strong></td>
-                      <td>
-                        <button class="btn btn-edit btn-sm" onclick="DiagramKartesiusModule.edit('${item.id}')">
+                      <td style="text-align: center;"><span class="badge-kuadran badge-kuadran-${item.kuadran.toLowerCase()}">KUADRAN ${item.kuadran}</span></td>
+                      <td style="text-align: center;"><span class="badge-strategi badge-strategi-${item.strategi.toLowerCase()}">${item.strategi}</span></td>
+                      <td style="text-align: center;">
+                        <button class="btn btn-edit btn-sm" onclick="DiagramKartesiusModule.edit('${item.id}')" title="Edit">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-delete btn-sm" onclick="DiagramKartesiusModule.delete('${item.id}')">
+                        <button class="btn btn-delete btn-sm" onclick="DiagramKartesiusModule.delete('${item.id}')" title="Hapus">
                           <i class="fas fa-trash"></i>
                         </button>
                       </td>
@@ -156,9 +251,101 @@ const DiagramKartesiusModule = (() => {
       </div>
     `;
 
+    // Add event listeners for filter dropdowns
+    setupFilterListeners();
+
     if (state.data.length > 0) {
       renderChart();
     }
+  }
+
+  function setupFilterListeners() {
+    // Add change event listeners to filter dropdowns
+    const unitKerjaSelect = document.getElementById('filter-unit-kerja');
+    const jenisSelect = document.getElementById('filter-jenis');
+    const kategoriSelect = document.getElementById('filter-kategori');
+    const tahunSelect = document.getElementById('filter-tahun');
+    
+    // When jenis changes, filter kategori options
+    if (jenisSelect) {
+      jenisSelect.addEventListener('change', function() {
+        const selectedJenis = this.value;
+        state.filters.jenis = selectedJenis;
+        updateKategoriOptions(selectedJenis);
+        console.log('🔧 Jenis changed to:', selectedJenis);
+      });
+    }
+    
+    // When kategori changes, update state
+    if (kategoriSelect) {
+      kategoriSelect.addEventListener('change', function() {
+        const selectedKategori = this.value;
+        state.filters.kategori = selectedKategori;
+        console.log('🔧 Kategori changed to:', selectedKategori);
+      });
+    }
+    
+    // When unit kerja changes, update state
+    if (unitKerjaSelect) {
+      unitKerjaSelect.addEventListener('change', function() {
+        state.filters.unit_kerja_id = this.value;
+        console.log('🔧 Unit Kerja changed to:', this.value);
+      });
+    }
+    
+    // When tahun changes, update state
+    if (tahunSelect) {
+      tahunSelect.addEventListener('change', function() {
+        state.filters.tahun = parseInt(this.value) || new Date().getFullYear();
+        console.log('🔧 Tahun changed to:', state.filters.tahun);
+      });
+    }
+  }
+  
+  function updateKategoriOptions(selectedJenis) {
+    const kategoriSelect = document.getElementById('filter-kategori');
+    if (!kategoriSelect) return;
+    
+    const currentKategori = kategoriSelect.value;
+    
+    // Filter units by jenis (case-insensitive)
+    let filteredUnits = state.unitKerja;
+    if (selectedJenis) {
+      const selectedJenisLower = selectedJenis.toLowerCase().trim();
+      filteredUnits = state.unitKerja.filter(u => 
+        u.jenis && u.jenis.toLowerCase().trim() === selectedJenisLower
+      );
+    }
+    
+    // Get unique kategori from filtered units
+    const kategoriOptions = [...new Set(filteredUnits.map(u => u.kategori).filter(Boolean))].sort();
+    
+    // Rebuild options
+    kategoriSelect.innerHTML = '<option value="">Semua Kategori</option>' +
+      kategoriOptions.map(k => `<option value="${k}" ${currentKategori === k ? 'selected' : ''}>${k}</option>`).join('');
+  }
+  
+  function updateJenisOptions(selectedKategori) {
+    const jenisSelect = document.getElementById('filter-jenis');
+    if (!jenisSelect) return;
+    
+    const currentJenis = jenisSelect.value;
+    
+    // Filter units by kategori (case-insensitive)
+    let filteredUnits = state.unitKerja;
+    if (selectedKategori) {
+      const selectedKategoriLower = selectedKategori.toLowerCase().trim();
+      filteredUnits = state.unitKerja.filter(u => 
+        u.kategori && u.kategori.toLowerCase().trim() === selectedKategoriLower
+      );
+    }
+    
+    // Get unique jenis from filtered units
+    const jenisOptions = [...new Set(filteredUnits.map(u => u.jenis).filter(Boolean))].sort();
+    
+    // Rebuild options
+    jenisSelect.innerHTML = '<option value="">Semua Jenis</option>' +
+      jenisOptions.map(j => `<option value="${j}" ${currentJenis === j ? 'selected' : ''}>${j}</option>`).join('');
   }
 
   function renderChart() {
@@ -268,7 +455,7 @@ const DiagramKartesiusModule = (() => {
         showLine: true,
         fill: false
       },
-      // Data points
+      // Data points - smaller radius
       ...state.data.map((item) => {
         const workUnit = item.master_work_units;
         const unitCode = workUnit?.code || (item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 'AGR' : '-');
@@ -279,9 +466,9 @@ const DiagramKartesiusModule = (() => {
           data: [{ x: parseFloat(item.x_axis), y: parseFloat(item.y_axis) }],
           backgroundColor: getKuadranColorHex(item.kuadran),
           borderColor: getKuadranColorHex(item.kuadran),
-          pointRadius: item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 18 : 12,
-          pointHoverRadius: item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 22 : 16,
-          pointBorderWidth: 3,
+          pointRadius: item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 10 : 7,
+          pointHoverRadius: item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 14 : 10,
+          pointBorderWidth: 2,
           pointBorderColor: '#fff'
         };
       })
@@ -302,7 +489,7 @@ const DiagramKartesiusModule = (() => {
             title: {
               display: true,
               text: 'Strength - Weakness →',
-              font: { size: 18, weight: 'bold' },
+              font: { size: 14, weight: 'bold' },
               color: '#333'
             },
             min: -range,
@@ -316,7 +503,7 @@ const DiagramKartesiusModule = (() => {
               }
             },
             ticks: {
-              font: { size: 14 },
+              font: { size: 11 },
               color: '#666'
             }
           },
@@ -324,7 +511,7 @@ const DiagramKartesiusModule = (() => {
             title: {
               display: true,
               text: '↑ Opportunity - Threat',
-              font: { size: 18, weight: 'bold' },
+              font: { size: 14, weight: 'bold' },
               color: '#333'
             },
             min: -range,
@@ -338,31 +525,14 @@ const DiagramKartesiusModule = (() => {
               }
             },
             ticks: {
-              font: { size: 14 },
+              font: { size: 11 },
               color: '#666'
             }
           }
         },
         plugins: {
           legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              font: { size: 12 },
-              filter: function(legendItem) {
-                return !legendItem.text.includes('Garis Tengah');
-              },
-              generateLabels: function(chart) {
-                const original = Chart.defaults.plugins.legend.labels.generateLabels;
-                const labels = original.call(this, chart);
-                
-                // Group quadrant backgrounds and data points separately
-                const quadrantLabels = labels.filter(label => label.text.includes('Kuadran') && !label.text.includes(' - '));
-                const dataLabels = labels.filter(label => !label.text.includes('Kuadran') || label.text.includes(' - '));
-                
-                return [...quadrantLabels, ...dataLabels];
-              }
-            }
+            display: false // Hide legend completely
           },
           tooltip: {
             filter: function(tooltipItem) {
@@ -372,6 +542,7 @@ const DiagramKartesiusModule = (() => {
             callbacks: {
               label: function(context) {
                 const item = state.data[context.datasetIndex - 6];
+                if (!item) return [];
                 const workUnit = item.master_work_units;
                 const unitCode = workUnit?.code || (item.unit_kerja_name && item.unit_kerja_name.includes('Agregasi') ? 'AGR' : '-');
                 const unitName = workUnit?.name || item.unit_kerja_name || 'Unit Kerja';
@@ -400,7 +571,7 @@ const DiagramKartesiusModule = (() => {
           const yScale = chart.scales.y;
           
           ctx.save();
-          ctx.font = 'bold 16px Arial';
+          ctx.font = 'bold 14px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
@@ -408,36 +579,36 @@ const DiagramKartesiusModule = (() => {
           ctx.fillStyle = 'rgba(39, 174, 96, 0.8)';
           const q1X = xScale.getPixelForValue(range * 0.5);
           const q1Y = yScale.getPixelForValue(range * 0.5);
-          ctx.fillText('KUADRAN I', q1X, q1Y - 12);
-          ctx.font = '14px Arial';
-          ctx.fillText('GROWTH', q1X, q1Y + 12);
+          ctx.fillText('KUADRAN I', q1X, q1Y - 10);
+          ctx.font = '12px Arial';
+          ctx.fillText('GROWTH', q1X, q1Y + 10);
           
           // Quadrant II (top-left) - Stability
           ctx.fillStyle = 'rgba(52, 152, 219, 0.8)';
           const q2X = xScale.getPixelForValue(-range * 0.5);
           const q2Y = yScale.getPixelForValue(range * 0.5);
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText('KUADRAN II', q2X, q2Y - 12);
-          ctx.font = '14px Arial';
-          ctx.fillText('STABILITY', q2X, q2Y + 12);
+          ctx.font = 'bold 14px Arial';
+          ctx.fillText('KUADRAN II', q2X, q2Y - 10);
+          ctx.font = '12px Arial';
+          ctx.fillText('STABILITY', q2X, q2Y + 10);
           
           // Quadrant III (bottom-left) - Survival
           ctx.fillStyle = 'rgba(231, 76, 60, 0.8)';
           const q3X = xScale.getPixelForValue(-range * 0.5);
           const q3Y = yScale.getPixelForValue(-range * 0.5);
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText('KUADRAN III', q3X, q3Y - 12);
-          ctx.font = '14px Arial';
-          ctx.fillText('SURVIVAL', q3X, q3Y + 12);
+          ctx.font = 'bold 14px Arial';
+          ctx.fillText('KUADRAN III', q3X, q3Y - 10);
+          ctx.font = '12px Arial';
+          ctx.fillText('SURVIVAL', q3X, q3Y + 10);
           
           // Quadrant IV (bottom-right) - Diversification
           ctx.fillStyle = 'rgba(243, 156, 18, 0.8)';
           const q4X = xScale.getPixelForValue(range * 0.5);
           const q4Y = yScale.getPixelForValue(-range * 0.5);
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText('KUADRAN IV', q4X, q4Y - 12);
-          ctx.font = '14px Arial';
-          ctx.fillText('DIVERSIFICATION', q4X, q4Y + 12);
+          ctx.font = 'bold 14px Arial';
+          ctx.fillText('KUADRAN IV', q4X, q4Y - 10);
+          ctx.font = '12px Arial';
+          ctx.fillText('DIVERSIFICATION', q4X, q4Y + 10);
           
           ctx.restore();
         }
@@ -457,19 +628,54 @@ const DiagramKartesiusModule = (() => {
 
   function getKuadranColorHex(kuadran) {
     const colors = {
-      'I': '#27ae60',   // Green - Growth
-      'II': '#3498db',  // Blue - Stability  
-      'III': '#e74c3c', // Red - Survival
-      'IV': '#f39c12'   // Orange - Diversification
+      'I': '#22c55e',   // Green - Growth (lebih cerah)
+      'II': '#3b82f6',  // Blue - Stability  
+      'III': '#ef4444', // Red - Survival
+      'IV': '#f97316'   // Orange - Diversification (lebih cerah)
     };
-    return colors[kuadran] || '#95a5a6';
+    return colors[kuadran] || '#6b7280';
   }
 
   async function applyFilter() {
-    state.filters.unit_kerja_id = document.getElementById('filter-unit-kerja')?.value || '';
-    state.filters.jenis = document.getElementById('filter-jenis')?.value || '';
-    state.filters.kategori = document.getElementById('filter-kategori')?.value || '';
-    state.filters.tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
+    // Get filter values from DOM
+    const unitKerjaEl = document.getElementById('filter-unit-kerja');
+    const jenisEl = document.getElementById('filter-jenis');
+    const kategoriEl = document.getElementById('filter-kategori');
+    const tahunEl = document.getElementById('filter-tahun');
+    
+    state.filters.unit_kerja_id = unitKerjaEl?.value || '';
+    state.filters.jenis = jenisEl?.value || '';
+    state.filters.kategori = kategoriEl?.value || '';
+    state.filters.tahun = parseInt(tahunEl?.value) || new Date().getFullYear();
+    
+    console.log('🔍 Applying filters:', state.filters);
+    
+    // Show loading indicator
+    const container = document.getElementById('diagram-kartesius-content');
+    if (container) {
+      const tableBody = container.querySelector('tbody');
+      if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
+      }
+    }
+    
+    await fetchInitialData();
+    render();
+  }
+  
+  async function resetFilter() {
+    // Reset all filters to default - use first available year or current year
+    const defaultYear = state.availableYears.length > 0 ? state.availableYears[0] : new Date().getFullYear();
+    
+    state.filters = {
+      unit_kerja_id: '',
+      jenis: '',
+      kategori: '',
+      tahun: defaultYear
+    };
+    
+    console.log('🔄 Resetting filters to default, year:', defaultYear);
+    
     await fetchInitialData();
     render();
   }
@@ -479,6 +685,12 @@ const DiagramKartesiusModule = (() => {
     const jenis = document.getElementById('filter-jenis')?.value || '';
     const kategori = document.getElementById('filter-kategori')?.value || '';
     const tahun = parseInt(document.getElementById('filter-tahun')?.value || new Date().getFullYear());
+
+    // Update state filters to match current selection
+    state.filters.unit_kerja_id = unit_kerja_id;
+    state.filters.jenis = jenis;
+    state.filters.kategori = kategori;
+    state.filters.tahun = tahun;
 
     const message = `Hitung diagram kartesius otomatis untuk tahun ${tahun}?\n\nSistem akan menghitung diagram untuk unit kerja yang dipilih secara otomatis.`;
     
@@ -797,10 +1009,12 @@ const DiagramKartesiusModule = (() => {
   return {
     load,
     applyFilter,
+    resetFilter,
     calculate,
     edit,
     saveManual,
     delete: deleteItem,
+    deleteItem: deleteItem,
     downloadChart,
     executeDownload
   };

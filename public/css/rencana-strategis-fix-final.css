@@ -1,0 +1,250 @@
+/**
+ * RENCANA STRATEGIS FIX FINAL v1.0
+ * Memastikan tampilan yang benar (cards + form + table) SELALU muncul
+ * dan TIDAK digantikan oleh tampilan selection list
+ * Created: 2026-01-10
+ */
+
+/* ============================================
+   CRITICAL: ENSURE CORRECT DISPLAY
+   ============================================ */
+
+/* Halaman RS harus selalu visible saat active */
+#rencana-strategis.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    background-color: #f8f9fa !important;
+}
+
+/* Container konten harus selalu visible */
+#rencana-strategis-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 400px !important;
+    background-color: #f8f9fa !important;
+}
+
+/* Wrapper harus selalu visible */
+.rencana-strategis-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 1rem !important;
+    background-color: #f8f9fa !important;
+}
+
+/* ============================================
+   STAT CARDS - MUST BE VISIBLE
+   ============================================ */
+
+.rencana-strategis-wrapper .row.g-3.mb-4 {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 > div {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.rencana-strategis-wrapper .row.g-3.mb-4 .card {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+/* ============================================
+   FORM SECTION - MUST BE VISIBLE
+   ============================================ */
+
+#rs-form-section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-bottom: 1.5rem !important;
+}
+
+#rs-form-section .card-header {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+}
+
+#rs-form-section .card-body {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #ffffff !important;
+}
+
+#rs-form-body:not(.d-none) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ============================================
+   TABLE SECTION - MUST BE VISIBLE
+   ============================================ */
+
+.rencana-strategis-wrapper > .card.shadow-sm {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #ffffff !important;
+}
+
+.rencana-strategis-wrapper .table-responsive {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.rencana-strategis-wrapper table {
+    display: table !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
+/* ============================================
+   HIDE SELECTION LIST ELEMENTS
+   ============================================ */
+
+/* Sembunyikan elemen selection list yang mungkin muncul */
+#rencana-strategis .rs-selection-wrapper,
+#rencana-strategis .rs-selection-list,
+#rencana-strategis #rs-selection-container,
+#rencana-strategis [data-rs-selection-list],
+#rencana-strategis .rencana-strategis-selection {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -99999px !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   PREVENT CONTENT LEAK
+   ============================================ */
+
+/* Sembunyikan RS page saat tidak active */
+#rencana-strategis:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
+
+/* Sembunyikan konten RS dari halaman lain */
+.page-content:not(#rencana-strategis) .rencana-strategis-wrapper,
+.page-content:not(#rencana-strategis) .rencana-strategis-container,
+.page-content:not(#rencana-strategis) .rs-selection-wrapper,
+.page-content:not(#rencana-strategis) .rs-selection-list,
+.page-content:not(#rencana-strategis) [data-module="RencanaStrategisModule"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -99999px !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   Z-INDEX MANAGEMENT
+   ============================================ */
+
+.page-content.active {
+    z-index: 1 !important;
+    position: relative !important;
+}
+
+.page-content:not(.active) {
+    z-index: -9999 !important;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+#rencana-strategis-content .spinner-border {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .rencana-strategis-wrapper {
+        padding: 0.5rem !important;
+    }
+    
+    .rencana-strategis-wrapper .row.g-3.mb-4 > div {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ============================================
+   ANIMATION - SMOOTH APPEARANCE
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rencana-strategis-wrapper {
+    animation: fadeIn 0.3s ease-out !important;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    #rencana-strategis.active {
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    .rencana-strategis-wrapper {
+        display: block !important;
+        visibility: visible !important;
+    }
+}

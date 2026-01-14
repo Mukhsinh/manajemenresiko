@@ -19,11 +19,60 @@
     <!-- App CSS -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/style-new.css">
+    <link rel="stylesheet" href="/css/comprehensive-ui-fix.css">
+    <link rel="stylesheet" href="/css/header-fix.css">
     <link rel="stylesheet" href="/css/buku-pedoman.css">
-    <link rel="stylesheet" href="/css/rencana-strategis-table.css">
-    <link rel="stylesheet" href="/css/rencana-strategis-enhanced.css">
+    <link rel="stylesheet" href="/css/evaluasi-iku.css">
+    <link rel="stylesheet" href="/css/evaluasi-iku-enhanced.css">
+    <link rel="stylesheet" href="/css/evaluasi-iku-enhanced-v2.css?v=2.0">
+    <link rel="stylesheet" href="/css/evaluasi-iku-v3.css?v=3.0">
     <link rel="stylesheet" href="/css/swot-analisis-enhanced.css">
     <link rel="stylesheet" href="/css/analisis-swot-fixed.css">
+    <link rel="stylesheet" href="/css/analisis-swot-white-cards.css">
+    <link rel="stylesheet" href="/css/analisis-swot-enhanced-fix.css">
+    <link rel="stylesheet" href="/css/residual-risk.css">
+    <link rel="stylesheet" href="/css/residual-risk-enhanced-badges.css">
+    <link rel="stylesheet" href="/css/residual-risk-matrix-enhanced.css">
+    <link rel="stylesheet" href="/css/solid-card-colors.css">
+    <link rel="stylesheet" href="/css/dashboard-white-cards.css">
+    <!-- RENCANA STRATEGIS v7.0 - Single Clean CSS -->
+    <link rel="stylesheet" href="/css/rencana-strategis-v7.css?v=7.0">
+    <!-- RENCANA STRATEGIS UI UPDATE - Warna solid cerah, tulisan hitam, header putih -->
+    <link rel="stylesheet" href="/css/rencana-strategis-ui-update.css?v=1.0">
+    <!-- Sidebar Dropdown Fix - Ensures dropdown submenus work properly -->
+    <link rel="stylesheet" href="/css/sidebar-dropdown-fix.css">
+    
+    <!-- Sidebar Dropdown Fix - CRITICAL for navigation -->
+    <link rel="stylesheet" href="/css/sidebar-dropdown-fix.css">
+    
+    <!-- Display Issues Fix - Comprehensive fix for all display problems -->
+    <link rel="stylesheet" href="/css/fix-display-issues.css">
+    
+    <!-- Modal Enhanced - Fixes double-click issues and ensures consistent modal behavior -->
+    <link rel="stylesheet" href="/css/modal-enhanced.css">
+    
+    <!-- Strategic Map Enhanced - Badge warna solid, tabel scrollable, tombol edit -->
+    <link rel="stylesheet" href="/css/strategic-map-enhanced.css?v=1.0">
+    
+    <!-- Sasaran Strategi Enhanced - Scrollable table, badge overflow fix, edit/delete buttons -->
+    <link rel="stylesheet" href="/css/sasaran-strategi-enhanced.css?v=1.0">
+    
+    <!-- Diagram Kartesius Enhanced - Filter fix, badge colors, chart improvements -->
+    <link rel="stylesheet" href="/css/diagram-kartesius-enhanced.css?v=1.0">
+    
+    <!-- Risk Register Enhanced - Scrollable table, summary cards, improved buttons -->
+    <link rel="stylesheet" href="/css/risk-register-enhanced.css?v=1.0">
+    
+    <!-- Risk Register White Header Fix - White background for title, blue header for table -->
+    <link rel="stylesheet" href="/css/risk-register-white-header.css?v=1.0">
+    
+    <!-- PAGE ISOLATION FIX - CRITICAL: Must be loaded last for highest priority -->
+    <link rel="stylesheet" href="/css/page-isolation-fix.css?v=1.0">
+    
+    <!-- REMOVE RS GLOBAL BACKGROUND - Menghapus tampilan RS dari semua halaman -->
+    <link rel="stylesheet" href="/css/remove-rs-global-background.css?v=1.0">
+    
+    <!-- RS v7.0 CSS - Single source of truth (already loaded above) -->
     
     <!-- Enhanced UI Fixes -->
     <style>
@@ -144,8 +193,8 @@
     <!-- Critical: Supabase must load first -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Lucide Icons - Using jsdelivr (CSP whitelisted) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     
     <!-- Non-critical libraries - defer loading -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -168,7 +217,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff !important;
+            background-image: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -285,8 +335,76 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/remove-purple-colors.css">
+    <!-- WHITE FORM BACKGROUND - MUST BE LAST FOR HIGHEST PRIORITY -->
+    <link rel="stylesheet" href="/css/white-form-background.css">
+    
+    <!-- EDIT FORM FIX - Fixes modal overflow, cancel button double-click, form container overflow -->
+    <link rel="stylesheet" href="/css/edit-form-fix.css">
+    <!-- REMOVE RS GLOBAL BACKGROUND - Menghapus tampilan Pilih Rencana Strategis dari semua halaman -->
+    <link rel="stylesheet" href="/css/remove-rs-global-background.css">
+    
+    <!-- Sidebar Dropdown Fix - HIGHEST PRIORITY for navigation -->
+    <link rel="stylesheet" href="/css/sidebar-dropdown-fix.css">
+    
+    <!-- Matriks TOWS Modal Fix - Fix overflow and cancel button -->
+    <link rel="stylesheet" href="/css/matriks-tows-modal.css">
+    
+    <!-- GLOBAL UI STANDARDIZATION - Standarisasi icon edit/hapus, tombol, header tabel, kop halaman -->
+    <!-- MUST BE LOADED LAST FOR HIGHEST PRIORITY -->
+    <link rel="stylesheet" href="/css/global-ui-standardization.css">
+    
+    <!-- TABLE HEADER TEXT FIX - Header tabel tulisan putih, data header tulisan gelap -->
+    <link rel="stylesheet" href="/css/table-header-text-fix.css">
+    
+    <!-- RENCANA STRATEGIS UI FIX - Perbaikan tampilan halaman rencana-strategis -->
+    <!-- 1. Warna tulisan header hitam, 2. Badge status solid cerah, 3. Icon aksi solid cerah -->
+    <!-- 4. Kartu statistik lebih kecil dengan warna solid cerah, 5. Tulisan kop header putih -->
+    <link rel="stylesheet" href="/css/rencana-strategis-ui-fix.css?v=1.1">
+    
+    <!-- DAFTAR RENCANA STRATEGIS HEADER DARK - Tulisan header gelap solid -->
+    <link rel="stylesheet" href="/css/daftar-rs-header-dark.css?v=1.0">
+    
+    <!-- RENCANA STRATEGIS FIX v2.0 - Perbaikan kartu, badge status, kolom kode -->
+    <link rel="stylesheet" href="/css/rencana-strategis-fix-v2.css?v=2.2">
+    
+    <!-- TABLE HEADER DARK - Header tabel background solid gelap, tulisan putih -->
+    <link rel="stylesheet" href="/css/table-header-dark.css?v=1.0">
+    
+    <!-- CRITICAL: Rencana Strategis Freeze Fix CSS - DISABLED (causing UI freeze) -->
+    <!-- <link rel="stylesheet" href="/css/rencana-strategis-freeze-fix.css"> -->
 </head>
 <body>
+    <!-- RS EARLY GUARD - DISABLED (replaced by rencana-strategis-core.js v7.0) -->
+    <!-- <script src="/js/rs-early-guard.js"></script> -->
+    
+    <!-- RS FINAL FIX - DISABLED (replaced by rencana-strategis-core.js v7.0) -->
+    <!-- <script src="/js/rs-final-fix.js?v=1.0"></script> -->
+    
+    <!-- CRITICAL: Rencana Strategis Freeze Fix - DISABLED (causing UI freeze) -->
+    <!-- <script src="/js/rencana-strategis-freeze-fix.js"></script> -->
+    
+    <!-- RS Page Isolation System - DISABLED (causing UI freeze and display issues) -->
+    <!-- <script src="/js/rs-page-isolation.js"></script> -->
+    <!-- <script src="/js/rs-strict-isolation.js"></script> -->
+    <!-- RS isolation scripts - DISABLED (replaced by rs-page-isolation.js) -->
+    <!-- <script src="/js/rs-content-isolation-safe.js"></script> -->
+    <!-- <script src="/js/remove-rs-from-all-pages.js"></script> -->
+    <!-- <script src="/js/remove-rs-selection-list.js"></script> -->
+    
+    <!-- RENCANA STRATEGIS v7.0 - DISABLE OLD SCRIPTS FIRST -->
+    <script src="/js/disable-old-rs-scripts.js?v=7.0"></script>
+    
+    <script src="/js/startup-script.js"></script>
+    <!-- GLOBAL UI STANDARDIZATION - Standarisasi tampilan dinamis -->
+    <script src="/js/global-ui-standardization.js"></script>
+    <!-- PAGE NAVIGATION FIX - CRITICAL: Fixes page visibility and interaction issues -->
+    <script src="/js/page-navigation-fix.js"></script>
+    <!-- Minimal RS isolation - DISABLED (replaced by rs-page-isolation.js) -->
+    <!-- <script src="/js/rs-only-on-rs-page.js"></script> -->
+    <!-- RS Page Lifecycle Manager - DISABLED (replaced by rs-page-isolation.js) -->
+    <!-- <script src="/js/rs-page-lifecycle.js"></script> -->
+
     <!-- Login Screen -->
     <div id="login-screen" class="screen">
         <div class="login-split-container">
@@ -448,6 +566,10 @@
                             <a href="#" class="menu-item" data-page="indikator-kinerja-utama">
                                 <i class="fas fa-tachometer-alt"></i>
                                 <span>Indikator Kinerja Utama</span>
+                            </a>
+                            <a href="#" class="menu-item" data-page="evaluasi-iku">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Evaluasi IKU</span>
                             </a>
                         </div>
                     </div>
@@ -680,14 +802,16 @@
                         <div id="visi-misi-content"></div>
                     </div>
 
-                    <!-- Rencana Strategis Page -->
-                    <div id="rencana-strategis" class="page-content">
+                    <!-- Rencana Strategis Page - Clean Implementation -->
+                    <div id="rencana-strategis" class="page-content" style="background: #f8f9fa !important;">
                         <div class="page-header">
                             <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Rencana Strategis</h1>
                             <p class="page-subtitle">Perencanaan Strategis Organisasi</p>
                         </div>
-                        <div id="rencana-strategis-content"></div>
+                        <div id="rencana-strategis-content" style="min-height: 400px;"></div>
                     </div>
+
+                    <!-- REMOVED: Renstra Page (Duplicate - Merged into rencana-strategis) -->
 
                     <!-- Inventarisasi SWOT Page -->
                     <div id="inventarisasi-swot" class="page-content">
@@ -750,6 +874,17 @@
                             <p class="page-subtitle">Key Performance Indicators (KPI)</p>
                         </div>
                         <div id="indikator-kinerja-utama-content"></div>
+                    </div>
+
+                    <!-- Evaluasi IKU Page -->
+                    <div id="evaluasi-iku" class="page-content evaluasi-iku-page">
+                        <div class="page-header">
+                            <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Evaluasi IKU</h1>
+                            <p class="page-subtitle">Input Realisasi Bulanan dan Monitoring Capaian Tahunan</p>
+                        </div>
+                        <div id="evaluasi-iku-content">
+                            <!-- Content will be rendered by EvaluasiIKUEnhanced module -->
+                        </div>
                     </div>
 
                     <!-- Monitoring Evaluasi Page -->
@@ -815,27 +950,149 @@
                         <div id="residual-risk-content"></div>
                     </div>
 
-                    <!-- Risk Register Page -->
-                    <div id="risk-register" class="page-content">
-                        <div class="page-header">
-                            <h1 class="page-title"><i class="page-title-icon fas fa-table-list"></i> Risk Register</h1>
-                            <p class="page-subtitle">Register Risiko Organisasi</p>
-                        </div>
-                        <div id="risk-register-content">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">Risk Register</h3>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-success" onclick="loadRiskRegister()">
-                                            <i class="fas fa-sync"></i> Refresh Data
-                                        </button>
-                                        <button class="btn btn-info" onclick="downloadRiskRegisterExcel()">
-                                            <i class="fas fa-file-excel"></i> Export Excel
-                                        </button>
+                    <!-- Risk Register Page - Enhanced -->
+                    <div id="risk-register" class="page-content" data-page="risk-register">
+                        <div id="risk-register-container">
+                            <!-- Enhanced Risk Register UI will be rendered here by risk-register-enhanced.js -->
+                            <div class="risk-register-page">
+                                <!-- Summary Cards -->
+                                <div class="risk-register-cards" id="risk-summary-cards">
+                                    <div class="risk-summary-card total-risks">
+                                        <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
+                                        <div class="card-value">-</div>
+                                        <div class="card-label">Total Risiko</div>
+                                    </div>
+                                    <div class="risk-summary-card active-risks">
+                                        <div class="card-icon"><i class="fas fa-check-circle"></i></div>
+                                        <div class="card-value">-</div>
+                                        <div class="card-label">Risiko Aktif</div>
+                                    </div>
+                                    <div class="risk-summary-card extreme-risks">
+                                        <div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                        <div class="card-value">-</div>
+                                        <div class="card-label">Extreme High</div>
+                                    </div>
+                                    <div class="risk-summary-card high-risks">
+                                        <div class="card-icon"><i class="fas fa-arrow-up"></i></div>
+                                        <div class="card-value">-</div>
+                                        <div class="card-label">High Risk</div>
+                                    </div>
+                                    <div class="risk-summary-card medium-risks">
+                                        <div class="card-icon"><i class="fas fa-minus"></i></div>
+                                        <div class="card-value">-</div>
+                                        <div class="card-label">Medium Risk</div>
+                                    </div>
+                                    <div class="risk-summary-card low-risks">
+                                        <div class="card-icon"><i class="fas fa-arrow-down"></i></div>
+                                        <div class="card-value">-</div>
+                                        <div class="card-label">Low Risk</div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <div id="risk-register-table"></div>
+
+                                <!-- Table Section -->
+                                <div class="risk-register-table-wrapper">
+                                    <div class="risk-register-table-header">
+                                        <h3><i class="fas fa-table-list"></i> Daftar Risk Register</h3>
+                                        <div class="risk-register-actions">
+                                            <button class="btn-risk-action btn-download-report" onclick="downloadRiskRegisterReport()" title="Unduh Laporan Lengkap">
+                                                <i class="fas fa-download"></i>
+                                                <span>Unduh Laporan</span>
+                                            </button>
+                                            <button class="btn-risk-action btn-filter" onclick="toggleFilterPanel()" title="Filter Data">
+                                                <i class="fas fa-filter"></i>
+                                                <span>Filter</span>
+                                            </button>
+                                            <button class="btn-risk-action btn-refresh" onclick="refreshRiskRegister()" title="Refresh Data">
+                                                <i class="fas fa-sync-alt"></i>
+                                                <span>Refresh</span>
+                                            </button>
+                                            <button class="btn-risk-action btn-print" onclick="printRiskRegister()" title="Cetak">
+                                                <i class="fas fa-print"></i>
+                                                <span>Cetak</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Panel -->
+                                    <div class="risk-register-filter-panel" id="filter-panel">
+                                        <div class="filter-row">
+                                            <div class="filter-group">
+                                                <label>Status</label>
+                                                <select id="filter-status" onchange="applyFilters()">
+                                                    <option value="">Semua Status</option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Monitoring">Monitoring</option>
+                                                    <option value="Closed">Closed</option>
+                                                </select>
+                                            </div>
+                                            <div class="filter-group">
+                                                <label>Jenis Risiko</label>
+                                                <select id="filter-type" onchange="applyFilters()">
+                                                    <option value="">Semua Jenis</option>
+                                                    <option value="Threat">Threat</option>
+                                                    <option value="Opportunity">Opportunity</option>
+                                                </select>
+                                            </div>
+                                            <div class="filter-group">
+                                                <label>Tingkat Risiko</label>
+                                                <select id="filter-level" onchange="applyFilters()">
+                                                    <option value="">Semua Tingkat</option>
+                                                    <option value="LOW RISK">Low Risk</option>
+                                                    <option value="MEDIUM RISK">Medium Risk</option>
+                                                    <option value="HIGH RISK">High Risk</option>
+                                                    <option value="EXTREME HIGH">Extreme High</option>
+                                                </select>
+                                            </div>
+                                            <div class="filter-group">
+                                                <label>Cari</label>
+                                                <input type="text" id="filter-search" placeholder="Cari kode, sasaran..." oninput="applyFilters()">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Scrollable Table Container -->
+                                    <div class="risk-register-scroll-container" id="table-scroll-container">
+                                        <div class="risk-register-loading" id="loading-indicator">
+                                            <div class="spinner"></div>
+                                            <span>Memuat data...</span>
+                                        </div>
+                                        <table class="risk-register-table" id="risk-register-data-table" style="display: none;">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Kode Risiko</th>
+                                                    <th>Status</th>
+                                                    <th>Jenis</th>
+                                                    <th>Kategori</th>
+                                                    <th>Unit Kerja</th>
+                                                    <th>Sasaran</th>
+                                                    <th>Tanggal Registrasi</th>
+                                                    <th>Penyebab Risiko</th>
+                                                    <th>Dampak Risiko</th>
+                                                    <th>P Inheren</th>
+                                                    <th>D Inheren</th>
+                                                    <th>Nilai Inheren</th>
+                                                    <th>Tingkat Inheren</th>
+                                                    <th>P Residual</th>
+                                                    <th>D Residual</th>
+                                                    <th>Nilai Residual</th>
+                                                    <th>Tingkat Residual</th>
+                                                    <th>Risk Appetite</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="risk-register-tbody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pagination -->
+                                    <div class="risk-register-pagination" id="pagination-container">
+                                        <div class="pagination-info" id="pagination-info">
+                                            Menampilkan 0 - 0 dari 0 data
+                                        </div>
+                                        <div class="pagination-controls" id="pagination-controls">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -909,7 +1166,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Rencana Strategis</label>
-                                        <select id="rencana-strategis"></select>
+                                        <select id="risk-rencana-strategis"></select>
                                     </div>
                                     <div class="form-group">
                                         <label>Tanggal Registrasi *</label>
@@ -1143,25 +1400,11 @@
 
 
 
-                    <!-- Residual Risk Page (Legacy) -->
-                    <div id="residual-risk" class="page-content">
-                <div class="sheet-header">
-                    <h2>Residual Risk Rating</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="residual-risk-matrix"></canvas>
-                </div>
-                <div id="residual-risk-table" class="data-table-container"></div>
-            </div>
+                    <!-- Residual Risk Page (Legacy) - REMOVED DUE TO DUPLICATE ID -->
+                    <!-- Content moved to main residual-risk page above -->
 
-                    <!-- Risk Register Page (Legacy) -->
-                    <div id="risk-register" class="page-content">
-                <div class="sheet-header">
-                    <h2>Risk Register</h2>
-                    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print</button>
-                </div>
-                <div id="risk-register-table" class="data-table-container print-friendly"></div>
-            </div>
+                    <!-- Risk Register Page (Legacy) - REMOVED DUE TO DUPLICATE ID -->
+                    <!-- Content moved to enhanced risk-register page above -->
 
                     <!-- Risk Appetite Page (Legacy) -->
                     <div id="risk-appetite" class="page-content">
@@ -1308,6 +1551,10 @@
         </div>
     </div>
 
+    <!-- ROUTE PRESERVATION FIX - CRITICAL: Must load FIRST before any other scripts -->
+    <!-- Prevents unwanted redirects to /dashboard on page refresh -->
+    <script src="/js/route-preservation-fix.js?v=1.0"></script>
+    
     <script src="/js/config.js"></script>
     <script src="/js/services/apiService.js"></script>
     <script src="/js/services/authService.js"></script>
@@ -1329,35 +1576,118 @@
     <script src="/js/login-loop-prevention.js" onerror="console.error('Failed to load login-loop-prevention.js')"></script>
     
     <script src="/js/router-integration.js" onerror="console.error('Failed to load router-integration.js')"></script>
+    
+    <!-- Buku Pedoman with Enhanced Flowchart -->
+    <script src="/js/buku-pedoman-flowchart-enhanced.js"></script>
     <script src="/js/buku-pedoman.js"></script>
+    
+    <!-- Laporan Download Fix - Prevents double download -->
+    <script src="/js/laporan-download-fix.js"></script>
+    
     <script src="/js/dashboard.js"></script>
     <script src="/js/chat.js"></script>
     <script src="/js/navigation.js"></script>
+    
+    <!-- RENCANA STRATEGIS v7.4-FINAL - SINGLE SOURCE OF TRUTH -->
+    <!-- CRITICAL: Hanya gunakan satu script ini untuk halaman /rencana-strategis -->
+    <!-- v7.6: Header tabel dengan background putih dan tulisan gelap solid -->
+    <script src="/js/rencana-strategis-clean-v7.js?v=7.6.0"></script>
+    
+    <!-- RENCANA STRATEGIS FIX v2.0 - Perbaikan kartu, badge status, kolom kode -->
+    <script src="/js/rencana-strategis-fix-v2.js?v=2.3"></script>
+    
+    <!-- OLD SCRIPTS DISABLED - Menyebabkan konflik dan tampilan salah -->
+    <!-- <script src="/js/rencana-strategis-core.js?v=7.0"></script> -->
+    <!-- <script src="/js/rencana-strategis-unified.js?v=6.1"></script> -->
+    <!-- <script src="/js/rs-display-enforcer.js?v=2.0"></script> -->
+    
+    <!-- Comprehensive UI Fix - MUST LOAD EARLY -->
+    <script src="/js/header-color-fix.js"></script>
+    
+    <!-- ROUTE PRESERVE FIX - CRITICAL: Must load BEFORE app.js -->
+    <!-- Prevents automatic redirect to /dashboard on page refresh -->
+    <script src="/js/route-preserve-fix.js?v=2.0"></script>
+    
     <script src="/js/app.js"></script>
+    
+    <!-- Sidebar Dropdown Fix - CRITICAL for navigation submenus -->
+    <script src="/js/sidebar-dropdown-fix.js"></script>
+    
+    <!-- EDIT FORM FIX - Fixes modal cancel button double-click issue -->
+    <script src="/js/edit-form-fix.js"></script>
+    
     <script src="/js/visi-misi.js"></script>
-    <script src="/js/rencana-strategis.js"></script>
     <script src="/js/inventarisasi-swot.js"></script>
     <script src="/js/analisis-swot.js"></script>
     <script src="/js/diagram-kartesius.js"></script>
     <script src="/js/matriks-tows.js"></script>
     <script src="/js/sasaran-strategi.js"></script>
+    <script src="/js/sasaran-strategi-edit-fix-v2.js"></script>
+    <script src="/js/sasaran-strategi-enhanced-buttons.js"></script>
     <script src="/js/strategic-map.js"></script>
     <script src="/js/indikator-kinerja-utama.js"></script>
+    <script src="/js/evaluasi-iku-v3.js?v=3.1"></script>
+    <script src="/js/evaluasi-iku.js"></script>
+    <script src="/js/evaluasi-iku-enhanced.js"></script>
+    <script src="/js/evaluasi-iku-enhanced-v2.js?v=2.0"></script>
+    <script src="/js/evaluasi-iku-route-fix.js?v=1.0"></script>
     <script src="/js/monitoring-evaluasi.js"></script>
     <script src="/js/peluang.js"></script>
+    <script src="/js/peluang-enhanced.js"></script>
+    <link rel="stylesheet" href="/css/peluang-enhanced.css">
     <script src="/js/kri.js"></script>
+    <link rel="stylesheet" href="/css/kri-blue-header.css">
     <script src="/js/loss-event.js"></script>
     <script src="/js/ews.js"></script>
     <script src="/js/laporan.js"></script>
+    <link rel="stylesheet" href="/css/laporan.css">
     <script src="/js/pengaturan.js"></script>
     <script src="/js/risk-input.js"></script>
     <script src="/js/risk-profile.js"></script>
     <script src="/js/residual-risk.js"></script>
+    <script src="/js/residual-risk-review-warning.js"></script>
+    <script src="/js/residual-risk-matrix-enhanced.js"></script>
     <script src="/js/risk-register.js"></script>
+    <script src="/js/risk-register-enhanced.js"></script>
     <script src="/js/risk-appetite.js"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/master-data.js"></script>
     <script src="/js/ai-assistant.js"></script>
+
+    <!-- Initialize Rencana Strategis - v7.0 Core Module -->
+    <script>
+        // Setup Rencana Strategis loader - uses RSCore v7.0
+        window.loadRencanaStrategis = async function() {
+            console.log('🎯 Loading Rencana Strategis Core v7.0...');
+            
+            try {
+                // RSCore is the new single source of truth
+                if (window.RSCore && window.RSCore.load) {
+                    await window.RSCore.load();
+                    console.log('✅ Rencana Strategis Core v7.0 loaded');
+                } else if (window.RencanaStrategisModule && window.RencanaStrategisModule.load) {
+                    // Fallback to alias
+                    await window.RencanaStrategisModule.load();
+                    console.log('✅ Rencana Strategis loaded via alias');
+                } else {
+                    console.error('❌ RSCore not found');
+                }
+            } catch (error) {
+                console.error('❌ Error loading Rencana Strategis:', error);
+            }
+        };
+        
+        console.log('✅ Rencana Strategis loader ready (v7.0 Core)');
+    </script>
+    
+
+    <!-- Enhanced Page Display Fixes - Single initialization system only -->
+    <script src="/js/page-initialization-system-enhanced.js"></script>
+    <script src="/js/navigation-override-enhanced.js"></script>
+    <script src="js/remove-purple-colors.js"></script>
+    
+    <!-- AGGRESSIVE RS Selection List Removal CSS - DISABLED (replaced by rs-page-isolation.css) -->
+    <!-- <link rel="stylesheet" href="/css/hide-rs-selection-aggressive.css"> -->
 </body>
 </html>
 

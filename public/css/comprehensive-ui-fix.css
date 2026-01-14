@@ -1,0 +1,497 @@
+/**
+ * COMPREHENSIVE UI FIX - HEADER COLOR & STYLING CORRECTIONS
+ * Fixes purple gradient issues and standardizes UI across all pages
+ * Created: December 27, 2025
+ */
+
+/* ============================================
+   CRITICAL HEADER COLOR FIXES
+   ============================================ */
+
+/* Force all page headers to use white background - HIGHEST PRIORITY */
+.page-header,
+.card-header,
+.section-header,
+.kop-header,
+.header-section,
+.page-title-section,
+.content-header,
+.main-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #2c3e50 !important;
+    border-left: 4px solid #8B0000 !important;
+}
+
+/* Specific page header fixes */
+#analisis-swot .page-header,
+#residual-risk .page-header,
+#rencana-strategis .page-header,
+#strategic-map .page-header,
+#sasaran-strategi .page-header,
+#indikator-kinerja-utama .page-header,
+.analisis-swot-header,
+.residual-risk-header,
+.rencana-strategis-header,
+.strategic-map-header,
+.sasaran-strategi-header,
+.iku-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #2c3e50 !important;
+    border-left: 4px solid #8B0000 !important;
+}
+
+/* Prevent any purple gradients from appearing */
+*[style*="purple"],
+*[style*="#ffffff"],
+*[style*="#ffffff"],
+*[class*="purple"],
+.error-page {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Override any dynamic gradient styles */
+.page-header[style*="gradient"],
+.card-header[style*="gradient"],
+.section-header[style*="gradient"] {
+    background: #ffffff !important;
+    background-image: none !important;
+}
+
+/* ============================================
+   TABLE HEADER STANDARDIZATION
+   ============================================ */
+
+/* Standardize all table headers */
+.table thead,
+.data-table thead,
+table thead,
+.table th,
+.data-table th,
+table th,
+.residual-risk-table th,
+.risk-table th,
+.swot-table th,
+.strategic-table th {
+    background: #f8f9fa !important;
+    background-image: none !important;
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    padding: 12px !important;
+    text-align: left !important;
+}
+
+/* Remove any blue/red backgrounds from table headers */
+.table thead th,
+.data-table thead th,
+.residual-risk-table thead th {
+    background: #f8f9fa !important;
+    background-image: none !important;
+    color: #495057 !important;
+}
+
+/* ============================================
+   BUTTON STANDARDIZATION
+   ============================================ */
+
+/* Standardize button order and styling */
+.action-buttons,
+.master-actions-bar,
+.button-group,
+.action-group {
+    display: flex !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Button color standardization */
+.btn-primary,
+button.btn-primary {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: #ffffff !important;
+}
+
+.btn-success,
+button.btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: #ffffff !important;
+}
+
+.btn-warning,
+button.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.btn-danger,
+button.btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #ffffff !important;
+}
+
+.btn-info,
+button.btn-info {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+    color: #ffffff !important;
+}
+
+.btn-secondary,
+button.btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #ffffff !important;
+}
+
+/* Button hover effects */
+.btn:hover,
+button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* ============================================
+   TYPOGRAPHY STANDARDIZATION
+   ============================================ */
+
+/* Modern font styling */
+body {
+    font-family: 'Segoe UI', 'Plus Jakarta Sans', Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    color: #495057 !important;
+}
+
+/* Page titles */
+.page-title,
+.card-title,
+.section-title {
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Subtitle styling */
+.page-subtitle,
+.card-subtitle {
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+    font-style: italic !important;
+}
+
+/* ============================================
+   CARD STYLING STANDARDIZATION
+   ============================================ */
+
+/* Card headers */
+.card-header {
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 1rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.card-title {
+    margin: 0 !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+}
+
+/* Card body */
+.card-body {
+    padding: 1.5rem !important;
+    background: #ffffff !important;
+}
+
+/* ============================================
+   SPECIFIC PAGE FIXES
+   ============================================ */
+
+/* Analisis SWOT page fixes */
+#analisis-swot .page-header,
+.analisis-swot-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #2c3e50 !important;
+}
+
+/* Residual Risk page fixes */
+#residual-risk .page-header,
+.residual-risk-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #2c3e50 !important;
+}
+
+/* Rencana Strategis page fixes */
+#rencana-strategis .page-header,
+.rencana-strategis-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #2c3e50 !important;
+}
+
+/* Strategic Map page fixes */
+#strategic-map .page-header,
+.strategic-map-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #2c3e50 !important;
+}
+
+/* Sasaran Strategi page fixes */
+#sasaran-strategi .page-header,
+.sasaran-strategi-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #2c3e50 !important;
+}
+
+/* Indikator Kinerja Utama page fixes */
+#indikator-kinerja-utama .page-header,
+.iku-header {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #2c3e50 !important;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN IMPROVEMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .action-buttons,
+    .master-actions-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    .btn {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .page-header {
+        padding: 1rem !important;
+    }
+    
+    .page-title {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ============================================
+   CHART AND VISUALIZATION FIXES
+   ============================================ */
+
+/* Chart container styling */
+.chart-container,
+.chart-card {
+    background: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.chart-title {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    margin-bottom: 1rem !important;
+    text-align: center !important;
+}
+
+/* ============================================
+   FORM STYLING IMPROVEMENTS
+   ============================================ */
+
+/* Form labels */
+.form-label,
+label {
+    font-weight: 500 !important;
+    color: #495057 !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+}
+
+/* Form controls */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    outline: 0 !important;
+}
+
+/* ============================================
+   STATUS BADGE IMPROVEMENTS
+   ============================================ */
+
+/* Risk level badges with better contrast */
+.badge-status {
+    display: inline-block !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    vertical-align: baseline !important;
+    border-radius: 0.375rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+.badge-aman {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+}
+
+.badge-hati-hati {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge-kritis {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+}
+
+.badge-normal {
+    background-color: #17a2b8 !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   LOADING AND ERROR STATES
+   ============================================ */
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block !important;
+    width: 20px !important;
+    height: 20px !important;
+    border: 3px solid rgba(0,0,0,.1) !important;
+    border-radius: 50% !important;
+    border-top-color: #007bff !important;
+    animation: spin 1s ease-in-out infinite !important;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Error messages */
+.alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+}
+
+.alert-success {
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+    color: #155724 !important;
+}
+
+.alert-warning {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+    color: #856404 !important;
+}
+
+.alert-info {
+    background-color: #d1ecf1 !important;
+    border-color: #bee5eb !important;
+    color: #0c5460 !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-center { text-align: center !important; }
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+
+.mt-0 { margin-top: 0 !important; }
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.p-4 { padding: 1.5rem !important; }
+
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.d-flex { display: flex !important; }
+.d-inline-block { display: inline-block !important; }
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .page-header,
+    .card-header {
+        background: #ffffff !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .btn,
+    .action-buttons {
+        display: none !important;
+    }
+    
+    .table th {
+        background: #f8f9fa !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

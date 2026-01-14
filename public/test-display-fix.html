@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Display Fix - Comprehensive</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Display Fix CSS -->
+    <link rel="stylesheet" href="/css/fix-display-issues.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .test-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-section h2 {
+            margin: 0 0 1rem 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .test-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .test-item h3 {
+            margin: 0 0 0.5rem 0;
+            color: #475569;
+            font-size: 1rem;
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .test-status.success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .test-status.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .test-status.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .test-log {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .test-log-entry {
+            margin: 0.25rem 0;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .test-log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .test-log-entry.success {
+            color: #86efac;
+        }
+        
+        .test-log-entry.error {
+            color: #fca5a5;
+        }
+        
+        .test-log-entry.warning {
+            color: #fde047;
+        }
+        
+        .test-log-entry.info {
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-vial"></i> Test Display Fix - Comprehensive</h1>
+        <p>Verifikasi perbaikan tampilan halaman yang tidak muncul sempurna</p>
+    </div>
+    
+    <div class="test-container">
+        <!-- Test Summary -->
+        <div class="test-section">
+            <h2><i class="fas fa-chart-bar"></i> Test Summary</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Total Tests</h3>
+                    <div style="font-size: 2rem; font-weight: 700; color: #1e293b;" id="total-tests">0</div>
+                </div>
+                <div class="test-item">
+                    <h3>Passed</h3>
+                    <div style="font-size: 2rem; font-weight: 700; color: #16a34a;" id="passed-tests">0</div>
+                </div>
+                <div class="test-item">
+                    <h3>Failed</h3>
+                    <div style="font-size: 2rem; font-weight: 700; color: #dc2626;" id="failed-tests">0</div>
+                </div>
+                <div class="test-item">
+                    <h3>Warnings</h3>
+                    <div style="font-size: 2rem; font-weight: 700; color: #ca8a04;" id="warning-tests">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h2><i class="fas fa-play-circle"></i> Test Controls</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button class="test-button" onclick="runAllTests()">
+                    <i class="fas fa-play"></i> Run All Tests
+                </button>
+                <button class="test-button" onclick="runContainerTests()">
+                    <i class="fas fa-box"></i> Test Containers
+                </button>
+                <button class="test-button" onclick="runDisplayTests()">
+                    <i class="fas fa-eye"></i> Test Display
+                </button>
+                <button class="test-button" onclick="runModuleTests()">
+                    <i class="fas fa-puzzle-piece"></i> Test Modules
+                </button>
+                <button class="test-button" onclick="clearLog()">
+                    <i class="fas fa-trash"></i> Clear Log
+                </button>
+            </div>
+        </div>
+        
+        <!-- Test Results -->
+        <div class="test-section">
+            <h2><i class="fas fa-list-check"></i> Test Results</h2>
+            <div id="test-results" class="test-grid">
+                <!-- Test results will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Test Log -->
+        <div class="test-section">
+            <h2><i class="fas fa-terminal"></i> Test Log</h2>
+            <div id="test-log" class="test-log">
+                <div class="test-log-entry info">Waiting for tests to run...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Display Fix Script -->
+    <script src="/js/fix-display-issues.js"></script>
+    
+    <!-- Test Script -->
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            warnings: 0
+        };
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('test-log');
+            const entry = document.createElement('div');
+            entry.className = `test-log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            document.getElementById('warning-tests').textContent = testResults.warnings;
+        }
+        
+        function addTestResult(name, status, message) {
+            testResults.total++;
+            if (status === 'success') testResults.passed++;
+            else if (status === 'error') testResults.failed++;
+            else if (status === 'warning') testResults.warnings++;
+            
+            const resultsContainer = document.getElementById('test-results');
+            const item = document.createElement('div');
+            item.className = 'test-item';
+            item.innerHTML = `
+                <h3>${name}</h3>
+                <span class="test-status ${status}">${status.toUpperCase()}</span>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: #64748b;">${message}</p>
+            `;
+            resultsContainer.appendChild(item);
+            
+            updateSummary();
+            log(`${name}: ${message}`, status);
+        }
+        
+        function clearLog() {
+            document.getElementById('test-log').innerHTML = '<div class="test-log-entry info">Log cleared.</div>';
+            document.getElementById('test-results').innerHTML = '';
+            testResults = { total: 0, passed: 0, failed: 0, warnings: 0 };
+            updateSummary();
+        }
+        
+        function runContainerTests() {
+            log('Running container tests...', 'info');
+            
+            const containers = [
+                'rencana-strategis-content',
+                'analisis-swot-content',
+                'monitoring-evaluasi-content',
+                'peluang-content'
+            ];
+            
+            containers.forEach(id => {
+                const container = document.getElementById(id);
+                if (container) {
+                    addTestResult(
+                        `Container: ${id}`,
+                        'success',
+                        'Container exists and is accessible'
+                    );
+                } else {
+                    addTestResult(
+                        `Container: ${id}`,
+                        'error',
+                        'Container not found in DOM'
+                    );
+                }
+            });
+        }
+        
+        function runDisplayTests() {
+            log('Running display tests...', 'info');
+            
+            // Test CSS loading
+            const cssLoaded = document.querySelector('link[href*="fix-display-issues.css"]');
+            addTestResult(
+                'CSS Loading',
+                cssLoaded ? 'success' : 'error',
+                cssLoaded ? 'Display fix CSS is loaded' : 'Display fix CSS not found'
+            );
+            
+            // Test module availability
+            const moduleAvailable = typeof window.DisplayFixModule !== 'undefined';
+            addTestResult(
+                'Module Availability',
+                moduleAvailable ? 'success' : 'error',
+                moduleAvailable ? 'DisplayFixModule is available' : 'DisplayFixModule not found'
+            );
+            
+            // Test page visibility
+            const pages = document.querySelectorAll('.page-content');
+            addTestResult(
+                'Page Elements',
+                pages.length > 0 ? 'success' : 'warning',
+                `Found ${pages.length} page elements`
+            );
+        }
+        
+        function runModuleTests() {
+            log('Running module tests...', 'info');
+            
+            if (typeof window.DisplayFixModule === 'undefined') {
+                addTestResult(
+                    'Module Tests',
+                    'error',
+                    'DisplayFixModule not available'
+                );
+                return;
+            }
+            
+            // Test module functions
+            const functions = [
+                'ensureContainersExist',
+                'fixAnalisisSwotDisplay',
+                'fixRencanaStrategisDisplay',
+                'fixMonitoringEvaluasiDisplay',
+                'ensurePageVisibility'
+            ];
+            
+            functions.forEach(funcName => {
+                const exists = typeof window.DisplayFixModule[funcName] === 'function';
+                addTestResult(
+                    `Function: ${funcName}`,
+                    exists ? 'success' : 'error',
+                    exists ? 'Function is available' : 'Function not found'
+                );
+            });
+            
+            // Try to run ensureContainersExist
+            try {
+                window.DisplayFixModule.ensureContainersExist();
+                addTestResult(
+                    'Container Creation',
+                    'success',
+                    'ensureContainersExist executed successfully'
+                );
+            } catch (error) {
+                addTestResult(
+                    'Container Creation',
+                    'error',
+                    `Error: ${error.message}`
+                );
+            }
+        }
+        
+        function runAllTests() {
+            clearLog();
+            log('Starting comprehensive test suite...', 'info');
+            
+            setTimeout(() => {
+                runContainerTests();
+                setTimeout(() => {
+                    runDisplayTests();
+                    setTimeout(() => {
+                        runModuleTests();
+                        log('All tests completed!', 'success');
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+        
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded, ready to run tests', 'success');
+            setTimeout(() => {
+                runAllTests();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

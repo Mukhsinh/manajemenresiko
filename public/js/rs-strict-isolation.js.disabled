@@ -1,0 +1,172 @@
+/**
+ * RS STRICT ISOLATION SYSTEM v2.0
+ * Ensures Rencana Strategis content ONLY appears on RS page
+ * Prevents content leak to other pages during navigation
+ * Created: 2026-01-09
+ */
+
+(function() {
+    'use strict';
+    
+    if (window.rsStrictIsolationInitialized) return;
+    window.rsStrictIsolationInitialized = true;
+    
+    console.log('🔒 RS Strict Isolation System v2.0 loading...');
+    
+    /**
+     * Check if current page is Rencana Strategis
+     */
+    function isRSPage() {
+        const path = window.location.pathname;
+        const hash = window.location.hash;
+        const rsPage = document.getElementById('rencana-strategis');
+        return path === '/rencana-strategis' || 
+               path.includes('/rencana-strategis') ||
+               hash === '#rencana-strategis' ||
+               (rsPage && rsPage.classList.contains('active'));
+    }
+    
+    /**
+     * Get current active page ID
+     */
+    function getActivePageId() {
+        const activePage = document.querySelector('.page-content.active');
+        return activePage ? activePage.id : null;
+    }
+    
+    /**
+     * Remove RS content from non-RS pages
+     */
+    function cleanupRSFromOtherPages() {
+        if (isRSPage()) return;
+        
+        // Find all page-content except RS
+        const otherPages = document.querySelectorAll('.page-content:not(#rencana-strategis)');
+        
+        otherPages.forEach(page => {
+            // Remove any RS wrapper that shouldn't be there
+            const rsWrappers = page.querySelectorAll('.rencana-strategis-wrapper');
+            rsWrappers.forEach(wrapper => {
+                console.log(`🗑️ Removing leaked RS wrapper from ${page.id}`);
+                wrapper.remove();
+            });
+            
+            // Remove RS selection elements
+            const rsSelections = page.querySelectorAll('.rs-selection-wrapper, .rs-selection-list, #rs-selection-container');
+            rsSelections.forEach(el => {
+                console.log(`🗑️ Removing RS selection from ${page.id}`);
+                el.remove();
+            });
+        });
+        
+        // Also check for orphaned RS elements in body/main-content
+        const orphanedRS = document.querySelectorAll('body > .rencana-strategis-wrapper, .main-content > .rencana-strategis-wrapper:not(.page-content .rencana-strategis-wrapper)');
+        orphanedRS.forEach(el => {
+            console.log('🗑️ Removing orphaned RS wrapper');
+            el.remove();
+        });
+    }
+    
+    /**
+     * Ensure RS content is visible when on RS page
+     */
+    function ensureRSVisible() {
+        if (!isRSPage()) return;
+        
+        const rsPage = document.getElementById('rencana-strategis');
+        const rsContent = document.getElementById('rencana-strategis-content');
+        
+        if (rsPage) {
+            rsPage.style.display = 'block';
+            rsPage.style.visibility = 'visible';
+            rsPage.style.opacity = '1';
+            rsPage.style.position = 'relative';
+            rsPage.style.left = 'auto';
+        }
+        
+        if (rsContent) {
+            rsContent.style.display = 'block';
+            rsContent.style.visibility = 'visible';
+            rsContent.style.opacity = '1';
+        }
+    }
+    
+    /**
+     * Main isolation enforcement
+     */
+    function enforceIsolation() {
+        const activePageId = getActivePageId();
+        
+        if (activePageId === 'rencana-strategis') {
+            ensureRSVisible();
+        } else {
+            cleanupRSFromOtherPages();
+        }
+    }
+    
+    /**
+     * Setup navigation listeners
+     */
+    function setupListeners() {
+        // Listen for URL changes
+        window.addEventListener('popstate', () => setTimeout(enforceIsolation, 50));
+        window.addEventListener('hashchange', () => setTimeout(enforceIsolation, 50));
+        
+        // Listen for page navigation via menu clicks
+        document.addEventListener('click', (e) => {
+            const menuItem = e.target.closest('[data-page]');
+            if (menuItem) {
+                setTimeout(enforceIsolation, 100);
+            }
+        });
+        
+        // MutationObserver for class changes on page-content
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    if (target.classList.contains('page-content')) {
+                        setTimeout(enforceIsolation, 50);
+                    }
+                }
+            });
+        });
+        
+        // Observe all page-content elements
+        document.querySelectorAll('.page-content').forEach(page => {
+            observer.observe(page, { attributes: true, attributeFilter: ['class'] });
+        });
+    }
+    
+    /**
+     * Initialize
+     */
+    function init() {
+        console.log('🚀 Initializing RS Strict Isolation...');
+        
+        // Initial enforcement
+        enforceIsolation();
+        
+        // Setup listeners
+        setupListeners();
+        
+        // Periodic check (backup)
+        setInterval(enforceIsolation, 5000);
+        
+        console.log('✅ RS Strict Isolation initialized');
+    }
+    
+    // Initialize when DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    // Export
+    window.RSStrictIsolation = {
+        isRSPage,
+        enforceIsolation,
+        cleanupRSFromOtherPages
+    };
+})();

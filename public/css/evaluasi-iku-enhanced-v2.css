@@ -1,0 +1,639 @@
+/* Evaluasi IKU Enhanced V2 - Complete Fixes */
+
+/* ============================================
+   1. FILTER SECTION - With Period Filter
+   ============================================ */
+.evaluasi-filter-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.evaluasi-filter-section .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.evaluasi-filter-section label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.evaluasi-filter-section select {
+  padding: 0.4rem 2rem 0.4rem 0.625rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background: white url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") right 0.5rem center/12px no-repeat;
+  cursor: pointer;
+  min-width: 100px;
+  height: 34px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.evaluasi-filter-section select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* Period filter specific styling */
+.filter-group.filter-periode select {
+  min-width: 120px;
+}
+
+/* ============================================
+   2. TABLE CONTAINER - Scrollable Both Ways
+   ============================================ */
+.evaluasi-table-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  position: relative;
+  max-height: 65vh;
+  overflow: auto;
+}
+
+/* Scrollbar styling */
+.evaluasi-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.evaluasi-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.evaluasi-table-wrapper::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.evaluasi-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.evaluasi-table-wrapper::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Table base */
+.evaluasi-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+/* Sticky header */
+.evaluasi-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1e3a5f;
+}
+
+.evaluasi-table thead th {
+  background: #1e3a5f;
+  color: white;
+  padding: 0.75rem 0.625rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border-bottom: 2px solid #0f2744;
+}
+
+.evaluasi-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.15s;
+}
+
+.evaluasi-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.evaluasi-table tbody td {
+  padding: 0.625rem;
+  font-size: 0.75rem;
+  color: #374151;
+  vertical-align: middle;
+}
+
+/* ============================================
+   3. PROGRESS BAR - Solid Colors (No Gradient)
+   ============================================ */
+.progress-cell {
+  min-width: 120px;
+}
+
+.progress-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* SOLID COLORS - No gradient */
+.progress-bar-inner.tercapai,
+.progress-bar-inner.green {
+  background: #22c55e !important; /* Solid Green */
+}
+
+.progress-bar-inner.hampir,
+.progress-bar-inner.orange {
+  background: #f97316 !important; /* Solid Orange */
+}
+
+.progress-bar-inner.proses,
+.progress-bar-inner.yellow {
+  background: #f97316 !important; /* Solid Orange for process too */
+}
+
+.progress-bar-inner.perhatian,
+.progress-bar-inner.red {
+  background: #ef4444 !important; /* Solid Red */
+}
+
+.progress-bar-inner.belum,
+.progress-bar-inner.gray {
+  background: #9ca3af !important; /* Solid Gray */
+}
+
+.progress-value-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+  color: #374151;
+}
+
+/* ============================================
+   4. STATUS BADGE - Solid Colors
+   ============================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.tercapai {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.hampir {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.status-badge.proses {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status-badge.perhatian {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-badge.belum {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ============================================
+   5. MODAL FORM - With Year Dropdown & IKU Dropdown
+   ============================================ */
+.evaluasi-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  padding: 1rem;
+}
+
+.evaluasi-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.evaluasi-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 750px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(20px);
+  transition: transform 0.3s;
+}
+
+.evaluasi-modal.active .evaluasi-modal-content {
+  transform: translateY(0);
+}
+
+.evaluasi-modal-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.evaluasi-modal-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.evaluasi-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.evaluasi-modal-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.evaluasi-modal-body {
+  padding: 1.25rem;
+}
+
+.evaluasi-modal-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.375rem;
+}
+
+.form-group label .required {
+  color: #ef4444;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  background: white;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Form Row - 2 columns */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* IKU Select with search */
+.iku-select-wrapper {
+  position: relative;
+}
+
+.iku-select-wrapper select {
+  padding-right: 2rem;
+}
+
+/* Selected IKU Info Card */
+.selected-iku-info {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.selected-iku-info .iku-name {
+  font-weight: 600;
+  color: #0369a1;
+  margin-bottom: 0.25rem;
+}
+
+.selected-iku-info .iku-detail {
+  color: #64748b;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.selected-iku-info .iku-detail span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Monthly Input Section */
+.monthly-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 1.5rem 0 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.monthly-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .monthly-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .monthly-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.month-input-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.month-input-card:hover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.month-input-card.has-value {
+  background: #ecfdf5;
+  border-color: #22c55e;
+}
+
+.month-input-card .month-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+}
+
+.month-input-card input {
+  width: 100%;
+  padding: 0.375rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.month-input-card input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* Accumulated Total */
+.accumulated-total {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.accumulated-total .label {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.accumulated-total .value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+/* ============================================
+   6. ACTION BUTTONS
+   ============================================ */
+.evaluasi-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  white-space: nowrap;
+  height: 34px;
+}
+
+.btn-action i {
+  font-size: 0.75rem;
+}
+
+.btn-action.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-action.primary:hover {
+  background: #2563eb;
+}
+
+.btn-action.success {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-action.success:hover {
+  background: #16a34a;
+}
+
+.btn-action.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-action.secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Action Icons in Table */
+.action-icons {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.action-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 0.75rem;
+}
+
+.action-icon.edit {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.action-icon.edit:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.action-icon.view {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.action-icon.view:hover {
+  background: #16a34a;
+  color: white;
+}
+
+.action-icon.delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.action-icon.delete:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* ============================================
+   7. RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .evaluasi-filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .evaluasi-filter-section .filter-group {
+    width: 100%;
+  }
+  
+  .evaluasi-filter-section select {
+    flex: 1;
+  }
+  
+  .evaluasi-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .evaluasi-actions .btn-action {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .evaluasi-modal-content {
+    max-width: 100%;
+    margin: 0.5rem;
+  }
+}

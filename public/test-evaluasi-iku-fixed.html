@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluasi IKU - Fixed</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/evaluasi-iku.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f3f4f6; min-height: 100vh; }
+    .page-container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+    .page-header { background: #1e3a5f; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .page-header h1 { font-size: 1.25rem; font-weight: 600; }
+    .page-header p { font-size: 0.75rem; opacity: 0.8; margin-top: 0.25rem; }
+    .toast { position: fixed; top: 1rem; right: 1rem; padding: 0.75rem 1rem; border-radius: 6px; color: white; font-size: 0.75rem; z-index: 9999; animation: slideIn 0.3s ease; }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    .toast.info { background: #3b82f6; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page-header">
+      <h1><i class="fas fa-chart-line"></i> Evaluasi IKU</h1>
+      <p>Input Realisasi Bulanan dan Monitoring Capaian Tahunan</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div id="evaluasi-summary-cards" class="evaluasi-iku-summary"></div>
+
+    <!-- Progress Overview -->
+    <div id="evaluasi-progress-overview"></div>
+
+    <!-- Filter Section - COMPACT -->
+    <div class="evaluasi-filter-section">
+      <div class="filter-group">
+        <label for="filter-tahun">TAHUN:</label>
+        <select id="filter-tahun">
+          <option value="2024">2024</option>
+          <option value="2025" selected>2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      <div class="evaluasi-actions">
+        <button class="btn-action primary" id="btn-tambah-data">
+          <i class="fas fa-plus"></i> Tambah
+        </button>
+        <button class="btn-action success" id="btn-unduh-laporan">
+          <i class="fas fa-download"></i> Unduh Laporan
+        </button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="evaluasi-table-container">
+      <table class="evaluasi-table">
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>INDIKATOR KINERJA UTAMA</th>
+            <th>PERSPEKTIF</th>
+            <th>TARGET</th>
+            <th>REALISASI</th>
+            <th>PROGRESS</th>
+            <th>STATUS</th>
+            <th>AKSI</th>
+          </tr>
+        </thead>
+        <tbody id="evaluasi-table-body">
+          <!-- Data will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="evaluasi-modal" id="modal-evaluasi-iku">
+    <div class="evaluasi-modal-content">
+      <div class="evaluasi-modal-header">
+        <h3 id="modal-evaluasi-title">Tambah Realisasi IKU</h3>
+        <button class="evaluasi-modal-close" type="button"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="form-evaluasi-iku">
+        <div class="evaluasi-modal-body">
+          <div class="form-group">
+            <label for="select-iku">Indikator Kinerja Utama *</label>
+            <select id="select-iku" required>
+              <option value="">-- Pilih IKU --</option>
+            </select>
+          </div>
+          <h4 style="margin: 1rem 0 0.5rem; font-size: 0.875rem; color: #374151;">Input Realisasi Bulanan</h4>
+          <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.75rem;">Masukkan nilai realisasi untuk setiap bulan</p>
+          <div id="monthly-inputs"></div>
+        </div>
+        <div class="evaluasi-modal-footer">
+          <button type="button" class="btn-action secondary btn-cancel-modal">Batal</button>
+          <button type="submit" class="btn-action primary"><i class="fas fa-save"></i> Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="evaluasi-modal" id="modal-detail-iku">
+    <div class="evaluasi-modal-content">
+      <div class="evaluasi-modal-header">
+        <h3>Detail Evaluasi IKU</h3>
+        <button class="evaluasi-modal-close" type="button"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="evaluasi-modal-body" id="detail-content-iku"></div>
+      <div class="evaluasi-modal-footer">
+        <button type="button" class="btn-action secondary btn-cancel-modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    // Sample Data - Contoh Data IKU
+    const sampleIKUData = [
+      {
+        id: '1',
+        indikator: 'Tingkat Kepuasan Pasien Rawat Inap',
+        satuan: '%',
+        pic: 'Dr. Siti Aminah',
+        sasaran_strategi: { sasaran: 'Meningkatkan Mutu Pelayanan', perspektif: 'Pelanggan' },
+        targetTahunIni: 85,
+        totalRealisasi: 82.5,
+        persentaseCapaian: 97.1,
+        status: 'Hampir Tercapai',
+        realisasiBulanan: {
+          1: { bulan: 1, namaBulan: 'Januari', realisasi: 80, keterangan: 'Survei Q1' },
+          2: { bulan: 2, namaBulan: 'Februari', realisasi: 81, keterangan: null },
+          3: { bulan: 3, namaBulan: 'Maret', realisasi: 82, keterangan: null },
+          4: { bulan: 4, namaBulan: 'April', realisasi: 83, keterangan: 'Survei Q2' },
+          5: { bulan: 5, namaBulan: 'Mei', realisasi: 84, keterangan: null },
+          6: { bulan: 6, namaBulan: 'Juni', realisasi: 85, keterangan: null },
+          7: { bulan: 7, namaBulan: 'Juli', realisasi: null, keterangan: null },
+          8: { bulan: 8, namaBulan: 'Agustus', realisasi: null, keterangan: null },
+          9: { bulan: 9, namaBulan: 'September', realisasi: null, keterangan: null },
+          10: { bulan: 10, namaBulan: 'Oktober', realisasi: null, keterangan: null },
+          11: { bulan: 11, namaBulan: 'November', realisasi: null, keterangan: null },
+          12: { bulan: 12, namaBulan: 'Desember', realisasi: null, keterangan: null }
+        }
+      },
+      {
+        id: '2',
+        indikator: 'Bed Occupancy Rate (BOR)',
+        satuan: '%',
+        pic: 'Dr. Ahmad Fauzi',
+        sasaran_strategi: { sasaran: 'Optimalisasi Kapasitas RS', perspektif: 'Proses Internal' },
+        targetTahunIni: 75,
+        totalRealisasi: 78,
+        persentaseCapaian: 104,
+        status: 'Tercapai',
+        realisasiBulanan: {
+          1: { bulan: 1, namaBulan: 'Januari', realisasi: 72, keterangan: null },
+          2: { bulan: 2, namaBulan: 'Februari', realisasi: 74, keterangan: null },
+          3: { bulan: 3, namaBulan: 'Maret', realisasi: 76, keterangan: null },
+          4: { bulan: 4, namaBulan: 'April', realisasi: 78, keterangan: null },
+          5: { bulan: 5, namaBulan: 'Mei', realisasi: 80, keterangan: null },
+          6: { bulan: 6, namaBulan: 'Juni', realisasi: 82, keterangan: null },
+          7: { bulan: 7, namaBulan: 'Juli', realisasi: null, keterangan: null },
+          8: { bulan: 8, namaBulan: 'Agustus', realisasi: null, keterangan: null },
+          9: { bulan: 9, namaBulan: 'September', realisasi: null, keterangan: null },
+          10: { bulan: 10, namaBulan: 'Oktober', realisasi: null, keterangan: null },
+          11: { bulan: 11, namaBulan: 'November', realisasi: null, keterangan: null },
+          12: { bulan: 12, namaBulan: 'Desember', realisasi: null, keterangan: null }
+        }
+      },
+      {
+        id: '3',
+        indikator: 'Pendapatan Operasional',
+        satuan: 'Miliar Rp',
+        pic: 'Drs. Budi Santoso',
+        sasaran_strategi: { sasaran: 'Meningkatkan Pendapatan', perspektif: 'Keuangan' },
+        targetTahunIni: 150,
+        totalRealisasi: 95,
+        persentaseCapaian: 63.3,
+        status: 'Dalam Proses',
+        realisasiBulanan: {
+          1: { bulan: 1, namaBulan: 'Januari', realisasi: 12, keterangan: null },
+          2: { bulan: 2, namaBulan: 'Februari', realisasi: 14, keterangan: null },
+          3: { bulan: 3, namaBulan: 'Maret', realisasi: 16, keterangan: null },
+          4: { bulan: 4, namaBulan: 'April', realisasi: 17, keterangan: null },
+          5: { bulan: 5, namaBulan: 'Mei', realisasi: 18, keterangan: null },
+          6: { bulan: 6, namaBulan: 'Juni', realisasi: 18, keterangan: null },
+          7: { bulan: 7, namaBulan: 'Juli', realisasi: null, keterangan: null },
+          8: { bulan: 8, namaBulan: 'Agustus', realisasi: null, keterangan: null },
+          9: { bulan: 9, namaBulan: 'September', realisasi: null, keterangan: null },
+          10: { bulan: 10, namaBulan: 'Oktober', realisasi: null, keterangan: null },
+          11: { bulan: 11, namaBulan: 'November', realisasi: null, keterangan: null },
+          12: { bulan: 12, namaBulan: 'Desember', realisasi: null, keterangan: null }
+        }
+      },
+      {
+        id: '4',
+        indikator: 'Jumlah Pelatihan SDM',
+        satuan: 'Kegiatan',
+        pic: 'Ns. Dewi Lestari',
+        sasaran_strategi: { sasaran: 'Pengembangan Kompetensi SDM', perspektif: 'Pembelajaran' },
+        targetTahunIni: 24,
+        totalRealisasi: 8,
+        persentaseCapaian: 33.3,
+        status: 'Perlu Perhatian',
+        realisasiBulanan: {
+          1: { bulan: 1, namaBulan: 'Januari', realisasi: 1, keterangan: 'Pelatihan BLS' },
+          2: { bulan: 2, namaBulan: 'Februari', realisasi: 2, keterangan: 'Workshop K3' },
+          3: { bulan: 3, namaBulan: 'Maret', realisasi: 1, keterangan: null },
+          4: { bulan: 4, namaBulan: 'April', realisasi: 2, keterangan: null },
+          5: { bulan: 5, namaBulan: 'Mei', realisasi: 1, keterangan: null },
+          6: { bulan: 6, namaBulan: 'Juni', realisasi: 1, keterangan: null },
+          7: { bulan: 7, namaBulan: 'Juli', realisasi: null, keterangan: null },
+          8: { bulan: 8, namaBulan: 'Agustus', realisasi: null, keterangan: null },
+          9: { bulan: 9, namaBulan: 'September', realisasi: null, keterangan: null },
+          10: { bulan: 10, namaBulan: 'Oktober', realisasi: null, keterangan: null },
+          11: { bulan: 11, namaBulan: 'November', realisasi: null, keterangan: null },
+          12: { bulan: 12, namaBulan: 'Desember', realisasi: null, keterangan: null }
+        }
+      },
+      {
+        id: '5',
+        indikator: 'Waktu Tunggu Rawat Jalan',
+        satuan: 'Menit',
+        pic: 'Dr. Rina Wati',
+        sasaran_strategi: { sasaran: 'Efisiensi Pelayanan', perspektif: 'Proses Internal' },
+        targetTahunIni: 60,
+        totalRealisasi: 0,
+        persentaseCapaian: 0,
+        status: 'Belum Ada Realisasi',
+        realisasiBulanan: {}
+      }
+    ];
+
+    const BULAN_SHORT = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    let currentData = [...sampleIKUData];
+    let selectedYear = 2025;
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Format number
+    function formatNumber(num) {
+      if (num === null || num === undefined) return '-';
+      return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
+    }
+
+    // Get status class
+    function getStatusClass(status) {
+      const map = { 'Tercapai': 'tercapai', 'Hampir Tercapai': 'hampir', 'Dalam Proses': 'proses', 'Perlu Perhatian': 'perhatian', 'Belum Ada Realisasi': 'belum' };
+      return map[status] || 'belum';
+    }
+
+    // Render summary cards
+    function renderSummary() {
+      const summary = {
+        totalIKU: currentData.length,
+        tercapai: currentData.filter(d => d.status === 'Tercapai').length,
+        hampirTercapai: currentData.filter(d => d.status === 'Hampir Tercapai').length,
+        dalamProses: currentData.filter(d => d.status === 'Dalam Proses').length,
+        perluPerhatian: currentData.filter(d => d.status === 'Perlu Perhatian').length,
+        belumAdaRealisasi: currentData.filter(d => d.status === 'Belum Ada Realisasi').length
+      };
+
+      const avgCapaian = currentData.filter(d => d.persentaseCapaian > 0).reduce((sum, d) => sum + d.persentaseCapaian, 0) / 
+                         (currentData.filter(d => d.persentaseCapaian > 0).length || 1);
+
+      document.getElementById('evaluasi-summary-cards').innerHTML = `
+        <div class="summary-card total"><div class="card-icon"><i class="fas fa-chart-bar"></i></div><div class="card-value">${summary.totalIKU}</div><div class="card-label">Total IKU</div></div>
+        <div class="summary-card tercapai"><div class="card-icon"><i class="fas fa-check-circle"></i></div><div class="card-value">${summary.tercapai}</div><div class="card-label">Tercapai</div></div>
+        <div class="summary-card hampir"><div class="card-icon"><i class="fas fa-arrow-trend-up"></i></div><div class="card-value">${summary.hampirTercapai}</div><div class="card-label">Hampir Tercapai</div></div>
+        <div class="summary-card proses"><div class="card-icon"><i class="fas fa-clock"></i></div><div class="card-value">${summary.dalamProses}</div><div class="card-label">Dalam Proses</div></div>
+        <div class="summary-card perhatian"><div class="card-icon"><i class="fas fa-triangle-exclamation"></i></div><div class="card-value">${summary.perluPerhatian}</div><div class="card-label">Perlu Perhatian</div></div>
+        <div class="summary-card belum"><div class="card-icon"><i class="fas fa-circle-minus"></i></div><div class="card-value">${summary.belumAdaRealisasi}</div><div class="card-label">Belum Ada Data</div></div>
+      `;
+
+      document.getElementById('evaluasi-progress-overview').innerHTML = `
+        <div class="progress-overview-card">
+          <h3>Rata-rata Capaian IKU ${selectedYear}</h3>
+          <div class="progress-value">${avgCapaian.toFixed(1)}%</div>
+          <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${Math.min(avgCapaian, 100)}%"></div></div>
+        </div>
+      `;
+    }
+
+    // Render table
+    function renderTable() {
+      const tbody = document.getElementById('evaluasi-table-body');
+      if (currentData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><h4>Belum Ada Data</h4><p>Belum ada data IKU untuk tahun ${selectedYear}</p><button class="btn-action primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Tambah Data</button></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = currentData.map((item, idx) => {
+        const statusClass = getStatusClass(item.status);
+        const progressWidth = Math.min(item.persentaseCapaian || 0, 100);
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td class="indikator-cell"><div class="indikator-name text-truncate" title="${item.indikator}">${item.indikator}</div><div class="sasaran-name text-truncate">${item.sasaran_strategi?.sasaran || '-'}</div></td>
+            <td>${item.sasaran_strategi?.perspektif || '-'}</td>
+            <td class="text-right">${formatNumber(item.targetTahunIni)} ${item.satuan}</td>
+            <td class="text-right">${formatNumber(item.totalRealisasi)} ${item.satuan}</td>
+            <td class="progress-cell"><div class="progress-bar-wrapper"><div class="progress-bar"><div class="progress-bar-inner ${statusClass}" style="width: ${progressWidth}%"></div></div><span class="progress-value-text">${(item.persentaseCapaian || 0).toFixed(1)}%</span></div></td>
+            <td><span class="status-badge ${statusClass}"><i class="fas fa-${statusClass === 'tercapai' ? 'check-circle' : statusClass === 'hampir' ? 'arrow-trend-up' : statusClass === 'proses' ? 'clock' : statusClass === 'perhatian' ? 'triangle-exclamation' : 'circle-minus'}"></i> ${item.status}</span></td>
+            <td><div class="action-icons"><button class="action-icon edit" onclick="openEditModal('${item.id}')" title="Edit"><i class="fas fa-edit"></i></button><button class="action-icon view" onclick="viewDetail('${item.id}')" title="Detail"><i class="fas fa-eye"></i></button><button class="action-icon delete" onclick="deleteData('${item.id}')" title="Hapus"><i class="fas fa-trash"></i></button></div></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Open Add Modal
+    function openAddModal() {
+      document.getElementById('modal-evaluasi-title').textContent = 'Tambah Realisasi IKU';
+      document.getElementById('form-evaluasi-iku').reset();
+      
+      // Populate IKU select
+      const select = document.getElementById('select-iku');
+      select.innerHTML = '<option value="">-- Pilih IKU --</option>' + 
+        currentData.map(iku => `<option value="${iku.id}">${iku.indikator} (${iku.sasaran_strategi?.perspektif || '-'})</option>`).join('');
+      select.disabled = false;
+      
+      renderMonthlyInputs(null);
+      document.getElementById('modal-evaluasi-iku').classList.add('active');
+    }
+
+    // Open Edit Modal
+    function openEditModal(id) {
+      const item = currentData.find(d => d.id === id);
+      if (!item) return;
+      
+      document.getElementById('modal-evaluasi-title').textContent = 'Edit Realisasi IKU';
+      
+      const select = document.getElementById('select-iku');
+      select.innerHTML = `<option value="${item.id}">${item.indikator}</option>`;
+      select.value = item.id;
+      select.disabled = true;
+      
+      renderMonthlyInputs(item.realisasiBulanan);
+      document.getElementById('modal-evaluasi-iku').classList.add('active');
+    }
+
+    // Render monthly inputs
+    function renderMonthlyInputs(existingData) {
+      const container = document.getElementById('monthly-inputs');
+      container.innerHTML = `
+        <div class="monthly-grid">
+          ${BULAN_SHORT.slice(1).map((bulan, idx) => {
+            const monthNum = idx + 1;
+            const existing = existingData ? existingData[monthNum] : null;
+            const hasValue = existing && existing.realisasi !== null;
+            return `
+              <div class="month-input-card ${hasValue ? 'has-value' : ''}">
+                <div class="month-label">${bulan}</div>
+                <input type="number" step="0.01" name="bulan_${monthNum}" placeholder="0" value="${hasValue ? existing.realisasi : ''}" onchange="updateTotal()">
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="accumulated-total">
+          <div class="label">Total Realisasi Tahunan</div>
+          <div class="value" id="total-realisasi-value">0</div>
+        </div>
+      `;
+      updateTotal();
+    }
+
+    // Update total
+    function updateTotal() {
+      let total = 0;
+      for (let i = 1; i <= 12; i++) {
+        const input = document.querySelector(`input[name="bulan_${i}"]`);
+        if (input && input.value) total += parseFloat(input.value) || 0;
+      }
+      document.getElementById('total-realisasi-value').textContent = formatNumber(total);
+    }
+
+    // View Detail
+    function viewDetail(id) {
+      const item = currentData.find(d => d.id === id);
+      if (!item) return;
+      
+      const content = document.getElementById('detail-content-iku');
+      content.innerHTML = `
+        <div class="detail-header">
+          <h4>${item.indikator}</h4>
+          <p class="text-muted">${item.sasaran_strategi?.sasaran || '-'}</p>
+        </div>
+        <div class="detail-info">
+          <div class="info-row"><span class="info-label">Perspektif:</span><span class="info-value">${item.sasaran_strategi?.perspektif || '-'}</span></div>
+          <div class="info-row"><span class="info-label">Target ${selectedYear}:</span><span class="info-value">${formatNumber(item.targetTahunIni)} ${item.satuan}</span></div>
+          <div class="info-row"><span class="info-label">Total Realisasi:</span><span class="info-value">${formatNumber(item.totalRealisasi)} ${item.satuan}</span></div>
+          <div class="info-row"><span class="info-label">Capaian:</span><span class="info-value">${(item.persentaseCapaian || 0).toFixed(1)}%</span></div>
+          <div class="info-row"><span class="info-label">Status:</span><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></div>
+          <div class="info-row"><span class="info-label">PIC:</span><span class="info-value">${item.pic || '-'}</span></div>
+        </div>
+        <h5 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.875rem;">Realisasi Bulanan</h5>
+        <table class="detail-table">
+          <thead><tr><th>Bulan</th><th>Realisasi</th><th>Keterangan</th></tr></thead>
+          <tbody>
+            ${Object.values(item.realisasiBulanan || {}).map(m => `
+              <tr class="${m.realisasi !== null ? 'has-data' : ''}">
+                <td>${m.namaBulan}</td>
+                <td class="text-right">${m.realisasi !== null ? formatNumber(m.realisasi) : '-'}</td>
+                <td>${m.keterangan || '-'}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada data</td></tr>'}
+          </tbody>
+          <tfoot><tr><td><strong>Total</strong></td><td class="text-right"><strong>${formatNumber(item.totalRealisasi)}</strong></td><td></td></tr></tfoot>
+        </table>
+      `;
+      document.getElementById('modal-detail-iku').classList.add('active');
+    }
+
+    // Delete data
+    function deleteData(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+      currentData = currentData.filter(d => d.id !== id);
+      renderSummary();
+      renderTable();
+      showToast('Data berhasil dihapus', 'success');
+    }
+
+    // Download Report - FIXED
+    function downloadReport() {
+      showToast('Menyiapkan laporan...', 'info');
+      
+      const exportData = currentData.map(item => ({
+        'Indikator': item.indikator,
+        'Sasaran Strategi': item.sasaran_strategi?.sasaran || '-',
+        'Perspektif': item.sasaran_strategi?.perspektif || '-',
+        'Target': item.targetTahunIni,
+        'Realisasi': item.totalRealisasi,
+        'Capaian (%)': item.persentaseCapaian?.toFixed(1) || 0,
+        'Status': item.status,
+        'Satuan': item.satuan,
+        'PIC': item.pic || '-'
+      }));
+
+      if (typeof XLSX !== 'undefined') {
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Evaluasi IKU');
+        XLSX.writeFile(wb, `Evaluasi_IKU_${selectedYear}.xlsx`);
+        showToast('Laporan berhasil diunduh', 'success');
+      } else {
+        // Fallback to CSV
+        const headers = Object.keys(exportData[0] || {}).join(',');
+        const rows = exportData.map(row => Object.values(row).join(',')).join('\n');
+        const csv = headers + '\n' + rows;
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Evaluasi_IKU_${selectedYear}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Laporan berhasil diunduh (CSV)', 'success');
+      }
+    }
+
+    // Close modal
+    function closeModal() {
+      document.querySelectorAll('.evaluasi-modal').forEach(m => m.classList.remove('active'));
+    }
+
+    // Form submit
+    document.getElementById('form-evaluasi-iku').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const ikuId = document.getElementById('select-iku').value;
+      if (!ikuId) { showToast('Pilih IKU terlebih dahulu', 'error'); return; }
+      
+      let total = 0;
+      for (let i = 1; i <= 12; i++) {
+        const input = document.querySelector(`input[name="bulan_${i}"]`);
+        if (input && input.value) total += parseFloat(input.value) || 0;
+      }
+      
+      const item = currentData.find(d => d.id === ikuId);
+      if (item) {
+        item.totalRealisasi = total;
+        item.persentaseCapaian = item.targetTahunIni > 0 ? (total / item.targetTahunIni) * 100 : 0;
+        if (item.persentaseCapaian >= 100) item.status = 'Tercapai';
+        else if (item.persentaseCapaian >= 75) item.status = 'Hampir Tercapai';
+        else if (item.persentaseCapaian >= 50) item.status = 'Dalam Proses';
+        else if (item.persentaseCapaian > 0) item.status = 'Perlu Perhatian';
+        else item.status = 'Belum Ada Realisasi';
+      }
+      
+      closeModal();
+      renderSummary();
+      renderTable();
+      showToast('Data berhasil disimpan', 'success');
+    });
+
+    // Event listeners
+    document.getElementById('btn-tambah-data').addEventListener('click', openAddModal);
+    document.getElementById('btn-unduh-laporan').addEventListener('click', downloadReport);
+    document.getElementById('filter-tahun').addEventListener('change', function(e) {
+      selectedYear = parseInt(e.target.value);
+      renderSummary();
+      renderTable();
+    });
+    document.querySelectorAll('.evaluasi-modal-close, .btn-cancel-modal').forEach(btn => btn.addEventListener('click', closeModal));
+    document.querySelectorAll('.evaluasi-modal').forEach(modal => modal.addEventListener('click', e => { if (e.target === modal) closeModal(); }));
+
+    // Initialize
+    renderSummary();
+    renderTable();
+  </script>
+</body>
+</html>
