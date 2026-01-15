@@ -1,0 +1,193 @@
+/* Pengaturan Page - Table and Badge Fixes */
+
+/* Fix badge overflow in tables */
+.table .badge,
+.table-striped .badge,
+.table-responsive .badge {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Fix table layout for user management */
+.user-table-container,
+.all-users-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.user-table-container table,
+.all-users-table-container table {
+  width: 100%;
+  table-layout: fixed;
+  min-width: 700px;
+}
+
+/* Column widths */
+.user-table-container th:nth-child(1),
+.user-table-container td:nth-child(1) { width: 18%; }
+
+.user-table-container th:nth-child(2),
+.user-table-container td:nth-child(2) { width: 20%; }
+
+.user-table-container th:nth-child(3),
+.user-table-container td:nth-child(3) { width: 18%; }
+
+.user-table-container th:nth-child(4),
+.user-table-container td:nth-child(4) { width: 14%; }
+
+.user-table-container th:nth-child(5),
+.user-table-container td:nth-child(5) { 
+  width: 10%; 
+  text-align: center;
+}
+
+.user-table-container th:nth-child(6),
+.user-table-container td:nth-child(6) { 
+  width: 10%; 
+  text-align: center;
+}
+
+/* All users table column widths */
+.all-users-table-container th:nth-child(1),
+.all-users-table-container td:nth-child(1) { width: 15%; }
+
+.all-users-table-container th:nth-child(2),
+.all-users-table-container td:nth-child(2) { width: 18%; }
+
+.all-users-table-container th:nth-child(3),
+.all-users-table-container td:nth-child(3) { width: 10%; }
+
+.all-users-table-container th:nth-child(4),
+.all-users-table-container td:nth-child(4) { width: 15%; }
+
+.all-users-table-container th:nth-child(5),
+.all-users-table-container td:nth-child(5) { 
+  width: 10%; 
+  text-align: center;
+}
+
+.all-users-table-container th:nth-child(6),
+.all-users-table-container td:nth-child(6) { width: 17%; }
+
+.all-users-table-container th:nth-child(7),
+.all-users-table-container td:nth-child(7) { 
+  width: 15%; 
+  text-align: center;
+}
+
+/* Badge colors */
+.badge-success {
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+.badge-warning {
+  background-color: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.badge-danger {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+.badge-info {
+  background-color: #17a2b8 !important;
+  color: white !important;
+}
+
+.badge-secondary {
+  background-color: #6c757d !important;
+  color: white !important;
+}
+
+/* Button group in table */
+.user-table-container .btn-group,
+.all-users-table-container .btn-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.user-table-container .btn-sm,
+.all-users-table-container .btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Select in table */
+.user-table-container select.form-control,
+.all-users-table-container select.form-control {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  min-width: 90px;
+}
+
+/* Cell text handling */
+.user-table-container td,
+.all-users-table-container td {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  vertical-align: middle;
+}
+
+/* Add Organization Button */
+.btn-add-organization {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-add-organization:hover {
+  background: linear-gradient(135deg, #218838, #1ea97c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Modal styling */
+.modal-add-org {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-add-org .modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 650px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-table-container table,
+  .all-users-table-container table {
+    min-width: 900px;
+  }
+}

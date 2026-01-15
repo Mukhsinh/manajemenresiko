@@ -132,16 +132,36 @@ const EvaluasiIKUEnhancedV2 = (function() {
   async function loadIKUOptions() {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await fetch('/api/indikator-kinerja-utama', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to load IKU');
       
-      const data = await response.json();
+      // Try authenticated endpoint first
+      let data = [];
+      try {
+        const response = await fetch('/api/indikator-kinerja-utama', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (response.ok) {
+          data = await response.json();
+        }
+      } catch (authError) {
+        console.warn('Auth endpoint failed:', authError);
+      }
+      
+      // Fallback to public endpoint
+      if (!data || data.length === 0) {
+        try {
+          const publicResponse = await fetch('/api/indikator-kinerja-utama/public');
+          if (publicResponse.ok) {
+            data = await publicResponse.json();
+          }
+        } catch (publicError) {
+          console.warn('Public endpoint failed:', publicError);
+        }
+      }
+      
+      console.log('V2 loaded IKU options:', data?.length || 0, 'items');
       allIKUOptions = data || [];
     } catch (error) {
       console.error('Error loading IKU options:', error);
@@ -155,18 +175,67 @@ const EvaluasiIKUEnhancedV2 = (function() {
       showLoading(true);
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       
-      const response = await fetch(`/api/evaluasi-iku-bulanan/summary?tahun=${selectedYear}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to load data');
+      let result = { data: [], summary: {} };
       
-      const result = await response.json();
+      // Try summary endpoint first
+      try {
+        const response = await fetch(`/api/evaluasi-iku-bulanan/summary?tahun=${selectedYear}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (response.ok) {
+          result = await response.json();
+        }
+      } catch (summaryError) {
+        console.warn('Summary endpoint failed:', summaryError);
+      }
+      
+      // If no data, load IKU directly
+      if (!result.data || result.data.length === 0) {
+        try {
+          const ikuResponse = await fetch('/api/indikator-kinerja-utama', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (ikuResponse.ok) {
+            const ikuData = await ikuResponse.json();
+            result.data = (ikuData || []).map(iku => ({
+              id: iku.id,
+              indikator: iku.indikator,
+              satuan: iku.satuan,
+              pic: iku.pic,
+              sasaran_strategi: iku.sasaran_strategi,
+              rencana_strategis: iku.rencana_strategis,
+              targetTahunIni: iku[`target_${selectedYear}`] || iku.target_nilai || 0,
+              totalRealisasi: 0,
+              realisasiBulanan: {},
+              jumlahBulanTerisi: 0,
+              status: 'Belum Ada Realisasi',
+              persentaseCapaian: null
+            }));
+            result.summary = {
+              totalIKU: result.data.length,
+              tercapai: 0,
+              hampirTercapai: 0,
+              dalamProses: 0,
+              perluPerhatian: 0,
+              belumAdaRealisasi: result.data.length,
+              rataRataCapaian: 0
+            };
+          }
+        } catch (ikuError) {
+          console.warn('IKU endpoint failed:', ikuError);
+        }
+      }
+      
       currentData = result.data || [];
       summaryData = result.summary || {};
+      
+      console.log('V2 loaded data:', currentData.length, 'items');
       
       renderSummaryCards();
       filterAndRenderData();

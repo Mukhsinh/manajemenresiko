@@ -210,7 +210,7 @@ app.use('/api/peluang', require('./routes/peluang'));
 app.use('/api/kri', require('./routes/kri'));
 // app.use('/api/loss-event', require('./routes/loss-event'));
 app.use('/api/ews', require('./routes/ews'));
-// app.use('/api/organizations', require('./routes/organizations'));
+app.use('/api/organizations', require('./routes/organizations'));
 app.use('/api/pengaturan', require('./routes/pengaturan'));
 // app.use('/api/chat', require('./routes/chat'));
 app.use('/api/ai-assistant', require('./routes/ai-assistant-direct'));

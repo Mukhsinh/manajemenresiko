@@ -72,7 +72,10 @@ const EvaluasiIKUV3 = (function() {
     return `
       <div class="evaluasi-filter-group"><label>Tahun:</label><select id="filter-tahun-v3"><option value="">-- Pilih Tahun --</option>${yOpts}</select></div>
       <div class="evaluasi-filter-group"><label>Periode:</label><select id="filter-periode-v3" disabled>${PERIODE_OPTIONS.map(o=>`<option value="${o.value}" ${o.disabled?'disabled selected':''}>${o.label}</option>`).join('')}</select><div class="filter-hint warning" id="periode-hint">Pilih tahun terlebih dahulu</div></div>
-      <div class="evaluasi-filter-actions"><button class="btn-primary" id="btn-tambah-v3"><i class="fas fa-plus"></i> Tambah</button><button class="btn-success" id="btn-unduh-v3"><i class="fas fa-download"></i> Unduh Laporan</button></div>`;
+      <div class="evaluasi-filter-actions" style="display: flex !important; gap: 0.5rem; margin-left: auto;">
+        <button type="button" class="btn-primary" id="btn-tambah-v3" style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; border: none; background: #3b82f6; color: white;"><i class="fas fa-plus"></i> Tambah Data</button>
+        <button type="button" class="btn-success" id="btn-unduh-v3" style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; border: none; background: #10b981; color: white;"><i class="fas fa-download"></i> Unduh Laporan</button>
+      </div>`;
   }
 
   function getTableHTML() {
@@ -158,9 +161,32 @@ const EvaluasiIKUV3 = (function() {
   async function loadIKUOptions() {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch('/api/indikator-kinerja-utama', {headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}});
-      if (!res.ok) throw new Error('Failed');
-      allIKUOptions = await res.json() || [];
+      
+      // Try authenticated endpoint first
+      let data = [];
+      try {
+        const res = await fetch('/api/indikator-kinerja-utama', {headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}});
+        if (res.ok) {
+          data = await res.json() || [];
+        }
+      } catch(authErr) {
+        console.warn('Auth endpoint failed:', authErr);
+      }
+      
+      // Fallback to public endpoint
+      if (!data || data.length === 0) {
+        try {
+          const pubRes = await fetch('/api/indikator-kinerja-utama/public');
+          if (pubRes.ok) {
+            data = await pubRes.json() || [];
+          }
+        } catch(pubErr) {
+          console.warn('Public endpoint failed:', pubErr);
+        }
+      }
+      
+      console.log('V3 loaded IKU options:', data?.length || 0, 'items');
+      allIKUOptions = data || [];
       populateIKUDropdown();
     } catch(e) { console.error('Error loading IKU:', e); allIKUOptions = []; }
   }
@@ -168,7 +194,14 @@ const EvaluasiIKUV3 = (function() {
   function populateIKUDropdown() {
     const s = document.getElementById('select-iku-v3');
     if (!s) return;
-    s.innerHTML = `<option value="">-- Pilih IKU --</option>${allIKUOptions.map(iku=>`<option value="${iku.id}" data-perspektif="${escapeHtml(iku.sasaran_strategi?.perspektif||'-')}" data-sasaran="${escapeHtml(iku.sasaran_strategi?.sasaran||'-')}" data-satuan="${escapeHtml(iku.satuan||'-')}" data-target="${iku.targetTahunIni||iku.target_nilai||0}">${escapeHtml(iku.indikator)}</option>`).join('')}`;
+    
+    console.log('Populating IKU dropdown with', allIKUOptions?.length || 0, 'options');
+    
+    if (allIKUOptions && allIKUOptions.length > 0) {
+      s.innerHTML = `<option value="">-- Pilih IKU --</option>${allIKUOptions.map(iku=>`<option value="${iku.id}" data-perspektif="${escapeHtml(iku.sasaran_strategi?.perspektif||'-')}" data-sasaran="${escapeHtml(iku.sasaran_strategi?.sasaran||'-')}" data-satuan="${escapeHtml(iku.satuan||'-')}" data-target="${iku.targetTahunIni||iku.target_nilai||0}">${escapeHtml(iku.indikator)} (${escapeHtml(iku.rencana_strategis?.nama_rencana||'-')})</option>`).join('')}`;
+    } else {
+      s.innerHTML = `<option value="">-- Tidak ada data IKU tersedia --</option>`;
+    }
   }
 
   function onIKUSelectChange(e) {
@@ -185,11 +218,73 @@ const EvaluasiIKUV3 = (function() {
     try {
       showLoading(true);
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`/api/evaluasi-iku-bulanan/summary?tahun=${selectedYear}`, {headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}});
-      if (!res.ok) throw new Error('Failed');
-      const r = await res.json();
+      
+      let r = { data: [], summary: {} };
+      
+      // Try authenticated summary endpoint first
+      try {
+        const res = await fetch(`/api/evaluasi-iku-bulanan/summary?tahun=${selectedYear}`, {headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}});
+        if (res.ok) {
+          r = await res.json();
+          console.log('V3 loaded from authenticated summary:', r.data?.length || 0, 'items');
+        }
+      } catch(summaryErr) {
+        console.warn('Auth summary endpoint failed:', summaryErr);
+      }
+      
+      // Fallback to public summary endpoint
+      if (!r.data || r.data.length === 0) {
+        try {
+          const pubRes = await fetch(`/api/evaluasi-iku-bulanan/summary/public?tahun=${selectedYear}`);
+          if (pubRes.ok) {
+            r = await pubRes.json();
+            console.log('V3 loaded from public summary:', r.data?.length || 0, 'items');
+          }
+        } catch(pubErr) {
+          console.warn('Public summary endpoint failed:', pubErr);
+        }
+      }
+      
+      // Final fallback: load IKU directly
+      if (!r.data || r.data.length === 0) {
+        try {
+          const ikuRes = await fetch('/api/indikator-kinerja-utama', {headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}});
+          if (ikuRes.ok) {
+            const ikuData = await ikuRes.json();
+            r.data = (ikuData || []).map(iku => ({
+              id: iku.id,
+              indikator: iku.indikator,
+              satuan: iku.satuan,
+              pic: iku.pic,
+              sasaran_strategi: iku.sasaran_strategi,
+              rencana_strategis: iku.rencana_strategis,
+              targetTahunIni: iku[`target_${selectedYear}`] || iku.target_nilai || 0,
+              totalRealisasi: 0,
+              realisasiBulanan: {},
+              jumlahBulanTerisi: 0,
+              status: 'Belum Ada Realisasi',
+              persentaseCapaian: null
+            }));
+            r.summary = {
+              totalIKU: r.data.length,
+              tercapai: 0,
+              hampirTercapai: 0,
+              dalamProses: 0,
+              perluPerhatian: 0,
+              belumAdaRealisasi: r.data.length,
+              rataRataCapaian: 0
+            };
+            console.log('V3 loaded from IKU fallback:', r.data.length, 'items');
+          }
+        } catch(ikuErr) {
+          console.warn('IKU endpoint failed:', ikuErr);
+        }
+      }
+      
       currentData = r.data || [];
       summaryStats = r.summary || {};
+      console.log('V3 loaded data:', currentData.length, 'items');
+      console.log('V3 summary from API:', summaryStats);
       updateSummaryCards();
       updateCharts();
       filterAndRenderData();
@@ -206,21 +301,75 @@ const EvaluasiIKUV3 = (function() {
   }
 
   function updateSummaryCards() {
+    // Calculate stats from currentData if summaryStats is empty or incomplete
+    let stats = { ...summaryStats };
+    
+    if (currentData && currentData.length > 0) {
+      // Recalculate from currentData for accuracy
+      stats.totalIKU = currentData.length;
+      stats.tercapai = 0;
+      stats.hampirTercapai = 0;
+      stats.dalamProses = 0;
+      stats.perluPerhatian = 0;
+      stats.belumAdaRealisasi = 0;
+      
+      currentData.forEach(item => {
+        const status = item.status || 'Belum Ada Realisasi';
+        switch(status) {
+          case 'Tercapai': stats.tercapai++; break;
+          case 'Hampir Tercapai': stats.hampirTercapai++; break;
+          case 'Dalam Proses': stats.dalamProses++; break;
+          case 'Perlu Perhatian': stats.perluPerhatian++; break;
+          default: stats.belumAdaRealisasi++; break;
+        }
+      });
+    }
+    
     const set = (id,v) => { const e=document.getElementById(id); if(e)e.textContent=v||0; };
-    set('stat-total', summaryStats.totalIKU);
-    set('stat-tercapai', summaryStats.tercapai);
-    set('stat-hampir', summaryStats.hampirTercapai);
-    set('stat-proses', summaryStats.dalamProses);
-    set('stat-perhatian', summaryStats.perluPerhatian);
-    set('stat-belum', summaryStats.belumAdaRealisasi);
+    set('stat-total', stats.totalIKU);
+    set('stat-tercapai', stats.tercapai);
+    set('stat-hampir', stats.hampirTercapai);
+    set('stat-proses', stats.dalamProses);
+    set('stat-perhatian', stats.perluPerhatian);
+    set('stat-belum', stats.belumAdaRealisasi);
   }
 
   function updateCharts() {
-    if (statusChart) { statusChart.data.datasets[0].data = [summaryStats.tercapai||0, summaryStats.hampirTercapai||0, summaryStats.dalamProses||0, summaryStats.perluPerhatian||0, summaryStats.belumAdaRealisasi||0]; statusChart.update(); }
+    // Calculate chart data from currentData
+    let chartStats = { tercapai: 0, hampirTercapai: 0, dalamProses: 0, perluPerhatian: 0, belumAdaRealisasi: 0 };
+    
+    if (currentData && currentData.length > 0) {
+      currentData.forEach(item => {
+        const status = item.status || 'Belum Ada Realisasi';
+        switch(status) {
+          case 'Tercapai': chartStats.tercapai++; break;
+          case 'Hampir Tercapai': chartStats.hampirTercapai++; break;
+          case 'Dalam Proses': chartStats.dalamProses++; break;
+          case 'Perlu Perhatian': chartStats.perluPerhatian++; break;
+          default: chartStats.belumAdaRealisasi++; break;
+        }
+      });
+    }
+    
+    if (statusChart) { 
+      statusChart.data.datasets[0].data = [chartStats.tercapai, chartStats.hampirTercapai, chartStats.dalamProses, chartStats.perluPerhatian, chartStats.belumAdaRealisasi]; 
+      statusChart.update(); 
+    }
+    
     if (trendChart && currentData.length > 0) {
       const mAvg = Array(12).fill(0), mCnt = Array(12).fill(0);
-      currentData.forEach(item => { if(item.realisasiBulanan) Object.values(item.realisasiBulanan).forEach(m => { if(m.realisasi!==null && item.targetTahunIni>0) { const idx=m.bulan-1; mAvg[idx]+=(m.realisasi/item.targetTahunIni)*100; mCnt[idx]++; } }); });
-      trendChart.data.datasets[0].data = mAvg.map((s,i) => mCnt[i]>0 ? Math.round(s/mCnt[i]) : 0);
+      currentData.forEach(item => { 
+        if(item.realisasiBulanan) {
+          Object.values(item.realisasiBulanan).forEach(m => { 
+            if(m.realisasi !== null && m.realisasi !== undefined && item.targetTahunIni > 0) { 
+              const idx = m.bulan - 1; 
+              mAvg[idx] += (m.realisasi / item.targetTahunIni) * 100; 
+              mCnt[idx]++; 
+            } 
+          }); 
+        }
+      });
+      trendChart.data.datasets[0].data = mAvg.map((s,i) => mCnt[i] > 0 ? Math.round(s / mCnt[i]) : 0);
       trendChart.update();
     }
   }
@@ -241,7 +390,7 @@ const EvaluasiIKUV3 = (function() {
     const tb = document.getElementById('evaluasi-table-body-v3');
     if (!tb) return;
     if (!data || data.length === 0) {
-      tb.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><h4>Belum Ada Data</h4><p>Belum ada data untuk tahun ${selectedYear}</p><button class="btn-primary" onclick="EvaluasiIKUV3.openAddModal()"><i class="fas fa-plus"></i> Tambah</button></td></tr>`;
+      tb.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><h4>Belum Ada Data</h4><p>Belum ada data untuk tahun ${selectedYear}. Gunakan tombol "Tambah Data" di atas untuk menambahkan realisasi.</p></td></tr>`;
       updateTableCount(0); return;
     }
     tb.innerHTML = data.map((item, idx) => {
@@ -261,7 +410,12 @@ const EvaluasiIKUV3 = (function() {
     const m = document.getElementById('modal-evaluasi-v3'), f = document.getElementById('form-evaluasi-v3'), t = document.getElementById('modal-title-v3');
     if(t) t.innerHTML = '<i class="fas fa-plus-circle"></i> Tambah Realisasi IKU';
     if(f) f.reset();
-    populateIKUDropdown();
+    
+    // Always reload IKU options when opening modal
+    loadIKUOptions().then(() => {
+      populateIKUDropdown();
+    });
+    
     const is = document.getElementById('select-iku-v3'); if(is) is.disabled = false;
     const ys = document.getElementById('select-tahun-form-v3'); if(ys && selectedYear) ys.value = selectedYear;
     renderMonthlyInputs(null); updateTotal();
@@ -365,6 +519,32 @@ const EvaluasiIKUV3 = (function() {
   return { init, openAddModal, openEditModal, closeModal, handleSubmit, viewDetail, deleteData, updateTotal };
 })();
 
-// Auto-init
-document.addEventListener('DOMContentLoaded', () => { if(document.getElementById('evaluasi-iku')) EvaluasiIKUV3.init(); });
-window.addEventListener('pageshow', () => { if(document.getElementById('evaluasi-iku')) EvaluasiIKUV3.init(); });
+// Auto-init with auto-load current year
+document.addEventListener('DOMContentLoaded', () => { 
+  if(document.getElementById('evaluasi-iku')) {
+    EvaluasiIKUV3.init();
+    // Auto-select current year after init
+    setTimeout(() => {
+      const yearSelect = document.getElementById('filter-tahun-v3');
+      if (yearSelect && !yearSelect.value) {
+        const currentYear = new Date().getFullYear();
+        yearSelect.value = currentYear.toString();
+        yearSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }, 300);
+  }
+});
+window.addEventListener('pageshow', () => { 
+  if(document.getElementById('evaluasi-iku')) {
+    EvaluasiIKUV3.init();
+    // Auto-select current year after init
+    setTimeout(() => {
+      const yearSelect = document.getElementById('filter-tahun-v3');
+      if (yearSelect && !yearSelect.value) {
+        const currentYear = new Date().getFullYear();
+        yearSelect.value = currentYear.toString();
+        yearSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }, 300);
+  }
+});

@@ -1,0 +1,200 @@
+/**
+ * UI Layout Fixes
+ * 1. Sembunyikan icon WhatsApp dan Ask AI di footer sidebar
+ * 2. Posisikan nama user dan icon logout di pojok kanan atas
+ * 3. Ubah warna kop header dari gradasi biru menjadi biru solid
+ */
+
+/* ============================================
+   1. SEMBUNYIKAN ICON WHATSAPP DAN ASK AI DI FOOTER
+   ============================================ */
+.sidebar-footer {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Sembunyikan tombol WhatsApp */
+#chat-toggle-sidebar,
+.chat-toggle-sidebar {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Sembunyikan tombol Ask AI */
+#ai-assistant-toggle,
+.ai-assistant-toggle {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Sembunyikan panel chat dan AI assistant */
+#chat-panel,
+#ai-assistant-panel {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ============================================
+   2. POSISIKAN USER INFO DAN LOGOUT DI POJOK KANAN ATAS
+   ============================================ */
+.top-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.75rem 1.5rem !important;
+}
+
+.header-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    margin-left: auto !important;
+}
+
+.user-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.5rem 1rem !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+.user-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: white !important;
+}
+
+#user-name {
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: white !important;
+}
+
+/* Logout button styling */
+#logout-btn,
+.header-icon.logout {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    color: white !important;
+}
+
+#logout-btn:hover,
+.header-icon.logout:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.05) !important;
+}
+
+#logout-btn i,
+.header-icon.logout i {
+    font-size: 1rem !important;
+    color: white !important;
+}
+
+/* ============================================
+   3. UBAH WARNA KOP HEADER DARI GRADASI KE BIRU SOLID
+   ============================================ */
+
+/* Warna biru solid untuk kop header - sama dengan warna biru sidebar */
+.kop-header {
+    background: #0b4d88 !important; /* Biru solid sama dengan sidebar */
+    background-image: none !important;
+    background-color: #0b4d88 !important;
+}
+
+/* Override untuk semua variasi kop header */
+.kop-header,
+.kop-header.visible,
+.kop-header:not(.hidden) {
+    background: #0b4d88 !important;
+    background-image: none !important;
+    background-color: #0b4d88 !important;
+}
+
+/* Pastikan tidak ada gradient */
+.kop-header[style*="gradient"],
+.kop-header[style*="linear-gradient"] {
+    background: #0b4d88 !important;
+    background-image: none !important;
+}
+
+/* Override inline styles */
+div.kop-header,
+section.kop-header,
+header.kop-header {
+    background: #0b4d88 !important;
+    background-image: none !important;
+}
+
+/* Untuk page header yang mungkin menggunakan gradient */
+.page-header-top,
+.header-organization,
+#header-organization {
+    background: #0b4d88 !important;
+    background-image: none !important;
+}
+
+/* Pastikan teks tetap putih di kop header */
+.kop-header h2,
+.kop-header h3,
+.kop-header h4,
+.kop-header p,
+.kop-header span,
+.kop-info h2,
+.kop-info p,
+.kop-reporter h4,
+.kop-reporter p {
+    color: white !important;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .header-right {
+        gap: 0.5rem !important;
+    }
+    
+    .user-info {
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .user-avatar {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    #logout-btn,
+    .header-icon.logout {
+        width: 36px !important;
+        height: 36px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Sembunyikan teks user name di mobile, hanya tampilkan avatar */
+    .user-info > div:not(.user-avatar) {
+        display: none !important;
+    }
+    
+    .user-info {
+        padding: 0.25rem !important;
+        background: transparent !important;
+    }
+}

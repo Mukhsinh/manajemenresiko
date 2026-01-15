@@ -101,18 +101,71 @@ const EvaluasiIKUModule = (function() {
       showLoading(true);
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       
-      const response = await fetch(`/api/evaluasi-iku-bulanan/summary?tahun=${selectedYear}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to load data');
+      // Try to load from evaluasi-iku-bulanan summary
+      let result = { data: [], summary: {} };
       
-      const result = await response.json();
+      try {
+        const response = await fetch(`/api/evaluasi-iku-bulanan/summary?tahun=${selectedYear}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          result = await response.json();
+        }
+      } catch (summaryError) {
+        console.warn('Summary endpoint failed:', summaryError);
+      }
+      
+      // If no data from summary, try to load IKU directly
+      if (!result.data || result.data.length === 0) {
+        try {
+          const ikuResponse = await fetch('/api/indikator-kinerja-utama', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (ikuResponse.ok) {
+            const ikuData = await ikuResponse.json();
+            // Transform IKU data to match expected format
+            result.data = (ikuData || []).map(iku => ({
+              id: iku.id,
+              indikator: iku.indikator,
+              satuan: iku.satuan,
+              pic: iku.pic,
+              sasaran_strategi: iku.sasaran_strategi,
+              rencana_strategis: iku.rencana_strategis,
+              targetTahunIni: iku[`target_${selectedYear}`] || iku.target_nilai || 0,
+              totalRealisasi: 0,
+              realisasiBulanan: {},
+              jumlahBulanTerisi: 0,
+              status: 'Belum Ada Realisasi',
+              persentaseCapaian: null
+            }));
+            
+            result.summary = {
+              totalIKU: result.data.length,
+              tercapai: 0,
+              hampirTercapai: 0,
+              dalamProses: 0,
+              perluPerhatian: 0,
+              belumAdaRealisasi: result.data.length,
+              rataRataCapaian: 0
+            };
+          }
+        } catch (ikuError) {
+          console.warn('IKU endpoint failed:', ikuError);
+        }
+      }
+      
       currentData = result.data || [];
       summaryData = result.summary || {};
+      
+      console.log('Loaded data:', currentData.length, 'items');
       
       renderSummaryCards();
       renderDataTable();
@@ -261,8 +314,10 @@ const EvaluasiIKUModule = (function() {
     const ikuSelect = document.getElementById('select-iku');
     if (ikuSelect) ikuSelect.disabled = false;
     
-    // Load IKU options
-    loadIKUOptions();
+    // Always reload IKU options when opening modal
+    loadIKUOptions().then(() => {
+      console.log('IKU options loaded for modal');
+    });
     
     // Reset monthly inputs
     renderMonthlyInputs(null);
@@ -393,27 +448,52 @@ const EvaluasiIKUModule = (function() {
 
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await fetch('/api/indikator-kinerja-utama', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      
+      // Try authenticated endpoint first, fallback to public
+      let data = [];
+      try {
+        const response = await fetch('/api/indikator-kinerja-utama', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (response.ok) {
+          data = await response.json();
         }
-      });
-
-      if (!response.ok) throw new Error('Failed to load IKU');
+      } catch (authError) {
+        console.warn('Auth endpoint failed, trying public:', authError);
+      }
       
-      const data = await response.json();
+      // Fallback to public endpoint if auth fails or returns empty
+      if (!data || data.length === 0) {
+        try {
+          const publicResponse = await fetch('/api/indikator-kinerja-utama/public');
+          if (publicResponse.ok) {
+            data = await publicResponse.json();
+          }
+        } catch (publicError) {
+          console.warn('Public endpoint also failed:', publicError);
+        }
+      }
       
-      select.innerHTML = `
-        <option value="">-- Pilih Indikator Kinerja Utama --</option>
-        ${data.map(iku => `
-          <option value="${iku.id}">${escapeHtml(iku.indikator)} (${escapeHtml(iku.rencana_strategis?.nama_rencana || '-')})</option>
-        `).join('')}
-      `;
+      console.log('Loaded IKU options:', data?.length || 0, 'items');
+      
+      if (data && data.length > 0) {
+        select.innerHTML = `
+          <option value="">-- Pilih IKU --</option>
+          ${data.map(iku => `
+            <option value="${iku.id}">${escapeHtml(iku.indikator)} (${escapeHtml(iku.rencana_strategis?.nama_rencana || '-')})</option>
+          `).join('')}
+        `;
+      } else {
+        select.innerHTML = `<option value="">-- Tidak ada data IKU --</option>`;
+      }
       
       select.disabled = false;
     } catch (error) {
       console.error('Error loading IKU options:', error);
+      select.innerHTML = `<option value="">-- Error memuat IKU --</option>`;
     }
   }
 

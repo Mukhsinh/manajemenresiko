@@ -327,12 +327,34 @@ const EvaluasiIKUEnhanced = (function() {
   async function loadIKUOptions() {
     try {
       const token = getToken();
-      const response = await fetch('/api/indikator-kinerja-utama', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        state.ikuOptions = await response.json();
+      
+      // Try authenticated endpoint first
+      let data = [];
+      try {
+        const response = await fetch('/api/indikator-kinerja-utama', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          data = await response.json();
+        }
+      } catch (authError) {
+        console.warn('Auth endpoint failed:', authError);
       }
+      
+      // Fallback to public endpoint
+      if (!data || data.length === 0) {
+        try {
+          const publicResponse = await fetch('/api/indikator-kinerja-utama/public');
+          if (publicResponse.ok) {
+            data = await publicResponse.json();
+          }
+        } catch (publicError) {
+          console.warn('Public endpoint failed:', publicError);
+        }
+      }
+      
+      console.log('Enhanced loaded IKU options:', data?.length || 0, 'items');
+      state.ikuOptions = data || [];
     } catch (error) {
       console.error('Error loading IKU options:', error);
       state.ikuOptions = [];

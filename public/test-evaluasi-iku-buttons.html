@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Evaluasi IKU Buttons</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/evaluasi-iku-v3.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f1f5f9;
+            padding: 2rem;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .test-result {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+        .test-result.pass { background: #dcfce7; color: #166534; }
+        .test-result.fail { background: #fee2e2; color: #991b1b; }
+        #evaluasi-iku {
+            display: block;
+        }
+        #evaluasi-iku.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Test Evaluasi IKU Buttons</h1>
+            <p>Verifikasi tombol Tambah Data dan Unduh Laporan</p>
+            <div id="test-results"></div>
+        </div>
+        
+        <!-- Simulated Evaluasi IKU Page -->
+        <div id="evaluasi-iku" class="page-content evaluasi-iku-page active">
+            <div class="page-header">
+                <h1 class="page-title"><i class="page-title-icon fas fa-chart-line"></i> Evaluasi IKU</h1>
+                <p class="page-subtitle">Input Realisasi Bulanan dan Monitoring Capaian Tahunan</p>
+            </div>
+            <div id="evaluasi-iku-content">
+                <!-- Content will be rendered by EvaluasiIKUV3 module -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/evaluasi-iku-v3.js"></script>
+    <script src="/js/evaluasi-iku-buttons-fix.js"></script>
+    
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function addResult(name, passed, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `<strong>${passed ? '✓' : '✗'} ${name}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        async function runTests() {
+            results.innerHTML = '<p>Running tests...</p>';
+            await new Promise(r => setTimeout(r, 1000));
+            results.innerHTML = '';
+            
+            // Test 1: Check if EvaluasiIKUV3 module exists
+            const hasV3Module = typeof window.EvaluasiIKUV3 !== 'undefined';
+            addResult('EvaluasiIKUV3 Module', hasV3Module, hasV3Module ? 'Module loaded' : 'Module not found');
+            
+            // Test 2: Initialize module
+            if (hasV3Module && typeof window.EvaluasiIKUV3.init === 'function') {
+                try {
+                    await window.EvaluasiIKUV3.init();
+                    addResult('Module Init', true, 'Module initialized successfully');
+                } catch (e) {
+                    addResult('Module Init', false, 'Error: ' + e.message);
+                }
+            }
+            
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Test 3: Check filter bar exists
+            const filterBar = document.querySelector('.evaluasi-filter-bar');
+            addResult('Filter Bar', !!filterBar, filterBar ? 'Filter bar found' : 'Filter bar not found');
+            
+            // Test 4: Check Tambah button exists
+            const btnTambah = document.getElementById('btn-tambah-v3') || document.getElementById('btn-tambah-data-fix');
+            addResult('Tambah Button', !!btnTambah, btnTambah ? 'Button found: ' + btnTambah.id : 'Button not found');
+            
+            // Test 5: Check Unduh button exists
+            const btnUnduh = document.getElementById('btn-unduh-v3') || document.getElementById('btn-unduh-laporan-fix');
+            addResult('Unduh Button', !!btnUnduh, btnUnduh ? 'Button found: ' + btnUnduh.id : 'Button not found');
+            
+            // Test 6: Check buttons are visible
+            if (btnTambah) {
+                const tambahVisible = btnTambah.offsetParent !== null;
+                addResult('Tambah Visible', tambahVisible, tambahVisible ? 'Button is visible' : 'Button is hidden');
+            }
+            
+            if (btnUnduh) {
+                const unduhVisible = btnUnduh.offsetParent !== null;
+                addResult('Unduh Visible', unduhVisible, unduhVisible ? 'Button is visible' : 'Button is hidden');
+            }
+            
+            // Test 7: Check filter actions container
+            const filterActions = document.querySelector('.evaluasi-filter-actions');
+            addResult('Filter Actions', !!filterActions, filterActions ? 'Container found' : 'Container not found');
+            
+            // Test 8: Check buttons fix module
+            const hasButtonsFix = typeof window.EvaluasiIKUButtonsFix !== 'undefined';
+            addResult('Buttons Fix Module', hasButtonsFix, hasButtonsFix ? 'Module loaded' : 'Module not found');
+            
+            // Summary
+            const allPassed = document.querySelectorAll('.test-result.pass').length;
+            const total = document.querySelectorAll('.test-result').length;
+            
+            const summary = document.createElement('div');
+            summary.style.cssText = 'margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;';
+            summary.innerHTML = `<strong>Summary:</strong> ${allPassed}/${total} tests passed`;
+            results.appendChild(summary);
+        }
+        
+        // Run tests after page load
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

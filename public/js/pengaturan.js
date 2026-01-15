@@ -200,28 +200,40 @@ const PengaturanAplikasi = {
     const currentUser = window.currentUser || {};
     const isSuperAdmin = currentUser.profile?.role === 'superadmin' || currentUser.email === 'mukhsin9@gmail.com';
     
+    // Ensure organizations is an array
+    const orgs = Array.isArray(this.organizations) ? this.organizations : [];
+    console.log('renderUserManagementSection - organizations:', orgs.length, orgs);
+    
     return `
       <div class="section-card">
-        <div class="section-header">
-          <h3>Manajemen User ${isSuperAdmin ? '<span class="badge badge-danger">Super Admin</span>' : ''}</h3>
-          <p class="text-muted">Kelola user dalam organisasi. ${isSuperAdmin ? 'Sebagai superadmin, Anda dapat melihat dan mengelola user dari semua organisasi.' : ''}</p>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3>Manajemen User ${isSuperAdmin ? '<span class="badge badge-danger" style="font-size: 0.7rem; vertical-align: middle;">Super Admin</span>' : ''}</h3>
+            <p class="text-muted" style="margin: 0.5rem 0 0 0;">Kelola user dalam organisasi. ${isSuperAdmin ? 'Sebagai superadmin, Anda dapat melihat dan mengelola user dari semua organisasi.' : ''}</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-success" onclick="PengaturanAplikasi.showAddOrganizationModal()">
+              <i class="fas fa-building"></i> Tambah Organisasi
+            </button>
+          </div>
         </div>
         
         ${isSuperAdmin ? `
-          <div class="alert alert-info">
+          <div class="alert alert-info" style="margin-top: 1rem;">
             <i class="fas fa-info-circle"></i>
             <strong>Mode Super Admin:</strong> Anda dapat melihat dan mengelola user dari semua organisasi.
           </div>
         ` : ''}
         
-        <div class="form-group">
+        <div class="form-group" style="margin-top: 1rem;">
           <label class="form-label">Pilih Organisasi</label>
           <select id="select-organization" class="form-control">
             <option value="">-- Pilih Organisasi --</option>
-            ${this.organizations.map(org => 
-              `<option value="${org.id}" ${org.id === selectedOrgId ? 'selected' : ''}>${org.name} ${org.code ? `(${org.code})` : ''}</option>`
-            ).join('')}
+            ${orgs.length > 0 ? orgs.map(org => 
+              `<option value="${org.id}" ${org.id === selectedOrgId ? 'selected' : ''}>${org.name || 'Unnamed'} ${org.code ? `(${org.code})` : ''}</option>`
+            ).join('') : '<option value="" disabled>Tidak ada organisasi tersedia</option>'}
           </select>
+          ${orgs.length === 0 ? '<small class="text-muted" style="display: block; margin-top: 0.5rem;"><i class="fas fa-info-circle"></i> Belum ada organisasi. Klik tombol "Tambah Organisasi" untuk membuat organisasi baru.</small>' : ''}
         </div>
         
         ${selectedOrg ? `
@@ -455,7 +467,44 @@ const PengaturanAplikasi = {
     }
     
     return `
-      <div class="table-responsive">
+      <style>
+        .user-table-container { overflow-x: auto; }
+        .user-table-container table { width: 100%; table-layout: fixed; }
+        .user-table-container th, .user-table-container td { 
+          padding: 0.75rem 0.5rem; 
+          vertical-align: middle;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+        .user-table-container th:nth-child(1), .user-table-container td:nth-child(1) { width: 20%; }
+        .user-table-container th:nth-child(2), .user-table-container td:nth-child(2) { width: 20%; }
+        .user-table-container th:nth-child(3), .user-table-container td:nth-child(3) { width: 18%; }
+        .user-table-container th:nth-child(4), .user-table-container td:nth-child(4) { width: 15%; }
+        .user-table-container th:nth-child(5), .user-table-container td:nth-child(5) { width: 12%; min-width: 80px; }
+        .user-table-container th:nth-child(6), .user-table-container td:nth-child(6) { width: 15%; min-width: 100px; }
+        .user-table-container .badge { 
+          display: inline-block; 
+          max-width: 100%; 
+          white-space: nowrap;
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+        }
+        .user-table-container .btn-group { 
+          display: flex; 
+          flex-wrap: nowrap; 
+          gap: 0.25rem;
+        }
+        .user-table-container .btn-sm { 
+          padding: 0.25rem 0.5rem; 
+          font-size: 0.75rem;
+        }
+        .user-table-container select.form-control { 
+          font-size: 0.8rem; 
+          padding: 0.25rem 0.5rem;
+          min-width: 90px;
+        }
+      </style>
+      <div class="user-table-container">
         <table class="table table-striped">
           <thead>
             <tr>
@@ -482,11 +531,11 @@ const PengaturanAplikasi = {
                   return `
               <tr>
                 <td>
-                  <strong>${fullName}</strong>
-                  <br><small class="text-muted">ID: ${userId ? userId.substring(0, 8) + '...' : 'N/A'}</small>
+                  <strong style="display: block; overflow: hidden; text-overflow: ellipsis;">${fullName}</strong>
+                  <small class="text-muted">ID: ${userId ? userId.substring(0, 8) + '...' : 'N/A'}</small>
                 </td>
-                <td>${email}</td>
-                <td>${organizationLabel}</td>
+                <td style="overflow: hidden; text-overflow: ellipsis;">${email}</td>
+                <td style="overflow: hidden; text-overflow: ellipsis;">${organizationLabel}</td>
                 <td>
                   <select class="form-control org-users-role" data-user-id="${user.id}" data-org="${org.id}" data-record-id="${user.id}" onchange="PengaturanAplikasi.updateUserRole('${user.id}', this.value)">
                     ${this.renderRoleOption('user', role)}
@@ -623,7 +672,40 @@ const PengaturanAplikasi = {
       }
       
       content.innerHTML = `
-        <div class="table-responsive">
+        <style>
+          .all-users-table-container { overflow-x: auto; }
+          .all-users-table-container table { width: 100%; table-layout: fixed; }
+          .all-users-table-container th, .all-users-table-container td { 
+            padding: 0.75rem 0.5rem; 
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+          }
+          .all-users-table-container th:nth-child(1), .all-users-table-container td:nth-child(1) { width: 15%; }
+          .all-users-table-container th:nth-child(2), .all-users-table-container td:nth-child(2) { width: 18%; }
+          .all-users-table-container th:nth-child(3), .all-users-table-container td:nth-child(3) { width: 10%; min-width: 80px; }
+          .all-users-table-container th:nth-child(4), .all-users-table-container td:nth-child(4) { width: 15%; }
+          .all-users-table-container th:nth-child(5), .all-users-table-container td:nth-child(5) { width: 10%; min-width: 70px; }
+          .all-users-table-container th:nth-child(6), .all-users-table-container td:nth-child(6) { width: 17%; }
+          .all-users-table-container th:nth-child(7), .all-users-table-container td:nth-child(7) { width: 15%; min-width: 90px; }
+          .all-users-table-container .badge { 
+            display: inline-block; 
+            max-width: 100%; 
+            white-space: nowrap;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+          }
+          .all-users-table-container .btn-group { 
+            display: flex; 
+            flex-wrap: nowrap; 
+            gap: 0.25rem;
+          }
+          .all-users-table-container .btn-sm { 
+            padding: 0.2rem 0.4rem; 
+            font-size: 0.7rem;
+          }
+        </style>
+        <div class="all-users-table-container">
           <table class="table table-striped">
             <thead>
               <tr>
@@ -640,35 +722,30 @@ const PengaturanAplikasi = {
               ${allUsers.map(user => `
                 <tr>
                   <td>
-                    <strong>${user.full_name || '-'}</strong>
-                    <br><small class="text-muted">ID: ${user.id.substring(0, 8)}...</small>
+                    <strong style="display: block; overflow: hidden; text-overflow: ellipsis;">${user.full_name || '-'}</strong>
+                    <small class="text-muted">ID: ${user.id.substring(0, 8)}...</small>
                   </td>
-                  <td>
+                  <td style="overflow: hidden; text-overflow: ellipsis;">
                     ${user.email || '-'}
-                    ${user.email_confirmed ? 
-                      '<br><span class="badge badge-success">Terverifikasi</span>' : 
-                      '<br><span class="badge badge-warning">Belum Verifikasi</span>'
-                    }
                   </td>
                   <td>
                     <span class="badge badge-${this.getRoleBadgeColor(user.role)}">
                       ${this.getRoleDisplayName(user.role)}
                     </span>
                   </td>
-                  <td>
+                  <td style="overflow: hidden; text-overflow: ellipsis;">
                     ${user.organizations?.name || user.organization_name || '-'}
                     ${user.organizations?.code ? `<br><small class="text-muted">${user.organizations.code}</small>` : ''}
                   </td>
                   <td>
-                    ${user.email_confirmed ? 
-                      '<span class="badge badge-success">Aktif</span>' : 
-                      '<span class="badge badge-secondary">Pending</span>'
-                    }
+                    <span class="badge badge-${user.email_confirmed ? 'success' : 'secondary'}">
+                      ${user.email_confirmed ? 'Aktif' : 'Pending'}
+                    </span>
                   </td>
-                  <td>
+                  <td style="font-size: 0.8rem;">
                     ${user.last_sign_in ? 
                       this.formatDateTime(user.last_sign_in) : 
-                      '<span class="text-muted">Belum pernah login</span>'
+                      '<span class="text-muted">Belum login</span>'
                     }
                   </td>
                   <td>
@@ -1543,9 +1620,418 @@ const PengaturanAplikasi = {
     ];
     const found = map.find((item) => key.toLowerCase().includes(item.match));
     return found ? found.icon : 'fa-barcode';
+  },
+
+  // Modal untuk tambah organisasi baru
+  showAddOrganizationModal() {
+    // Create modal if not exists
+    let modal = document.getElementById('add-organization-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'add-organization-modal';
+      modal.className = 'modal';
+      modal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;';
+      modal.innerHTML = `
+        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+            <h3 style="margin: 0;"><i class="fas fa-building"></i> Tambah Organisasi Baru</h3>
+            <button class="modal-close" onclick="PengaturanAplikasi.closeAddOrganizationModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+          </div>
+          <form id="add-organization-form">
+            <div style="display: grid; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600;">Nama Organisasi *</label>
+                <input type="text" id="new-org-name" class="form-control" required placeholder="Contoh: RSUD Benda">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600;">Kode Organisasi</label>
+                <input type="text" id="new-org-code" class="form-control" placeholder="Contoh: RS001">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600;">Deskripsi</label>
+                <textarea id="new-org-description" class="form-control" rows="2" placeholder="Deskripsi organisasi (opsional)"></textarea>
+              </div>
+              
+              <hr style="margin: 1rem 0;">
+              
+              <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                <h4 style="margin: 0 0 1rem 0; font-size: 1rem;"><i class="fas fa-user-plus"></i> Tambah User Admin (Opsional)</h4>
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1rem;">Anda dapat langsung menambahkan user admin untuk organisasi ini.</p>
+                
+                <div class="form-group">
+                  <label class="form-label">Nama Lengkap</label>
+                  <input type="text" id="new-org-user-name" class="form-control" placeholder="Nama lengkap user">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" id="new-org-user-email" class="form-control" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Password</label>
+                  <input type="password" id="new-org-user-password" class="form-control" placeholder="Minimal 8 karakter">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Role</label>
+                  <select id="new-org-user-role" class="form-control">
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="user">User</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #eee;">
+              <button type="button" class="btn btn-secondary" onclick="PengaturanAplikasi.closeAddOrganizationModal()">Batal</button>
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Simpan Organisasi
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // Bind form submit
+      document.getElementById('add-organization-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.saveNewOrganization();
+      });
+    }
+    
+    // Reset form
+    document.getElementById('new-org-name').value = '';
+    document.getElementById('new-org-code').value = '';
+    document.getElementById('new-org-description').value = '';
+    document.getElementById('new-org-user-name').value = '';
+    document.getElementById('new-org-user-email').value = '';
+    document.getElementById('new-org-user-password').value = '';
+    document.getElementById('new-org-user-role').value = 'admin';
+    
+    modal.style.display = 'flex';
+  },
+
+  closeAddOrganizationModal() {
+    const modal = document.getElementById('add-organization-modal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  async saveNewOrganization() {
+    const name = document.getElementById('new-org-name').value.trim();
+    const code = document.getElementById('new-org-code').value.trim();
+    const description = document.getElementById('new-org-description').value.trim();
+    
+    const userName = document.getElementById('new-org-user-name').value.trim();
+    const userEmail = document.getElementById('new-org-user-email').value.trim();
+    const userPassword = document.getElementById('new-org-user-password').value;
+    const userRole = document.getElementById('new-org-user-role').value;
+    
+    if (!name) {
+      alert('Nama organisasi wajib diisi');
+      return;
+    }
+    
+    // Validate user fields if any are filled
+    const hasUserData = userName || userEmail || userPassword;
+    if (hasUserData) {
+      if (!userName || !userEmail || !userPassword) {
+        alert('Jika ingin menambahkan user, semua field user (nama, email, password) harus diisi');
+        return;
+      }
+      if (userPassword.length < 8) {
+        alert('Password minimal 8 karakter');
+        return;
+      }
+    }
+    
+    try {
+      const apiCallFn = window.apiCall || apiCall;
+      
+      // Create organization
+      const orgResult = await apiCallFn('/api/organizations', {
+        method: 'POST',
+        body: { name, code, description }
+      });
+      
+      console.log('Organization created:', orgResult);
+      
+      // If user data provided, create user and add to organization
+      if (hasUserData && orgResult && orgResult.id) {
+        try {
+          // Register new user
+          await apiCallFn('/api/auth/register-admin', {
+            method: 'POST',
+            body: { 
+              email: userEmail, 
+              password: userPassword, 
+              full_name: userName, 
+              role: userRole 
+            }
+          });
+          
+          // Add user to organization
+          await apiCallFn(`/api/organizations/${orgResult.id}/users`, {
+            method: 'POST',
+            body: { email: userEmail, role: userRole }
+          });
+          
+          console.log('User added to organization');
+        } catch (userError) {
+          console.error('Error adding user to organization:', userError);
+          alert('Organisasi berhasil dibuat, tetapi gagal menambahkan user: ' + userError.message);
+        }
+      }
+      
+      this.closeAddOrganizationModal();
+      
+      // Reload organizations
+      await this.loadOrganizations();
+      
+      // Select the new organization
+      if (orgResult && orgResult.id) {
+        this.selectedOrgId = orgResult.id;
+      }
+      
+      this.render();
+      
+      alert('Organisasi berhasil ditambahkan' + (hasUserData ? ' beserta user admin' : ''));
+      
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      alert('Error: ' + error.message);
+    }
   }
 };
 
 window.PengaturanAplikasi = PengaturanAplikasi;
 window.pengaturanModule = PengaturanAplikasi;
+
+// Add showAddOrganizationModal function
+PengaturanAplikasi.showAddOrganizationModal = function() {
+  // Remove existing modal if any
+  const existingModal = document.getElementById('add-organization-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Check if current user is superadmin
+  const currentUser = window.currentUser || {};
+  const isSuperAdmin = currentUser.profile?.role === 'superadmin' || currentUser.email === 'mukhsin9@gmail.com';
+  
+  const modalHtml = `
+    <div id="add-organization-modal" class="modal-add-org" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div class="modal-content" style="background: white; border-radius: 12px; max-width: 650px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        <div class="modal-header" style="padding: 20px 24px; border-bottom: 1px solid #e9ecef; display: flex; align-items: center; justify-content: space-between;">
+          <h3 class="modal-title" style="font-size: 18px; font-weight: 600; color: #212529; margin: 0;">
+            <i class="fas fa-building" style="color: #28a745; margin-right: 8px;"></i>
+            Tambah Organisasi Baru
+          </h3>
+          <button class="modal-close" onclick="PengaturanAplikasi.closeAddOrganizationModal()" style="background: none; border: none; font-size: 24px; color: #6c757d; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <form id="add-organization-form">
+            <!-- Organization Section -->
+            <div class="form-section" style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9ecef;">
+              <div class="form-section-title" style="font-size: 14px; font-weight: 600; color: #495057; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-building" style="color: #007bff;"></i>
+                Data Organisasi
+              </div>
+              <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Nama Organisasi <span style="color: red;">*</span></label>
+                  <input type="text" id="modal-org-name" class="form-control" required placeholder="Contoh: RSUD Bunda" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Kode Organisasi</label>
+                  <input type="text" id="modal-org-code" class="form-control" placeholder="Contoh: RS001" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px;">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                  <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Deskripsi</label>
+                  <textarea id="modal-org-description" class="form-control" rows="2" placeholder="Deskripsi singkat organisasi" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical;"></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <!-- User Section -->
+            <div class="form-section" style="margin-bottom: 0;">
+              <div class="form-section-title" style="font-size: 14px; font-weight: 600; color: #495057; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-plus" style="color: #28a745;"></i>
+                Tambah User Pertama (Opsional)
+              </div>
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="modal-add-user-checkbox" onchange="PengaturanAplikasi.toggleUserFields()">
+                  <span style="font-size: 14px;">Tambahkan user baru ke organisasi ini</span>
+                </label>
+              </div>
+              <div id="modal-user-fields" style="display: none;">
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                  <div class="form-group">
+                    <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Nama Lengkap <span style="color: red;">*</span></label>
+                    <input type="text" id="modal-user-name" class="form-control" placeholder="Nama lengkap user" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Email <span style="color: red;">*</span></label>
+                    <input type="email" id="modal-user-email" class="form-control" placeholder="user@example.com" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Password <span style="color: red;">*</span></label>
+                    <input type="password" id="modal-user-password" class="form-control" placeholder="Minimal 8 karakter" minlength="8" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Role Akses <span style="color: red;">*</span></label>
+                    <select id="modal-user-role" class="form-control" style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 6px;">
+                      <option value="user">User - Akses terbatas</option>
+                      <option value="manager" selected>Manager - Kelola data</option>
+                      <option value="admin">Admin - Kelola organisasi</option>
+                      ${isSuperAdmin ? '<option value="superadmin">Super Admin - Akses penuh</option>' : ''}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="button" class="btn btn-secondary" onclick="PengaturanAplikasi.closeAddOrganizationModal()" style="padding: 10px 20px;">
+            <i class="fas fa-times"></i> Batal
+          </button>
+          <button type="button" class="btn btn-success" onclick="PengaturanAplikasi.saveNewOrganization()" style="padding: 10px 20px; background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 6px; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-save"></i> Simpan Organisasi
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // Focus on first input
+  setTimeout(() => {
+    document.getElementById('modal-org-name')?.focus();
+  }, 100);
+};
+
+PengaturanAplikasi.closeAddOrganizationModal = function() {
+  const modal = document.getElementById('add-organization-modal');
+  if (modal) {
+    modal.remove();
+  }
+};
+
+PengaturanAplikasi.toggleUserFields = function() {
+  const checkbox = document.getElementById('modal-add-user-checkbox');
+  const userFields = document.getElementById('modal-user-fields');
+  if (checkbox && userFields) {
+    userFields.style.display = checkbox.checked ? 'block' : 'none';
+  }
+};
+
+PengaturanAplikasi.saveNewOrganization = async function() {
+  const orgName = document.getElementById('modal-org-name')?.value?.trim();
+  const orgCode = document.getElementById('modal-org-code')?.value?.trim();
+  const orgDescription = document.getElementById('modal-org-description')?.value?.trim();
+  const addUser = document.getElementById('modal-add-user-checkbox')?.checked;
+  
+  if (!orgName) {
+    alert('Nama organisasi wajib diisi');
+    document.getElementById('modal-org-name')?.focus();
+    return;
+  }
+  
+  // Validate user fields if checkbox is checked
+  let userData = null;
+  if (addUser) {
+    const userName = document.getElementById('modal-user-name')?.value?.trim();
+    const userEmail = document.getElementById('modal-user-email')?.value?.trim();
+    const userPassword = document.getElementById('modal-user-password')?.value;
+    const userRole = document.getElementById('modal-user-role')?.value;
+    
+    if (!userName || !userEmail || !userPassword) {
+      alert('Jika menambahkan user, nama, email, dan password wajib diisi');
+      return;
+    }
+    
+    if (userPassword.length < 8) {
+      alert('Password minimal 8 karakter');
+      document.getElementById('modal-user-password')?.focus();
+      return;
+    }
+    
+    userData = {
+      full_name: userName,
+      email: userEmail,
+      password: userPassword,
+      role: userRole || 'manager'
+    };
+  }
+  
+  try {
+    const apiCallFn = window.apiCall || apiCall;
+    
+    // 1. Create organization
+    console.log('Creating organization:', { name: orgName, code: orgCode, description: orgDescription });
+    const orgResult = await apiCallFn('/api/organizations', {
+      method: 'POST',
+      body: {
+        name: orgName,
+        code: orgCode,
+        description: orgDescription
+      }
+    });
+    
+    console.log('Organization created:', orgResult);
+    
+    // 2. If user data provided, register user and add to organization
+    if (userData && orgResult?.id) {
+      try {
+        // Register new user
+        console.log('Registering user:', userData.email);
+        await apiCallFn('/api/auth/register-admin', {
+          method: 'POST',
+          body: userData
+        });
+        
+        // Add user to organization
+        console.log('Adding user to organization:', orgResult.id);
+        await apiCallFn(`/api/organizations/${orgResult.id}/users`, {
+          method: 'POST',
+          body: {
+            email: userData.email,
+            role: userData.role
+          }
+        });
+        
+        console.log('User added to organization successfully');
+      } catch (userError) {
+        console.error('Error adding user:', userError);
+        // Don't fail the whole operation, just warn
+        alert('Organisasi berhasil dibuat, tetapi gagal menambahkan user: ' + userError.message);
+      }
+    }
+    
+    // Close modal
+    PengaturanAplikasi.closeAddOrganizationModal();
+    
+    // Reload organizations
+    await PengaturanAplikasi.loadOrganizations();
+    
+    // Set selected org to the new one
+    if (orgResult?.id) {
+      PengaturanAplikasi.selectedOrgId = orgResult.id;
+    }
+    
+    // Re-render
+    PengaturanAplikasi.render();
+    
+    // Show success message
+    setTimeout(() => {
+      alert('Organisasi berhasil ditambahkan' + (userData ? ' beserta user baru' : ''));
+    }, 100);
+    
+  } catch (error) {
+    console.error('Error creating organization:', error);
+    alert('Error: ' + error.message);
+  }
+};
 

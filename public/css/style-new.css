@@ -1831,7 +1831,8 @@ i.far:empty {
 }
 
 .kop-header {
-    background: linear-gradient(120deg, var(--primary-blue), var(--teal-blue));
+    background: #0b4d88; /* Biru solid sama dengan sidebar */
+    background-image: none;
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow-lg);

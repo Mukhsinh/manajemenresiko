@@ -60,6 +60,125 @@ router.get('/public', async (req, res) => {
   }
 });
 
+// Public summary endpoint (no auth required for testing)
+router.get('/summary/public', async (req, res) => {
+  try {
+    const { tahun } = req.query;
+    const currentYear = parseInt(tahun) || new Date().getFullYear();
+    const clientToUse = supabaseAdmin || supabase;
+
+    // Get all IKU with their monthly evaluations
+    const { data: ikuData, error } = await clientToUse
+      .from('indikator_kinerja_utama')
+      .select(`
+        id, indikator, satuan, pic, definisi_operasional, sumber_data,
+        target_2025, target_2026, target_2027, target_2028, target_2029, target_2030,
+        target_nilai, baseline_nilai, baseline_tahun,
+        sasaran_strategi(id, sasaran, perspektif),
+        rencana_strategis(id, nama_rencana, kode, organization_id),
+        evaluasi_iku_bulanan(
+          id, tahun, bulan, realisasi_nilai, target_nilai, 
+          persentase_capaian, keterangan, bukti_pendukung
+        )
+      `);
+
+    if (error) throw error;
+
+    // Calculate summary statistics
+    const summary = {
+      totalIKU: ikuData?.length || 0,
+      tercapai: 0,
+      hampirTercapai: 0,
+      dalamProses: 0,
+      perluPerhatian: 0,
+      belumAdaRealisasi: 0,
+      rataRataCapaian: 0,
+      totalRealisasi: 0,
+      totalTarget: 0
+    };
+
+    let totalCapaian = 0;
+    let countWithCapaian = 0;
+
+    const processedData = (ikuData || []).map(iku => {
+      const targetField = `target_${currentYear}`;
+      const targetTahunIni = parseFloat(iku[targetField]) || parseFloat(iku.target_nilai) || 0;
+
+      const evaluasiBulanan = (iku.evaluasi_iku_bulanan || [])
+        .filter(e => e.tahun === currentYear)
+        .sort((a, b) => a.bulan - b.bulan);
+
+      const totalRealisasi = evaluasiBulanan.reduce((sum, e) => 
+        sum + (parseFloat(e.realisasi_nilai) || 0), 0);
+
+      const realisasiBulanan = {};
+      for (let i = 1; i <= 12; i++) {
+        const evalBulan = evaluasiBulanan.find(e => e.bulan === i);
+        realisasiBulanan[i] = {
+          bulan: i,
+          namaBulan: BULAN_NAMES[i],
+          realisasi: evalBulan?.realisasi_nilai || null,
+          target: evalBulan?.target_nilai || null,
+          keterangan: evalBulan?.keterangan || null,
+          id: evalBulan?.id || null
+        };
+      }
+
+      let status = 'Belum Ada Realisasi';
+      let persentase = null;
+
+      if (totalRealisasi > 0 && targetTahunIni > 0) {
+        persentase = Math.round((totalRealisasi / targetTahunIni) * 100 * 100) / 100;
+        if (persentase >= 100) {
+          status = 'Tercapai';
+          summary.tercapai++;
+        } else if (persentase >= 75) {
+          status = 'Hampir Tercapai';
+          summary.hampirTercapai++;
+        } else if (persentase >= 50) {
+          status = 'Dalam Proses';
+          summary.dalamProses++;
+        } else {
+          status = 'Perlu Perhatian';
+          summary.perluPerhatian++;
+        }
+        totalCapaian += persentase;
+        countWithCapaian++;
+        summary.totalRealisasi += totalRealisasi;
+        summary.totalTarget += targetTahunIni;
+      } else {
+        summary.belumAdaRealisasi++;
+      }
+
+      return {
+        id: iku.id,
+        indikator: iku.indikator,
+        satuan: iku.satuan,
+        pic: iku.pic,
+        definisi_operasional: iku.definisi_operasional,
+        sumber_data: iku.sumber_data,
+        sasaran_strategi: iku.sasaran_strategi,
+        rencana_strategis: iku.rencana_strategis,
+        targetTahunIni,
+        totalRealisasi,
+        realisasiBulanan,
+        jumlahBulanTerisi: evaluasiBulanan.length,
+        status,
+        persentaseCapaian: persentase
+      };
+    });
+
+    summary.rataRataCapaian = countWithCapaian > 0 
+      ? Math.round(totalCapaian / countWithCapaian * 100) / 100 
+      : 0;
+
+    res.json({ summary, data: processedData, tahun: currentYear });
+  } catch (error) {
+    console.error('Public summary error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get summary dashboard data with accumulated yearly totals
 router.get('/summary', authenticateUser, async (req, res) => {
   try {

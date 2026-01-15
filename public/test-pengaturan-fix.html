@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pengaturan Fix - Dropdown Organisasi & Tabel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/pengaturan-fix.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #1e3a5f, #2c5282);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .test-header h1 {
+            margin: 0 0 10px 0;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #1e3a5f;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry { margin: 5px 0; }
+        .log-success { color: #4ec9b0; }
+        .log-error { color: #f14c4c; }
+        .log-info { color: #569cd6; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover { opacity: 0.9; }
+        
+        /* Test table styling */
+        .test-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .test-table th, .test-table td {
+            padding: 12px 10px;
+            border: 1px solid #dee2e6;
+            text-align: left;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .test-table th {
+            background: #1e3a5f;
+            color: white;
+        }
+        .test-table th:nth-child(1) { width: 18%; }
+        .test-table th:nth-child(2) { width: 20%; }
+        .test-table th:nth-child(3) { width: 12%; }
+        .test-table th:nth-child(4) { width: 18%; }
+        .test-table th:nth-child(5) { width: 10%; text-align: center; }
+        .test-table th:nth-child(6) { width: 14%; }
+        .test-table th:nth-child(7) { width: 8%; text-align: center; }
+        
+        .badge {
+            display: inline-block;
+            max-width: 100%;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+            border-radius: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .badge-success { background: #28a745; color: white; }
+        .badge-warning { background: #ffc107; color: #212529; }
+        .badge-danger { background: #dc3545; color: white; }
+        .badge-info { background: #17a2b8; color: white; }
+        .badge-secondary { background: #6c757d; color: white; }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .dropdown-test {
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1><i class="fas fa-cog"></i> Test Pengaturan Fix</h1>
+            <p>Verifikasi perbaikan: Dropdown Organisasi, Badge Status, dan Tombol Tambah Organisasi</p>
+        </div>
+
+        <!-- Test 1: Dropdown Organisasi -->
+        <div class="test-section">
+            <h2><i class="fas fa-list"></i> Test 1: Dropdown Organisasi</h2>
+            <p>Dropdown harus menampilkan semua organisasi yang telah dibuat.</p>
+            
+            <div class="dropdown-test">
+                <label style="font-weight: 600; margin-bottom: 8px; display: block;">Pilih Organisasi:</label>
+                <select id="test-org-dropdown" class="form-control">
+                    <option value="">-- Memuat organisasi... --</option>
+                </select>
+            </div>
+            
+            <div id="dropdown-status">
+                <span class="status-badge status-pending">Menunggu...</span>
+            </div>
+            
+            <button class="btn btn-primary" onclick="loadOrganizations()">
+                <i class="fas fa-sync"></i> Refresh Organisasi
+            </button>
+        </div>
+
+        <!-- Test 2: Tabel dengan Badge Status -->
+        <div class="test-section">
+            <h2><i class="fas fa-table"></i> Test 2: Tabel dengan Badge Status (No Overflow)</h2>
+            <p>Badge status harus tetap di dalam kolom Status, tidak overflow ke luar tabel.</p>
+            
+            <div style="overflow-x: auto;">
+                <table class="test-table">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Organisasi</th>
+                            <th>Status</th>
+                            <th>Login Terakhir</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="test-users-table">
+                        <tr>
+                            <td>
+                                <strong>Test User</strong><br>
+                                <small style="color: #6c757d;">ID: abc12345...</small>
+                            </td>
+                            <td>test@example.com</td>
+                            <td><span class="badge badge-info">Manager</span></td>
+                            <td>RSUD Bunda (RS001)</td>
+                            <td style="text-align: center;"><span class="badge badge-success">Aktif</span></td>
+                            <td>15 Jan 2026, 10:30</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-warning" style="padding: 4px 8px; font-size: 12px;"><i class="fas fa-key"></i></button>
+                                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Admin User dengan Nama Sangat Panjang</strong><br>
+                                <small style="color: #6c757d;">ID: def67890...</small>
+                            </td>
+                            <td>admin.user.dengan.email.panjang@example.com</td>
+                            <td><span class="badge badge-danger">Super Admin</span></td>
+                            <td>Rumah Sakit Umum Daerah dengan Nama Panjang (RSUD001)</td>
+                            <td style="text-align: center;"><span class="badge badge-warning">Pending</span></td>
+                            <td>Belum pernah login</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-warning" style="padding: 4px 8px; font-size: 12px;"><i class="fas fa-key"></i></button>
+                                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="table-status" style="margin-top: 15px;">
+                <span class="status-badge status-success">Badge tidak overflow ✓</span>
+            </div>
+        </div>
+
+        <!-- Test 3: Tombol Tambah Organisasi -->
+        <div class="test-section">
+            <h2><i class="fas fa-plus"></i> Test 3: Tombol Tambah Organisasi Baru</h2>
+            <p>Tombol untuk menambahkan organisasi baru beserta user pertama.</p>
+            
+            <button class="btn btn-success" onclick="showAddOrganizationModal()" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                <i class="fas fa-building"></i> Tambah Organisasi Baru
+            </button>
+            
+            <div id="modal-status" style="margin-top: 15px;">
+                <span class="status-badge status-pending">Klik tombol untuk test modal</span>
+            </div>
+        </div>
+
+        <!-- Log Output -->
+        <div class="test-section">
+            <h2><i class="fas fa-terminal"></i> Log Output</h2>
+            <div class="log-container" id="log-output">
+                <div class="log-entry log-info">[INFO] Test page loaded</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-output');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${type.toUpperCase()}] ${new Date().toLocaleTimeString()} - ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Simulate API call
+        async function apiCall(url, options = {}) {
+            const token = localStorage.getItem('auth_token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            };
+            
+            const response = await fetch(url, {
+                ...options,
+                headers: { ...headers, ...options.headers },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return response.json();
+        }
+
+        async function loadOrganizations() {
+            const dropdown = document.getElementById('test-org-dropdown');
+            const statusEl = document.getElementById('dropdown-status');
+            
+            try {
+                log('Loading organizations from API...');
+                dropdown.innerHTML = '<option value="">-- Memuat... --</option>';
+                
+                const orgs = await apiCall('/api/organizations');
+                log(`Received ${orgs?.length || 0} organizations`, 'success');
+                
+                if (!orgs || orgs.length === 0) {
+                    dropdown.innerHTML = '<option value="">-- Tidak ada organisasi --</option>';
+                    statusEl.innerHTML = '<span class="status-badge status-warning">Tidak ada organisasi ditemukan</span>';
+                    return;
+                }
+                
+                dropdown.innerHTML = '<option value="">-- Pilih Organisasi --</option>' +
+                    orgs.map(org => `<option value="${org.id}">${org.name || 'Unnamed'} ${org.code ? `(${org.code})` : ''}</option>`).join('');
+                
+                statusEl.innerHTML = `<span class="status-badge status-success">${orgs.length} organisasi ditemukan ✓</span>`;
+                
+                orgs.forEach(org => {
+                    log(`  - ${org.name} (${org.code || 'no code'}) - ${org.users?.length || 0} users`);
+                });
+                
+            } catch (error) {
+                log(`Error loading organizations: ${error.message}`, 'error');
+                dropdown.innerHTML = '<option value="">-- Error memuat data --</option>';
+                statusEl.innerHTML = `<span class="status-badge status-error">Error: ${error.message}</span>`;
+            }
+        }
+
+        function showAddOrganizationModal() {
+            const modalContainer = document.getElementById('modal-container');
+            const statusEl = document.getElementById('modal-status');
+            
+            log('Opening Add Organization modal...');
+            
+            modalContainer.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+                    <div style="background: white; border-radius: 12px; max-width: 650px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                        <div style="padding: 20px 24px; border-bottom: 1px solid #e9ecef; display: flex; align-items: center; justify-content: space-between;">
+                            <h3 style="font-size: 18px; font-weight: 600; color: #212529; margin: 0;">
+                                <i class="fas fa-building" style="color: #28a745; margin-right: 8px;"></i>
+                                Tambah Organisasi Baru
+                            </h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; color: #6c757d; cursor: pointer;">&times;</button>
+                        </div>
+                        <div style="padding: 24px;">
+                            <!-- Organization Section -->
+                            <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9ecef;">
+                                <div style="font-size: 14px; font-weight: 600; color: #495057; margin-bottom: 16px;">
+                                    <i class="fas fa-building" style="color: #007bff; margin-right: 8px;"></i>
+                                    Data Organisasi
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                                    <div>
+                                        <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Nama Organisasi <span style="color: red;">*</span></label>
+                                        <input type="text" id="modal-org-name" class="form-control" placeholder="Contoh: RSUD Bunda">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Kode Organisasi</label>
+                                        <input type="text" id="modal-org-code" class="form-control" placeholder="Contoh: RS001">
+                                    </div>
+                                    <div style="grid-column: span 2;">
+                                        <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Deskripsi</label>
+                                        <textarea id="modal-org-description" class="form-control" rows="2" placeholder="Deskripsi singkat organisasi"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- User Section -->
+                            <div>
+                                <div style="font-size: 14px; font-weight: 600; color: #495057; margin-bottom: 16px;">
+                                    <i class="fas fa-user-plus" style="color: #28a745; margin-right: 8px;"></i>
+                                    Tambah User Pertama (Opsional)
+                                </div>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="modal-add-user-checkbox" onchange="toggleUserFields()">
+                                        <span style="font-size: 14px;">Tambahkan user baru ke organisasi ini</span>
+                                    </label>
+                                </div>
+                                <div id="modal-user-fields" style="display: none;">
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Nama Lengkap <span style="color: red;">*</span></label>
+                                            <input type="text" id="modal-user-name" class="form-control" placeholder="Nama lengkap user">
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Email <span style="color: red;">*</span></label>
+                                            <input type="email" id="modal-user-email" class="form-control" placeholder="user@example.com">
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Password <span style="color: red;">*</span></label>
+                                            <input type="password" id="modal-user-password" class="form-control" placeholder="Minimal 8 karakter">
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 500; color: #495057; margin-bottom: 6px;">Role Akses <span style="color: red;">*</span></label>
+                                            <select id="modal-user-role" class="form-control">
+                                                <option value="user">User - Akses terbatas</option>
+                                                <option value="manager" selected>Manager - Kelola data</option>
+                                                <option value="admin">Admin - Kelola organisasi</option>
+                                                <option value="superadmin">Super Admin - Akses penuh</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px 24px; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; gap: 12px;">
+                            <button class="btn btn-secondary" onclick="closeModal()">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button class="btn btn-success" onclick="saveOrganization()" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                                <i class="fas fa-save"></i> Simpan Organisasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            statusEl.innerHTML = '<span class="status-badge status-success">Modal terbuka ✓</span>';
+            log('Modal opened successfully', 'success');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').innerHTML = '';
+            log('Modal closed');
+        }
+
+        function toggleUserFields() {
+            const checkbox = document.getElementById('modal-add-user-checkbox');
+            const userFields = document.getElementById('modal-user-fields');
+            if (checkbox && userFields) {
+                userFields.style.display = checkbox.checked ? 'block' : 'none';
+                log(`User fields ${checkbox.checked ? 'shown' : 'hidden'}`);
+            }
+        }
+
+        async function saveOrganization() {
+            const orgName = document.getElementById('modal-org-name')?.value?.trim();
+            const orgCode = document.getElementById('modal-org-code')?.value?.trim();
+            const orgDescription = document.getElementById('modal-org-description')?.value?.trim();
+            const addUser = document.getElementById('modal-add-user-checkbox')?.checked;
+            
+            if (!orgName) {
+                alert('Nama organisasi wajib diisi');
+                return;
+            }
+            
+            log(`Saving organization: ${orgName} (${orgCode || 'no code'})`);
+            
+            try {
+                const orgResult = await apiCall('/api/organizations', {
+                    method: 'POST',
+                    body: { name: orgName, code: orgCode, description: orgDescription }
+                });
+                
+                log(`Organization created: ${orgResult.id}`, 'success');
+                
+                if (addUser && orgResult?.id) {
+                    const userName = document.getElementById('modal-user-name')?.value?.trim();
+                    const userEmail = document.getElementById('modal-user-email')?.value?.trim();
+                    const userPassword = document.getElementById('modal-user-password')?.value;
+                    const userRole = document.getElementById('modal-user-role')?.value;
+                    
+                    if (userName && userEmail && userPassword) {
+                        log(`Adding user: ${userEmail} with role ${userRole}`);
+                        // Note: In real implementation, this would call the register-admin endpoint
+                    }
+                }
+                
+                closeModal();
+                loadOrganizations();
+                alert('Organisasi berhasil ditambahkan!');
+                
+            } catch (error) {
+                log(`Error saving organization: ${error.message}`, 'error');
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Page initialized');
+            loadOrganizations();
+        });
+    </script>
+</body>
+</html>

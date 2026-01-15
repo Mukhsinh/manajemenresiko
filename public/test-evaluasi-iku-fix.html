@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Evaluasi IKU Fix</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/css/evaluasi-iku-v3.css">
+    <link rel="stylesheet" href="/css/evaluasi-iku-fix.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; padding: 1rem; }
+        .test-header { background: #1e40af; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        .test-header h1 { font-size: 1.25rem; }
+        .test-status { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .status-item { background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.85rem; }
+        .status-item.success { background: #22c55e; }
+        .status-item.error { background: #ef4444; }
+        .status-item.pending { background: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><i class="fas fa-vial"></i> Test Evaluasi IKU Fix</h1>
+        <div class="test-status">
+            <span class="status-item pending" id="status-table">Tabel: Checking...</span>
+            <span class="status-item pending" id="status-chart">Grafik: Checking...</span>
+            <span class="status-item pending" id="status-buttons">Tombol: Checking...</span>
+        </div>
+    </div>
+    
+    <div id="evaluasi-iku" class="page-content evaluasi-iku-page">
+        <!-- Content will be injected by V3 module -->
+    </div>
+
+    <script src="/js/evaluasi-iku-v3.js"></script>
+    <script src="/js/evaluasi-iku-fix.js"></script>
+    
+    <script>
+        // Mock fetch for testing
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            console.log('Fetch:', url);
+            
+            // Mock IKU data
+            if (url.includes('/api/indikator-kinerja-utama')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve([
+                        {
+                            id: '1',
+                            indikator: 'Tingkat Kepuasan Pasien',
+                            satuan: '%',
+                            pic: 'Dr. Ahmad',
+                            target_2025: 85,
+                            target_nilai: 85,
+                            sasaran_strategi: { sasaran: 'Meningkatkan Kepuasan Pelanggan', perspektif: 'Pelanggan' },
+                            rencana_strategis: { nama_rencana: 'RS Sehat 2025', kode: 'RS-001' }
+                        },
+                        {
+                            id: '2',
+                            indikator: 'Bed Occupancy Rate (BOR)',
+                            satuan: '%',
+                            pic: 'Dr. Budi',
+                            target_2025: 75,
+                            target_nilai: 75,
+                            sasaran_strategi: { sasaran: 'Optimalisasi Kapasitas', perspektif: 'Proses Internal' },
+                            rencana_strategis: { nama_rencana: 'RS Sehat 2025', kode: 'RS-001' }
+                        },
+                        {
+                            id: '3',
+                            indikator: 'Average Length of Stay (ALOS)',
+                            satuan: 'Hari',
+                            pic: 'Dr. Citra',
+                            target_2025: 4,
+                            target_nilai: 4,
+                            sasaran_strategi: { sasaran: 'Efisiensi Pelayanan', perspektif: 'Proses Internal' },
+                            rencana_strategis: { nama_rencana: 'RS Sehat 2025', kode: 'RS-001' }
+                        }
+                    ])
+                });
+            }
+            
+            // Mock summary data
+            if (url.includes('/api/evaluasi-iku-bulanan/summary')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({
+                        summary: {
+                            totalIKU: 3,
+                            tercapai: 1,
+                            hampirTercapai: 1,
+                            dalamProses: 0,
+                            perluPerhatian: 0,
+                            belumAdaRealisasi: 1,
+                            rataRataCapaian: 65.5
+                        },
+                        data: [
+                            {
+                                id: '1',
+                                indikator: 'Tingkat Kepuasan Pasien',
+                                satuan: '%',
+                                pic: 'Dr. Ahmad',
+                                targetTahunIni: 85,
+                                totalRealisasi: 87,
+                                persentaseCapaian: 102.4,
+                                status: 'Tercapai',
+                                sasaran_strategi: { sasaran: 'Meningkatkan Kepuasan Pelanggan', perspektif: 'Pelanggan' },
+                                realisasiBulanan: {
+                                    1: { bulan: 1, namaBulan: 'Januari', realisasi: 7.2 },
+                                    2: { bulan: 2, namaBulan: 'Februari', realisasi: 7.3 },
+                                    3: { bulan: 3, namaBulan: 'Maret', realisasi: 7.5 }
+                                }
+                            },
+                            {
+                                id: '2',
+                                indikator: 'Bed Occupancy Rate (BOR)',
+                                satuan: '%',
+                                pic: 'Dr. Budi',
+                                targetTahunIni: 75,
+                                totalRealisasi: 58,
+                                persentaseCapaian: 77.3,
+                                status: 'Hampir Tercapai',
+                                sasaran_strategi: { sasaran: 'Optimalisasi Kapasitas', perspektif: 'Proses Internal' },
+                                realisasiBulanan: {
+                                    1: { bulan: 1, namaBulan: 'Januari', realisasi: 19 },
+                                    2: { bulan: 2, namaBulan: 'Februari', realisasi: 19.5 },
+                                    3: { bulan: 3, namaBulan: 'Maret', realisasi: 19.5 }
+                                }
+                            },
+                            {
+                                id: '3',
+                                indikator: 'Average Length of Stay (ALOS)',
+                                satuan: 'Hari',
+                                pic: 'Dr. Citra',
+                                targetTahunIni: 4,
+                                totalRealisasi: 0,
+                                persentaseCapaian: 0,
+                                status: 'Belum Ada Realisasi',
+                                sasaran_strategi: { sasaran: 'Efisiensi Pelayanan', perspektif: 'Proses Internal' },
+                                realisasiBulanan: {}
+                            }
+                        ]
+                    })
+                });
+            }
+            
+            return originalFetch(url, options);
+        };
+        
+        // Mock token
+        localStorage.setItem('token', 'test-token-123');
+        
+        // Run tests after initialization
+        setTimeout(runTests, 2000);
+        
+        function runTests() {
+            console.log('Running tests...');
+            
+            // Test 1: Check table has data
+            const tbody = document.getElementById('evaluasi-table-body-v3');
+            const tableRows = tbody ? tbody.querySelectorAll('tr[data-id]') : [];
+            const tableStatus = document.getElementById('status-table');
+            
+            if (tableRows.length > 0) {
+                tableStatus.textContent = `Tabel: ✓ ${tableRows.length} data`;
+                tableStatus.className = 'status-item success';
+            } else {
+                tableStatus.textContent = 'Tabel: ✗ Tidak ada data';
+                tableStatus.className = 'status-item error';
+            }
+            
+            // Test 2: Check charts
+            const statusChart = document.getElementById('chart-status-iku');
+            const trendChart = document.getElementById('chart-trend-iku');
+            const chartStatus = document.getElementById('status-chart');
+            
+            if (statusChart && trendChart) {
+                chartStatus.textContent = 'Grafik: ✓ Tersedia';
+                chartStatus.className = 'status-item success';
+            } else {
+                chartStatus.textContent = 'Grafik: ✗ Tidak ditemukan';
+                chartStatus.className = 'status-item error';
+            }
+            
+            // Test 3: Check buttons (no duplicates)
+            const tambahBtns = document.querySelectorAll('[id*="btn-tambah"]');
+            const unduhBtns = document.querySelectorAll('[id*="btn-unduh"]');
+            const buttonStatus = document.getElementById('status-buttons');
+            
+            if (tambahBtns.length <= 1 && unduhBtns.length <= 1) {
+                buttonStatus.textContent = 'Tombol: ✓ Tidak duplikat';
+                buttonStatus.className = 'status-item success';
+            } else {
+                buttonStatus.textContent = `Tombol: ✗ Duplikat (Tambah: ${tambahBtns.length}, Unduh: ${unduhBtns.length})`;
+                buttonStatus.className = 'status-item error';
+            }
+            
+            console.log('Tests completed');
+        }
+    </script>
+</body>
+</html>
